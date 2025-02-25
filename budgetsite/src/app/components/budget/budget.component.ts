@@ -979,7 +979,21 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         this.cardPostingsService.create(result).subscribe({
           next: (cardpostings) => {
             if (cardpostings) {
-              this.deleteExpense(expense);
+              if(result.amount >= expense.toPay)
+              {
+                this.deleteExpense(expense);
+              }
+              else {
+                this.expenseService.updateValue(expense.id!, result.amount * -1).subscribe({
+                  next: () => {
+                    expense.toPay = +(expense.toPay - result.amount).toFixed(2);
+                    expense.totalToPay = +(expense.totalToPay - result.amount).toFixed(2);
+                    expense.remaining = +(expense.toPay - (expense.paid ?? 0)).toFixed(2);
+
+                    this.getExpensesTotals();
+                  },
+                });
+              }
             }
 
             this.categoriesList = result.categoriesList;

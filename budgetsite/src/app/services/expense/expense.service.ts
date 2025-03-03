@@ -120,4 +120,16 @@ export class ExpenseService {
         catchError((e) => this.messenger.errorHandler(e))
       );
   }
+
+  orderByPreviousMonth(reference: string): Observable<any> {
+    return this.http
+      .post<any>(
+        `${ApiUrls.expenses}/OrderByPreviousMonth?Reference=${reference}`,
+        null
+      )
+      .pipe(
+        map((obj) => obj),
+        catchError((e) => this.messenger.errorHandler(e))
+      );
+  }
 }

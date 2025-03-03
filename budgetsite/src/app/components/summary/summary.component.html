@@ -92,10 +92,10 @@
 
       <div class="row center">
         <div class="row center saldos2">
-          <div class="col-4" style="text-align:center">
+          <div class="col-6" style="text-align:center">
             <span><b>Previsto</b></span>
           </div>
-          <div class="col-4" style="text-align:center">
+          <div class="col-6" style="text-align:center">
             <span><b>Disponível</b></span>
           </div>
         </div>
@@ -103,15 +103,41 @@
 
       <div class="row center">
         <div class="row center saldos3">
-          <div class="col-4 center">
+          <div class="col-6 center">
             <span
               [ngClass]="totalsAccountsSummary && totalsAccountsSummary.forecastBalance >= 0 ? 'positive' : 'negative'">
-              {{totalsAccountsSummary?.forecastBalance | currency : '':''}}</span>
+              {{totalsAccountsSummary!.forecastBalance | currency : '':''}}</span>
           </div>
-          <div class="col-4 center">
+          <div class="col-6 center">
             <span
               [ngClass]="totalsAccountsSummary && totalsAccountsSummary.availableBalance >= 0 ? 'positive' : 'negative'">
-              {{totalsAccountsSummary?.availableBalance | currency : '':''}}</span>
+              {{totalsAccountsSummary!.availableBalance | currency : '':''}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row center">
+        <div class="row center saldos2">
+          <div class="col-6" style="text-align:center">
+            <span><b>Previsto (Real)</b></span>
+          </div>
+          <div class="col-6" style="text-align:center">
+            <span><b>A Receber</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row center">
+        <div class="row center saldos3">
+          <div class="col-6 center">
+            <span
+              [ngClass]="totalsAccountsSummary && (totalsAccountsSummary.forecastBalance - totalsAccountsSummary.toReceive) >= 0 ? 'positive' : 'negative'">
+              {{totalsAccountsSummary.forecastBalance - totalsAccountsSummary.toReceive | currency : '':''}}</span>
+          </div>
+          <div class="col-6 center">
+            <span
+              [ngClass]="totalsAccountsSummary && totalsAccountsSummary.toReceive >= 0 ? 'positive' : 'negative'">
+              {{totalsAccountsSummary!.toReceive | currency : '':''}}</span>
           </div>
         </div>
       </div>
@@ -124,15 +150,15 @@
 
       <div class="row center">
         <div class="row center saldos3">
-          <div class="col-4 center">
+          <div class="col-6 center">
             <span
               [ngClass]="totalsAccountsSummary && totalsAccountsSummary.forecastSpared >= 0 ? 'positive' : 'negative'"><b>
-                {{totalsAccountsSummary?.forecastSpared | currency : '':''}}</b></span>
+                {{totalsAccountsSummary!.forecastSpared | currency : '':''}}</b></span>
           </div>
-          <div class="col-4 center">
+          <div class="col-6 center">
             <span
               [ngClass]="totalsAccountsSummary && totalsAccountsSummary.availableSpared >= 0 ? 'positive' : 'negative'"><b>
-                {{totalsAccountsSummary?.availableSpared | currency : '':''}}</b></span>
+                {{totalsAccountsSummary!.availableSpared | currency : '':''}}</b></span>
           </div>
         </div>
       </div>
@@ -144,15 +170,15 @@
       </div>
 
       <div class="row center saldos3">
-        <div class="col-4 center">
+        <div class="col-6 center">
           <span
             [ngClass]="totalsAccountsSummary && totalsAccountsSummary.drawnBalance >= 0 ? 'positive' : 'negative'"><b>
-              {{totalsAccountsSummary?.drawnBalance | currency : '':''}}</b></span>
+              {{totalsAccountsSummary!.drawnBalance | currency : '':''}}</b></span>
         </div>
-        <div class="col-4 center">
+        <div class="col-6 center">
           <span
             [ngClass]="totalsAccountsSummary && totalsAccountsSummary.withoutDrawnBalance >= 0 ? 'positive' : 'negative'"><b>
-              {{totalsAccountsSummary?.withoutDrawnBalance | currency : '':''}}</b></span>
+              {{totalsAccountsSummary!.withoutDrawnBalance | currency : '':''}}</b></span>
         </div>
       </div>
 

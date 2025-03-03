@@ -5,4 +5,5 @@ export interface AccountsSummaryTotals {
 	availableSpared: number
 	drawnBalance: number
 	withoutDrawnBalance: number
+	toReceive: number
 }

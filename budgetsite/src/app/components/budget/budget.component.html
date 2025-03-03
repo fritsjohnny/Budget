@@ -174,7 +174,7 @@
         <span class="center accent">Despesas</span>
       </mat-expansion-panel-header>
       <div class="row center">
-        <div class="row center">
+        <div class="offset-1 col-10 center">
           <button
             class="default-button"
             color="accent"
@@ -186,6 +186,25 @@
           >
             <mat-icon class="default-icon">post_add</mat-icon>
           </button>
+        </div>
+        <div class="col-1">
+          <button
+            mat-icon-button
+            class="icon-actions ml-auto"
+            [matMenuTriggerFor]="menu"
+          >
+            <mat-icon class="expenses-actions">more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button
+              [id]="'menu-expenses'"
+              mat-menu-item
+              (click)="orderExpensesByPreviousMonth()"
+            >
+              <mat-icon id="menu-icon-expenses">sort_by_alpha</mat-icon>
+              <span>Organizar igual mês anterior</span>
+            </button>
+          </mat-menu>
         </div>
         <div class="table-container mat-elevation-z8 mytable2">
           <table
@@ -381,7 +400,7 @@
       </mat-expansion-panel-header>
 
       <div class="row center">
-        <div class="row center">
+        <div class="offset-1 col-10 center">
           <button
             class="default-button incomes-add"
             mat-mini-fab
@@ -393,6 +412,27 @@
             <mat-icon class="default-icon">post_add</mat-icon>
           </button>
         </div>
+        <div class="col-1">
+          <button
+            mat-icon-button
+            class="icon-actions ml-auto"
+            [matMenuTriggerFor]="menu"
+          >
+            <mat-icon class="incomes-actions">more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button
+              [id]="'menu-incomes2'"
+              mat-menu-item
+              (click)="orderIncomesByPreviousMonth()"
+            >
+              <mat-icon id="menu-icon-incomes2">sort_by_alpha</mat-icon>
+              <span>Organizar igual mês anterior</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+      <div class="row center">
         <div class="table-container mat-elevation-z8 mytable2">
           <table
             mat-table

@@ -1,27 +1,49 @@
 <div class="">
   <form [formGroup]="accountPostingFormGroup">
-
     <div class="cancel">
-      <button class="default-button" mat-mini-fab matTooltip="Cancelar" color="accent" aria-label="Cancelar"
-        (click)="cancel()">
+      <button
+        class="default-button"
+        mat-mini-fab
+        matTooltip="Cancelar"
+        color="accent"
+        aria-label="Cancelar"
+        (click)="cancel()"
+      >
         <mat-icon class="default-icon">close</mat-icon>
       </button>
     </div>
 
     <h2 mat-dialog-title>{{setTitle()}}</h2>
     <div mat-dialog-content>
-
       <div class="row">
-        <mat-radio-group name="typeFormControl" id="typeFormControl" formControlName="typeFormControl"
-          [(ngModel)]="accountPosting.type" (change)="onTypeChange()"
-          style="padding: 10px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+        <mat-radio-group
+          name="typeFormControl"
+          id="typeFormControl"
+          formControlName="typeFormControl"
+          [(ngModel)]="accountPosting.type"
+          (change)="onTypeChange()"
+          style="
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
           <div class="col-5">
-            <mat-radio-button value='R' style="padding-bottom: 5px;" cdkFocusInitial>Recebimento </mat-radio-button>
-            <mat-radio-button value='P'>Pagamento </mat-radio-button>
+            <mat-radio-button
+              value="R"
+              style="padding-bottom: 5px"
+              cdkFocusInitial
+              >Recebimento
+            </mat-radio-button>
+            <mat-radio-button value="P">Pagamento </mat-radio-button>
           </div>
           <div class="col-5">
-            <mat-radio-button value='Y' style="padding-bottom: 5px;">Rendimento</mat-radio-button>
-            <mat-radio-button value='C'>Troco</mat-radio-button>
+            <mat-radio-button value="Y" style="padding-bottom: 5px"
+              >Rendimento</mat-radio-button
+            >
+            <mat-radio-button value="C">Troco</mat-radio-button>
           </div>
         </mat-radio-group>
       </div>
@@ -35,10 +57,22 @@
 
       <div class="row">
         <div class="col-8">
-          <mat-form-field appearance="fill" floatLabel="always" style="width: 100%;">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100%"
+          >
             <mat-label>Conta</mat-label>
-            <mat-select mat-input [(ngModel)]="accountPosting.accountId" formControlName="accountIdFormControl">
-              <mat-option *ngFor="let c of accountPosting.accountsList" [value]="c.id">{{ c.name }}</mat-option>
+            <mat-select
+              mat-input
+              [(ngModel)]="accountPosting.accountId"
+              formControlName="accountIdFormControl"
+            >
+              <mat-option
+                *ngFor="let c of accountPosting.accountsList"
+                [value]="c.id"
+                >{{ c.name }}</mat-option
+              >
             </mat-select>
           </mat-form-field>
         </div>
@@ -46,8 +80,11 @@
 
       <div class="row">
         <div class="col-8">
-          <app-datepickerinput #datepickerinput [currentDate]="accountPosting.date"
-            (currentDateChanged)="currentDateChanged($event)">
+          <app-datepickerinput
+            #datepickerinput
+            [currentDate]="accountPosting.date"
+            (currentDateChanged)="currentDateChanged($event)"
+          >
           </app-datepickerinput>
         </div>
       </div>
@@ -55,9 +92,18 @@
       <div class="row">
         <mat-form-field appearance="fill">
           <mat-label>Descrição</mat-label>
-          <input type="text" id="descriptionFormControl" required matInput formControlName="descriptionFormControl"
-            [(ngModel)]="accountPosting.description" [readonly]="accountPosting.type == 'Y'">
-          <mat-error *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')">
+          <input
+            type="text"
+            id="descriptionFormControl"
+            required
+            matInput
+            formControlName="descriptionFormControl"
+            [(ngModel)]="accountPosting.description"
+            [readonly]="accountPosting.type == 'Y'"
+          />
+          <mat-error
+            *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
+          >
             Campo <strong>obrigatório</strong>.
           </mat-error>
         </mat-form-field>
@@ -65,22 +111,46 @@
 
       <div class="row">
         <div class="col">
-          <mat-form-field appearance="fill" floatLabel="always" style="width:120px !important">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 120px !important"
+          >
             <mat-label>Valor</mat-label>
-            <input matInput inputmode="numeric" currencyMask formControlName="amountFormControl"
-              [(ngModel)]="accountPosting.amount" placeholder="0" autocomplete="off"
-              (ngModelChange)="onAmountChanged($event)">
-            <mat-error *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')">
+            <input
+              matInput
+              inputmode="numeric"
+              currencyMask
+              formControlName="amountFormControl"
+              [(ngModel)]="accountPosting.amount"
+              placeholder="0"
+              autocomplete="off"
+              (ngModelChange)="onAmountChanged($event)"
+            />
+            <mat-error
+              *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')"
+            >
               Campo <strong>obrigatório</strong>.
             </mat-error>
           </mat-form-field>
         </div>
         <div class="col" *ngIf="accountPosting.type == 'Y'">
-          <mat-form-field appearance="fill" floatLabel="always" style="width:120px !important">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 120px !important"
+          >
             <mat-label>Saldo Atual</mat-label>
-            <input matInput inputmode="numeric" currencyMask formControlName="totalBalanceFormControl"
-              [(ngModel)]="totalBalance" placeholder="0" autocomplete="off"
-              (ngModelChange)="onTotalBalanceChanged($event)">
+            <input
+              matInput
+              inputmode="numeric"
+              currencyMask
+              formControlName="totalBalanceFormControl"
+              [(ngModel)]="totalBalance"
+              placeholder="0"
+              autocomplete="off"
+              (ngModelChange)="onTotalBalanceChanged($event)"
+            />
           </mat-form-field>
         </div>
       </div>
@@ -88,9 +158,17 @@
       <div class="row">
         <mat-form-field appearance="fill" floatLabel="always">
           <mat-label>Receita</mat-label>
-          <mat-select mat-input [(ngModel)]="accountPosting.incomeId" formControlName="incomeIdFormControl">
+          <mat-select
+            mat-input
+            [(ngModel)]="accountPosting.incomeId"
+            formControlName="incomeIdFormControl"
+          >
             <mat-option>-- Nenhuma --</mat-option>
-            <mat-option *ngFor="let i of accountPosting.incomesList" [value]="i.id">{{ i.description }}</mat-option>
+            <mat-option
+              *ngFor="let i of accountPosting.incomesList"
+              [value]="i.id"
+              >{{ i.description }}</mat-option
+            >
           </mat-select>
         </mat-form-field>
       </div>
@@ -98,35 +176,61 @@
       <div class="row">
         <mat-form-field appearance="fill" floatLabel="always">
           <mat-label>Despesa</mat-label>
-          <mat-select mat-input [(ngModel)]="accountPosting.expenseId" formControlName="expenseIdFormControl">
+          <mat-select
+            mat-input
+            [(ngModel)]="accountPosting.expenseId"
+            formControlName="expenseIdFormControl"
+          >
             <mat-option>-- Nenhuma --</mat-option>
-            <mat-option *ngFor="let i of accountPosting.expensesList" [value]="i.id">{{ i.description }}</mat-option>
+            <mat-option
+              *ngFor="let i of accountPosting.expensesList"
+              [value]="i.id"
+              >{{ i.description }}</mat-option
+            >
           </mat-select>
         </mat-form-field>
       </div>
 
-
       <div class="row">
         <mat-form-field appearance="fill">
           <mat-label>Comentário</mat-label>
-          <textarea matInput [(ngModel)]="accountPosting.note" formControlName="noteFormControl"></textarea>
+          <textarea
+            matInput
+            [(ngModel)]="accountPosting.note"
+            formControlName="noteFormControl"
+          ></textarea>
         </mat-form-field>
       </div>
     </div>
     <div class="row">
       <div class="col">
         <div mat-dialog-actions>
-          <button [disabled]="!accountPostingFormGroup.valid" class="default-button" mat-mini-fab matTooltip="Salvar"
-            matTooltipPosition="right" class="bg-primary" aria-label="Salvar" [mat-dialog-close]="accountPosting"
-            (click)="save()">
+          <button
+            [disabled]="!accountPostingFormGroup.valid"
+            class="default-button"
+            mat-mini-fab
+            matTooltip="Salvar"
+            matTooltipPosition="right"
+            class="bg-primary"
+            aria-label="Salvar"
+            [mat-dialog-close]="accountPosting"
+            (click)="save()"
+          >
             <mat-icon class="default-icon">save</mat-icon>
           </button>
         </div>
       </div>
       <div class="col" *ngIf="accountPosting.editing">
         <div mat-dialog-actions>
-          <button class="default-button" mat-mini-fab matTooltip="Excluir" matTooltipPosition="left" color="warn"
-            aria-label="Excluir" (click)="delete()">
+          <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="Excluir"
+            matTooltipPosition="left"
+            color="warn"
+            aria-label="Excluir"
+            (click)="delete()"
+          >
             <mat-icon class="default-icon">delete</mat-icon>
           </button>
         </div>

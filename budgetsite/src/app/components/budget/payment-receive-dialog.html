@@ -87,6 +87,71 @@
       </div>
 
       <div class="row">
+        <div class="col" style="display: flex; gap: 3px">
+          <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="+1"
+            color="primary"
+            aria-label="+1"
+            (click)="setSuggestedAmount(1)"
+          >
+            +1
+          </button>
+          <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="+3"
+            color="primary"
+            aria-label="+3"
+            (click)="setSuggestedAmount(3)"
+          >
+            +3
+          </button>
+          <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="+5"
+            color="primary"
+            aria-label="+5"
+            (click)="setSuggestedAmount(5)"
+          >
+            +5
+          </button>
+          <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="+10"
+            color="primary"
+            aria-label="+10"
+            (click)="setSuggestedAmount(10)"
+          >
+            +10
+          </button>
+          <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="+50"
+            color="primary"
+            aria-label="+50"
+            (click)="setSuggestedAmount(50)"
+          >
+            +50
+          </button>
+          <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="+100"
+            color="primary"
+            aria-label="+100"
+            (click)="setSuggestedAmount(100)"
+          >
+            +100
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
         <mat-form-field appearance="fill" floatLabel="always">
           <mat-label>Conta</mat-label>
           <mat-select

@@ -122,6 +122,10 @@ export class PaymentReceiveDialog implements OnInit, AfterViewInit {
   }
 
   setTotalAmount() {
-    this.accountPosting.amount = this.accountPosting.remaining
+    this.accountPosting.amount = this.accountPosting.remaining;
+  }
+
+  setSuggestedAmount(suggestedAmount: number) {
+    this.accountPosting.amount += suggestedAmount;
   }
 }

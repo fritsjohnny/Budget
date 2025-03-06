@@ -30,4 +30,5 @@ export interface CardsPostings {
   inTheCycle?: boolean;
   repeatParcels?: boolean;
   monthsToRepeat?: number;
+  payWithCard?: boolean;
 }

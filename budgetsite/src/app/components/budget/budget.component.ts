@@ -985,6 +985,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         cardsList: this.cardsList,
         editing: false,
         adding: true,
+        payWithCard: true,
       },
     });
 

@@ -81,10 +81,12 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       this.cardPosting.date = this.datepickerinput.date.value._d;
     }
 
-    const lastCardUsed = localStorage.getItem('lastCardUsed');
+    if (this.cardPosting.payWithCard) {
+      const lastCardUsed = localStorage.getItem('lastCardUsed');
 
-    if (lastCardUsed) {
-      this.cardPosting.cardId = Number(lastCardUsed);
+      if (lastCardUsed) {
+        this.cardPosting.cardId = Number(lastCardUsed);
+      }
     }
 
     this.cd.detectChanges();

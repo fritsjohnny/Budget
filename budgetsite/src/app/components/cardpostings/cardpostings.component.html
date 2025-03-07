@@ -90,6 +90,11 @@
     >Apenas minhas compras (Ciclo)</mat-checkbox
   >
 </div>
+<div class="row">
+  <mat-checkbox *ngIf="hideProgress" [(ngModel)]="checkCard"
+    >Conferir Cartão</mat-checkbox
+  >
+</div>
 
 <div class="row">
   <mat-accordion
@@ -111,8 +116,24 @@
       </mat-expansion-panel-header>
       <!-- Add button -->
       <div class="row center" *ngIf="hideProgress">
-        <div class="col-2">
-          <mat-checkbox [(ngModel)]="checkCard">Conferir Cartão</mat-checkbox>
+        <div class="col-1">
+          <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="Ordernar"
+            color="primary"
+            aria-label="Ordernar"
+            (click)="sort()"
+          >
+            <span
+              class="material-icons"
+              mat-mini-fab
+              color="accent"
+              style="user-select: none"
+            >
+              sort_by_alpha
+            </span>
+          </button>
         </div>
         <div class="col center">
           <button
@@ -127,33 +148,24 @@
             <mat-icon class="default-icon">post_add</mat-icon>
           </button>
         </div>
-        <div class="col-1">
-          <span
-            class="material-icons"
-            mat-mini-fab
-            matTooltip="Ordernar"
-            matTooltipPosition="right"
-            color="accent"
-            aria-label="Ordernar"
-            style="user-select: none"
-            (click)="sort()"
-          >
-            sort_by_alpha
-          </span>
-        </div>
-        <div class="col-2 right">
-          <span
-            class="default-button center"
+        <div class="col-1 right">
+          <button
+            class="default-button d-flex justify-content-center align-items-center"
             mat-mini-fab
             matTooltip="Filtrar"
-            matTooltipPosition="right"
-            color="accent"
+            color="primary"
             aria-label="Filtrar"
-            style="user-select: none"
             (click)="openFilter()"
           >
-            <mat-icon class="default-icon">search</mat-icon>
-          </span>
+            <span
+              class="default-button center"
+              mat-mini-fab
+              color="accent"
+              style="user-select: none"
+            >
+              <mat-icon class="default-icon">search</mat-icon>
+            </span>
+          </button>
         </div>
       </div>
 

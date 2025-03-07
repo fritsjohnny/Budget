@@ -31,4 +31,5 @@ export interface CardsPostings {
   repeatParcels?: boolean;
   monthsToRepeat?: number;
   payWithCard?: boolean;
+  fixed?: boolean;
 }

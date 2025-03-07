@@ -32,4 +32,5 @@ export interface Expenses {
   peopleList?: People[];
   overdue?: boolean;
   duetoday?: boolean;
+  fixed?: boolean;
 }

@@ -649,6 +649,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         cardsList: this.cardsList,
         categoriesList: this.categoriesList,
         peopleList: this.peopleList,
+        fixed: expense.fixed,
       },
     });
 

@@ -685,6 +685,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                   t.peopleId = result.peopleId;
                   t.overdue = this.overDue(t);
                   t.duetoday = this.dueToday(t);
+                  t.fixed = result.fixed;
                 });
 
               this.expenses = [

@@ -230,6 +230,15 @@
 
       <p>
         <mat-checkbox
+          [(ngModel)]="expenses.fixed"
+          formControlName="fixedFormControl"
+        >
+          Despesa Fixa
+        </mat-checkbox>
+      </p>
+
+      <p>
+        <mat-checkbox
           [(ngModel)]="expenses.scheduled"
           formControlName="scheduledFormControl"
         >

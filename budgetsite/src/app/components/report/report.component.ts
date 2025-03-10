@@ -7,25 +7,28 @@ import { MatSelectChange } from '@angular/material/select';
   styleUrls: ['./report.component.scss'],
 })
 export class ReportComponent implements OnInit {
-  hideReportProgress = true;
   initialReference: string | undefined;
   finalReference: string | undefined;
   initialMonthName: string | undefined;
   finalMonthName: string | undefined;
-  reportPanelExpanded: boolean = false;
+  reportPanelExpanded: boolean = true;
+  selectedReportType: number | undefined;
   reportType: number | undefined;
   reports = [
     { id: 1, name: 'Despesas Fixas' },
     { id: 2, name: 'Despesas de Terceiros' },
   ];
+  showReport: boolean = false;
 
   constructor() {}
 
   ngOnInit(): void {
-    this.reportPanelExpanded =
-      localStorage.getItem('reportPanelExpanded') === 'true';
+    // this.reportPanelExpanded =
+    //   localStorage.getItem('reportPanelExpanded') === 'true';
 
-    this.reportType = parseInt(localStorage.getItem('lastSelectedReport')!);
+    this.selectedReportType = parseInt(
+      localStorage.getItem('lastSelectedReport')!
+    );
   }
 
   initialReferenceChanges(reference: string) {
@@ -49,11 +52,21 @@ export class ReportComponent implements OnInit {
   }
 
   reportTypeChanges(event: MatSelectChange) {
-    this.reportType = event.value;
-    localStorage.setItem('lastSelectedReport', this.reportType!.toString());
+    this.selectedReportType = event.value;
+    localStorage.setItem(
+      'lastSelectedReport',
+      this.selectedReportType!.toString()
+    );
+    this.reportType = undefined;
   }
 
   generateReport() {
-    this.hideReportProgress = false;
+    this.reportPanelExpanded = false; // Collapse the panel
+    this.showReport = false;
+
+    setTimeout(() => {
+      this.reportType = this.selectedReportType;
+      this.showReport = true; // Força a re-renderização
+    });
   }
 }

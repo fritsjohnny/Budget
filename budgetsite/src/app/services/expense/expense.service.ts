@@ -76,6 +76,18 @@ export class ExpenseService {
       );
   }
 
+  readByReferences(
+    initialReference: string,
+    finallReference: string
+  ): Observable<Expenses[]> {
+    const url = `${ApiUrls.expenses}/references?InitialReference=${initialReference}&FinalReference=${finallReference}`;
+
+    return this.http.get<Expenses[]>(url).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
   update(expense: Expenses): Observable<Expenses> {
     return this.http
       .put<Expenses>(

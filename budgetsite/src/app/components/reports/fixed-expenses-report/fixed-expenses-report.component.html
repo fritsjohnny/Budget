@@ -1,0 +1,82 @@
+<div class="row center" *ngIf="!showReportProgress">
+  <div class="table-container mat-elevation-z8 mytable2">
+    <table
+      mat-table
+      [dataSource]="expenses"
+      cdkDropList
+      [cdkDropListData]="expenses"
+    >
+      <!-- Descrição Column -->
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Descrição</th>
+        <td
+          mat-cell
+          *matCellDef="let row"
+          [ngClass]="{
+            'without-category': row.cardId == null && row.categoryId == null
+          }"
+        >
+          <div style="display: flex">
+            {{ row.description
+            }}<span *ngIf="row.parcels > 1"
+              >&nbsp;({{ row.parcelNumber }}/{{ row.parcels }})
+            </span>
+            <span *ngIf="row.scheduled" class="material-icons scheduled"
+              >schedule</span
+            >
+          </div>
+          <div class="small-text" *ngIf="row.dueDate !== null">
+            <span
+              ><i class="red"
+                >Venc.:&nbsp;{{ row.dueDate | date : "dd/MM" }}</i
+              ></span
+            >
+          </div>
+        </td>
+        <td mat-footer-cell *matFooterCellDef>Total</td>
+      </ng-container>
+
+      <!-- Valor Column -->
+      <ng-container matColumnDef="toPay">
+        <th mat-header-cell *matHeaderCellDef>Valor</th>
+        <td
+          mat-cell
+          *matCellDef="let row"
+          [ngClass]="{
+            'without-category': row.cardId == null && row.categoryId == null
+          }"
+        >
+          {{ row.toPay | currency : "" : "" }}
+        </td>
+        <td mat-footer-cell *matFooterCellDef>
+          {{ toPayTotal | currency : "" : "" }}
+        </td>
+      </ng-container>
+
+      <tr
+        class="expenses mat-header-cell-expenses"
+        mat-header-row
+        *matHeaderRowDef="displayedExpensesColumns; sticky: false"
+      ></tr>
+      <tr
+        class="expenses"
+        mat-row
+        *matRowDef="let row; columns: displayedExpensesColumns"
+        cdkDrag
+        [cdkDragData]="row"
+        [ngClass]="{ 'card-yield-checked': row.overdue || row.duetoday }"
+      ></tr>
+      <tr
+        class="expenses"
+        mat-footer-row
+        *matFooterRowDef="displayedExpensesColumns; sticky: false"
+      ></tr>
+    </table>
+  </div>
+</div>
+<!-- SPINNER -->
+<div class="row center" style="margin-top: 10px">
+  <div class="row justify-content-center">
+    <mat-spinner color="accent" *ngIf="showReportProgress"> </mat-spinner>
+  </div>
+</div>

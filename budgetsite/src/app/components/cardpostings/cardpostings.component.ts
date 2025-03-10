@@ -9,9 +9,7 @@ import {
 } from '@angular/core';
 import { CardsPostings } from '../../models/cardspostings.model';
 import { CardPostingsService } from '../../services/cardpostings/cardpostings.service';
-import {
-  MatDialog,
-} from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { People } from 'src/app/models/people.model';
 import { PeopleService } from 'src/app/services/people/people.service';
 import { CardsPostingsDTO } from 'src/app/models/cardspostingsdto.model';
@@ -433,6 +431,7 @@ export class CardPostingsComponent implements OnInit {
         cardsList: this.cardsList,
         editing: this.editing,
         deleting: false,
+        fixed: cardPosting.fixed,
       },
     });
 
@@ -478,6 +477,7 @@ export class CardPostingsComponent implements OnInit {
                   t.note = result.note;
                   t.people = result.people;
                   t.categoryId = result.categoryId;
+                  t.fixed = result.fixed;
                 });
 
               this.cardpostings = [
@@ -535,7 +535,10 @@ export class CardPostingsComponent implements OnInit {
         reference: this.reference,
         cardId: this.cardId,
         peopleId: cardspostingsdto.person,
-        amount: cardspostingsdto.remaining == cardspostingsdto.toReceive ? cardspostingsdto.toReceive : null,
+        amount:
+          cardspostingsdto.remaining == cardspostingsdto.toReceive
+            ? cardspostingsdto.toReceive
+            : null,
         change: null,
         toReceive: cardspostingsdto.toReceive,
         received: cardspostingsdto.received,
@@ -639,5 +642,3 @@ export class CardPostingsComponent implements OnInit {
     this.getFilteredTotalAmount();
   }
 }
-
-

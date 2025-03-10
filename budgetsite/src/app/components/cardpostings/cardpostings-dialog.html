@@ -199,6 +199,15 @@
 
       <p>
         <mat-checkbox
+          [(ngModel)]="cardPosting.fixed"
+          formControlName="fixedFormControl"
+        >
+          Despesa Fixa
+        </mat-checkbox>
+      </p>
+
+      <p>
+        <mat-checkbox
           [(ngModel)]="cardPosting.generateParcels"
           formControlName="generateParcelsFormControl"
           [disabled]="disableCheck"

@@ -15,7 +15,8 @@ export class FixedExpensesReportComponent implements OnInit {
   showReportProgress = false;
   expenses!: Expenses[];
   toPayTotal: number = 0;
-  displayedExpensesColumns = ['description', 'toPay'];
+  displayedExpensesColumns = ['index', 'description', 'toPay'];
+  dataLength: number = 0;
 
   constructor(private expenseService: ExpenseService) {}
 
@@ -34,6 +35,8 @@ export class FixedExpensesReportComponent implements OnInit {
           this.expenses = expenses.filter((t) => t.fixed);
 
           this.getExpensesTotals();
+
+          this.dataLength = this.expenses.length;
         },
         error: () => {
           this.getExpensesTotals();

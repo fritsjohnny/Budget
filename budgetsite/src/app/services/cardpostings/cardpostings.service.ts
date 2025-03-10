@@ -85,6 +85,18 @@ export class CardPostingsService {
       );
   }
 
+  readByReferences(
+    initialReference: string,
+    finallReference: string
+  ): Observable<CardsPostingsDTO[]> {
+    const url = `${ApiUrls.cardspostings}/references?InitialReference=${initialReference}&FinalReference=${finallReference}`;
+
+    return this.http.get<CardsPostingsDTO[]>(url).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
   update(cardPosting: CardsPostings): Observable<CardsPostings> {
     cardPosting.others = cardPosting.peopleId ? true : false;
 

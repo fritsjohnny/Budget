@@ -6,6 +6,20 @@
       cdkDropList
       [cdkDropListData]="expenses"
     >
+      <!-- # Column -->
+      <ng-container matColumnDef="index">
+        <th mat-header-cell *matHeaderCellDef>#</th>
+        <td
+          mat-cell
+          *matCellDef="let row; let i = index"
+          [ngClass]="{
+            'without-category': row.cardId == null && row.categoryId == null
+          }"
+        >
+          {{ i + 1 }}
+        </td>
+        <td mat-footer-cell *matFooterCellDef>Total</td>
+      </ng-container>
       <!-- Descrição Column -->
       <ng-container matColumnDef="description">
         <th mat-header-cell *matHeaderCellDef>Descrição</th>
@@ -33,9 +47,8 @@
             >
           </div>
         </td>
-        <td mat-footer-cell *matFooterCellDef>Total</td>
+        <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
-
       <!-- Valor Column -->
       <ng-container matColumnDef="toPay">
         <th mat-header-cell *matHeaderCellDef>Valor</th>
@@ -62,8 +75,6 @@
         class="expenses"
         mat-row
         *matRowDef="let row; columns: displayedExpensesColumns"
-        cdkDrag
-        [cdkDragData]="row"
         [ngClass]="{ 'card-yield-checked': row.overdue || row.duetoday }"
       ></tr>
       <tr

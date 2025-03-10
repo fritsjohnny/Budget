@@ -78,6 +78,8 @@ import { CurrencyMaskConfig, CurrencyMaskModule, CURRENCY_MASK_CONFIG } from 'ng
 import { UserRegisterComponent } from './components/userregister/userregister.component';
 import { UserComponent } from './components/user/user.component';
 import { UserRegisterViewComponent } from './views/userregister-view/userregister-view.component';
+import { FixedExpensesReportComponent } from './components/reports/fixed-expenses-report/fixed-expenses-report.component';
+import { ThirdPartyExpensesReportComponent } from './components/reports/third-party-expenses-report/third-party-expenses-report.component';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -127,6 +129,8 @@ registerLocaleData(localePt);
     UserRegisterViewComponent,
     ReportViewComponent,
     ReportComponent,
+    FixedExpensesReportComponent,
+    ThirdPartyExpensesReportComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,20 @@
+.table-container {
+  width: 100%;
+  height: auto;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.mat-column-description,
+.mat-column-description-detail {
+  width: 500px;
+}
+
+.mat-column-toPay {
+  width: 125px;
+  text-align: right;
+  padding-right: 5px;
+}

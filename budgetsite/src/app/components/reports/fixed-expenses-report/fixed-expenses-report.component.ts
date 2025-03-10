@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
+import { CardsPostings } from 'src/app/models/cardspostings.model';
 import { Expenses } from 'src/app/models/expenses.model';
+import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
 
 @Component({
@@ -13,40 +15,59 @@ export class FixedExpensesReportComponent implements OnInit {
   @Input() finalReference: string | undefined;
 
   showReportProgress = false;
-  expenses!: Expenses[];
+  data!: any[];
   toPayTotal: number = 0;
-  displayedExpensesColumns = ['index', 'description', 'toPay'];
+  displayedDataColumns = ['index', 'description', 'value'];
   dataLength: number = 0;
 
-  constructor(private expenseService: ExpenseService) {}
+  constructor(
+    private expenseService: ExpenseService,
+    private cardPostingsService: CardPostingsService
+  ) {}
 
   ngOnInit(): void {
-    this.getExpenses();
+    this.getExpensesAndCardsPostings();
   }
 
-  getExpenses() {
+  getExpensesAndCardsPostings() {
     this.showReportProgress = true;
 
-    this.expenseService
-      .readByReferences(this.initialReference!, this.finalReference!)
+    forkJoin({
+      expenses: this.expenseService.readByReferences(
+        this.initialReference!,
+        this.finalReference!
+      ),
+      cardPostings: this.cardPostingsService.readByReferences(
+        this.initialReference!,
+        this.finalReference!
+      ),
+    })
       .pipe(finalize(() => (this.showReportProgress = false)))
       .subscribe({
-        next: (expenses) => {
-          this.expenses = expenses.filter((t) => t.fixed);
+        next: ({ expenses, cardPostings }) => {
+          this.data = [
+            ...expenses.filter((e) => e.fixed),
+            ...cardPostings.filter((cp) => cp.fixed),
+          ].map((item: Expenses | CardsPostings) => ({
+            Description:
+              (item as Expenses).description ??
+              (item as CardsPostings).description,
+            Value:
+              (item as Expenses).toPay ?? (item as CardsPostings).amount ?? 0,
+          }));
 
-          this.getExpensesTotals();
+          this.dataLength = this.data.length;
 
-          this.dataLength = this.expenses.length;
+          this.getDataTotals();
         },
-        error: () => {
-          this.getExpensesTotals();
-        },
+        error: () => this.getDataTotals(),
       });
   }
 
-  getExpensesTotals() {
-    this.toPayTotal = this.expenses
-      ? this.expenses.map((t) => t.toPay).reduce((acc, value) => acc + value, 0)
+  getDataTotals() {
+    debugger;
+    this.toPayTotal = this.data
+      ? this.data.map((t) => t.Value).reduce((acc, value) => acc + value, 0)
       : 0;
   }
 }

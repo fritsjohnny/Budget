@@ -1,21 +1,10 @@
 <div class="row center" *ngIf="!showReportProgress">
   <div class="table-container mat-elevation-z8 mytable2">
-    <table
-      mat-table
-      [dataSource]="expenses"
-      cdkDropList
-      [cdkDropListData]="expenses"
-    >
+    <table mat-table [dataSource]="data">
       <!-- # Column -->
       <ng-container matColumnDef="index">
         <th mat-header-cell *matHeaderCellDef>#</th>
-        <td
-          mat-cell
-          *matCellDef="let row; let i = index"
-          [ngClass]="{
-            'without-category': row.cardId == null && row.categoryId == null
-          }"
-        >
+        <td mat-cell *matCellDef="let row; let i = index">
           {{ i + 1 }}
         </td>
         <td mat-footer-cell *matFooterCellDef>Total</td>
@@ -23,43 +12,18 @@
       <!-- Descrição Column -->
       <ng-container matColumnDef="description">
         <th mat-header-cell *matHeaderCellDef>Descrição</th>
-        <td
-          mat-cell
-          *matCellDef="let row"
-          [ngClass]="{
-            'without-category': row.cardId == null && row.categoryId == null
-          }"
-        >
+        <td mat-cell *matCellDef="let row">
           <div style="display: flex">
-            {{ row.description
-            }}<span *ngIf="row.parcels > 1"
-              >&nbsp;({{ row.parcelNumber }}/{{ row.parcels }})
-            </span>
-            <span *ngIf="row.scheduled" class="material-icons scheduled"
-              >schedule</span
-            >
-          </div>
-          <div class="small-text" *ngIf="row.dueDate !== null">
-            <span
-              ><i class="red"
-                >Venc.:&nbsp;{{ row.dueDate | date : "dd/MM" }}</i
-              ></span
-            >
+            {{ row.Description }}
           </div>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
       <!-- Valor Column -->
-      <ng-container matColumnDef="toPay">
+      <ng-container matColumnDef="value">
         <th mat-header-cell *matHeaderCellDef>Valor</th>
-        <td
-          mat-cell
-          *matCellDef="let row"
-          [ngClass]="{
-            'without-category': row.cardId == null && row.categoryId == null
-          }"
-        >
-          {{ row.toPay | currency : "" : "" }}
+        <td mat-cell *matCellDef="let row">
+          {{ row.Value | currency : "" : "" }}
         </td>
         <td mat-footer-cell *matFooterCellDef>
           {{ toPayTotal | currency : "" : "" }}
@@ -67,20 +31,13 @@
       </ng-container>
 
       <tr
-        class="expenses mat-header-cell-expenses"
         mat-header-row
-        *matHeaderRowDef="displayedExpensesColumns; sticky: false"
+        *matHeaderRowDef="displayedDataColumns; sticky: false"
       ></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedDataColumns"></tr>
       <tr
-        class="expenses"
-        mat-row
-        *matRowDef="let row; columns: displayedExpensesColumns"
-        [ngClass]="{ 'card-yield-checked': row.overdue || row.duetoday }"
-      ></tr>
-      <tr
-        class="expenses"
         mat-footer-row
-        *matFooterRowDef="displayedExpensesColumns; sticky: false"
+        *matFooterRowDef="displayedDataColumns; sticky: false"
       ></tr>
     </table>
   </div>

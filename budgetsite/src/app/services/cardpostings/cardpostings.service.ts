@@ -88,10 +88,10 @@ export class CardPostingsService {
   readByReferences(
     initialReference: string,
     finallReference: string
-  ): Observable<CardsPostingsDTO[]> {
+  ): Observable<CardsPostings[]> {
     const url = `${ApiUrls.cardspostings}/references?InitialReference=${initialReference}&FinalReference=${finallReference}`;
 
-    return this.http.get<CardsPostingsDTO[]>(url).pipe(
+    return this.http.get<CardsPostings[]>(url).pipe(
       map((obj) => obj),
       catchError((e) => this.messenger.errorHandler(e))
     );

@@ -1,0 +1,8 @@
+.mat-panel-report {
+  margin-top: 10px !important;
+  padding-bottom: -50px !important;
+}
+
+::ng-deep mat-expansion-panel-header span.mat-content {
+  justify-content: center;
+}

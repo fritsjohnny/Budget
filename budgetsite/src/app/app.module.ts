@@ -66,6 +66,8 @@ import { SummaryViewComponent } from './views/summary-view/summary-view.componen
 import { CategoryComponent } from './components/category/category.component';
 import { DatepickerreferenceComponent } from './shared/datepickerreference/datepickerreference.component';
 import { PeopleComponent } from './components/people/people.component';
+import { ReportViewComponent } from './views/report-view/report-view.component';
+import { ReportComponent } from './components/report/report.component';
 
 import { MAT_COLOR_FORMATS, NgxMatColorPickerModule, NGX_MAT_COLOR_FORMATS } from '@angular-material-components/color-picker';
 import { AddvalueComponent } from './shared/addvalue/addvalue.component';
@@ -123,6 +125,8 @@ registerLocaleData(localePt);
     UserRegisterComponent,
     UserComponent,
     UserRegisterViewComponent,
+    ReportViewComponent,
+    ReportComponent,
   ],
   imports: [
     BrowserModule,

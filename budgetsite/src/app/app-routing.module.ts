@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { LoginViewComponent } from "./views/login-view/login-view.component";
+import { LoginViewComponent } from './views/login-view/login-view.component';
 import { BudgetViewComponent } from './views/budget-view/budget-view.component';
 import { AccountViewComponent } from './views/account-view/account-view.component';
 import { CardViewComponent } from './views/card-view/card-view.component';
@@ -11,53 +11,59 @@ import { UnautheticatedUserGuard } from './services/guards/unautheticated-user.g
 import { AutheticatedUserGuard } from './services/guards/autheticated-user.guard';
 import { UserComponent } from './components/user/user.component';
 import { UserRegisterViewComponent } from './views/userregister-view/userregister-view.component';
+import { ReportViewComponent } from './views/report-view/report-view.component';
 
 const routes: Routes = [
   {
-    path: "login",
+    path: 'login',
     component: LoginViewComponent,
-    canActivate: [UnautheticatedUserGuard]
+    canActivate: [UnautheticatedUserGuard],
   },
   {
-    path: "usersregister",
+    path: 'usersregister',
     component: UserRegisterViewComponent,
-    canActivate: [UnautheticatedUserGuard]
+    canActivate: [UnautheticatedUserGuard],
   },
   {
-    path: "",
+    path: '',
     component: NavComponent,
     canActivate: [AutheticatedUserGuard],
     children: [
       {
-        path: "",
-        component: SummaryViewComponent
+        path: '',
+        component: SummaryViewComponent,
       },
       {
-        path: "summary",
-        component: SummaryViewComponent
+        path: 'summary',
+        component: SummaryViewComponent,
       },
       {
-        path: "budget",
-        component: BudgetViewComponent
+        path: 'budget',
+        component: BudgetViewComponent,
       },
       {
-        path: "accounts",
-        component: AccountViewComponent
+        path: 'accounts',
+        component: AccountViewComponent,
       },
       {
-        path: "cards",
-        component: CardViewComponent
+        path: 'cards',
+        component: CardViewComponent,
       },
       {
-        path: "users",
-        component: UserComponent
-      }
-    ]
-  }
+        path: 'users',
+        component: UserComponent,
+      },
+
+      {
+        path: 'reports',
+        component: ReportViewComponent,
+      },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, { useHash: true })],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

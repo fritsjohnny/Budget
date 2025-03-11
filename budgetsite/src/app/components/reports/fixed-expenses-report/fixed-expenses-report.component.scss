@@ -8,12 +8,16 @@ table {
   width: 100%;
 }
 
+// th,
+// td {
+//   white-space: nowrap; /* Evita quebra de texto */
+// }
+
 .mat-column-index {
   width: 50px;
 }
 
-.mat-column-description,
-.mat-column-description-detail {
+.mat-column-description {
   width: 500px;
 }
 
@@ -21,4 +25,9 @@ table {
   width: 125px;
   text-align: right;
   padding-right: 5px;
+}
+
+.mat-column-category {
+  width: 500px;
+  padding-left: 10px;
 }

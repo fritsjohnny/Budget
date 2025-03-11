@@ -56,6 +56,25 @@
           {{ total | currency : "" : "" }}
         </td>
       </ng-container>
+      <!-- Descrição Column -->
+      <ng-container matColumnDef="category">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          arrowPosition="after"
+          start="asc"
+          sortActionDescription="Ordernar por Categoria"
+        >
+          Categoria
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <div style="display: flex">
+            {{ row.category }}
+          </div>
+        </td>
+        <td mat-footer-cell *matFooterCellDef></td>
+      </ng-container>
 
       <tr
         mat-header-row

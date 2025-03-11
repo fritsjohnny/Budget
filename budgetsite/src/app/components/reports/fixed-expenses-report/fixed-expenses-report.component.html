@@ -1,6 +1,7 @@
 <div class="row center" *ngIf="!showReportProgress">
   <div class="table-container mat-elevation-z8 mytable2">
-    <table mat-table [dataSource]="data">
+    <table mat-table
+    [dataSource]="data">
       <!-- # Column -->
       <ng-container matColumnDef="index">
         <th mat-header-cell *matHeaderCellDef>#</th>

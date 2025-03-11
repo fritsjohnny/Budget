@@ -1,5 +1,13 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { finalize, forkJoin } from 'rxjs';
 import { CardsPostings } from 'src/app/models/cardspostings.model';
 import { Expenses } from 'src/app/models/expenses.model';
@@ -11,15 +19,19 @@ import { ExpenseService } from 'src/app/services/expense/expense.service';
   templateUrl: './fixed-expenses-report.component.html',
   styleUrls: ['./fixed-expenses-report.component.scss'],
 })
-export class FixedExpensesReportComponent implements OnInit {
+export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
   @Input() initialReference: string | undefined;
   @Input() finalReference: string | undefined;
 
+  @ViewChild('sortReport') sortReport!: MatSort;
+
   showReportProgress = false;
   data!: any[];
-  toPayTotal: number = 0;
+  total: number = 0;
   displayedDataColumns = ['index', 'description', 'value'];
   dataLength: number = 0;
+
+  dataSourceReport = new MatTableDataSource(this.data);
 
   constructor(
     private expenseService: ExpenseService,
@@ -27,7 +39,9 @@ export class FixedExpensesReportComponent implements OnInit {
     private _liveAnnouncer: LiveAnnouncer
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void {
     this.getExpensesAndCardsPostings();
   }
 
@@ -51,12 +65,24 @@ export class FixedExpensesReportComponent implements OnInit {
             ...expenses.filter((e) => e.fixed),
             ...cardPostings.filter((cp) => cp.fixed),
           ].map((item: Expenses | CardsPostings) => ({
-            Description:
+            description:
               (item as Expenses).description ??
               (item as CardsPostings).description,
-            Value:
+            value:
               (item as Expenses).toPay ?? (item as CardsPostings).amount ?? 0,
           }));
+
+          this.dataSourceReport = new MatTableDataSource(this.data);
+
+          this.dataSourceReport.data.forEach((item, index) => {
+            item.index = index + 1;
+          });
+
+          setTimeout(() => {
+            if (this.sortReport) {
+              this.dataSourceReport.sort = this.sortReport;
+            }
+          });
 
           this.dataLength = this.data.length;
 
@@ -67,8 +93,7 @@ export class FixedExpensesReportComponent implements OnInit {
   }
 
   getDataTotals() {
-    debugger;
-    this.toPayTotal = this.data
+    this.total = this.data
       ? this.data.map((t) => t.Value).reduce((acc, value) => acc + value, 0)
       : 0;
   }

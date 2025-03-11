@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 @Component({
   selector: 'app-third-party-expenses-report',
   templateUrl: './third-party-expenses-report.component.html',
-  styleUrls: ['./third-party-expenses-report.component.css']
+  styleUrls: ['./third-party-expenses-report.component.scss']
 })
 export class ThirdPartyExpensesReportComponent implements OnInit {
 

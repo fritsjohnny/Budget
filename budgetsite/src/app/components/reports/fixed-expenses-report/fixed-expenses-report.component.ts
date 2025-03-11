@@ -81,6 +81,13 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
           setTimeout(() => {
             if (this.sortReport) {
               this.dataSourceReport.sort = this.sortReport;
+
+              // Ouve as mudanças na ordenação
+              this.sortReport.sortChange.subscribe(() => {
+                setTimeout(() => {
+                  this.recalculateIndexes();
+                });
+              });
             }
           });
 
@@ -98,17 +105,28 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
       : 0;
   }
 
-  /** Announce the change in sort state for assistive technology. */
   announceSortChange(sortState: any) {
-    // This example uses English messages. If your application supports
-    // multiple language, you would internationalize these strings.
-    // Furthermore, you can customize the message to add additional
-    // details about the values being sorted.
-
     if (sortState.direction) {
       this._liveAnnouncer.announce(`Sorted ${sortState.direction}ending`);
     } else {
       this._liveAnnouncer.announce('Sorting cleared');
     }
+  }
+
+  recalculateIndexes() {
+    if (!this.dataSourceReport.sort || !this.sortReport) return;
+
+    // Aplica a ordenação correta
+    const sortedData = this.dataSourceReport.sortData(
+      this.dataSourceReport.filteredData.slice(),
+      this.sortReport
+    );
+
+    // Recalcula os índices corretamente após a ordenação
+    sortedData.forEach((item, index) => {
+      item.index = index + 1;
+    });
+
+    this.dataSourceReport.data = sortedData; // Força a atualização da tabela
   }
 }

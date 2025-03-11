@@ -1,3 +1,4 @@
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Component, Input, OnInit } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 import { CardsPostings } from 'src/app/models/cardspostings.model';
@@ -22,7 +23,8 @@ export class FixedExpensesReportComponent implements OnInit {
 
   constructor(
     private expenseService: ExpenseService,
-    private cardPostingsService: CardPostingsService
+    private cardPostingsService: CardPostingsService,
+    private _liveAnnouncer: LiveAnnouncer
   ) {}
 
   ngOnInit(): void {
@@ -69,5 +71,19 @@ export class FixedExpensesReportComponent implements OnInit {
     this.toPayTotal = this.data
       ? this.data.map((t) => t.Value).reduce((acc, value) => acc + value, 0)
       : 0;
+  }
+
+  /** Announce the change in sort state for assistive technology. */
+  announceSortChange(sortState: any) {
+    // This example uses English messages. If your application supports
+    // multiple language, you would internationalize these strings.
+    // Furthermore, you can customize the message to add additional
+    // details about the values being sorted.
+
+    if (sortState.direction) {
+      this._liveAnnouncer.announce(`Sorted ${sortState.direction}ending`);
+    } else {
+      this._liveAnnouncer.announce('Sorting cleared');
+    }
   }
 }

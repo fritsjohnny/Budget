@@ -19,6 +19,7 @@ export interface CardsPostings {
   people?: People;
   card?: Cards;
   categoryId?: number;
+  category: string;
   peopleList?: People[];
   categoriesList?: Categories[];
   cardsList?: Cards[];

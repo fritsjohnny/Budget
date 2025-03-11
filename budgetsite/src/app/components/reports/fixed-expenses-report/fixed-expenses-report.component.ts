@@ -28,7 +28,7 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
   showReportProgress = false;
   data!: any[];
   total: number = 0;
-  displayedDataColumns = ['index', 'description', 'value'];
+  displayedDataColumns = ['index', 'description', 'value', 'category'];
   dataLength: number = 0;
 
   dataSourceReport = new MatTableDataSource(this.data);
@@ -65,11 +65,10 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
             ...expenses.filter((e) => e.fixed),
             ...cardPostings.filter((cp) => cp.fixed),
           ].map((item: Expenses | CardsPostings) => ({
-            description:
-              (item as Expenses).description ??
-              (item as CardsPostings).description,
+            description: item.description,
             value:
               (item as Expenses).toPay ?? (item as CardsPostings).amount ?? 0,
+            category: item.category ?? 0,
           }));
 
           this.dataSourceReport = new MatTableDataSource(this.data);
@@ -88,6 +87,8 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
                   this.recalculateIndexes();
                 });
               });
+
+              this.recalculateIndexes();
             }
           });
 

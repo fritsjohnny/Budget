@@ -18,6 +18,7 @@ export interface Expenses {
   parcelNumber?: number;
   parcels?: number;
   categoryId?: number;
+  category?: string;
   scheduled?: boolean;
   peopleId?: string;
   adding?: boolean;

@@ -29,7 +29,6 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
   data!: any[];
   total: number = 0;
   displayedDataColumns = ['index', 'description', 'value', 'category'];
-  dataLength: number = 0;
 
   dataSourceReport = new MatTableDataSource(this.data);
 
@@ -92,8 +91,6 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
             }
           });
 
-          this.dataLength = this.data.length;
-
           this.getDataTotals();
         },
         error: () => this.getDataTotals(),
@@ -102,7 +99,7 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
 
   getDataTotals() {
     this.total = this.data
-      ? this.data.map((t) => t.Value).reduce((acc, value) => acc + value, 0)
+      ? this.data.map((t) => t.value).reduce((acc, value) => acc + value, 0)
       : 0;
   }
 

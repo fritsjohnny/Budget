@@ -112,7 +112,7 @@ export class CardPostingsService {
                 cardPosting.monthsToRepeat ?? 0
               }`
             : ''
-        }`,
+        }?repeatToNextMonths=${cardPosting.repeatToNextMonths ?? false}`,
         cardPosting
       )
       .pipe(

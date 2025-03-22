@@ -34,4 +34,5 @@ export interface Expenses {
   overdue?: boolean;
   duetoday?: boolean;
   fixed?: boolean;
+  relatedId?: number;
 }

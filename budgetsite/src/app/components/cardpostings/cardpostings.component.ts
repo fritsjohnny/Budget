@@ -432,6 +432,7 @@ export class CardPostingsComponent implements OnInit {
         editing: this.editing,
         deleting: false,
         fixed: cardPosting.fixed,
+        relatedId: cardPosting.relatedId,
       },
     });
 
@@ -478,6 +479,7 @@ export class CardPostingsComponent implements OnInit {
                   t.people = result.people;
                   t.categoryId = result.categoryId;
                   t.fixed = result.fixed;
+                  t.relatedId = result.relatedId;
                 });
 
               this.cardpostings = [

@@ -267,7 +267,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.editing = true;
 
     const dialogRef = this.dialog.open(AccountPostingsDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         id: accountPosting.id,
         accountId: accountPosting.accountId,

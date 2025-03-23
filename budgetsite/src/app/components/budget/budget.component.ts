@@ -1078,7 +1078,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   addValue(row: any, type: string) {
     const dialogRef = this.dialog.open(AddvalueComponent, {
-      width: '400px',
+      width: '500px',
       data: {
         id: row.id,
         description: row.description,

@@ -1,39 +1,97 @@
-<form [formGroup]="addValueFormGroup">
-
-  <div class="cancel">
-    <button class="default-button" mat-mini-fab matTooltip="Cancelar" color="accent" aria-label="Cancelar"
-      (click)="cancel()">
-      <mat-icon class="default-icon">close</mat-icon>
-    </button>
-  </div>
-
-  <h2 mat-dialog-title>Adicionar valor a<p>{{setTitle()}}</h2>
-
-  <div mat-dialog-content>
-
-    <div class="row">
-      <div class="col">
-        <mat-form-field appearance="fill" floatLabel="always" style="width:120px !important">
-          <mat-label>Valor</mat-label>
-          <input matInput inputmode="numeric" currencyMask formControlName="amountFormControl" [(ngModel)]="data.amount"
-            placeholder="0" cdkFocusInitial autocomplete="off">
-          <mat-error *ngIf="addValueFormGroup.get('amountFormControl')?.hasError('required')">
-            Campo <strong>obrigatório</strong>.
-          </mat-error>
-        </mat-form-field>
-      </div>
+<div class="">
+  <form [formGroup]="addValueFormGroup">
+    <div class="cancel">
+      <button
+        class="default-button"
+        mat-mini-fab
+        matTooltip="Cancelar"
+        color="accent"
+        aria-label="Cancelar"
+        (click)="cancel()"
+      >
+        <mat-icon class="default-icon">close</mat-icon>
+      </button>
     </div>
 
-  </div>
+    <h2 mat-dialog-title>
+      Adicionar valor a
+      <p>{{ setTitle() }}</p>
+    </h2>
 
-  <div class="row">
-    <div class="col">
-      <div mat-dialog-actions>
-        <button [disabled]="!addValueFormGroup.valid" class="default-button" mat-mini-fab matTooltip="Salvar"
-          matTooltipPosition="right" class="bg-primary" aria-label="Salvar" [mat-dialog-close]="data" (click)="save()">
-          <mat-icon class="default-icon">save</mat-icon>
-        </button>
+    <div mat-dialog-content style="overflow: unset">
+      <div class="row">
+        <div class="col" style="display: flex; gap: 10px">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 120px !important"
+          >
+            <mat-label>Valor</mat-label>
+            <input
+              matInput
+              inputmode="numeric"
+              currencyMask
+              formControlName="amountFormControl"
+              [(ngModel)]="data.amount"
+              placeholder="0"
+              cdkFocusInitial
+              autocomplete="off"
+            />
+            <mat-error
+              *ngIf="
+                addValueFormGroup.get('amountFormControl')?.hasError('required')
+              "
+            >
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+          <button
+            class="default-button button-pn"
+            mat-mini-fab
+            matTooltip="+/-"
+            color="warn"
+            aria-label="+/-"
+            (click)="setPositiveOrNegative()"
+          >
+            +/-
+          </button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col" style="display: flex; gap: 3px">
+          <button
+            *ngFor="let value of suggestedValues"
+            class="default-button"
+            mat-mini-fab
+            matTooltip="{{ isNegative ? '-' : '+' }}{{ value }}"
+            color="primary"
+            [attr.aria-label]="isNegative ? '-' : '+' + value"
+            (click)="setSuggestedAmount(value)"
+          >
+            {{ isNegative ? "-" : "+" }}{{ value }}
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <div mat-dialog-actions>
+            <button
+              [disabled]="!addValueFormGroup.valid"
+              class="default-button"
+              mat-mini-fab
+              matTooltip="Salvar"
+              matTooltipPosition="right"
+              class="bg-primary"
+              aria-label="Salvar"
+              [mat-dialog-close]="data"
+              (click)="save()"
+            >
+              <mat-icon class="default-icon">save</mat-icon>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</form>
+  </form>
+</div>

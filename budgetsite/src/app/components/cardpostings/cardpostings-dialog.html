@@ -24,7 +24,7 @@
       </div>
 
       <div class="row">
-        <div class="col-8">
+        <div class="col-6">
           <mat-form-field
             appearance="fill"
             floatLabel="always"
@@ -42,10 +42,7 @@
             </mat-select>
           </mat-form-field>
         </div>
-      </div>
-
-      <div class="row">
-        <div class="col-8">
+        <div class="col-6">
           <app-datepickerinput
             #datepickerinput
             [currentDate]="cardPosting.date"
@@ -194,6 +191,21 @@
               Campo <strong>obrigatório</strong>.
             </mat-error>
           </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col" style="display: flex; justify-content: center">
+          <button
+            class="default-button button-pn"
+            mat-mini-fab
+            matTooltip="+/-"
+            color="warn"
+            aria-label="+/-"
+            (click)="setPositiveOrNegative()"
+          >
+            +/-
+          </button>
         </div>
       </div>
 

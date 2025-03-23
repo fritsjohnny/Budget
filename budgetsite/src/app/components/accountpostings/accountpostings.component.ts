@@ -1,8 +1,22 @@
-import { Component, OnInit, Input, SimpleChanges, Inject, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
-import { AccountsPostings } from '../../models/accountspostings.model'
+import {
+  Component,
+  OnInit,
+  Input,
+  SimpleChanges,
+  Inject,
+  AfterViewInit,
+  ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
+import { AccountsPostings } from '../../models/accountspostings.model';
 import { AccountService } from 'src/app/services/account/account.service';
 import { AccountPostingsService } from '../../services/accountpostings/accountpostings.service';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Accounts } from 'src/app/models/accounts.model';
@@ -13,15 +27,13 @@ import { ExpenseService } from 'src/app/services/expense/expense.service';
 import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepickerinput.component';
 import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatInput } from '@angular/material/input';
 
 @Component({
   selector: 'app-accountpostings',
   templateUrl: './accountpostings.component.html',
-  styleUrls: ['./accountpostings.component.scss']
+  styleUrls: ['./accountpostings.component.scss'],
 })
 export class AccountPostingsComponent implements OnInit, AfterViewInit {
-
   @Input() accountId?: number;
   @Input() reference?: string;
 
@@ -30,7 +42,13 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   accountpostings!: AccountsPostings[];
   incomes!: Incomes[];
   expenses!: Expenses[];
-  displayedColumns = ['index', 'date', 'description', 'amount', 'runningAmount'];
+  displayedColumns = [
+    'index',
+    'date',
+    'description',
+    'amount',
+    'runningAmount',
+  ];
   total: number = 0;
   grandTotalBalance?: number = 0;
   grandTotalYields?: number = 0;
@@ -48,7 +66,6 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   filterOpend: boolean = false;
   dataSource = new MatTableDataSource(this.accountpostings);
 
-
   constructor(
     private accountPostingsService: AccountPostingsService,
     private accountService: AccountService,
@@ -56,15 +73,11 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     private expenseService: ExpenseService,
     public dialog: MatDialog,
     private cd: ChangeDetectorRef
-  ) { }
+  ) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
 
-  }
-
-  ngAfterViewInit(): void {
-
-  }
+  ngAfterViewInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
     // if (changes['accountId']?.currentValue || changes['reference']?.currentValue) {
@@ -73,56 +86,46 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   getLists() {
+    this.accountService.readNotDisabled().subscribe({
+      next: (accounts) => {
+        this.accountsList = accounts.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
 
-    this.accountService.readNotDisabled().subscribe(
-      {
-        next: accounts => {
+        this.hideProgress = true;
+      },
+      error: () => (this.hideProgress = true),
+    });
 
-          this.accountsList = accounts.sort((a, b) => a.name.localeCompare(b.name));
+    this.incomeService.readComboList(this.reference!).subscribe({
+      next: (incomes) => {
+        this.incomes = incomes;
 
-          this.hideProgress = true;
-        },
-        error: () => this.hideProgress = true
-      }
-    );
+        this.hideProgress = true;
+      },
+      error: () => (this.hideProgress = true),
+    });
 
-    this.incomeService.readComboList(this.reference!).subscribe(
-      {
-        next: incomes => {
+    this.expenseService.readComboList(this.reference!).subscribe({
+      next: (expenses) => {
+        this.expenses = expenses;
 
-          this.incomes = incomes;
-
-          this.hideProgress = true;
-        },
-        error: () => this.hideProgress = true
-      }
-    );
-
-    this.expenseService.readComboList(this.reference!).subscribe(
-      {
-        next: expenses => {
-
-          this.expenses = expenses;
-
-          this.hideProgress = true;
-        },
-        error: () => this.hideProgress = true
-      }
-    );
+        this.hideProgress = true;
+      },
+      error: () => (this.hideProgress = true),
+    });
   }
 
   refresh() {
-
     this.getLists();
 
     if (this.accountId) {
-
       this.hideProgress = false;
 
-      this.accountPostingsService.read(this.accountId!, this.reference!).subscribe(
-        {
-          next: accountpostings => {
-
+      this.accountPostingsService
+        .read(this.accountId!, this.reference!)
+        .subscribe({
+          next: (accountpostings) => {
             this.accountpostings = accountpostings;
 
             this.accountPostingsLength = this.accountpostings.length;
@@ -132,17 +135,16 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
             this.getTotalAmount();
             this.getAccountTotals();
           },
-          error: () => this.hideProgress = true
+          error: () => (this.hideProgress = true),
         });
     }
   }
 
   getAccountTotals() {
-
-    this.accountService.getAccountTotals(this.accountId, this.reference).subscribe(
-      {
-        next: account => {
-
+    this.accountService
+      .getAccountTotals(this.accountId, this.reference)
+      .subscribe({
+        next: (account) => {
           this.grandTotalBalance = account.grandTotalBalance;
           this.grandTotalYields = account.grandTotalYields;
           this.totalBalance = account.totalBalance;
@@ -154,77 +156,81 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           this.minBalance = runningValue;
           this.maxBalance = 0;
 
-          this.accountpostings.sort((a, b) => (a.position! - b.position!)).forEach(accountposting => {
+          this.accountpostings
+            .sort((a, b) => a.position! - b.position!)
+            .forEach((accountposting) => {
+              accountposting.runningAmount = runningValue +=
+                accountposting.amount;
 
-            accountposting.runningAmount = runningValue += accountposting.amount;
+              this.minBalance =
+                accountposting.runningAmount < this.minBalance
+                  ? accountposting.runningAmount
+                  : this.minBalance;
 
-            this.minBalance = accountposting.runningAmount < this.minBalance ?
-              accountposting.runningAmount :
-              this.minBalance;
+              this.maxBalance =
+                accountposting.runningAmount > this.maxBalance
+                  ? accountposting.runningAmount
+                  : this.maxBalance;
+            });
 
-            this.maxBalance = accountposting.runningAmount > this.maxBalance ?
-              accountposting.runningAmount :
-              this.maxBalance;
-          });
+          this.accountpostings = [
+            ...this.accountpostings.sort((a, b) => b.position! - a.position!),
+          ];
 
-          this.accountpostings = [...this.accountpostings.sort((a, b) => (b.position! - a.position!))];
-
-          this.dataSource = new MatTableDataSource(this.accountpostings)
+          this.dataSource = new MatTableDataSource(this.accountpostings);
 
           this.hideProgress = true;
         },
-        error: () => this.hideProgress = true
+        error: () => (this.hideProgress = true),
       });
   }
 
   getTotalAmount() {
-
-    this.total =
-      this.accountpostings ?
-        this.accountpostings.map(t => t.amount).reduce((acc, value) => acc + value, 0) :
-        0;
+    this.total = this.accountpostings
+      ? this.accountpostings
+          .map((t) => t.amount)
+          .reduce((acc, value) => acc + value, 0)
+      : 0;
   }
 
   getFilteredTotalAmount() {
-
-    this.total =
-      this.dataSource.filteredData ?
-        Array(this.dataSource.filteredData)[0].map(t => t.amount).reduce((acc, value) => acc + value, 0) : 0;
+    this.total = this.dataSource.filteredData
+      ? Array(this.dataSource.filteredData)[0]
+          .map((t) => t.amount)
+          .reduce((acc, value) => acc + value, 0)
+      : 0;
   }
 
   getLastYield() {
-
     let lastYield =
-      this.dataSource.filteredData.filter(t => t.type === 'Y').length > 0 ?
-        this.dataSource.filteredData.filter(t => t.type === 'Y')[0].amount :
-        0;
+      this.dataSource.filteredData.filter((t) => t.type === 'Y').length > 0
+        ? this.dataSource.filteredData.filter((t) => t.type === 'Y')[0].amount
+        : 0;
 
     return lastYield;
   }
 
   add() {
-
     this.editing = false;
 
     const dialogRef = this.dialog.open(AccountPostingsDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         reference: this.reference,
         accountId: this.accountId,
         editing: this.editing,
-        type: "R",
+        type: 'R',
         accountsList: this.accountsList,
         incomesList: this.incomes,
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
-        lastYield: this.getLastYield()
-      }
+        lastYield: this.getLastYield(),
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-
         // this.hideProgress = false;
 
         result.amount = result.amount * (result.type === 'P' ? -1 : 1);
@@ -232,34 +238,32 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         result.position = this.accountpostings.length + 1;
 
         Date.prototype.toJSON = function () {
-          return moment(this).format("YYYY-MM-DDThh:mm:00.000Z");;
+          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
         };
 
-        this.accountPostingsService.create(result).subscribe(
-          {
-            next: accountpostings => {
+        this.accountPostingsService.create(result).subscribe({
+          next: (accountpostings) => {
+            if (
+              accountpostings.reference === this.reference &&
+              accountpostings.accountId === this.accountId
+            ) {
+              this.accountpostings = [...this.accountpostings, accountpostings];
 
-              if (accountpostings.reference === this.reference && accountpostings.accountId === this.accountId) {
+              this.dataSource = new MatTableDataSource(this.accountpostings);
 
-                this.accountpostings = [...this.accountpostings, accountpostings];
+              this.accountPostingsLength = this.accountpostings.length;
+            }
 
-                this.dataSource = new MatTableDataSource(this.accountpostings)
-
-                this.accountPostingsLength = this.accountpostings.length;
-              }
-
-              this.getTotalAmount();
-              this.getAccountTotals();
-            },
-            // error: () => this.hideProgress = true
-          }
-        );
+            this.getTotalAmount();
+            this.getAccountTotals();
+          },
+          // error: () => this.hideProgress = true
+        });
       }
     });
   }
 
   editOrDelete(accountPosting: AccountsPostings) {
-
     this.editing = true;
 
     const dialogRef = this.dialog.open(AccountPostingsDialog, {
@@ -283,41 +287,37 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         incomesList: this.incomes,
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
-        lastYield: this.getLastYield()
-      }
+        lastYield: this.getLastYield(),
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-
         //this.hideProgress = false;
 
         if (result.deleting) {
+          this.accountPostingsService.delete(result.id).subscribe({
+            next: () => {
+              this.accountpostings = this.accountpostings.filter(
+                (t) => t.id! != result.id!
+              );
 
-          this.accountPostingsService.delete(result.id).subscribe(
-            {
-              next: () => {
+              this.dataSource = new MatTableDataSource(this.accountpostings);
 
-                this.accountpostings = this.accountpostings.filter(t => t.id! != result.id!);
-
-                this.dataSource = new MatTableDataSource(this.accountpostings)
-
-                this.getTotalAmount();
-                this.getAccountTotals();
-              },
-              // error: () => this.hideProgress = true
-            }
-          );
+              this.getTotalAmount();
+              this.getAccountTotals();
+            },
+            // error: () => this.hideProgress = true
+          });
         } else {
+          result.amount =
+            Math.abs(result.amount) * (result.type === 'P' ? -1 : 1);
 
-          result.amount = Math.abs(result.amount) * (result.type === 'P' ? -1 : 1);
-
-          this.accountPostingsService.update(result).subscribe(
-            {
-              next: () => {
-
-                this.accountpostings.filter(t => t.id === result.id).map(t => {
+          this.accountPostingsService.update(result).subscribe({
+            next: () => {
+              this.accountpostings
+                .filter((t) => t.id === result.id)
+                .map((t) => {
                   t.date = result.date;
                   t.accountId = result.accountId;
                   t.incomeId = result.incomeId;
@@ -330,70 +330,77 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
                   t.type = result.type;
                 });
 
-                this.accountpostings = [...this.accountpostings.filter(ap => ap.reference === this.reference && ap.accountId === this.accountId)];
+              this.accountpostings = [
+                ...this.accountpostings.filter(
+                  (ap) =>
+                    ap.reference === this.reference &&
+                    ap.accountId === this.accountId
+                ),
+              ];
 
-                this.dataSource = new MatTableDataSource(this.accountpostings)
+              this.dataSource = new MatTableDataSource(this.accountpostings);
 
-                this.getTotalAmount();
-                this.getAccountTotals();
-              },
-              // error: () => this.hideProgress = true
-            }
-          );
+              this.getTotalAmount();
+              this.getAccountTotals();
+            },
+            // error: () => this.hideProgress = true
+          });
         }
       }
     });
   }
 
   drop(event: CdkDragDrop<any[]>) {
-
     // debugger;
 
     //const previousIndex = this.accountpostings.findIndex(row => row === event.item.data);
 
-    moveItemInArray(this.accountpostings, event.previousIndex, event.currentIndex);
+    moveItemInArray(
+      this.accountpostings,
+      event.previousIndex,
+      event.currentIndex
+    );
 
     this.accountpostings = this.accountpostings.slice();
 
-    this.dataSource = new MatTableDataSource(this.accountpostings)
+    this.dataSource = new MatTableDataSource(this.accountpostings);
 
     let length = this.accountpostings.length;
 
     this.accountpostings.forEach((accountposting, index) => {
-
       accountposting.position = length - (index + 1);
-
     });
 
     let runningValue = this.previousBalance ?? 0;
 
-    this.accountpostings.sort((a, b) => (a.position! - b.position!)).forEach(accountposting => {
+    this.accountpostings
+      .sort((a, b) => a.position! - b.position!)
+      .forEach((accountposting) => {
+        accountposting.runningAmount = runningValue += accountposting.amount;
+      });
 
-      accountposting.runningAmount = runningValue += accountposting.amount;
+    this.accountpostings = [
+      ...this.accountpostings.sort((a, b) => b.position! - a.position!),
+    ];
 
-    });
+    this.dataSource = new MatTableDataSource(this.accountpostings);
 
-    this.accountpostings = [...this.accountpostings.sort((a, b) => (b.position! - a.position!))];
-
-    this.dataSource = new MatTableDataSource(this.accountpostings)
-
-    this.accountPostingsService.updatePositions(this.accountpostings).subscribe();
+    this.accountPostingsService
+      .updatePositions(this.accountpostings)
+      .subscribe();
   }
 
   openFilter() {
-
     this.filterOpend = !this.filterOpend;
 
     this.cd.detectChanges();
 
     if (this.filterOpend) {
-
       this.filterInput.nativeElement.focus();
     }
   }
 
   applyFilter(event: Event) {
-
     const filterValue = (event.target as HTMLInputElement).value;
 
     this.dataSource.filter = filterValue.trim().toLowerCase();
@@ -407,11 +414,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   templateUrl: 'accountpostings-dialog.html',
 })
 export class AccountPostingsDialog implements OnInit, AfterViewInit {
-
   @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;
 
   accountPostingFormGroup = new FormGroup({
-
     accountIdFormControl: new FormControl('', Validators.required),
     descriptionFormControl: new FormControl('', Validators.required),
     amountFormControl: new FormControl('', Validators.required),
@@ -428,87 +433,71 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     public dialogRef: MatDialogRef<AccountPostingsDialog>,
     @Inject(MAT_DIALOG_DATA) public accountPosting: AccountsPostings,
     private cd: ChangeDetectorRef
-  ) { }
+  ) {}
 
-  ngOnInit(): void {
-
-  }
+  ngOnInit(): void {}
 
   ngAfterViewInit(): void {
-
     this.accountPosting.date = this.datepickerinput.date.value._d;
     this.cd.detectChanges();
   }
 
   cancel(): void {
-
     this.dialogRef.close();
   }
 
   currentDateChanged(date: Date) {
-
     this.accountPosting.date = date;
   }
 
   save(): void {
-
     this.dialogRef.close(this.accountPosting);
   }
 
   delete(): void {
-
     this.accountPosting.deleting = true;
 
     this.dialogRef.close(this.accountPosting);
   }
 
   onTypeChange(): void {
-
     if (this.accountPosting.type === 'Y') {
-
       this.accountPosting.description = 'Rendimento';
 
       this.accountPosting.amount = this.accountPosting.lastYield;
-    }
-    else if (this.accountPosting.type === 'C') {
-
+    } else if (this.accountPosting.type === 'C') {
       this.accountPosting.description = 'Troco';
-    }
-    else {
-
-      if (this.accountPosting.description === 'Rendimento' ||
-        this.accountPosting.description === 'Troco') {
-
+    } else {
+      if (
+        this.accountPosting.description === 'Rendimento' ||
+        this.accountPosting.description === 'Troco'
+      ) {
         this.accountPosting.description = '';
       }
     }
   }
 
   onAmountChanged(event: any): void {
-
-    if (this.accountPosting.type !== 'Y')
-      return;
+    if (this.accountPosting.type !== 'Y') return;
 
     if (!event) {
-
-      this.totalBalance = this.accountPosting.totalBalance
-    }
-    else {
-
-      this.totalBalance = this.accountPosting.totalBalance + this.accountPosting.amount;
+      this.totalBalance = this.accountPosting.totalBalance;
+    } else {
+      this.totalBalance =
+        this.accountPosting.totalBalance + this.accountPosting.amount;
     }
   }
 
   onTotalBalanceChanged(event: any): void {
+    if (this.accountPosting.type !== 'Y') return;
 
-    if (this.accountPosting.type !== 'Y')
-      return;
-
-    this.accountPosting.amount = this.totalBalance - this.accountPosting.totalBalance
+    this.accountPosting.amount =
+      this.totalBalance - this.accountPosting.totalBalance;
   }
 
   setTitle() {
-
-    return 'Lançamento - ' + (this.accountPosting.editing ? 'Editar' : 'Incluir');
+    return (
+      'Lançamento - ' + (this.accountPosting.editing ? 'Editar' : 'Incluir')
+    );
   }
 }

@@ -408,7 +408,8 @@ export class CardPostingsComponent implements OnInit {
     this.editing = true;
 
     const dialogRef = this.dialog.open(CardPostingsDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         id: cardPosting.id,
         cardId: cardPosting.cardId,

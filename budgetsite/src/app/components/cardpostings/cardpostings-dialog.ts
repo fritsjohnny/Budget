@@ -23,6 +23,7 @@ import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.
 @Component({
   selector: 'cardpostings-dialog',
   templateUrl: 'cardpostings-dialog.html',
+  styleUrls: ['../cardpostings/cardpostings.component.scss'],
 })
 export class CardPostingsDialog implements OnInit, AfterViewInit {
   @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;
@@ -233,5 +234,10 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
           }
         },
       });
+  }
+
+  setPositiveOrNegative() {
+    this.cardPosting.totalAmount = this.cardPosting.totalAmount! * -1;
+    this.cardPosting.amount = this.cardPosting.amount * -1;
   }
 }

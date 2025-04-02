@@ -338,6 +338,40 @@
           ></textarea>
         </mat-form-field>
       </div>
+
+      <div class="row">
+        <div class="col-6">
+          <mat-form-field
+            floatLabel="always"
+            style="width: 100% !important"
+            appearance="fill"
+          >
+            <mat-label>ID</mat-label>
+            <input
+              type="text"
+              matInput
+              formControlName="idFormControl"
+              [(ngModel)]="cardPosting.id"
+              [readonly]="true"
+            />
+          </mat-form-field>
+        </div>
+        <div class="col-6">
+          <mat-form-field
+            floatLabel="always"
+            style="width: 100% !important"
+            appearance="fill"
+          >
+            <mat-label>ID Relacionado</mat-label>
+            <input
+              type="text"
+              matInput
+              formControlName="relatedIdFormControl"
+              [(ngModel)]="cardPosting.relatedId"
+            />
+          </mat-form-field>
+        </div>
+      </div>
     </div>
     <div class="row">
       <div class="col">

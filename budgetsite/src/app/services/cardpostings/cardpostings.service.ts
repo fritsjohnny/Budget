@@ -100,25 +100,29 @@ export class CardPostingsService {
   update(cardPosting: CardsPostings): Observable<CardsPostings> {
     cardPosting.others = cardPosting.peopleId ? true : false;
 
-    return this.http
-      .put<CardsPostings>(
-        `${ApiUrls.cardspostings}${
-          cardPosting.generateParcels || cardPosting.repeatParcels
-            ? '/allparcels'
-            : ''
-        }/${cardPosting.id}${
-          cardPosting.generateParcels || cardPosting.repeatParcels
-            ? `?repeat=${cardPosting.repeatParcels ?? false}&qtyMonths=${
-                cardPosting.monthsToRepeat ?? 0
-              }`
-            : ''
-        }?repeatToNextMonths=${cardPosting.repeatToNextMonths ?? false}`,
-        cardPosting
-      )
-      .pipe(
-        map((obj) => obj),
-        catchError((e) => this.messenger.errorHandler(e))
-      );
+    debugger;
+    let url = `${ApiUrls.cardspostings}${
+      cardPosting.generateParcels || cardPosting.repeatParcels
+        ? '/allparcels'
+        : ''
+    }/${cardPosting.id}${
+      cardPosting.generateParcels || cardPosting.repeatParcels
+        ? `?repeat=${cardPosting.repeatParcels ?? false}&qtyMonths=${
+            cardPosting.monthsToRepeat ?? 0
+          }`
+        : ''
+    }${
+      cardPosting.repeatToNextMonths
+        ? `${
+            cardPosting.generateParcels || cardPosting.repeatParcels ? '&' : '?'
+          }repeatToNextMonths=${cardPosting.repeatToNextMonths ?? false}`
+        : ''
+    }`;
+
+    return this.http.put<CardsPostings>(url, cardPosting).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
   }
 
   updatePositions(cardPostings: CardsPostings[]): Observable<CardsPostings> {

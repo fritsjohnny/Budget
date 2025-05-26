@@ -81,6 +81,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   dataSourcePeople = new MatTableDataSource(this.cardpostingspeople);
   dataSourceCategories = new MatTableDataSource(this.expensesByCategories);
 
+  showUpcomingExpenses: boolean = false;
+  upcomingDays: number = 7;
+  onlyPendingExpenses: boolean = false;
+
   expended: boolean = false;
 
   displayedExpensesColumns = [
@@ -1347,5 +1351,35 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     expense.overdue = today.getTime() > dueDate.getTime();
 
     return expense.overdue;
+  }
+
+  filterUpcomingExpenses(): void {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const nextDate = new Date(now);
+    nextDate.setDate(now.getDate() + this.upcomingDays);
+
+    this.expenses = this.showUpcomingExpenses
+      ? this.expensesNoFilter.filter((e) => {
+          if (!e.dueDate) return false;
+
+          const due = new Date(e.dueDate);
+          due.setHours(0, 0, 0, 0);
+
+          const isWithinRange = due >= now && due <= nextDate;
+          const isPending =
+            !this.onlyPendingExpenses || (e.remaining && e.remaining > 0);
+
+          return isWithinRange && isPending;
+        })
+      : [...this.expensesNoFilter];
+
+    this.getExpensesTotals();
+  }
+
+  removeFromUpcomingFilter(row: any): void {
+    this.expenses = this.expenses.filter((e) => e !== row);
+    this.getExpensesTotals();
   }
 }

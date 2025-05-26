@@ -204,6 +204,41 @@
               <mat-icon id="menu-icon-expenses">sort_by_alpha</mat-icon>
               <span>Organizar igual mês anterior</span>
             </button>
+            <div [id]="'menu-expenses'" mat-menu-item>
+              <mat-icon id="menu-icon-expenses">event</mat-icon>
+              <mat-checkbox
+                [(ngModel)]="showUpcomingExpenses"
+                (change)="filterUpcomingExpenses()"
+              >
+                Vencendo nos próximos
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  style="width: 40px; margin: 0 4px"
+                  min="1"
+                  onfocus="this.select()"
+                  [(ngModel)]="upcomingDays"
+                  (click)="$event.stopPropagation()"
+                  (keydown)="$event.stopPropagation()"
+                  (mousedown)="$event.stopPropagation()"
+                />
+                dias
+              </mat-checkbox>
+            </div>
+            <button
+              class="d-flex justify-content-end"
+              style="margin-top: -10px"
+              [id]="showUpcomingExpenses ? 'menu-icon-expenses' : ''"
+              mat-menu-item
+              [disabled]="!showUpcomingExpenses"
+            >
+              <mat-checkbox
+                [(ngModel)]="onlyPendingExpenses"
+                (change)="filterUpcomingExpenses()"
+              >
+                Apenas Despesas a pagar
+              </mat-checkbox>
+            </button>
           </mat-menu>
         </div>
       </div>
@@ -315,6 +350,18 @@
                   <mat-icon class="expenses-actions">more_vert</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
+                  <button
+                    *ngIf="showUpcomingExpenses"
+                    mat-menu-item
+                    [id]="row.remaining > 0 ? 'menu-expenses' : ''"
+                    (click)="removeFromUpcomingFilter(row)"
+                  >
+                    <mat-icon
+                      [id]="row.remaining > 0 ? 'menu-icon-expenses' : ''"
+                      >cancel</mat-icon
+                    >
+                    <span>Remover do filtro</span>
+                  </button>
                   <button
                     mat-menu-item
                     [id]="row.remaining > 0 ? 'menu-expenses' : ''"

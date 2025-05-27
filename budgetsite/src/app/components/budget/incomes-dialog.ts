@@ -1,13 +1,23 @@
-import { Component, OnInit, AfterViewInit, Inject, ChangeDetectorRef } from "@angular/core";
-import { FormGroup, FormControl, Validators } from "@angular/forms";
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import { Accounts } from "src/app/models/accounts.model";
-import { Cards } from "src/app/models/cards.model";
-import { Incomes } from "src/app/models/incomes.model";
-import { IncomesTypes } from "src/app/models/types.model";
-import { PeopleService } from "src/app/services/people/people.service";
-import { PeopleComponent } from "../people/people.component";
-
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  Inject,
+  ChangeDetectorRef,
+} from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
+import { Accounts } from 'src/app/models/accounts.model';
+import { Cards } from 'src/app/models/cards.model';
+import { Incomes } from 'src/app/models/incomes.model';
+import { IncomesTypes } from 'src/app/models/types.model';
+import { PeopleService } from 'src/app/services/people/people.service';
+import { PeopleComponent } from '../people/people.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'incomes-dialog',
@@ -41,7 +51,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public incomes: Incomes,
     private peopleService: PeopleService,
     private cd: ChangeDetectorRef
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.cards = this.incomes.cardsList;
@@ -64,9 +74,23 @@ export class IncomesDialog implements OnInit, AfterViewInit {
   }
 
   delete(): void {
-    this.incomes.deleting = true;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Excluir Receita',
+        message: 'Confirma a EXCLUSÃO da receita?',
+        confirmText: 'Sim',
+        cancelText: 'Cancelar',
+      },
+    });
 
-    this.dialogRef.close(this.incomes);
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.incomes.deleting = true;
+
+        this.dialogRef.close(this.incomes);
+      }
+    });
   }
 
   setCard(): void {

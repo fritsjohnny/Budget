@@ -19,6 +19,10 @@ import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepic
 import { CategoryComponent } from '../category/category.component';
 import { PeopleComponent } from '../people/people.component';
 import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from 'src/app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'cardpostings-dialog',
@@ -116,9 +120,23 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   delete(): void {
-    this.cardPosting.deleting = true;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Excluir Compra',
+        message: 'Confirma a EXCLUSÃO da compra?',
+        confirmText: 'Sim',
+        cancelText: 'Cancelar',
+      },
+    });
 
-    this.dialogRef.close(this.cardPosting);
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.cardPosting.deleting = true;
+
+        this.dialogRef.close(this.cardPosting);
+      }
+    });
   }
 
   setPeople(): void {

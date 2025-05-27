@@ -3,7 +3,6 @@ import {
   OnInit,
   Input,
   SimpleChanges,
-  Inject,
   AfterViewInit,
   ChangeDetectorRef,
   ViewChild,
@@ -14,19 +13,16 @@ import { AccountService } from 'src/app/services/account/account.service';
 import { AccountPostingsService } from '../../services/accountpostings/accountpostings.service';
 import {
   MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Accounts } from 'src/app/models/accounts.model';
 import { Incomes } from 'src/app/models/incomes.model';
 import { Expenses } from 'src/app/models/expenses.model';
 import { IncomeService } from 'src/app/services/income/income.service';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
-import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepickerinput.component';
 import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
+import { AccountPostingsDialog } from './accountpostings-dialog';
 
 @Component({
   selector: 'app-accountpostings',
@@ -410,95 +406,3 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 }
 
-@Component({
-  selector: 'accountpostings-dialog',
-  templateUrl: 'accountpostings-dialog.html',
-})
-export class AccountPostingsDialog implements OnInit, AfterViewInit {
-  @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;
-
-  accountPostingFormGroup = new FormGroup({
-    accountIdFormControl: new FormControl('', Validators.required),
-    descriptionFormControl: new FormControl('', Validators.required),
-    amountFormControl: new FormControl('', Validators.required),
-    noteFormControl: new FormControl(''),
-    typeFormControl: new FormControl(''),
-    incomeIdFormControl: new FormControl(''),
-    expenseIdFormControl: new FormControl(''),
-    totalBalanceFormControl: new FormControl(''),
-  });
-
-  totalBalance!: number;
-
-  constructor(
-    public dialogRef: MatDialogRef<AccountPostingsDialog>,
-    @Inject(MAT_DIALOG_DATA) public accountPosting: AccountsPostings,
-    private cd: ChangeDetectorRef
-  ) {}
-
-  ngOnInit(): void {}
-
-  ngAfterViewInit(): void {
-    this.accountPosting.date = this.datepickerinput.date.value._d;
-    this.cd.detectChanges();
-  }
-
-  cancel(): void {
-    this.dialogRef.close();
-  }
-
-  currentDateChanged(date: Date) {
-    this.accountPosting.date = date;
-  }
-
-  save(): void {
-    this.dialogRef.close(this.accountPosting);
-  }
-
-  delete(): void {
-    this.accountPosting.deleting = true;
-
-    this.dialogRef.close(this.accountPosting);
-  }
-
-  onTypeChange(): void {
-    if (this.accountPosting.type === 'Y') {
-      this.accountPosting.description = 'Rendimento';
-
-      this.accountPosting.amount = this.accountPosting.lastYield;
-    } else if (this.accountPosting.type === 'C') {
-      this.accountPosting.description = 'Troco';
-    } else {
-      if (
-        this.accountPosting.description === 'Rendimento' ||
-        this.accountPosting.description === 'Troco'
-      ) {
-        this.accountPosting.description = '';
-      }
-    }
-  }
-
-  onAmountChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y') return;
-
-    if (!event) {
-      this.totalBalance = this.accountPosting.totalBalance;
-    } else {
-      this.totalBalance =
-        this.accountPosting.totalBalance + this.accountPosting.amount;
-    }
-  }
-
-  onTotalBalanceChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y') return;
-
-    this.accountPosting.amount =
-      this.totalBalance - this.accountPosting.totalBalance;
-  }
-
-  setTitle() {
-    return (
-      'Lançamento - ' + (this.accountPosting.editing ? 'Editar' : 'Incluir')
-    );
-  }
-}

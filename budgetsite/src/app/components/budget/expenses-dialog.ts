@@ -18,6 +18,10 @@ import { PeopleService } from 'src/app/services/people/people.service';
 import { CategoryComponent } from '../category/category.component';
 import { PeopleComponent } from '../people/people.component';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from 'src/app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'expenses-dialog',
@@ -50,6 +54,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     scheduledFormControl: new FormControl(''),
     fixedFormControl: new FormControl(''),
     peopleFormControl: new FormControl(''),
+    dueDayFormControl: new FormControl(''),
   });
 
   constructor(
@@ -91,9 +96,22 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   }
 
   delete(): void {
-    this.expenses.deleting = true;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Excluir Despesa',
+        message: 'Confirma a EXCLUSÃO da despesa?',
+        confirmText: 'Sim',
+        cancelText: 'Cancelar',
+      },
+    });
 
-    this.dialogRef.close(this.expenses);
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.expenses.deleting = true;
+        this.dialogRef.close(this.expenses);
+      }
+    });
   }
 
   setCard(): void {

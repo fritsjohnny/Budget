@@ -240,6 +240,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     this.hidePeopleProgress = false;
     this.hideCategoriesProgress = false;
 
+    this.showUpcomingExpenses = false;
+    this.onlyPendingExpenses = false;
+
     this.cardService.read().subscribe({
       next: (cards) => {
         this.cardsList = cards;
@@ -629,7 +632,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     this.editing = true;
 
     const dialogRef = this.dialog.open(ExpensesDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         id: expense.id,
         userId: expense.userId,
@@ -654,6 +658,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         categoriesList: this.categoriesList,
         peopleList: this.peopleList,
         fixed: expense.fixed,
+        dueDay: expense.dueDay,
       },
     });
 
@@ -690,6 +695,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                   t.overdue = this.overDue(t);
                   t.duetoday = this.dueToday(t);
                   t.fixed = result.fixed;
+                  t.dueDay = result.dueDay;
                 });
 
               this.expenses = [
@@ -1318,7 +1324,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   dueToday(expense: Expenses) {
-    if (!expense.dueDate) {
+    if (!(expense.dueDate && expense.paid < expense.toPay)) {
       return false;
     }
 
@@ -1336,7 +1342,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   overDue(expense: Expenses) {
-    if (!expense.dueDate) {
+    if (!(expense.dueDate && expense.paid < expense.toPay)) {
       return false;
     }
 

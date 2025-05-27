@@ -109,7 +109,9 @@
             </mat-error>
           </mat-form-field>
         </div>
+      </div>
 
+      <div class="row center">
         <div class="col-6">
           <mat-form-field
             appearance="fill"
@@ -164,7 +166,9 @@
             </mat-error>
           </mat-form-field>
         </div>
+      </div>
 
+      <div class="row center">
         <div class="col-6">
           <mat-form-field
             appearance="fill"
@@ -209,9 +213,11 @@
             />
           </mat-form-field>
         </div>
+      </div>
 
-        <div class="center">
-          <mat-form-field appearance="fill" style="width: 180px !important">
+      <div class="row center">
+        <div class="col-7">
+          <mat-form-field appearance="fill" style="width: 100% !important">
             <mat-label>Vencimento</mat-label>
             <input
               matInput
@@ -224,6 +230,30 @@
               [for]="picker"
             ></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="col-5">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Dia Fixo Vencimento</mat-label>
+            <input
+              matInput
+              type="number"
+              inputmode="numeric"
+              formControlName="dueDayFormControl"
+              [(ngModel)]="expenses.dueDay"
+              min="1"
+              onfocus="this.select()"
+            />
+            <mat-error
+              *ngIf="expensesFormGroup.get('dueDayFormControl')?.hasError('min') && !expensesFormGroup.get('dueDayFormControl')?.hasError('required')"
+            >
+              Valor mínimo é <strong>1</strong>.
+            </mat-error>
           </mat-form-field>
         </div>
       </div>

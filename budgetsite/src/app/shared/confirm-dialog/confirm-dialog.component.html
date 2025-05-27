@@ -1,0 +1,41 @@
+<div class="">
+  <form>
+    <div class="cancel">
+      <button
+        class="default-button"
+        mat-mini-fab
+        matTooltip="Cancelar"
+        color="accent"
+        aria-label="Cancelar"
+        (click)="onCancel()"
+      >
+        <mat-icon class="default-icon">close</mat-icon>
+      </button>
+    </div>
+    <h2 mat-dialog-title>{{ data.title || "Confirmação" }}</h2>
+    <div mat-dialog-content>
+      <div class="row">
+        <div class="col">
+          <p>{{ data.message }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        <button mat-raised-button color="basic" (click)="onCancel()">
+          {{ data.cancelText || "Cancelar" }}
+        </button>
+      </div>
+      <div class="col-6">
+        <button
+          mat-raised-button
+          color="warn"
+          (click)="onConfirm()"
+        >
+          {{ data.confirmText || "Confirmar" }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

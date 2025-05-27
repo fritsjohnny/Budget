@@ -48,7 +48,8 @@ import { HeaderComponent } from './components/template/header/header.component';
 import { NavComponent } from './components/template/nav/nav.component';
 import { AccountViewComponent } from './views/account-view/account-view.component';
 import { AccountComponent, AccountDialog } from './components/account/account.component';
-import { AccountPostingsComponent, AccountPostingsDialog } from './components/accountpostings/accountpostings.component';
+import { AccountPostingsComponent } from './components/accountpostings/accountpostings.component';
+import { AccountPostingsDialog } from './components/accountpostings/accountpostings-dialog';
 import { CardViewComponent } from './views/card-view/card-view.component';
 import { CardComponent, CardDialog } from './components/card/card.component';
 import { CardPostingsComponent } from './components/cardpostings/cardpostings.component';
@@ -80,6 +81,7 @@ import { UserComponent } from './components/user/user.component';
 import { UserRegisterViewComponent } from './views/userregister-view/userregister-view.component';
 import { FixedExpensesReportComponent } from './components/reports/fixed-expenses-report/fixed-expenses-report.component';
 import { ThirdPartyExpensesReportComponent } from './components/reports/third-party-expenses-report/third-party-expenses-report.component';
+import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -131,6 +133,7 @@ registerLocaleData(localePt);
     ReportComponent,
     FixedExpensesReportComponent,
     ThirdPartyExpensesReportComponent,
+    ConfirmDialogComponent,
   ],
   imports: [
     BrowserModule,

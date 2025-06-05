@@ -194,8 +194,11 @@
         </div>
       </div>
 
-      <div class="row">
-        <div class="col" style="display: flex; justify-content: center">
+      <div class="row center">
+        <div
+          class="col-6"
+          style="display: flex; justify-content: center; margin-top: -30px"
+        >
           <button
             class="default-button button-pn"
             mat-mini-fab
@@ -207,14 +210,41 @@
             +/-
           </button>
         </div>
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Vencimento</mat-label>
+            <input
+              matInput
+              [matDatepicker]="picker"
+              formControlName="dueDateFormControl"
+              [(ngModel)]="cardPosting.dueDate"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="picker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
       </div>
 
-      <p>
+      <p class="d-flex justify-content-between align-items-center">
         <mat-checkbox
           [(ngModel)]="cardPosting.fixed"
           formControlName="fixedFormControl"
         >
           Despesa Fixa
+        </mat-checkbox>
+
+        <mat-checkbox
+          [(ngModel)]="cardPosting.isPaid"
+          formControlName="isPaidFormControl"
+        >
+          Pago
         </mat-checkbox>
       </p>
 

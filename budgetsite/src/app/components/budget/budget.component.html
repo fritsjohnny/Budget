@@ -196,6 +196,31 @@
             <mat-icon class="expenses-actions">more_vert</mat-icon>
           </button>
           <mat-menu #menu="matMenu">
+            <!-- Ordenar por vencimento -->
+            <button
+              [id]="'menu-expenses'"
+              mat-menu-item
+              (click)="orderByDueDate()"
+            >
+              <mat-icon id="menu-icon-expenses">calendar_today</mat-icon>
+              <span>Ordenar por vencimento</span>
+            </button>
+            <!-- Cartões de Crédito primeiro -->
+            <div
+              class="d-flex justify-content-end"
+              style="margin-top: -10px"
+              [id]="'menu-icon-expenses'"
+              mat-menu-item
+            >
+              <mat-checkbox
+                [(ngModel)]="creditCardsFirst"
+                (click)="$event.stopPropagation()"
+                (mousedown)="$event.stopPropagation()"
+              >
+                Cartões de Crédito primeiro
+              </mat-checkbox>
+            </div>
+            <!-- Organizar igual mês anterior -->
             <button
               [id]="'menu-expenses'"
               mat-menu-item
@@ -204,6 +229,7 @@
               <mat-icon id="menu-icon-expenses">sort_by_alpha</mat-icon>
               <span>Organizar igual mês anterior</span>
             </button>
+            <!-- Filtro de despesas vencendo -->
             <div [id]="'menu-expenses'" mat-menu-item>
               <mat-icon id="menu-icon-expenses">event</mat-icon>
               <mat-checkbox
@@ -225,6 +251,7 @@
                 dias
               </mat-checkbox>
             </div>
+            <!-- Apenas despesas a pagar -->
             <button
               class="d-flex justify-content-end"
               style="margin-top: -10px"

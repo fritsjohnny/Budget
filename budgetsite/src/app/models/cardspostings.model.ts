@@ -35,4 +35,6 @@ export interface CardsPostings {
   fixed?: boolean;
   relatedId?: number;
   repeatToNextMonths?: boolean;
+  dueDate?: Date;
+  isPaid?: boolean;
 }

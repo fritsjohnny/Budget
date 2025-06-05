@@ -59,6 +59,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     repeatToNextMonthsFormControl: new FormControl(''),
     idFormControl: new FormControl(''),
     relatedIdFormControl: new FormControl(''),
+    dueDateFormControl: new FormControl(''),
+    isPaidFormControl: new FormControl(''),
   });
 
   constructor(

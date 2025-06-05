@@ -4,7 +4,7 @@ import { People } from './people.model';
 
 export interface Expenses {
   id?: number;
-  userId: number;
+  userId?: number;
   reference: string;
   position?: number;
   description: string;

@@ -161,6 +161,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     },
   ];
 
+  isOrderingByDueDate = false;
+  creditCardsFirst = false;
+
   constructor(
     private expenseService: ExpenseService,
     private incomeService: IncomeService,
@@ -999,6 +1002,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         editing: false,
         adding: true,
         payWithCard: true,
+        dueDate: expense.dueDate,
+        isPaid: true,
       },
     });
 
@@ -1386,6 +1391,44 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   removeFromUpcomingFilter(row: any): void {
     this.expenses = this.expenses.filter((e) => e !== row);
+    this.getExpensesTotals();
+  }
+
+  orderByDueDate(): void {
+    this.isOrderingByDueDate = true;
+
+    // Ordena a lista original (sem filtro aplicado)
+    const sorted = [...this.expensesNoFilter].sort((a, b) => {
+      const dateA = a.dueDate ? new Date(a.dueDate) : null;
+      const dateB = b.dueDate ? new Date(b.dueDate) : null;
+
+      if (this.creditCardsFirst) {
+        const isCardA = !!a.cardId;
+        const isCardB = !!b.cardId;
+
+        if (isCardA !== isCardB) {
+          return isCardA ? -1 : 1;
+        }
+      }
+
+      if (dateA && dateB) {
+        return dateA.getTime() - dateB.getTime();
+      } else if (dateA) {
+        return -1;
+      } else if (dateB) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    // Atualiza posições e persiste
+    sorted.forEach((expense, index) => {
+      expense.position = index + 1;
+      this.expenseService.update(expense).subscribe(); // grava no backend
+    });
+
+    this.expenses = sorted;
     this.getExpensesTotals();
   }
 }

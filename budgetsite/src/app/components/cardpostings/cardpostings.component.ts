@@ -27,6 +27,8 @@ import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
 import { CardPostingsDialog } from './cardpostings-dialog';
 import { CardReceiptsDialog } from './cardreceipts-dialog';
+import { Messenger } from 'src/app/common/messenger';
+import { Expenses } from 'src/app/models/expenses.model';
 
 @Component({
   selector: 'app-cardpostings',
@@ -42,7 +44,7 @@ export class CardPostingsComponent implements OnInit {
   cardpostings!: CardsPostings[];
   cardpostingspeople!: CardsPostingsDTO[];
   expensesByCategories!: ExpensesByCategories[];
-  displayedColumns = ['index', 'date', 'description', 'amount'];
+  displayedColumns = ['index', 'date', 'description', 'amount', 'actions'];
   displayedPeopleColumns = [
     'person',
     'toReceive',
@@ -91,7 +93,8 @@ export class CardPostingsComponent implements OnInit {
     private categoryService: CategoryService,
     private cardService: CardService,
     public dialog: MatDialog,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private messenger: Messenger
   ) {}
 
   ngOnInit(): void {
@@ -169,6 +172,8 @@ export class CardPostingsComponent implements OnInit {
           this.dataSource = new MatTableDataSource(this.cardpostings);
 
           this.getTotalAmount();
+
+          this.checkDueAlerts();
 
           this.hideProgress = true;
         },
@@ -399,6 +404,9 @@ export class CardPostingsComponent implements OnInit {
   }
 
   editOrDelete(cardPosting: CardsPostings, event: any) {
+    if (event.target.textContent === 'more_vert') {
+      return;
+    }
     if (this.checkCard) {
       cardPosting.isSelected = !cardPosting.isSelected;
 
@@ -435,6 +443,8 @@ export class CardPostingsComponent implements OnInit {
         deleting: false,
         fixed: cardPosting.fixed,
         relatedId: cardPosting.relatedId,
+        dueDate: cardPosting.dueDate,
+        isPaid: cardPosting.isPaid,
       },
     });
 
@@ -445,16 +455,7 @@ export class CardPostingsComponent implements OnInit {
         if (result.deleting) {
           this.cardPostingsService.delete(result.id).subscribe({
             next: () => {
-              this.cardpostings = this.cardpostings.filter(
-                (t) => t.id! != result.id!
-              );
-
-              this.dataSource = new MatTableDataSource(this.cardpostings);
-
-              this.getTotalAmount();
-
-              this.getCardsPostingsPeople();
-              this.getExpensesByCategories();
+              this.afterDelete(result);
 
               //this.hideProgress = true;
             },
@@ -482,6 +483,8 @@ export class CardPostingsComponent implements OnInit {
                   t.categoryId = result.categoryId;
                   t.fixed = result.fixed;
                   t.relatedId = result.relatedId;
+                  t.dueDate = result.dueDate;
+                  t.isPaid = result.isPaid;
                 });
 
               this.cardpostings = [
@@ -495,6 +498,7 @@ export class CardPostingsComponent implements OnInit {
 
               this.getTotalAmount();
               this.getExpensesByCategories();
+              this.checkDueAlerts();
 
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
@@ -506,6 +510,17 @@ export class CardPostingsComponent implements OnInit {
         }
       }
     });
+  }
+
+  afterDelete(result: CardsPostings) {
+    this.cardpostings = this.cardpostings.filter((t) => t.id! != result.id!);
+
+    this.dataSource = new MatTableDataSource(this.cardpostings);
+
+    this.getTotalAmount();
+
+    this.getCardsPostingsPeople();
+    this.getExpensesByCategories();
   }
 
   cardPostingsPanelClosed() {
@@ -644,5 +659,78 @@ export class CardPostingsComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
 
     this.getFilteredTotalAmount();
+  }
+
+  dueToday(posting: any): boolean {
+    if (!posting.dueDate) return false;
+
+    const today = new Date();
+    const due = new Date(posting.dueDate);
+
+    return due.toDateString() === today.toDateString();
+  }
+
+  overDue(posting: any): boolean {
+    if (!posting.dueDate) return false;
+
+    const today = new Date();
+    const due = new Date(posting.dueDate);
+
+    return due < today && due.toDateString() !== today.toDateString();
+  }
+
+  checkDueAlerts(): void {
+    let overdue = false;
+    let dueToday = false;
+
+    this.cardpostings.forEach((posting) => {
+      if (!posting.isPaid) {
+        if (this.dueToday(posting)) {
+          dueToday = true;
+        } else if (this.overDue(posting)) {
+          overdue = true;
+        }
+      }
+    });
+
+    if (dueToday && overdue) {
+      this.messenger.message('Há lançamentos vencidos e vencendo hoje!');
+    } else if (dueToday) {
+      this.messenger.message('Há lançamentos vencendo hoje!');
+    } else if (overdue) {
+      this.messenger.message('Há lançamentos vencidos!');
+    }
+  }
+
+  convertToExpense(posting: CardsPostings): void {
+    const expense: Expenses = {
+      reference: this.reference!,
+      description: posting.description,
+      toPay: posting.amount,
+      totalToPay: posting.amount,
+      paid: 0,
+      remaining: 0,
+      dueDate: posting.dueDate,
+      categoryId: posting.categoryId,
+      peopleId: posting.peopleId,
+      parcelNumber: posting.parcelNumber,
+      parcels: posting.parcels,
+      note: posting.note,
+      fixed: posting.fixed,
+    };
+
+    this.expenseService.create(expense).subscribe({
+      next: () => {
+        this.cardPostingsService.delete(posting.id!).subscribe(() => {
+          this.messenger.message(
+            'Despesa criada e lançamento de cartão removido.'
+          );
+          this.afterDelete(posting);
+        });
+      },
+      error: () => {
+        this.messenger.message('Erro ao transformar em despesa.');
+      },
+    });
   }
 }

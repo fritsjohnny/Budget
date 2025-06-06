@@ -236,6 +236,30 @@
           ></textarea>
         </mat-form-field>
       </div>
+
+      <div class="row center">
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>ID</mat-label>
+            <input matInput [value]="incomes.id" readonly />
+          </mat-form-field>
+        </div>
+
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Related ID</mat-label>
+            <input matInput [value]="incomes.relatedId ?? ''" readonly />
+          </mat-form-field>
+        </div>
+      </div>
     </div>
 
     <div class="row">

@@ -331,7 +331,8 @@
               [cdkDragData]="row"
               [ngClass]="{
                 'card-yield-checked':
-                  row.isSelected || overDue(row) || dueToday(row)
+                  row.isSelected ||
+                  (!row.isPaid && (row.overdue || row.duetoday))
               }"
             ></tr>
             <tr

@@ -37,4 +37,6 @@ export interface CardsPostings {
   repeatToNextMonths?: boolean;
   dueDate?: Date;
   isPaid?: boolean;
+  overdue?: boolean;
+  duetoday?: boolean;
 }

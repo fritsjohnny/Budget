@@ -100,7 +100,6 @@ export class CardPostingsService {
   update(cardPosting: CardsPostings): Observable<CardsPostings> {
     cardPosting.others = cardPosting.peopleId ? true : false;
 
-    debugger;
     let url = `${ApiUrls.cardspostings}${
       cardPosting.generateParcels || cardPosting.repeatParcels
         ? '/allparcels'

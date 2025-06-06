@@ -661,22 +661,27 @@ export class CardPostingsComponent implements OnInit {
     this.getFilteredTotalAmount();
   }
 
-  dueToday(posting: any): boolean {
+  dueToday(posting: CardsPostings): boolean {
     if (!posting.dueDate) return false;
 
     const today = new Date();
     const due = new Date(posting.dueDate);
 
-    return due.toDateString() === today.toDateString();
+    posting.duetoday = due.toDateString() === today.toDateString();
+
+    return posting.duetoday;
   }
 
-  overDue(posting: any): boolean {
+  overDue(posting: CardsPostings): boolean {
     if (!posting.dueDate) return false;
 
     const today = new Date();
     const due = new Date(posting.dueDate);
 
-    return due < today && due.toDateString() !== today.toDateString();
+    posting.overdue =
+      due < today && due.toDateString() !== today.toDateString();
+
+    return posting.overdue;
   }
 
   checkDueAlerts(): void {

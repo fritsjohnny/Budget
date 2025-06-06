@@ -9,20 +9,22 @@ table {
 }
 
 .mat-column-index {
-  width: 50px;
+  width: 40px;
 }
 
 .mat-column-date {
   width: 50px;
-  padding-right: 10px;
+  // padding-right: 10px;
 }
 
 .mat-column-description {
-  width: 500px;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mat-column-amount {
-  width: 125px;
+  width: 50px;
   text-align: right;
 }
 

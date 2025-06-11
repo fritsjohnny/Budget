@@ -82,6 +82,7 @@ import { UserRegisterViewComponent } from './views/userregister-view/userregiste
 import { FixedExpensesReportComponent } from './components/reports/fixed-expenses-report/fixed-expenses-report.component';
 import { ThirdPartyExpensesReportComponent } from './components/reports/third-party-expenses-report/third-party-expenses-report.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
+import { BottomTabsComponent } from './shared/bottom-tabs/bottom-tabs.component';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -134,6 +135,7 @@ registerLocaleData(localePt);
     FixedExpensesReportComponent,
     ThirdPartyExpensesReportComponent,
     ConfirmDialogComponent,
+    BottomTabsComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,12 @@
+<div class="tabs-footer botton-tabs">
+  <a
+    *ngFor="let tab of tabs"
+    mat-icon-button
+    [routerLink]="tab.path"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+  >
+    <mat-icon>{{ tab.icon }}</mat-icon>
+    <span *ngIf="!isMobile">{{ tab.label }}</span>
+  </a>
+</div>

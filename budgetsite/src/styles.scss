@@ -185,6 +185,11 @@ $primary-light: map-get($light-theme, primary);
     background-color: mat-color($sidenav-dark);
   }
 
+  .botton-tabs {
+    background-color: mat-color($sidenav-dark);
+    color: var(--toolbar-color);
+  }
+
   .login-container {
     background-color: #303030;
     color: #fff;
@@ -448,6 +453,11 @@ $primary-light: map-get($light-theme, primary);
 
   .sidenav {
     background-color: mat-color($sidenav-light);
+  }
+
+  .botton-tabs {
+    background-color: mat-color($sidenav-light);
+    color: var(--toolbar-color);
   }
 
   .mat-list-item-content {

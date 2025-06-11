@@ -1,0 +1,5 @@
+{
+  "appId": "com.budget.app",
+  "appName": "BudgetApp",
+  "webDir": "dist/budgetsite"
+}

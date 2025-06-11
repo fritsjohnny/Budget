@@ -8,7 +8,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "production": "ng serve --configuration=production"
+    "production": "ng serve --configuration=production",
+    "build:mobile": "ng build --prod && npx cap copy"
   },
   "private": true,
   "dependencies": {
@@ -24,6 +25,9 @@
     "@angular/platform-browser": "~13.0.0",
     "@angular/platform-browser-dynamic": "~13.0.0",
     "@angular/router": "~13.0.0",
+    "@capacitor/android": "^5.7.4",
+    "@capacitor/cli": "^5.7.4",
+    "@capacitor/core": "^5.7.4",
     "bootstrap": "^5.1.3",
     "bootstrap-icons": "^1.7.1",
     "moment": "^2.29.1",

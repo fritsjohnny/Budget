@@ -83,6 +83,8 @@ import { FixedExpensesReportComponent } from './components/reports/fixed-expense
 import { ThirdPartyExpensesReportComponent } from './components/reports/third-party-expenses-report/third-party-expenses-report.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
 import { BottomTabsComponent } from './shared/bottom-tabs/bottom-tabs.component';
+import { RouteReuseStrategy } from '@angular/router';
+import { CustomReuseStrategy } from './core/strategies/custom-reuse-strategy';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -191,6 +193,7 @@ registerLocaleData(localePt);
     { provide: MAT_COLOR_FORMATS, useValue: NGX_MAT_COLOR_FORMATS },
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     { provide: CURRENCY_MASK_CONFIG, useValue: CustomCurrencyMaskConfig },
+    { provide: RouteReuseStrategy, useClass: CustomReuseStrategy }
   ],
   bootstrap: [AppComponent]
 })

@@ -1,13 +1,16 @@
-.tabs-footer {
+.tabs-footer.botton-tabs {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
   display: flex;
   justify-content: space-around;
-  border-top: 1px solid var(--mat-divider-color, #ccc);
   padding: 8px 0;
   z-index: 1000;
+
+  background-color: var(--mat-sidenav-container-background-color, #303030);
+  color: var(--mat-sidenav-content-text-color, #fff);
+  border-top: 1px solid var(--mat-divider-color, #444);
 }
 
 .tabs-footer a {
@@ -21,14 +24,10 @@
 }
 
 .tabs-footer a.active {
-  color: var(--mat-primary, #1976d2);
+  color: var(--mat-primary, #42a5f5);
 }
 
 .tabs-footer mat-icon {
   font-size: 24px;
   margin-bottom: 2px;
-}
-
-.tabs-content {
-  padding-bottom: 70px; // evita que o conteúdo fique coberto pela barra
 }

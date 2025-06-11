@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-bottom-tabs',
@@ -7,34 +8,21 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
   styleUrls: ['./bottom-tabs.component.scss'],
 })
 export class BottomTabsComponent implements OnInit {
-  activeTab = 'summary'; // adiciona isso dentro da classe
-
   tabs = [
-    {
-      key: 'summary',
-      path: '/summary',
-      label: 'Saldos',
-      icon: 'account_balance_wallet',
-    },
-    { key: 'budget', path: '/budget', label: 'Orçamento', icon: 'view_quilt' },
-    {
-      key: 'accounts',
-      path: '/accounts',
-      label: 'Contas',
-      icon: 'account_balance',
-    },
-    { key: 'cards', path: '/cards', label: 'Cartões', icon: 'credit_card' },
-    {
-      key: 'reports',
-      path: '/reports',
-      label: 'Relatórios',
-      icon: 'pie_chart',
-    },
+    { path: '/summary', label: 'Saldos', icon: 'account_balance_wallet' },
+    { path: '/budget', label: 'Orçamento', icon: 'view_quilt' },
+    { path: '/accounts', label: 'Contas', icon: 'account_balance' },
+    { path: '/cards', label: 'Cartões', icon: 'credit_card' },
+    { path: '/reports', label: 'Relatórios', icon: 'pie_chart' },
   ];
 
   isMobile = false;
+  activeTab = '/budget'; // padrão
 
-  constructor(private breakpointObserver: BreakpointObserver) {}
+  constructor(
+    private breakpointObserver: BreakpointObserver,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.breakpointObserver
@@ -42,5 +30,18 @@ export class BottomTabsComponent implements OnInit {
       .subscribe((result) => {
         this.isMobile = result.matches;
       });
+
+    const currentUrl = this.router.url;
+
+    // Se estiver na raiz, redireciona para /budget
+    if (currentUrl === '/' || currentUrl === '') {
+      this.router.navigateByUrl('/budget');
+      this.activeTab = '/budget';
+      return;
+    }
+
+    // Caso contrário, marca a aba correspondente como ativa
+    const found = this.tabs.find((t) => t.path === currentUrl);
+    this.activeTab = found ? found.path : '/budget';
   }
 }

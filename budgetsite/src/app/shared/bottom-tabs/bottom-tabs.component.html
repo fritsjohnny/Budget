@@ -5,6 +5,8 @@
     [routerLink]="tab.path"
     routerLinkActive="active"
     [routerLinkActiveOptions]="{ exact: true }"
+    (click)="activeTab = tab.path"
+    [class.active]="activeTab === tab.path"
   >
     <mat-icon>{{ tab.icon }}</mat-icon>
     <span *ngIf="!isMobile">{{ tab.label }}</span>

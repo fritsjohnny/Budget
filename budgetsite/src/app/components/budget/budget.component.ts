@@ -43,6 +43,11 @@ import { ExpensesDialog } from './expenses-dialog';
 import { IncomesDialog } from './incomes-dialog';
 import { PaymentReceiveDialog } from './payment-receive-dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
+import {
+  LocalNotifications,
+  ScheduleOptions,
+} from '@capacitor/local-notifications';
+import { BackgroundTask } from '@capawesome/capacitor-background-task';
 
 @Component({
   selector: 'app-budget',
@@ -184,7 +189,12 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   @ViewChild('sortPeople') sortPeople!: MatSort;
   @ViewChild('sortCategories') sortCategories!: MatSort;
 
-  ngOnInit(): void {}
+  async ngOnInit() {
+    const permission = await LocalNotifications.requestPermissions();
+    if (permission.display === 'granted') {
+      this.startBackgroundExpenseCheck();
+    }
+  }
 
   ngAfterViewInit(): void {
     this.cd.detectChanges();
@@ -363,12 +373,18 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           }
         });
 
+        let message = '';
         if (duetoday && overdue) {
-          this.messenger.message('Há lançamentos vencidos e vencendo hoje!');
+          message = 'Há lançamentos vencidos e vencendo hoje!';
         } else if (duetoday) {
-          this.messenger.message('Há lançamentos vencendo hoje!');
+          message = 'Há lançamentos vencendo hoje!';
         } else if (overdue) {
-          this.messenger.message('Há lançamentos vencidos!');
+          message = 'Há lançamentos vencidos!';
+        }
+
+        if (message) {
+          this.messenger.message(message);
+          // this.notificar(message);
         }
       },
       error: () => {
@@ -1430,5 +1446,44 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.expenses = sorted;
     this.getExpensesTotals();
+  }
+
+  async scheduleExpenseNotifications(expenses: Expenses[]) {
+    await LocalNotifications.cancel({ notifications: [] }); // limpa todas notificações anteriores
+
+    const now = new Date();
+
+    const upcomingExpenses = expenses.filter((expense) => {
+      const dueDate = new Date(expense.dueDate!);
+      const timeDiff = dueDate.getTime() - now.getTime();
+      const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+      return daysDiff >= 0 && daysDiff <= 3; // vencendo em até 3 dias
+    });
+
+    const notifications: ScheduleOptions['notifications'] =
+      upcomingExpenses.map((expense, index) => ({
+        id: index + 1,
+        title: 'Despesa vencendo',
+        body: `${expense.description} vence em breve (${expense.dueDate})`,
+        schedule: {
+          at: new Date(new Date().getTime() + 1000), // dispara 1s depois só pra teste
+        },
+      }));
+
+    if (notifications.length) {
+      await LocalNotifications.schedule({ notifications });
+    }
+  }
+
+  async startBackgroundExpenseCheck() {
+    const taskId = await BackgroundTask.beforeExit(async () => {
+      await this.expenseService.read(this.reference!, false).subscribe({
+        next: async (expenses: Expenses[]) => {
+          await this.scheduleExpenseNotifications(expenses);
+          BackgroundTask.finish({ taskId });
+        },
+        error: () => BackgroundTask.finish({ taskId }),
+      });
+    });
   }
 }

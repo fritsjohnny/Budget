@@ -6,3 +6,8 @@
 ::ng-deep mat-expansion-panel-header span.mat-content {
   justify-content: center;
 }
+
+:host {
+  display: block;
+  padding-bottom: 56px;
+}

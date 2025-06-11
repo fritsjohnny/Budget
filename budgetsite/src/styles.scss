@@ -183,6 +183,7 @@ $primary-light: map-get($light-theme, primary);
 
   .sidenav {
     background-color: mat-color($sidenav-dark);
+    margin-bottom: 56px; // mesma altura da bottom-tabs
   }
 
   .botton-tabs {
@@ -453,6 +454,7 @@ $primary-light: map-get($light-theme, primary);
 
   .sidenav {
     background-color: mat-color($sidenav-light);
+    margin-bottom: 56px; // mesma altura da bottom-tabs
   }
 
   .botton-tabs {

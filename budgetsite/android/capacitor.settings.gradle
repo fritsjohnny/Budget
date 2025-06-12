@@ -16,3 +16,6 @@ project(':capawesome-capacitor-background-task').projectDir = new File('../node_
 
 include ':capacitor-plugin-safe-area'
 project(':capacitor-plugin-safe-area').projectDir = new File('../node_modules/capacitor-plugin-safe-area/android')
+
+include ':capacitor-safe-area'
+project(':capacitor-safe-area').projectDir = new File('../node_modules/capacitor-safe-area/android')

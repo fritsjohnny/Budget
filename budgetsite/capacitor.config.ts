@@ -1,9 +1,9 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.budget.app',
   appName: 'BudgetApp',
-  webDir: 'dist/budgetsite'
+  webDir: 'dist/budgetsite',
 };
 
 export default config;

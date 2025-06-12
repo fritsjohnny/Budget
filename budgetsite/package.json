@@ -9,7 +9,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "production": "ng serve --configuration=production",
-    "build:mobile": "ng build --prod && npx cap copy"
+    "build:mobile": "ng build --configuration production && npx cap sync android"
   },
   "private": true,
   "dependencies": {
@@ -29,6 +29,7 @@
     "@capacitor/cli": "^7.3.0",
     "@capacitor/core": "^7.3.0",
     "@capacitor/local-notifications": "^7.0.1",
+    "@capacitor/status-bar": "^7.0.1",
     "@capawesome/capacitor-background-task": "^7.0.1",
     "bootstrap": "^5.1.3",
     "bootstrap-icons": "^1.7.1",

@@ -24,4 +24,8 @@ export class HeaderService {
 
 		this._headerData.next(value);
 	}
+
+  setTitle(data: HeaderData): void {
+    this._headerData.next(data);
+  }
 }

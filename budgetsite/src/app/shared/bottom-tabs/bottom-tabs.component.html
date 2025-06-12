@@ -5,7 +5,7 @@
     [routerLink]="tab.path"
     routerLinkActive="active"
     [routerLinkActiveOptions]="{ exact: true }"
-    (click)="activeTab = tab.path"
+    (click)="setActiveTab(tab)"
     [class.active]="activeTab === tab.path"
   >
     <mat-icon>{{ tab.icon }}</mat-icon>

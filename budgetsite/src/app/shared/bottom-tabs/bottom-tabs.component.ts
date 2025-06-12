@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
+import { HeaderService } from 'src/app/components/template/header/header.service';
 
 @Component({
   selector: 'app-bottom-tabs',
@@ -21,7 +22,8 @@ export class BottomTabsComponent implements OnInit {
 
   constructor(
     private breakpointObserver: BreakpointObserver,
-    private router: Router
+    private router: Router,
+    private headerService: HeaderService
   ) {}
 
   ngOnInit(): void {
@@ -43,5 +45,17 @@ export class BottomTabsComponent implements OnInit {
     // Caso contrário, marca a aba correspondente como ativa
     const found = this.tabs.find((t) => t.path === currentUrl);
     this.activeTab = found ? found.path : '/budget';
+  }
+
+  setActiveTab(tab: any): void {
+    debugger
+    this.activeTab = tab.path;
+    this.router.navigateByUrl(tab.path);
+
+    this.headerService.setTitle({
+      title: tab.label,
+      icon: tab.icon,
+      routeUrl: tab.path,
+    });
   }
 }

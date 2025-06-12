@@ -843,30 +843,51 @@ body.dark-theme {
   }
 }
 
-/* aplica safe-area em todos */
-body {
+// /* aplica safe-area em todos */
+// body {
+//   padding-top: env(safe-area-inset-top);
+//   padding-bottom: env(safe-area-inset-bottom);
+//   box-sizing: border-box;
+//   background: #1e1e1e !important;
+//   height: 100vh;
+//   margin: 0;
+// }
+
+// /* garante que a app inteira use o espaço corretamente */
+// html, body, ion-app, ion-router-outlet {
+//   height: 100%;
+// }
+
+// /* esse é o ponto-chave: espaço extra só no bottom-tabs */
+// app-bottom-tabs {
+//   padding-bottom: env(safe-area-inset-bottom, 16px);
+//   margin-bottom: env(safe-area-inset-bottom, 16px);
+//   z-index: 1000;
+//   position: relative;
+//   background: #1e1e1e;
+// }
+
+/* Garante que o app respeite safe area */
+html,
+body,
+ion-app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #1e1e1e;
+  box-sizing: border-box;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
-  box-sizing: border-box;
-  background: #1e1e1e !important;
-  height: 100vh;
-  margin: 0;
 }
 
-/* garante que a app inteira use o espaço corretamente */
-html, body, ion-app, ion-router-outlet {
-  height: 100%;
+/* Router outlet ocupa o espaço restante */
+ion-router-outlet {
+  flex: 1;
+  display: flex;
 }
 
-/* esse é o ponto-chave: espaço extra só no bottom-tabs */
+/* Se tiver tabs fixos, aplica padding só neles */
 app-bottom-tabs {
   padding-bottom: env(safe-area-inset-bottom, 16px);
-  margin-bottom: env(safe-area-inset-bottom, 16px);
-  z-index: 1000;
-  position: relative;
-  background: #1e1e1e;
+  background-color: #1e1e1e;
 }
-
-
-
-

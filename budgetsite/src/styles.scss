@@ -794,3 +794,79 @@ input[type="number"] {
 .mat-dialog-title {
   margin-top: -40px !important;
 }
+
+/* ========================================
+   🌙 Modo Escuro Automático (Android/SO)
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #121212;
+    color: #ffffff;
+  }
+}
+
+/* ========================================
+   💡 Modo Escuro Manual (classe no <body>)
+   ======================================== */
+body.dark-theme {
+  background-color: #121212;
+  color: #ffffff;
+
+  // Angular Material
+  .mat-form-field,
+  .mat-form-field-infix,
+  .mat-form-field-wrapper,
+  .mat-input-element,
+  .mat-card,
+  input,
+  textarea {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+  }
+
+  .mat-form-field-label,
+  .mat-input-element::placeholder,
+  .mat-select-value-text {
+    color: #ccc !important;
+  }
+
+  .mat-icon {
+    color: #ffffff;
+  }
+
+  .mat-card {
+    background-color: #1e1e1e !important;
+  }
+}
+
+/* aplica safe-area em todos */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  background: #1e1e1e !important;
+  height: 100vh;
+  margin: 0;
+}
+
+/* garante que a app inteira use o espaço corretamente */
+html, body, ion-app, ion-router-outlet {
+  height: 100%;
+}
+
+/* esse é o ponto-chave: espaço extra só no bottom-tabs */
+app-bottom-tabs {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+  margin-bottom: env(safe-area-inset-bottom, 16px);
+  z-index: 1000;
+  position: relative;
+  background: #1e1e1e;
+}
+
+
+
+

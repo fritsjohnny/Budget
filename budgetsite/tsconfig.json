@@ -23,10 +23,6 @@
       "dom"
     ],
     "allowSyntheticDefaultImports": true,
-    "types": [
-      "node",
-      "capacitor"
-    ]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -14,6 +14,7 @@ dependencies {
     implementation project(':capacitor-status-bar')
     implementation project(':capawesome-capacitor-background-task')
     implementation project(':capacitor-plugin-safe-area')
+    implementation project(':capacitor-safe-area')
 
 }
 

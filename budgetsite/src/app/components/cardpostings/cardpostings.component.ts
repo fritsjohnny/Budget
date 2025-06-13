@@ -549,7 +549,8 @@ export class CardPostingsComponent implements OnInit {
 
   receive(cardspostingsdto: CardsPostingsDTO) {
     const dialogRef = this.dialog.open(CardReceiptsDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         reference: this.reference,
         cardId: this.cardId,

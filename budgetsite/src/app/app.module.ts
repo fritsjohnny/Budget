@@ -44,7 +44,6 @@ import { MatSortModule } from '@angular/material/sort';
 
 import { ClipboardModule } from 'ngx-clipboard';
 
-import { HeaderComponent } from './components/template/header/header.component';
 import { NavComponent } from './components/template/nav/nav.component';
 import { AccountViewComponent } from './views/account-view/account-view.component';
 import { AccountComponent, AccountDialog } from './components/account/account.component';
@@ -101,7 +100,6 @@ registerLocaleData(localePt);
 @NgModule({
   declarations: [
     AppComponent,
-    HeaderComponent,
     NavComponent,
     AccountComponent,
     AccountDialog,

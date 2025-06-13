@@ -533,3 +533,13 @@
     </mat-expansion-panel>
   </mat-accordion>
 </div>
+
+<div *ngIf="hideProgress" class="row" style="margin-top: 10px; display: none">
+  <app-cards-notifications
+    [cardId]="cardId"
+    [reference]="reference"
+    [(categoriesList)]="categoriesList"
+    [(peopleList)]="peopleList"
+    [cardsList]="cardsList"
+  ></app-cards-notifications>
+</div>

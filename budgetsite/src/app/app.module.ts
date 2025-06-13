@@ -84,6 +84,7 @@ import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.c
 import { BottomTabsComponent } from './shared/bottom-tabs/bottom-tabs.component';
 import { RouteReuseStrategy } from '@angular/router';
 import { CustomReuseStrategy } from './core/strategies/custom-reuse-strategy';
+import { CardsNotificationsComponent } from './components/cardsnotifications/cardsnotifications.component';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -136,6 +137,7 @@ registerLocaleData(localePt);
     ThirdPartyExpensesReportComponent,
     ConfirmDialogComponent,
     BottomTabsComponent,
+    CardsNotificationsComponent,
   ],
   imports: [
     BrowserModule,

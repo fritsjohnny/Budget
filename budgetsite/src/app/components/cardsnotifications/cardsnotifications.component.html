@@ -1,0 +1,13 @@
+<mat-card *ngFor="let notification of notifications" class="notification-card">
+  <mat-card-title>{{ notification.description }}</mat-card-title>
+  <mat-card-content>{{ notification.note }}</mat-card-content>
+  <mat-card-actions>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="convertToCardPosting(notification)"
+    >
+      Transformar em Lançamento
+    </button>
+  </mat-card-actions>
+</mat-card>

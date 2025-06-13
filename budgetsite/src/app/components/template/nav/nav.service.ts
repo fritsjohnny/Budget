@@ -3,25 +3,30 @@ import { BehaviorSubject } from 'rxjs';
 import { NavData } from './nav-data.model';
 
 @Injectable({
-	providedIn: 'root'
+  providedIn: 'root',
 })
 export class NavService {
+  private _navData = new BehaviorSubject<NavData>({
+    title: 'Início',
+    icon: 'home',
+    routeUrl: '',
+  });
 
-	private _navData = new BehaviorSubject<NavData>({
-		title: 'Início',
-		icon: 'home',
-		routeUrl: ''
-	});
+  constructor() {}
 
-	constructor() { }
+  get navData(): NavData {
+    return this._navData.value;
+  }
 
-	get navData(): NavData {
+  set navData(value: NavData) {
+    this._navData.next(value);
+  }
 
-		return this._navData.value;
-	}
-
-	set navData(value: NavData) {
-
-		this._navData.next(value);
-	}
+  setTitle(data: { title: any; icon: any; routeUrl: any }) {
+    this.navData = {
+      title: data.title,
+      icon: data.icon,
+      routeUrl: data.routeUrl,
+    };
+  }
 }

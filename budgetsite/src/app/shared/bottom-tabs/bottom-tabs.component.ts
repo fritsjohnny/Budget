@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
-import { HeaderService } from 'src/app/components/template/header/header.service';
+import { NavService } from 'src/app/components/template/nav/nav.service';
 
 @Component({
   selector: 'app-bottom-tabs',
@@ -23,7 +23,7 @@ export class BottomTabsComponent implements OnInit {
   constructor(
     private breakpointObserver: BreakpointObserver,
     private router: Router,
-    private headerService: HeaderService
+    private navService: NavService
   ) {}
 
   ngOnInit(): void {
@@ -48,11 +48,10 @@ export class BottomTabsComponent implements OnInit {
   }
 
   setActiveTab(tab: any): void {
-    debugger
     this.activeTab = tab.path;
     this.router.navigateByUrl(tab.path);
 
-    this.headerService.setTitle({
+    this.navService.setTitle({
       title: tab.label,
       icon: tab.icon,
       routeUrl: tab.path,

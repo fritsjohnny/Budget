@@ -586,7 +586,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     this.editing = false;
 
     const dialogRef = this.dialog.open(ExpensesDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         reference: this.reference,
         editing: this.editing,
@@ -767,7 +768,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     this.editing = false;
 
     const dialogRef = this.dialog.open(IncomesDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         reference: this.reference,
         editing: this.editing,
@@ -823,7 +825,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     this.editing = true;
 
     const dialogRef = this.dialog.open(IncomesDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         id: income.id,
         userId: income.userId,
@@ -951,7 +954,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   pay(expense: Expenses) {
     const dialogRef = this.dialog.open(PaymentReceiveDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         reference: expense.reference,
         description: 'Pag. ' + expense.description,
@@ -1067,7 +1071,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   receive(income: Incomes) {
     const dialogRef = this.dialog.open(PaymentReceiveDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         reference: income.reference,
         description: 'Rec. ' + income.description,
@@ -1110,7 +1115,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   addValue(row: any, type: string) {
     const dialogRef = this.dialog.open(AddvalueComponent, {
-      width: '500px',
+      width: '100%',
+      maxWidth: '100%',
       data: {
         id: row.id,
         description: row.description,

@@ -144,4 +144,11 @@ export class ExpenseService {
         catchError((e) => this.messenger.errorHandler(e))
       );
   }
+
+  getAll() {
+    return this.http.get<Expenses[]>(ApiUrls.expenses).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
 }

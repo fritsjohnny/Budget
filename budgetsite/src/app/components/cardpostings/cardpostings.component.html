@@ -308,6 +308,24 @@
                 <mat-menu #menu="matMenu">
                   <button
                     mat-menu-item
+                    [id]="'menu-incomes'"
+                    (click)="editOrDelete(row, null)"
+                    [disabled]="false"
+                  >
+                    <mat-icon [id]="'menu-icon-incomes'">edit</mat-icon>
+                    <span>Editar</span>
+                  </button>
+                  <button
+                    mat-menu-item
+                    [id]="'menu-expenses'"
+                    (click)="delete(row)"
+                    [disabled]="row.remaining <= 0"
+                  >
+                    <mat-icon [id]="'menu-icon-expenses'">delete</mat-icon>
+                    <span>Excluir</span>
+                  </button>
+                  <button
+                    mat-menu-item
                     (click)="convertToExpense(row)"
                     [disabled]="false"
                   >

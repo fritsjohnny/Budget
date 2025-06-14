@@ -29,6 +29,10 @@ import { CardPostingsDialog } from './cardpostings-dialog';
 import { CardReceiptsDialog } from './cardreceipts-dialog';
 import { Messenger } from 'src/app/common/messenger';
 import { Expenses } from 'src/app/models/expenses.model';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from 'src/app/shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-cardpostings',
@@ -404,7 +408,7 @@ export class CardPostingsComponent implements OnInit {
   }
 
   editOrDelete(cardPosting: CardsPostings, event: any) {
-    if (event.target.textContent === 'more_vert') {
+    if (event != null && event.target.textContent === 'more_vert') {
       return;
     }
     if (this.checkCard) {
@@ -521,6 +525,35 @@ export class CardPostingsComponent implements OnInit {
 
     this.getCardsPostingsPeople();
     this.getExpensesByCategories();
+  }
+
+  delete(cardPosting: CardsPostings) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Excluir Compra',
+        message: 'Confirma a EXCLUSÃO da compra?',
+        confirmText: 'Sim',
+        cancelText: 'Cancelar',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.cardPostingsService.delete(cardPosting.id!).subscribe({
+          next: () => {
+            this.messenger.message(
+              'Lançamento de cartão removido com sucesso.'
+            );
+
+            this.afterDelete(cardPosting);
+          },
+          error: () => {
+            this.messenger.message('Erro ao remover lançamento de cartão.');
+          },
+        });
+      }
+    });
   }
 
   cardPostingsPanelClosed() {

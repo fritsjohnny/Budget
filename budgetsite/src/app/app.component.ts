@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { ThemeService } from './services/theme/theme.service';
+import { NotificationService } from './services/expense/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,11 @@ import { ThemeService } from './services/theme/theme.service';
 export class AppComponent implements OnInit {
   showBottomTabs = true;
 
-  constructor(private router: Router, private themeService: ThemeService) {
+  constructor(
+    private router: Router,
+    private themeService: ThemeService,
+    private notificationService: NotificationService
+  ) {
     this.themeService.init();
     this.router.events.subscribe((evt) => {
       if (evt instanceof NavigationEnd) {
@@ -23,6 +28,9 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Remover se não quiser exibir as notificações quando o app inicia, já que elas são agendadas no serviço de notificação.
+    this.notificationService.checkAndScheduleNotifications();
+
     // só Android puro, sem Ionic Platform
     if (/Android/.test(navigator.userAgent) && window.visualViewport) {
       document.body.classList.add('android');

@@ -41,6 +41,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
     implementation project(':capacitor-safe-area')
+    implementation project(':capacitor-budget-notifier')
 }
 
 apply from: 'capacitor.build.gradle'

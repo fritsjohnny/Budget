@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { ThemeService } from './services/theme/theme.service';
 import { NotificationService } from './services/expense/notification.service';
+import { HealthService } from './services/health/health.service';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,8 @@ export class AppComponent implements OnInit {
   constructor(
     private router: Router,
     private themeService: ThemeService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private healthService: HealthService
   ) {
     this.themeService.init();
     this.router.events.subscribe((evt) => {
@@ -28,6 +30,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.healthService.startPing();
+    
     // Remover se não quiser exibir as notificações quando o app inicia, já que elas são agendadas no serviço de notificação.
     this.notificationService.checkAndScheduleNotifications();
 

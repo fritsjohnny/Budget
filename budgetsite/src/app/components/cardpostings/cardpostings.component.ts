@@ -411,7 +411,7 @@ export class CardPostingsComponent implements OnInit {
     if (event != null && event.target.textContent === 'more_vert') {
       return;
     }
-    if (this.checkCard) {
+    if (this.checkCard && event != null) {
       cardPosting.isSelected = !cardPosting.isSelected;
 
       return;

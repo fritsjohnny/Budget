@@ -84,6 +84,39 @@
       </div>
 
       <div class="row">
+        <div class="col-10">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100%"
+          >
+            <mat-label>Categoria</mat-label>
+            <mat-select
+              mat-input
+              [(ngModel)]="cardPosting.categoryId"
+              formControlName="categoryIdFormControl"
+            >
+              <mat-option>-- Nenhuma --</mat-option>
+              <mat-option
+                *ngFor="let c of cardPosting.categoriesList"
+                [value]="c.id"
+                >{{ c.name }}</mat-option
+              >
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-2 center">
+          <span
+            class="material-icons add-list-item"
+            matTooltip="Adicionar Categoria"
+            (click)="addCategory()"
+          >
+            playlist_add
+          </span>
+        </div>
+      </div>
+
+      <div class="row">
         <div class="col-6">
           <mat-form-field
             appearance="fill"
@@ -290,39 +323,6 @@
           Repetir edição para os próximos meses
         </mat-checkbox>
       </p>
-
-      <div class="row">
-        <div class="col-10">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100%"
-          >
-            <mat-label>Categoria</mat-label>
-            <mat-select
-              mat-input
-              [(ngModel)]="cardPosting.categoryId"
-              formControlName="categoryIdFormControl"
-            >
-              <mat-option>-- Nenhuma --</mat-option>
-              <mat-option
-                *ngFor="let c of cardPosting.categoriesList"
-                [value]="c.id"
-                >{{ c.name }}</mat-option
-              >
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-2 center">
-          <span
-            class="material-icons add-list-item"
-            matTooltip="Adicionar Categoria"
-            (click)="addCategory()"
-          >
-            playlist_add
-          </span>
-        </div>
-      </div>
 
       <div class="row">
         <div class="col-10">

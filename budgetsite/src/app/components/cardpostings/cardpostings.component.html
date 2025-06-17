@@ -319,7 +319,7 @@
                     mat-menu-item
                     [id]="'menu-expenses'"
                     (click)="delete(row)"
-                    [disabled]="row.remaining <= 0"
+                    [disabled]="false"
                   >
                     <mat-icon [id]="'menu-icon-expenses'">delete</mat-icon>
                     <span>Excluir</span>

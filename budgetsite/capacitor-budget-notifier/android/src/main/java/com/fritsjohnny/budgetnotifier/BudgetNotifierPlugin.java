@@ -9,7 +9,10 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.JSObject;
 
 import java.util.concurrent.TimeUnit;
 
@@ -66,7 +69,7 @@ public class BudgetNotifierPlugin extends Plugin {
         String value = call.getString("value");
 
         JSObject ret = new JSObject();
-        ret.put("value", implementation.echo(value));
+        ret.put("value", value);
         call.resolve(ret);
     }
 }

@@ -10,3 +10,4 @@ project(':capacitor-safe-area').projectDir = new File('../capacitor-safe-area/an
 include ':capacitor-budget-notifier'
 project(':capacitor-budget-notifier').projectDir = new File('../capacitor-budget-notifier/android')
 
+

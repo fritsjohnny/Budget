@@ -4,7 +4,8 @@ import { Router, NavigationEnd } from '@angular/router';
 import { ThemeService } from './services/theme/theme.service';
 import { NotificationService } from './services/expense/notification.service';
 import { HealthService } from './services/health/health.service';
-import { LocalNotifications } from '@capacitor/local-notifications';
+import { Preferences } from '@capacitor/preferences';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -31,13 +32,18 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('ngOnInit chamado');
+    const token = localStorage.getItem('token');
+    if (token) {
+      Preferences.set({ key: 'auth_token', value: token });
+      Preferences.set({ key: 'api_base_url', value: environment.baseUrl });
+    }
+
     this.healthService.startPing();
 
     this.notificationService.requestPermissionIfNeeded(); // novo
     this.notificationService.scheduleDailyWorker();
     // Remover se não quiser exibir as notificações quando o app inicia, já que elas são agendadas no serviço de notificação.
-    this.notificationService.checkAndScheduleNotifications();
+    // this.notificationService.checkAndScheduleNotifications();
 
     // só Android puro, sem Ionic Platform
     if (/Android/.test(navigator.userAgent) && window.visualViewport) {

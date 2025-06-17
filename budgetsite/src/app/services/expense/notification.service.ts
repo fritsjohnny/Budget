@@ -31,8 +31,6 @@ export class NotificationService {
   }
 
   async checkAndScheduleNotifications(): Promise<void> {
-    debugger;
-
     const daysAhead = 3;
 
     this.expenseService

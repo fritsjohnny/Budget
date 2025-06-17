@@ -30,6 +30,7 @@
     "@capacitor/cli": "^7.3.0",
     "@capacitor/core": "^7.3.0",
     "@capacitor/local-notifications": "^7.0.1",
+    "@capacitor/preferences": "^7.0.1",
     "@capacitor/status-bar": "^7.0.1",
     "@capawesome/capacitor-background-task": "^7.0.1",
     "bootstrap": "^5.1.3",

@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
@@ -60,16 +61,30 @@ public class BudgetNotifierPlugin extends Plugin {
     call.resolve(ret);
   }
 
+  @PluginMethod
+  public void forceRun(PluginCall call) {
+    Context context = getContext();
+
+    OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(DailyNotificationWorker.class)
+        .build();
+
+    WorkManager.getInstance(context).enqueue(request);
+
+    JSObject ret = new JSObject();
+    ret.put("success", true);
+    call.resolve(ret);
+  }
+
   public String echo(String value) {
     return value;
   }
 
   @PluginMethod
-    public void echo(PluginCall call) {
-        String value = call.getString("value");
+  public void echo(PluginCall call) {
+    String value = call.getString("value");
 
-        JSObject ret = new JSObject();
-        ret.put("value", value);
-        call.resolve(ret);
-    }
+    JSObject ret = new JSObject();
+    ret.put("value", value);
+    call.resolve(ret);
+  }
 }

@@ -31,7 +31,7 @@ public class BudgetNotifierPlugin extends Plugin {
 
     PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(
         DailyNotificationWorker.class,
-        24, TimeUnit.HOURS)
+        1, TimeUnit.HOURS)
         .setInitialDelay(5, TimeUnit.SECONDS) // ajustável para testes
         .setConstraints(new Constraints.Builder().build())
         .build();

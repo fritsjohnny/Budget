@@ -4,6 +4,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { ThemeService } from './services/theme/theme.service';
 import { NotificationService } from './services/expense/notification.service';
 import { HealthService } from './services/health/health.service';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-root',
@@ -30,8 +31,11 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    console.log('ngOnInit chamado');
     this.healthService.startPing();
-    
+
+    this.notificationService.requestPermissionIfNeeded(); // novo
+    this.notificationService.scheduleDailyWorker();
     // Remover se não quiser exibir as notificações quando o app inicia, já que elas são agendadas no serviço de notificação.
     this.notificationService.checkAndScheduleNotifications();
 

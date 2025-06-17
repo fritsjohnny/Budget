@@ -31,13 +31,13 @@ public class BudgetNotifierPlugin extends Plugin {
     PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(
         DailyNotificationWorker.class,
         24, TimeUnit.HOURS)
-        .setInitialDelay(1, TimeUnit.MINUTES) // ajustável para testes
+        .setInitialDelay(5, TimeUnit.SECONDS) // ajustável para testes
         .setConstraints(new Constraints.Builder().build())
         .build();
 
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
         WORK_NAME,
-        ExistingPeriodicWorkPolicy.KEEP,
+        ExistingPeriodicWorkPolicy.REPLACE,
         workRequest);
   }
 

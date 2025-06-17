@@ -2,7 +2,10 @@ package com.fritsjohnny.budgetnotifier;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
@@ -22,6 +25,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.text.NumberFormat;
 
 public class DailyNotificationWorker extends Worker {
   private static final String TAG = "BudgetNotifier";
@@ -65,15 +69,25 @@ public class DailyNotificationWorker extends Worker {
 
       BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
       StringBuilder response = new StringBuilder();
+
       String line;
+
       while ((line = reader.readLine()) != null) {
         response.append(line);
       }
+
       reader.close();
 
       JSONArray expenses = new JSONArray(response.toString());
+
       Date today = new Date();
+
       SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+      SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("pt-BR"));
+
+      NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.getDefault());
+      currencyFormatter.setMaximumFractionDigits(2);
+      currencyFormatter.setMinimumFractionDigits(2);
 
       for (int i = 0; i < expenses.length(); i++) {
         JSONObject expense = expenses.getJSONObject(i);
@@ -94,7 +108,10 @@ public class DailyNotificationWorker extends Worker {
           title = "Despesa a vencer em " + diffDays + " dia" + (diffDays > 1 ? "s" : "");
         }
 
-        String body = description + " - R$ " + toPay;
+        String body = "🧾 " + description +
+            "\n💸 " + currencyFormatter.format(toPay) +
+            "\n🗓️ " + dateFormatter.format(dueDate);
+
         showNotification(title, body);
       }
 
@@ -118,14 +135,26 @@ public class DailyNotificationWorker extends Worker {
       notificationManager.createNotificationChannel(channel);
     }
 
+    Intent intent = getApplicationContext().getPackageManager()
+        .getLaunchIntentForPackage(getApplicationContext().getPackageName());
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+    PendingIntent pendingIntent = PendingIntent.getActivity(
+        getApplicationContext(),
+        0,
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
     NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-        .setSmallIcon(android.R.drawable.ic_dialog_info)
+        .setSmallIcon(R.mipmap.ic_budget_notification)
         .setContentTitle(title)
         .setContentText(message)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setDefaults(NotificationCompat.DEFAULT_ALL)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .setAutoCancel(true);
+        .setAutoCancel(true)
+        .setContentIntent(pendingIntent)
+        .setStyle(new NotificationCompat.BigTextStyle().bigText(message));
 
     notificationManager.notify((int) System.currentTimeMillis(), builder.build());
   }

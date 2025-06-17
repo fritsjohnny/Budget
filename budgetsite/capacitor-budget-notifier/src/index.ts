@@ -1,8 +1,8 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { BudgetNotifierPluginPlugin } from './definitions';
+import { BudgetNotifierPlugin } from './definitions';
 
-const BudgetNotifierPlugin = registerPlugin<BudgetNotifierPluginPlugin>('BudgetNotifierPlugin', {
+const BudgetNotifierPlugin = registerPlugin<BudgetNotifierPlugin>('BudgetNotifierPlugin', {
   web: () => import('./web').then((m) => new m.BudgetNotifierPluginWeb()),
 });
 

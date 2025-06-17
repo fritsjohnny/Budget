@@ -145,10 +145,12 @@ export class ExpenseService {
       );
   }
 
-  getAll() {
-    return this.http.get<Expenses[]>(ApiUrls.expenses).pipe(
-      map((obj) => obj),
-      catchError((e) => this.messenger.errorHandler(e))
-    );
+  getUpcomingOrOverdueExpenses(daysAhead: number = 1): Observable<Expenses[]> {
+    return this.http
+      .get<Expenses[]>(`${ApiUrls.expenses}/Notify?daysAhead=${daysAhead}`)
+      .pipe(
+        map((obj) => obj),
+        catchError((e) => this.messenger.errorHandler(e))
+      );
   }
 }

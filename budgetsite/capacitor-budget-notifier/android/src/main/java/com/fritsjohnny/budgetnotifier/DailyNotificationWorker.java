@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
 
@@ -23,9 +24,12 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.text.NumberFormat;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class DailyNotificationWorker extends Worker {
   private static final String TAG = "BudgetNotifier";
@@ -39,6 +43,10 @@ public class DailyNotificationWorker extends Worker {
   @Override
   public Result doWork() {
     Log.d(TAG, ">>>>> doWork executado!");
+
+    Log.d(TAG, "Limpando notificações antigas...");
+    limparDiasAntigos();
+    Log.d(TAG, "Notificações antigas limpas.");
 
     Context context = getApplicationContext();
     android.content.SharedPreferences prefs = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
@@ -64,6 +72,7 @@ public class DailyNotificationWorker extends Worker {
       Log.d(TAG, "Código da resposta: " + responseCode);
 
       if (responseCode != 200) {
+        Log.e(TAG, "Erro ao buscar despesas: Código de resposta " + responseCode);
         return Result.failure();
       }
 
@@ -95,13 +104,27 @@ public class DailyNotificationWorker extends Worker {
         double toPay = expense.getDouble("toPay");
         String dueDateStr = expense.getString("dueDate");
 
+        if (dueDateStr == null || dueDateStr.isEmpty()) {
+          Log.w(TAG, "Data de vencimento ausente para a despesa: " + description);
+          continue;
+        }
+
         Date dueDate = format.parse(dueDateStr);
-        long diff = dueDate.getTime() - today.getTime();
+        // Zera hora, minuto, segundo e millis de ambas as datas
+        SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        Date cleanToday = dayFormatter.parse(dayFormatter.format(today));
+        Date cleanDueDate = dayFormatter.parse(dayFormatter.format(dueDate));
+
+        long diff = cleanDueDate.getTime() - cleanToday.getTime();
         long diffDays = diff / (1000 * 60 * 60 * 24);
 
         String title;
         if (diffDays < 0) {
-          title = "Despesa vencida";
+          if (diffDays == -1) {
+            title = "Despesa venceu ontem";
+          } else {
+            title = "Despesa vencida há " + Math.abs(diffDays) + " dias";
+          }
         } else if (diffDays == 0) {
           title = "Despesa vence hoje";
         } else {
@@ -112,7 +135,28 @@ public class DailyNotificationWorker extends Worker {
             "\n💸 " + currencyFormatter.format(toPay) +
             "\n🗓️ " + dateFormatter.format(dueDate);
 
-        showNotification(title, body);
+        SimpleDateFormat keyFormatter = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        String dataHoje = keyFormatter.format(today);
+        String dataVenc = keyFormatter.format(dueDate);
+
+        // Gera um ID numérico consistente a partir da string única
+        int expenseId = expense.getInt("id");
+
+        String uniqueKey = expenseId + "_" + dataVenc + "_" + dataHoje;
+        Log.d(TAG, "Chave única da notificação: " + uniqueKey);
+
+        // Evita notificação duplicada no mesmo dia
+        if (foiNotificacaoExibidaHoje(uniqueKey)) {
+          Log.d(TAG, "🔁 Notificação já exibida hoje: " + uniqueKey);
+          continue;
+        }
+
+        int notificationId = uniqueKey.hashCode();
+        Log.d(TAG, "🔔 Exibindo notificação: " + title + " - ID: " + notificationId);
+        showNotification(title, body, notificationId);
+        Log.d(TAG, "Notificação exibida: " + title + " - ID: " + notificationId);
+        marcarNotificacaoComoExibidaHoje(uniqueKey);
+        Log.d(TAG, "Notificação marcada como exibida: " + uniqueKey);
       }
 
       return Result.success();
@@ -123,7 +167,7 @@ public class DailyNotificationWorker extends Worker {
     }
   }
 
-  private void showNotification(String title, String message) {
+  private void showNotification(String title, String message, int notificationId) {
     NotificationManager notificationManager = (NotificationManager) getApplicationContext()
         .getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -156,6 +200,42 @@ public class DailyNotificationWorker extends Worker {
         .setContentIntent(pendingIntent)
         .setStyle(new NotificationCompat.BigTextStyle().bigText(message));
 
-    notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+    notificationManager.notify(notificationId, builder.build());
   }
+
+  private boolean foiNotificacaoExibidaHoje(String key) {
+    SharedPreferences prefs = getApplicationContext().getSharedPreferences("NotificacoesExibidas",
+        Context.MODE_PRIVATE);
+
+    String hoje = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+
+    return prefs.getStringSet(hoje, new HashSet<>()).contains(key);
+  }
+
+  private void marcarNotificacaoComoExibidaHoje(String key) {
+    SharedPreferences prefs = getApplicationContext().getSharedPreferences("NotificacoesExibidas",
+        Context.MODE_PRIVATE);
+
+    String hoje = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+
+    Set<String> exibidas = new HashSet<>(prefs.getStringSet(hoje, new HashSet<>()));
+
+    exibidas.add(key);
+
+    prefs.edit().putStringSet(hoje, exibidas).apply();
+  }
+
+  private void limparDiasAntigos() {
+    SharedPreferences prefs = getApplicationContext().getSharedPreferences("NotificacoesExibidas",
+        Context.MODE_PRIVATE);
+    String hoje = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+
+    Map<String, ?> todas = prefs.getAll();
+    for (String key : todas.keySet()) {
+      if (!key.equals(hoje)) {
+        prefs.edit().remove(key).apply();
+      }
+    }
+  }
+
 }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
 import moment from 'moment';
@@ -7,13 +7,17 @@ import { People } from 'src/app/models/people.model';
 import { Categories } from 'src/app/models/categories.model';
 import { Cards } from 'src/app/models/cards.model';
 import { CardsPostings } from 'src/app/models/cardspostings.model';
+import {
+  NotificationPayload,
+  NotificationReader,
+} from 'capacitor-notification-reader/src';
 
 @Component({
   selector: 'app-cards-notifications',
   templateUrl: './cardsnotifications.component.html',
   styleUrls: ['./cardsnotifications.component.scss'],
 })
-export class CardsNotificationsComponent {
+export class CardsNotificationsComponent implements OnInit {
   @Input() cardId?: number;
   @Input() reference?: string;
   @Input() peopleList?: People[];
@@ -42,6 +46,96 @@ export class CardsNotificationsComponent {
     private dialog: MatDialog,
     private cardPostingsService: CardPostingsService
   ) {}
+
+  async ngOnInit(): Promise<void> {
+    console.log('[DEBUG] ngOnInit iniciado');
+
+    try {
+      alert('🔍 Chamando getActiveNotifications() [WEB]');
+      const result = await NotificationReader.getActiveNotifications();
+      console.log('[DEBUG] getActiveNotifications result:', result);
+
+      for (const payload of result.notifications) {
+        const cardPosting = this.parseNotification(payload);
+        console.log('[DEBUG] Card posting gerado:', cardPosting);
+
+        if (cardPosting) {
+          this.notifications.unshift(cardPosting);
+        }
+      }
+    } catch (error) {
+      console.error('[DEBUG] Erro ao buscar notificações ativas:', error);
+    }
+
+    NotificationReader.addListener('notificationReceived', (payload) => {
+      console.log('[DEBUG] Nova notificação recebida:', payload);
+
+      const cardPosting = this.parseNotification(payload);
+      if (cardPosting) {
+        this.notifications.unshift(cardPosting);
+      }
+    });
+  }
+
+  private parseNotification(
+    payload: NotificationPayload
+  ): CardsPostings | null {
+    const text = payload.text ?? '';
+    const title = payload.title ?? '';
+    const pkg = payload.package?.toLowerCase() ?? '';
+
+    // C6 Bank
+    if (
+      (pkg.includes('c6') || title.toLowerCase().includes('crédito')) &&
+      text.includes('no valor de R$')
+    ) {
+      try {
+        const valorMatch = text.match(/R\$ ?([\d,.]+)/);
+        const dataMatch = text.match(
+          /dia (\d{2}\/\d{2}\/\d{4}) às (\d{2}:\d{2})/
+        );
+        const lojaMatch = text.match(/em (.+?),? foi aprovada/i);
+
+        if (!valorMatch || !dataMatch || !lojaMatch) return null;
+
+        const amount = parseFloat(
+          valorMatch[1].replace('.', '').replace(',', '.')
+        );
+        const date = new Date(
+          `${dataMatch[1].split('/').reverse().join('-')}T${dataMatch[2]}:00`
+        );
+        const description = lojaMatch[1].split(/\s{2,}/)[0].trim();
+
+        return { amount, date, description, note: text } as CardsPostings;
+      } catch {
+        return null;
+      }
+    }
+
+    // PicPay
+    if (pkg.includes('picpay') || title.toLowerCase().includes('cashback')) {
+      try {
+        const valorMatch = text.match(/R\$ ?([\d,.]+)/);
+        const lojaMatch = text.match(/em (.+?) (APROVADA|APROVADO)/i);
+
+        if (!valorMatch || !lojaMatch) return null;
+
+        const amount = parseFloat(
+          valorMatch[1].replace('.', '').replace(',', '.')
+        );
+        const description = lojaMatch[1].trim();
+        const date = new Date(); // Assume data atual
+
+        return { amount, date, description, note: text } as CardsPostings;
+      } catch {
+        return null;
+      }
+    }
+
+    // Outros bancos no futuro aqui...
+
+    return null;
+  }
 
   convertToCardPosting(notification: CardsPostings): void {
     const dialogRef = this.dialog.open(CardPostingsDialog, {

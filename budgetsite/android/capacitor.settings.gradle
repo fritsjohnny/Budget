@@ -20,6 +20,9 @@ project(':capawesome-capacitor-background-task').projectDir = new File('../node_
 include ':capacitor-budget-notifier'
 project(':capacitor-budget-notifier').projectDir = new File('../node_modules/capacitor-budget-notifier/android')
 
+include ':capacitor-notification-reader'
+project(':capacitor-notification-reader').projectDir = new File('../node_modules/capacitor-notification-reader/android')
+
 include ':capacitor-plugin-safe-area'
 project(':capacitor-plugin-safe-area').projectDir = new File('../node_modules/capacitor-plugin-safe-area/android')
 

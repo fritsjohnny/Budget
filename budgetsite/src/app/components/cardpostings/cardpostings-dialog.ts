@@ -103,6 +103,10 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     this.cd.detectChanges();
 
     this.isScreenInit = false;
+
+    if (this.cardPosting.description) {
+      this.onDescriptionChange();
+    }
   }
 
   cancel(): void {

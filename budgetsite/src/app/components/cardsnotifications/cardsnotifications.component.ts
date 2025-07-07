@@ -11,6 +11,7 @@ import {
   NotificationPayload,
   NotificationReader,
 } from 'capacitor-notification-reader/src';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-cards-notifications',
@@ -27,31 +28,26 @@ export class CardsNotificationsComponent implements OnInit {
   @Output() peopleListChange = new EventEmitter<People[]>();
   @Output() categoriesListChange = new EventEmitter<Categories[]>();
 
-  notifications = [
-    {
-      description: 'DUKAS GAS',
-      note: 'R$ 45,98 - 11/06/2025 18:20 - DUKAS GAS',
-      amount: 45.98,
-      date: new Date('2025-06-11T18:20:00'),
-    },
-    {
-      description: 'POSTO 7 MAIO',
-      note: 'R$ 100,00 - 11/06/2025 14:26 - POSTO 7 MAIO',
-      amount: 100,
-      date: new Date('2025-06-11T14:26:00'),
-    },
-  ] as CardsPostings[];
+  private readonly STORAGE_KEY = 'persisted_notifications';
+
+  notifications = [] as CardsPostings[];
 
   constructor(
     private dialog: MatDialog,
     private cardPostingsService: CardPostingsService
-  ) {
-    this.notifications = [];
-  }
+  ) {}
 
   async ngOnInit(): Promise<void> {
     console.log('[DEBUG] ngOnInit iniciado');
 
+    // 1. Recarrega notificações do armazenamento
+    const stored = await Preferences.get({ key: this.STORAGE_KEY });
+    if (stored.value) {
+      const parsed = JSON.parse(stored.value);
+      this.notifications.push(...parsed);
+    }
+
+    // 2. Busca notificações ativas do sistema
     try {
       const result = await NotificationReader.getActiveNotifications();
       console.log('[DEBUG] getActiveNotifications result:', result);
@@ -60,20 +56,23 @@ export class CardsNotificationsComponent implements OnInit {
         const cardPosting = this.parseNotification(payload);
         console.log('[DEBUG] Card posting gerado:', cardPosting);
 
-        if (cardPosting) {
+        if (cardPosting && !this.isDuplicate(cardPosting.note)) {
           this.notifications.unshift(cardPosting);
+          await this.saveNotificationsToStorage();
         }
       }
     } catch (error) {
       console.error('[DEBUG] Erro ao buscar notificações ativas:', error);
     }
 
-    NotificationReader.addListener('notificationReceived', (payload) => {
+    // 3. Registra o listener para notificações futuras
+    NotificationReader.addListener('notificationReceived', async (payload) => {
       console.log('[DEBUG] Nova notificação recebida:', payload);
 
       const cardPosting = this.parseNotification(payload);
       if (cardPosting) {
         this.notifications.unshift(cardPosting);
+        await this.saveNotificationsToStorage();
       }
     });
   }
@@ -183,5 +182,21 @@ export class CardsNotificationsComponent implements OnInit {
         });
       }
     });
+  }
+
+  async removeNotification(notification: CardsPostings): Promise<void> {
+    this.notifications = this.notifications.filter((n) => n !== notification);
+    await this.saveNotificationsToStorage();
+  }
+
+  private async saveNotificationsToStorage(): Promise<void> {
+    await Preferences.set({
+      key: this.STORAGE_KEY,
+      value: JSON.stringify(this.notifications),
+    });
+  }
+
+  private isDuplicate(note: string | undefined): boolean {
+    return this.notifications.some((n) => n.note === note);
   }
 }

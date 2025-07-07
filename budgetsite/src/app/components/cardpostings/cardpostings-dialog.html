@@ -56,7 +56,7 @@
         <mat-form-field appearance="fill">
           <mat-label>Descrição</mat-label>
           <input
-            *ngIf="!cardPosting.adding"
+            *ngIf="!cardPosting.adding || cardPosting.description"
             type="text"
             id="descriptionFormControl"
             required
@@ -65,7 +65,7 @@
             [(ngModel)]="cardPosting.description"
           />
           <input
-            *ngIf="cardPosting.adding"
+            *ngIf="cardPosting.adding && !cardPosting.description"
             type="text"
             id="descriptionFormControl"
             required

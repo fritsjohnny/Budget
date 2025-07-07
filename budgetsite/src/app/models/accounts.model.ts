@@ -5,6 +5,7 @@ export interface Accounts {
   color?: string;
   background?: string;
   disabled?: boolean;
+  appPackageName?: string;
   calcInGeneral?: boolean;
   position?: number;
   grandTotalBalance?: number | undefined;

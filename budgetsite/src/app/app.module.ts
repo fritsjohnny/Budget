@@ -46,7 +46,8 @@ import { ClipboardModule } from 'ngx-clipboard';
 
 import { NavComponent } from './components/template/nav/nav.component';
 import { AccountViewComponent } from './views/account-view/account-view.component';
-import { AccountComponent, AccountDialog } from './components/account/account.component';
+import { AccountComponent } from './components/account/account.component';
+import { AccountDialog } from './components/account/account-dialog';
 import { AccountPostingsComponent } from './components/accountpostings/accountpostings.component';
 import { AccountPostingsDialog } from './components/accountpostings/accountpostings-dialog';
 import { CardViewComponent } from './views/card-view/card-view.component';

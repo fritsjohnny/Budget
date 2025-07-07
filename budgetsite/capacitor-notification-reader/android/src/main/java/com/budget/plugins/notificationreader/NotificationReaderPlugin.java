@@ -1,86 +1,75 @@
 package com.budget.plugins.notificationreader;
 
-import android.content.Intent;
+import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
-import com.getcapacitor.annotation.CapacitorPlugin;
-import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.JSObject;
+import com.getcapacitor.JSArray;
+import com.getcapacitor.annotation.CapacitorPlugin;
 
-import org.json.JSONArray;
-
-@CapacitorPlugin(name = "NotificationReader")
+@CapacitorPlugin(name = "NotificationReaderPlugin")
 public class NotificationReaderPlugin extends Plugin {
 
-    @Override
-    public void load() {
-        NotificationReaderService.setNotificationListener((packageName, title, text) -> {
-            JSObject notification = new JSObject();
-            notification.put("package", packageName);
-            notification.put("title", title);
-            notification.put("text", text);
+  private static final String TAG = "NotificationReaderPlugin";
 
-            notifyListeners("notificationReceived", notification);
-        });
-    }
+  @Override
+  public void load() {
+    super.load();
+    NotificationReaderService.registerPlugin(this);
+    Log.d(TAG, "Plugin carregado e registrado no serviço");
+  }
 
-    @PluginMethod
-    public void openNotificationAccessSettings(PluginCall call) {
-        Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getContext().startActivity(intent);
-        call.resolve();
-    }
+  @PluginMethod
+  public void getActiveNotifications(PluginCall call) {
+    try {
+      StatusBarNotification[] sbns = NotificationReaderService.fetchActiveNotifications();
 
-    @PluginMethod
-    public void getActiveNotifications(PluginCall call) {
-    Log.d("NotificationReaderPlugin", "getActiveNotifications chamado");
-
-    List<StatusBarNotification> active = NotificationReaderService.getActiveNotifications();
-
-    if (active == null) {
-        Log.w("NotificationReaderPlugin", "Serviço não iniciado ou sem permissões");
-        call.reject("Notification service not running or permission not granted.");
+      if (sbns == null) {
+        call.reject("Não foi possível acessar notificações ativas.");
         return;
-    }
+      }
 
-    Log.d("NotificationReaderPlugin", "Notificações ativas recebidas: " + active.size());
+      JSArray notifications = new JSArray();
 
-    JSArray jsArray = new JSArray();
+      for (StatusBarNotification sbn : sbns) {
+        if (sbn == null || sbn.getNotification() == null) continue;
 
-    for (StatusBarNotification sbn : active) {
-        if (sbn == null || sbn.getNotification() == null) {
-            Log.w("NotificationReaderPlugin", "Notificação inválida (null)");
-            continue;
-        }
+        JSObject notif = new JSObject();
+        notif.put("package", sbn.getPackageName());
 
-        String packageName = sbn.getPackageName();
         CharSequence titleChar = sbn.getNotification().extras.getCharSequence("android.title");
-        CharSequence textChar = sbn.getNotification().extras.getCharSequence("android.text");
+        CharSequence textChar  = sbn.getNotification().extras.getCharSequence("android.text");
 
-        String title = titleChar != null ? titleChar.toString() : "";
-        String text = textChar != null ? textChar.toString() : "";
+        notif.put("title", titleChar != null ? titleChar.toString() : "");
+        notif.put("text",  textChar != null ? textChar.toString() : "");
 
-        Log.d("NotificationReaderPlugin", "→ Notificação");
-        Log.d("NotificationReaderPlugin", "  • package: " + packageName);
-        Log.d("NotificationReaderPlugin", "  • title:   " + title);
-        Log.d("NotificationReaderPlugin", "  • text:    " + text);
+        notifications.put(notif);
+      }
 
-        JSObject obj = new JSObject();
-        obj.put("package", packageName);
-        obj.put("title", title);
-        obj.put("text", text);
+      JSObject result = new JSObject();
+      result.put("notifications", notifications);
+      call.resolve(result);
 
-        jsArray.put(obj);
+    } catch (Exception e) {
+      call.reject("Erro ao buscar notificações: " + e.getMessage());
     }
+  }
 
-    JSObject result = new JSObject();
-    result.put("notifications", jsArray);
+  @PluginMethod
+  public void addListener(PluginCall call) {
+    call.resolve();
+  }
 
-    Log.d("NotificationReaderPlugin", "Notificações preparadas para retorno: " + jsArray.length());
+  public void emitNotification(JSObject payload) {
+    notifyListeners("notificationReceived", payload);
+  }
 
-    call.resolve(result);
-}
-
+  @Override
+  protected void handleOnStart() {
+    super.handleOnStart();
+    Log.d(TAG, "handleOnStart chamado");
+  }
 }

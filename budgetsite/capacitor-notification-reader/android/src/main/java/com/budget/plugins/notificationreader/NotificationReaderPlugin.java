@@ -10,6 +10,10 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+
 @CapacitorPlugin(name = "NotificationReaderPlugin")
 public class NotificationReaderPlugin extends Plugin {
 
@@ -71,5 +75,27 @@ public class NotificationReaderPlugin extends Plugin {
   protected void handleOnStart() {
     super.handleOnStart();
     Log.d(TAG, "handleOnStart chamado");
+  }
+
+  @PluginMethod
+  public void openApp(PluginCall call) {
+    String packageName = call.getString("package");
+
+    if (packageName == null || packageName.isEmpty()) {
+      call.reject("Pacote não informado");
+      return;
+    }
+
+    Context context = getContext();
+    PackageManager pm = context.getPackageManager();
+    Intent intent = pm.getLaunchIntentForPackage(packageName);
+
+    if (intent != null) {
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      context.startActivity(intent);
+      call.resolve();
+    } else {
+      call.reject("Aplicativo não encontrado: " + packageName);
+    }
   }
 }

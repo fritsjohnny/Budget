@@ -1,39 +1,35 @@
 package com.budget.plugins.notificationreader;
 
-import android.app.Notification;
 import android.os.Build;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.getcapacitor.JSObject;
 
 public class NotificationReaderService extends NotificationListenerService {
 
-  private static NotificationListener notificationListener;
-  private static NotificationReaderService notificationServiceInstance;
+  private static final String TAG = "NotificationReaderService";
 
-  public interface NotificationListener {
-    void onNotificationReceived(String appName, String title, String text);
-  }
+  private static NotificationReaderPlugin pluginInstance;
+  private static NotificationReaderService serviceInstance;
 
-  public static void setNotificationListener(NotificationListener listener) {
-    notificationListener = listener;
-  }
-
-  @Override
-  public void onListenerConnected() {
-    super.onListenerConnected();
-    notificationServiceInstance = this;
-    Log.d("NotificationReader", "Listener conectado");
+  public static void registerPlugin(NotificationReaderPlugin plugin) {
+    pluginInstance = plugin;
   }
 
   @Override
   public void onCreate() {
     super.onCreate();
-    notificationServiceInstance = this;
-    Log.d("NotificationReader", "Serviço criado");
+    serviceInstance = this;
+    Log.d(TAG, "Serviço criado");
+  }
+
+  @Override
+  public void onListenerConnected() {
+    super.onListenerConnected();
+    serviceInstance = this;
+    Log.d(TAG, "Listener conectado");
   }
 
   @Override
@@ -42,19 +38,23 @@ public class NotificationReaderService extends NotificationListenerService {
 
     String packageName = sbn.getPackageName();
     CharSequence titleChar = sbn.getNotification().extras.getCharSequence("android.title");
-    CharSequence textChar = sbn.getNotification().extras.getCharSequence("android.text");
+    CharSequence textChar  = sbn.getNotification().extras.getCharSequence("android.text");
 
     String title = titleChar != null ? titleChar.toString() : "";
-    String text = textChar != null ? textChar.toString() : "";
+    String text  = textChar  != null ? textChar.toString()  : "";
 
-    if (notificationListener != null) {
-      notificationListener.onNotificationReceived(packageName, title, text);
+    if (pluginInstance != null) {
+      JSObject payload = new JSObject();
+      payload.put("package", packageName);
+      payload.put("title", title);
+      payload.put("text", text);
+      pluginInstance.emitNotification(payload);
     }
   }
 
   public static StatusBarNotification[] fetchActiveNotifications() {
-    if (notificationServiceInstance != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      return notificationServiceInstance.getActiveNotifications();
+    if (serviceInstance != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      return serviceInstance.getActiveNotifications();
     }
     return null;
   }

@@ -45,13 +45,14 @@ export class CardsNotificationsComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private cardPostingsService: CardPostingsService
-  ) {}
+  ) {
+    this.notifications = [];
+  }
 
   async ngOnInit(): Promise<void> {
     console.log('[DEBUG] ngOnInit iniciado');
 
     try {
-      alert('🔍 Chamando getActiveNotifications() [WEB]');
       const result = await NotificationReader.getActiveNotifications();
       console.log('[DEBUG] getActiveNotifications result:', result);
 

@@ -1,5 +1,6 @@
 package com.budget.plugins.notificationreader;
 
+import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
@@ -10,9 +11,10 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+
+import androidx.annotation.RequiresApi;
 
 @CapacitorPlugin(name = "NotificationReaderPlugin")
 public class NotificationReaderPlugin extends Plugin {
@@ -77,25 +79,62 @@ public class NotificationReaderPlugin extends Plugin {
     Log.d(TAG, "handleOnStart chamado");
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.N)
   @PluginMethod
   public void openApp(PluginCall call) {
-    String packageName = call.getString("package");
+    String appPackageName = call.getString("package");
 
-    if (packageName == null || packageName.isEmpty()) {
-      call.reject("Pacote não informado");
+    if (appPackageName == null || appPackageName.isEmpty()) {
+      call.reject("AppPackageName não informado");
       return;
     }
 
-    Context context = getContext();
-    PackageManager pm = context.getPackageManager();
-    Intent intent = pm.getLaunchIntentForPackage(packageName);
+    // Se tiver "." mais de uma vez (ex: com.mercadopago.wallet.splash.SplashActivity), divide:
+    String packageName;
+    String activityName = null;
 
-    if (intent != null) {
-      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-      context.startActivity(intent);
-      call.resolve();
+    if (appPackageName.contains("/") || appPackageName.chars().filter(ch -> ch == '.').count() > 2) {
+      int lastDot = appPackageName.lastIndexOf('.');
+      int secondLastDot = appPackageName.substring(0, lastDot).lastIndexOf('.');
+
+      if (secondLastDot > 0) {
+        packageName = appPackageName.substring(0, secondLastDot);
+        activityName = appPackageName.substring(0, lastDot) + "." + appPackageName.substring(lastDot + 1);
+      } else {
+        call.reject("Formato inválido para AppPackageName");
+        return;
+      }
     } else {
-      call.reject("Aplicativo não encontrado: " + packageName);
+      packageName = appPackageName;
     }
+
+    PackageManager pm = getActivity().getPackageManager();
+
+    // Primeira tentativa: getLaunchIntentForPackage
+    if (activityName == null) {
+      Intent intent = pm.getLaunchIntentForPackage(packageName);
+      if (intent != null) {
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getActivity().startActivity(intent);
+        call.resolve();
+        return;
+      }
+    }
+
+    // Segunda tentativa: usar activity diretamente se fornecida
+    if (activityName != null) {
+      try {
+        Intent directIntent = new Intent();
+        directIntent.setComponent(new android.content.ComponentName(packageName, activityName));
+        directIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getActivity().startActivity(directIntent);
+        call.resolve();
+        return;
+      } catch (Exception e) {
+        Log.e(TAG, "Erro ao iniciar activity direta: " + activityName, e);
+      }
+    }
+
+    call.reject("Não foi possível abrir o aplicativo: " + appPackageName);
   }
 }

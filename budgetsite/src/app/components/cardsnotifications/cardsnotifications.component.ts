@@ -168,10 +168,8 @@ export class CardsNotificationsComponent implements OnInit {
         };
 
         this.cardPostingsService.create(result).subscribe({
-          next: (cardpostings) => {
-            this.notifications = this.notifications.filter(
-              (n) => n !== notification
-            );
+          next: () => {
+            this.removeNotification(notification);
 
             this.categoriesList = result.categoriesList;
             this.peopleList = result.peopleList;

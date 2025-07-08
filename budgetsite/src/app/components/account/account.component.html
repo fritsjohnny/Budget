@@ -70,11 +70,11 @@
           </span>
 
           <span
+            *ngIf="account?.appPackageName"
             class="material-icons add-account"
             matTooltip="Abrir App do Banco"
             matTooltipPosition="above"
             (click)="openBankApp()"
-            [class.disabled]="!account?.appPackageName"
             style="cursor: pointer"
           >
             open_in_new

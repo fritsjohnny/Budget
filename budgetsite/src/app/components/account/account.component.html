@@ -1,32 +1,92 @@
 <div class="container default-margin-bottom">
   <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
-    <mat-expansion-panel style="margin-top: 10px !important; padding-bottom: -50px;" [hideToggle]="false">
+    <mat-expansion-panel
+      style="margin-top: 10px !important; padding-bottom: -50px"
+      [hideToggle]="false"
+    >
       <mat-expansion-panel-header>
         <span class="material-icons center"> calendar_month </span>
-        <span class="center">{{referenceHead}}</span>
-        <span class="material-icons center" style="padding-left: 10px"> account_balance </span>
-        <button mat-button class="center"
-          [ngStyle]="{backgroundColor: account?.background, color: account?.color}">{{account?.name}}</button>
+        <span class="center">{{ referenceHead }}</span>
+        <span class="material-icons center" style="padding-left: 10px">
+          account_balance
+        </span>
+        <button
+          mat-button
+          class="center"
+          [ngStyle]="{
+            backgroundColor: account?.background,
+            color: account?.color
+          }"
+        >
+          {{ account?.name }}
+        </button>
       </mat-expansion-panel-header>
-      <app-datepicker (referenceChange)="setReference($event)" [accountId]="accountId"></app-datepicker>
+      <app-datepicker
+        (referenceChange)="setReference($event)"
+        [accountId]="accountId"
+      ></app-datepicker>
       <div class="">
-        <mat-progress-bar mode="query" color="accent" *ngIf="!hideProgress"></mat-progress-bar>
-        <div cdkDropList [cdkDropListData]="accountsNotDisabled!" (cdkDropListDropped)="drop($event)">
-          <button class="account-button example-box" [ngClass]="{'line': buttonName === account.name}" mat-button
+        <mat-progress-bar
+          mode="query"
+          color="accent"
+          *ngIf="!hideProgress"
+        ></mat-progress-bar>
+        <div
+          cdkDropList
+          [cdkDropListData]="accountsNotDisabled!"
+          (cdkDropListDropped)="drop($event)"
+        >
+          <button
+            class="account-button example-box"
+            [ngClass]="{ line: buttonName === account.name }"
+            mat-button
             *ngFor="let account of accountsNotDisabled"
-            [ngStyle]="{backgroundColor: account.background, color: account.color}" (click)="setAccount(account)"
-            cdkDrag>{{account.name}}
+            [ngStyle]="{
+              backgroundColor: account.background,
+              color: account.color
+            }"
+            (click)="setAccount(account)"
+            cdkDrag
+          >
+            {{ account.name }}
           </button>
         </div>
-        <span class="material-icons add-account" matTooltip="Incluir/Editar Contas" matTooltipPosition="above"
-          (click)="accountDialog()">
-          <!-- add_circle_outline -->
-          format_list_bulleted
-        </span>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-right: 5px;
+          "
+        >
+          <span
+            class="material-icons add-account"
+            matTooltip="Incluir/Editar Contas"
+            matTooltipPosition="above"
+            (click)="accountDialog()"
+          >
+            format_list_bulleted
+          </span>
+
+          <span
+            class="material-icons add-account"
+            matTooltip="Abrir App do Banco"
+            matTooltipPosition="above"
+            (click)="openBankApp()"
+            [class.disabled]="!account?.appPackageName"
+            style="cursor: pointer"
+          >
+            open_in_new
+          </span>
+        </div>
       </div>
     </mat-expansion-panel>
   </mat-accordion>
   <div class="row" style="margin-top: 10px">
-    <app-accountpostings [accountId]=accountId [reference]=reference></app-accountpostings>
+    <app-accountpostings
+      [accountId]="accountId"
+      [reference]="reference"
+    ></app-accountpostings>
   </div>
 </div>

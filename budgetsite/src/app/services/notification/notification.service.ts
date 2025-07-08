@@ -13,6 +13,9 @@ export class NotificationService {
     let permStatus = await PushNotifications.requestPermissions();
     if (permStatus.receive !== 'granted') return;
 
+    // Remove o token antigo (opcional mas recomendado)
+    await PushNotifications.removeAllListeners(); // limpar listeners antigos
+
     // Registra no FCM
     await PushNotifications.register();
 

@@ -102,8 +102,13 @@ export class UserService {
   }
 
   enviarFcmToken(token: string): Observable<any> {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     return this.http
-      .post(`${ApiUrls.users}/fcmtoken`, JSON.stringify(token), {
+      .post(`${ApiUrls.users}/fcmtoken`, {
+        token,
+        timezone
+      }, {
         headers: { 'Content-Type': 'application/json' }
       })
       .pipe(catchError((e) => this.messenger.errorHandler(e)));

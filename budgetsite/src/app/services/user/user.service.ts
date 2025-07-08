@@ -18,7 +18,7 @@ export class UserService {
     private http: HttpClient,
     private messenger: Messenger,
     private router: Router
-  ) {}
+  ) { }
 
   authenticate(
     userAuthenticateRequest: UsersAuthenticateRequest
@@ -99,5 +99,13 @@ export class UserService {
     localStorage.removeItem('user');
 
     this.router.navigate(['login']);
+  }
+
+  enviarFcmToken(token: string): Observable<any> {
+    return this.http
+      .post(`${ApiUrls.users}/fcmtoken`, JSON.stringify(token), {
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .pipe(catchError((e) => this.messenger.errorHandler(e)));
   }
 }

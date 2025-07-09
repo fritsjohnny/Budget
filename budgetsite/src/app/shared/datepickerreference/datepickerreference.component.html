@@ -1,19 +1,42 @@
-<br>
-<div class="row common-datepicker" style="margin-top: -20px !important;">
+<br />
+<div class="row common-datepicker" style="margin-top: -20px !important">
   <div class="col">
-    <mat-form-field appearance="fill" class="calendar" style="width: 150px;">
+    <mat-form-field appearance="fill" class="calendar" style="width: 150px">
       <mat-label>Referência</mat-label>
-      <input matInput [matDatepicker]="dp" [formControl]="date">
+      <input matInput [matDatepicker]="dp" [formControl]="date" />
       <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
-      <mat-datepicker #dp startView="multi-year" (yearSelected)="chosenYearHandler($event)"
-        (monthSelected)="chosenMonthHandler($event, dp)" panelClass="example-month-picker">
+      <mat-datepicker
+        #dp
+        startView="multi-year"
+        (yearSelected)="chosenYearHandler($event)"
+        (monthSelected)="chosenMonthHandler($event, dp)"
+        panelClass="example-month-picker"
+      >
       </mat-datepicker>
     </mat-form-field>
-    <button mat-icon-button (click)=setPreviousMonth() aria-label="Mês anterior" matTooltip="Mês anterior">
+    <button
+      mat-icon-button
+      (click)="setPreviousMonth()"
+      aria-label="Mês anterior"
+      matTooltip="Mês anterior"
+    >
       <mat-icon>arrow_back_ios</mat-icon>
     </button>
-    <button mat-icon-button (click)=setNextMonth() aria-label="Próximo mês" matTooltip="Próximo mês">
+    <button
+      mat-icon-button
+      (click)="setNextMonth()"
+      aria-label="Próximo mês"
+      matTooltip="Próximo mês"
+    >
       <mat-icon>arrow_forward_ios</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      (click)="setCurrentMonth()"
+      aria-label="Mês atual"
+      matTooltip="Mês atual"
+    >
+      <mat-icon>calendar_today</mat-icon>
     </button>
   </div>
 </div>

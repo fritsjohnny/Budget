@@ -157,4 +157,10 @@ export class DatepickerComponent implements OnInit {
 
     this.setMonthName();
   }
+
+  setCurrentMonth() {
+    const current = moment();
+    this.date.setValue(current);
+    this.setMonthName();
+  }
 }

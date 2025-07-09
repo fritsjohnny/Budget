@@ -99,4 +99,10 @@ export class DatepickerreferenceComponent implements OnInit {
 
     this.setReference();
   }
+
+  setCurrentMonth() {
+    const current = moment();
+    this.date.setValue(current);
+    this.setReference();
+  }
 }

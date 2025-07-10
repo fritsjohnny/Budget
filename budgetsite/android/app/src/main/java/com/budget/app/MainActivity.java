@@ -4,7 +4,6 @@ import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
 import androidx.core.view.WindowCompat;
 import com.budget.plugins.safearea.SafeAreaPlugin;
-import com.fritsjohnny.budgetnotifier.BudgetNotifierPlugin;
 
 public class MainActivity extends BridgeActivity {
   @Override
@@ -16,6 +15,5 @@ public class MainActivity extends BridgeActivity {
 
     // Registrar plugins customizados
     registerPlugin(SafeAreaPlugin.class);
-    registerPlugin(BudgetNotifierPlugin.class);
   }
 }

@@ -559,5 +559,7 @@
     [(categoriesList)]="categoriesList"
     [(peopleList)]="peopleList"
     [cardsList]="cardsList"
+    (cardPostingCreated)="onCardPostingCreated($event)"
+    [cardsPostings]="cardpostings"
   ></app-cards-notifications>
 </div>

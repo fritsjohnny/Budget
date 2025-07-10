@@ -99,7 +99,7 @@ export class CardPostingsComponent implements OnInit {
     public dialog: MatDialog,
     private cd: ChangeDetectorRef,
     private messenger: Messenger
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.darkTheme = document.documentElement.classList.contains('dark-theme');
@@ -229,22 +229,22 @@ export class CardPostingsComponent implements OnInit {
   getTotalAmount() {
     this.total = this.cardpostings
       ? this.cardpostings
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.myTotal = this.cardpostings
       ? this.cardpostings
-          .filter((t) => !t.others)
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
+        .filter((t) => !t.others)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.othersTotal = this.cardpostings
       ? this.cardpostings
-          .filter((t) => t.others)
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
+        .filter((t) => t.others)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.percMyTotal =
@@ -268,33 +268,33 @@ export class CardPostingsComponent implements OnInit {
     if (this.justMyShopping) {
       this.inTheCycleTotal = this.cardpostings
         ? this.cardpostings
-            .filter(
-              (t) =>
-                !t.others && (t.parcelNumber == 1 || t.parcelNumber == null)
-            )
-            .map((t) => t.amount)
-            .reduce((acc, value) => acc + value, 0)
+          .filter(
+            (t) =>
+              !t.others && (t.parcelNumber == 1 || t.parcelNumber == null)
+          )
+          .map((t) => t.amount)
+          .reduce((acc, value) => acc + value, 0)
         : 0;
 
       this.outTheCycleTotal = this.cardpostings
         ? this.cardpostings
-            .filter((t) => !t.others && t.parcelNumber! > 1)
-            .map((t) => t.amount)
-            .reduce((acc, value) => acc + value, 0)
+          .filter((t) => !t.others && t.parcelNumber! > 1)
+          .map((t) => t.amount)
+          .reduce((acc, value) => acc + value, 0)
         : 0;
     } else {
       this.inTheCycleTotal = this.cardpostings
         ? this.cardpostings
-            .filter((t) => t.parcelNumber == 1 || t.parcelNumber == null)
-            .map((t) => t.amount)
-            .reduce((acc, value) => acc + value, 0)
+          .filter((t) => t.parcelNumber == 1 || t.parcelNumber == null)
+          .map((t) => t.amount)
+          .reduce((acc, value) => acc + value, 0)
         : 0;
 
       this.outTheCycleTotal = this.cardpostings
         ? this.cardpostings
-            .filter((t) => t.parcelNumber! > 1)
-            .map((t) => t.amount)
-            .reduce((acc, value) => acc + value, 0)
+          .filter((t) => t.parcelNumber! > 1)
+          .map((t) => t.amount)
+          .reduce((acc, value) => acc + value, 0)
         : 0;
     }
 
@@ -311,42 +311,42 @@ export class CardPostingsComponent implements OnInit {
   getFilteredTotalAmount() {
     this.total = this.dataSource.filteredData
       ? Array(this.dataSource.filteredData)[0]
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
   }
 
   getTotalPeople() {
     this.toReceiveTotalPeople = this.cardpostingspeople
       ? this.cardpostingspeople
-          .map((t) => t.toReceive)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.toReceive)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.receivedTotalPeople = this.cardpostingspeople
       ? this.cardpostingspeople
-          .map((t) => t.received)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.received)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.remainingTotalPeople = this.cardpostingspeople
       ? this.cardpostingspeople
-          .map((t) => t.remaining)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.remaining)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
   }
 
   getTotalByCategories() {
     this.amountTotalCategory = this.expensesByCategories
       ? this.expensesByCategories
-          .map((t) => t.amount!)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.amount!)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.percTotalCategory = this.expensesByCategories
       ? this.expensesByCategories
-          .map((t) => t.perc!)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.perc!)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
   }
 
@@ -771,5 +771,10 @@ export class CardPostingsComponent implements OnInit {
         this.messenger.message('Erro ao transformar em despesa.');
       },
     });
+  }
+
+  onCardPostingCreated(posting: CardsPostings) {
+    this.cardpostings.unshift(posting);
+    this.sort();
   }
 }

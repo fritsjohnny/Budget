@@ -24,9 +24,11 @@ export class CardsNotificationsComponent implements OnInit {
   @Input() peopleList?: People[];
   @Input() categoriesList?: Categories[];
   @Input() cardsList?: Cards[];
+  @Input() cardsPostings?: CardsPostings[];
 
   @Output() peopleListChange = new EventEmitter<People[]>();
   @Output() categoriesListChange = new EventEmitter<Categories[]>();
+  @Output() cardPostingCreated = new EventEmitter<CardsPostings>();
 
   private readonly STORAGE_KEY = 'persisted_notifications';
 
@@ -35,7 +37,7 @@ export class CardsNotificationsComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private cardPostingsService: CardPostingsService
-  ) {}
+  ) { }
 
   async ngOnInit(): Promise<void> {
     console.log('[DEBUG] ngOnInit iniciado');
@@ -45,6 +47,7 @@ export class CardsNotificationsComponent implements OnInit {
     if (stored.value) {
       const parsed = JSON.parse(stored.value);
       this.notifications.push(...parsed);
+      this.sortNotificationsByDate();
     }
 
     // 2. Busca notificações ativas do sistema
@@ -56,8 +59,13 @@ export class CardsNotificationsComponent implements OnInit {
         const cardPosting = this.parseNotification(payload);
         console.log('[DEBUG] Card posting gerado:', cardPosting);
 
-        if (cardPosting && !this.isDuplicate(cardPosting.note)) {
+        if (
+          cardPosting &&
+          !this.isDuplicate(cardPosting.note) &&
+          !this.isCardPostingDuplicate(cardPosting.note)
+        ) {
           this.notifications.unshift(cardPosting);
+          this.sortNotificationsByDate();
           await this.saveNotificationsToStorage();
         }
       }
@@ -70,11 +78,19 @@ export class CardsNotificationsComponent implements OnInit {
       console.log('[DEBUG] Nova notificação recebida:', payload);
 
       const cardPosting = this.parseNotification(payload);
+
       if (cardPosting) {
         this.notifications.unshift(cardPosting);
+        this.sortNotificationsByDate();
         await this.saveNotificationsToStorage();
       }
     });
+  }
+
+  private sortNotificationsByDate(): void {
+    this.notifications.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
   }
 
   private parseNotification(
@@ -168,7 +184,7 @@ export class CardsNotificationsComponent implements OnInit {
         };
 
         this.cardPostingsService.create(result).subscribe({
-          next: () => {
+          next: (cardposting) => {
             this.removeNotification(notification);
 
             this.categoriesList = result.categoriesList;
@@ -176,6 +192,7 @@ export class CardsNotificationsComponent implements OnInit {
 
             this.categoriesListChange.emit(this.categoriesList);
             this.peopleListChange.emit(this.peopleList);
+            this.cardPostingCreated.emit(cardposting);
           },
         });
       }
@@ -196,5 +213,9 @@ export class CardsNotificationsComponent implements OnInit {
 
   private isDuplicate(note: string | undefined): boolean {
     return this.notifications.some((n) => n.note === note);
+  }
+
+  private isCardPostingDuplicate(note: string | undefined): boolean {
+    return this.cardsPostings?.some(p => p.note === note) ?? false;
   }
 }

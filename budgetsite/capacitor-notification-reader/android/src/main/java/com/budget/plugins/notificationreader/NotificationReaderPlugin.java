@@ -1,6 +1,6 @@
-// TESTE2
 package com.budget.plugins.notificationreader;
 
+import android.content.ComponentName;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
@@ -104,7 +104,7 @@ public class NotificationReaderPlugin extends Plugin {
     if (isExplicitActivity) {
       String[] parts = appPackageName.split("/");
       if (parts.length == 2) {
-        packageName  = parts[0];
+        packageName = parts[0];
         activityName = parts[1].startsWith(".") ? parts[0] + parts[1] : parts[1];
 
         Log.d(TAG, "[openApp] Detecção: pacote + activity explícitos:");
@@ -116,63 +116,44 @@ public class NotificationReaderPlugin extends Plugin {
         return;
       }
     } else {
-      packageName  = appPackageName;
-      activityName = null; // ✅ Correção fundamental!
+      packageName = appPackageName;
+      activityName = null;
       Log.d(TAG, "[openApp] Nome recebido é apenas o package: " + packageName);
     }
 
     PackageManager pm = getActivity().getPackageManager();
 
-    // 1. Tentativa com getLaunchIntentForPackage
+    // 1. Tenta com getLaunchIntentForPackage
     Log.d(TAG, "[openApp] Tentando getLaunchIntentForPackage...");
     Intent launchIntent = pm.getLaunchIntentForPackage(packageName);
     if (launchIntent != null) {
-      Log.d(TAG, "[openApp] → getLaunchIntentForPackage retornou intent válida:");
-      Log.d(TAG, "[openApp] → Intent = " + launchIntent.toString());
       launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       getActivity().startActivity(launchIntent);
-      Log.d(TAG, "[openApp] → Aplicativo iniciado com sucesso via getLaunchIntent.");
-      call.resolve();
+      Log.d(TAG, "[openApp] → Aplicativo iniciado via getLaunchIntent.");
+      JSObject result = new JSObject();
+      result.put("status", "success");
+      result.put("method", "getLaunchIntent");
+      result.put("package", packageName);
+      result.put("activity", launchIntent.getComponent() != null ? launchIntent.getComponent().getClassName() : null);
+      call.resolve(result);
       return;
-    } else {
-      Log.w(TAG, "[openApp] → getLaunchIntentForPackage retornou null.");
     }
 
-    // 2. Fallback automático: procurar activity MAIN/LAUNCHER
-    Log.d(TAG, "[openApp] Tentando fallback com queryIntentActivities...");
-    Intent intent = new Intent(Intent.ACTION_MAIN, null);
-    intent.addCategory(Intent.CATEGORY_LAUNCHER);
-    List<ResolveInfo> apps = pm.queryIntentActivities(intent, 0);
-
-    for (ResolveInfo resolveInfo : apps) {
-      if (resolveInfo.activityInfo.packageName.equals(packageName)) {
-        String mainActivity = resolveInfo.activityInfo.name;
-        Log.d(TAG, "[openApp] → MAIN/LAUNCHER encontrada:");
-        Log.d(TAG, "[openApp] → package: " + packageName);
-        Log.d(TAG, "[openApp] → activity: " + mainActivity);
-
-        Intent fallbackIntent = new Intent();
-        fallbackIntent.setComponent(new android.content.ComponentName(packageName, mainActivity));
-        fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getActivity().startActivity(fallbackIntent);
-        Log.d(TAG, "[openApp] → Aplicativo iniciado com sucesso via fallback.");
-        call.resolve();
-        return;
-      }
-    }
-
-    Log.w(TAG, "[openApp] Nenhuma MAIN/LAUNCHER encontrada via queryIntentActivities para: " + packageName);
-
-    // 3. Tentativa final: abrir activity diretamente se explicitamente fornecida
+    // 2. Se nome explícito foi fornecido, tenta direto
     if (isExplicitActivity && activityName != null) {
       Log.d(TAG, "[openApp] Tentando iniciar activity diretamente: " + activityName);
       try {
         Intent directIntent = new Intent();
-        directIntent.setComponent(new android.content.ComponentName(packageName, activityName));
+        directIntent.setComponent(new ComponentName(packageName, activityName));
         directIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getActivity().startActivity(directIntent);
-        Log.d(TAG, "[openApp] → Aplicativo iniciado com sucesso via activity direta.");
-        call.resolve();
+
+        JSObject result = new JSObject();
+        result.put("status", "success");
+        result.put("method", "direct");
+        result.put("package", packageName);
+        result.put("activity", activityName);
+        call.resolve(result);
         return;
       } catch (Exception e) {
         Log.e(TAG, "[openApp] Erro ao iniciar activity direta: " + activityName, e);
@@ -182,4 +163,6 @@ public class NotificationReaderPlugin extends Plugin {
     Log.e(TAG, "[openApp] Todas as tentativas falharam para abrir: " + appPackageName);
     call.reject("Não foi possível abrir o aplicativo: " + appPackageName);
   }
+
+  // teste 11:19
 }

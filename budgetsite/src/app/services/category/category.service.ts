@@ -29,7 +29,6 @@ export class CategoryService {
   // }
 
   readWithExpenses(reference: string): Observable<Categories[]> {
-    debugger
     return this.http.get<Categories[]>(`${ApiUrls.categories}/WithExpenses/${reference}`).pipe(
       map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))

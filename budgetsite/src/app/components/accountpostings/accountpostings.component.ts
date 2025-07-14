@@ -348,8 +348,6 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   drop(event: CdkDragDrop<any[]>) {
-    // debugger;
-
     //const previousIndex = this.accountpostings.findIndex(row => row === event.item.data);
 
     moveItemInArray(

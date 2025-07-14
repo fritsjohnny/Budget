@@ -247,12 +247,18 @@
               formControlName="dueDayFormControl"
               [(ngModel)]="expenses.dueDay"
               min="1"
+              max="31"
               onfocus="this.select()"
             />
             <mat-error
               *ngIf="expensesFormGroup.get('dueDayFormControl')?.hasError('min') && !expensesFormGroup.get('dueDayFormControl')?.hasError('required')"
             >
               Valor mínimo é <strong>1</strong>.
+            </mat-error>
+            <mat-error
+              *ngIf="expensesFormGroup.get('dueDayFormControl')?.hasError('max')"
+            >
+              Valor máximo é <strong>31</strong>.
             </mat-error>
           </mat-form-field>
         </div>

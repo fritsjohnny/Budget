@@ -1,30 +1,81 @@
 <div class="container default-margin-bottom">
   <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
-    <mat-expansion-panel style="margin-top: 10px !important; padding-bottom: -50px;" [hideToggle]="false">
+    <mat-expansion-panel
+      style="margin-top: 10px !important; padding-bottom: -50px"
+      [hideToggle]="false"
+    >
       <mat-expansion-panel-header>
         <span class="material-icons center"> calendar_month </span>
-        <span class="center">{{referenceHead}}</span>
-        <span class="material-icons center" style="padding-left: 10px"> credit_card </span>
-        <button mat-button class="center"
-          [ngStyle]="{backgroundColor: card?.background, color: card?.color}">{{card?.name}}</button>
+        <span class="center">{{ referenceHead }}</span>
+        <span class="material-icons center" style="padding-left: 10px">
+          credit_card
+        </span>
+        <button
+          mat-button
+          class="center"
+          [ngStyle]="{ backgroundColor: card?.background, color: card?.color }"
+        >
+          {{ card?.name }}
+        </button>
       </mat-expansion-panel-header>
-      <app-datepicker style="margin-top: -75px !important" (referenceChange)="setReference($event)" [cardId]="cardId">
+      <app-datepicker
+        style="margin-top: -75px !important"
+        (referenceChange)="setReference($event)"
+        [cardId]="cardId"
+      >
       </app-datepicker>
       <div class="">
-        <mat-progress-bar mode="query" color="accent" *ngIf="!hideProgress"></mat-progress-bar>
-        <button class="card-button" [ngClass]="{'line': buttonName === card.name}" mat-button
+        <mat-progress-bar
+          mode="query"
+          color="accent"
+          *ngIf="!hideProgress"
+        ></mat-progress-bar>
+        <button
+          class="card-button"
+          [ngClass]="{ line: buttonName === card.name }"
+          mat-button
           *ngFor="let card of getCardsNotDisabled(cards!)"
-          [ngStyle]="{backgroundColor: card.background, color: card.color}" (click)=setCard(card)>{{card.name}}
+          [ngStyle]="{ backgroundColor: card.background, color: card.color }"
+          (click)="setCard(card)"
+        >
+          {{ card.name }}
         </button>
-        <span class="material-icons add-card" matTooltip="Incluir/Editar Contas" matTooltipPosition="above"
-          (click)="cardDialog()">
-          <!-- add_circle_outline -->
-          format_list_bulleted
-        </span>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-right: 5px;
+          "
+        >
+          <span
+            class="material-icons add-card"
+            matTooltip="Incluir/Editar Cartões"
+            matTooltipPosition="above"
+            (click)="cardDialog()"
+          >
+            <!-- add_circle_outline -->
+            format_list_bulleted
+          </span>
+          <span
+            *ngIf="card?.appPackageName"
+            class="material-icons add-card"
+            matTooltip="Abrir App do Banco"
+            matTooltipPosition="above"
+            (click)="openBankApp()"
+            style="cursor: pointer"
+          >
+            open_in_new
+          </span>
+        </div>
       </div>
     </mat-expansion-panel>
   </mat-accordion>
   <div style="margin-top: 10px">
-    <app-cardpostings [cardId]=cardId [reference]=reference></app-cardpostings>
+    <app-cardpostings
+      [cardId]="cardId"
+      [reference]="reference"
+    ></app-cardpostings>
   </div>
 </div>

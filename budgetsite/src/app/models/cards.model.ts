@@ -7,9 +7,9 @@ export interface Cards {
   color?: string;
   background?: string;
   disabled?: boolean;
-  // closingDay?: number;
-  invoiceStart?: Date;
-  invoiceEnd?: Date;
+  closingDay?: number;
+  dueDay?: number;
+  appPackageName?: string;
   editing?: boolean,
   deleting?: boolean;
   cardInvoiceDate?: CardsInvoiceDate;

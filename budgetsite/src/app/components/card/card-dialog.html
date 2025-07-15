@@ -1,4 +1,4 @@
-<div class="row" style="overflow: auto">
+<div class="">
   <form [formGroup]="cardFormGroup">
     <div class="cancel">
       <button
@@ -13,30 +13,28 @@
       </button>
     </div>
 
-    <div class="">
-      <button
-        class="card-button"
-        [ngClass]="{'line': buttonName === card.name}"
-        mat-button
-        *ngFor="let card of cards"
-        [ngStyle]="{backgroundColor: card.background, color: card.color}"
-        (click)="setCard(card)"
-      >
-        {{card.name}}
-      </button>
-      <span
-        class="material-icons add-card"
-        matTooltip="Incluir Conta"
-        matTooltipPosition="above"
-        (click)="addCard()"
-      >
-        add_circle_outline
-      </span>
-    </div>
-
-    <hr />
-
     <div mat-dialog-content>
+      <div class="">
+        <button
+          class="card-button"
+          [ngClass]="{'line': buttonName === card.name}"
+          mat-button
+          *ngFor="let card of cards"
+          [ngStyle]="{backgroundColor: card.background, color: card.color}"
+          (click)="setCard(card)"
+        >
+          {{card.name}}
+        </button>
+        <span
+          class="material-icons add-card"
+          matTooltip="Incluir Conta"
+          matTooltipPosition="above"
+          (click)="addCard()"
+        >
+          add_circle_outline
+        </span>
+      </div>
+      <hr />
       <div class="row">
         <mat-form-field appearance="fill">
           <mat-label>Nome</mat-label>
@@ -55,6 +53,78 @@
             Campo <strong>obrigatório</strong>.
           </mat-error>
         </mat-form-field>
+      </div>
+
+      <div class="row">
+        <mat-form-field appearance="fill">
+          <mat-label>Nome do Aplicativo</mat-label>
+          <input
+            type="text"
+            id="appPackageNameFormControl"
+            matInput
+            formControlName="appPackageNameFormControl"
+          />
+        </mat-form-field>
+      </div>
+
+      <div class="row">
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Dia Fechamento</mat-label>
+            <input
+              matInput
+              type="number"
+              inputmode="numeric"
+              formControlName="closingDayFormControl"
+              min="1"
+              max="31"
+              onfocus="this.select()"
+            />
+            <mat-error
+              *ngIf="cardFormGroup.get('closingDayFormControl')?.hasError('min') && !cardFormGroup.get('closingDayFormControl')?.hasError('required')"
+            >
+              Valor mínimo é <strong>1</strong>.
+            </mat-error>
+            <mat-error
+              *ngIf="cardFormGroup.get('closingDayFormControl')?.hasError('max')"
+            >
+              Valor máximo é <strong>31</strong>.
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Dia Vencimento</mat-label>
+            <input
+              matInput
+              type="number"
+              inputmode="numeric"
+              formControlName="dueDayFormControl"
+              min="1"
+              max="31"
+              onfocus="this.select()"
+            />
+            <mat-error
+              *ngIf="cardFormGroup.get('dueDayFormControl')?.hasError('min') && !cardFormGroup.get('dueDayFormControl')?.hasError('required')"
+            >
+              Valor mínimo é <strong>1</strong>.
+            </mat-error>
+            <mat-error
+              *ngIf="cardFormGroup.get('dueDayFormControl')?.hasError('max')"
+            >
+              Valor máximo é <strong>31</strong>.
+            </mat-error>
+          </mat-form-field>
+        </div>
       </div>
 
       <div class="row flex-container">
@@ -132,7 +202,6 @@
         </button>
       </div>
     </div>
-
     <div class="row">
       <div class="col">
         <div mat-dialog-actions>

@@ -128,7 +128,7 @@ export class CardPostingsComponent implements OnInit {
       error: () => (this.hideProgress = true),
     });
 
-    this.categoryService.read().subscribe({
+    this.categoryService.readWithExpenses(this.reference!).subscribe({
       next: (categories) => {
         this.categoriesList = categories.sort((a, b) =>
           a.name.localeCompare(b.name)

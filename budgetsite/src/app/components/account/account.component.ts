@@ -108,7 +108,8 @@ export class AccountComponent implements OnInit {
 
   accountDialog() {
     const dialogRef = this.dialog.open(AccountDialog, {
-      width: '400px',
+      width: '100%',
+      maxWidth: '100%',
       data: this.accounts,
     });
 

@@ -268,7 +268,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       },
     });
 
-    this.categoryService.read().subscribe({
+    this.categoryService.readWithExpenses(this.reference!).subscribe({
       next: (categories) => {
         this.categoriesList = categories.sort((a, b) =>
           a.name.localeCompare(b.name)

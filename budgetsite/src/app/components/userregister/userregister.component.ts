@@ -53,8 +53,6 @@ export class UserRegisterComponent implements OnInit {
       {
         next: () => {
 
-          debugger;
-
           let userAuthenticateRequest: UsersAuthenticateRequest =
           {
             login: this._login,

@@ -56,16 +56,7 @@
         <mat-form-field appearance="fill">
           <mat-label>Descrição</mat-label>
           <input
-            *ngIf="!cardPosting.adding || cardPosting.description"
-            type="text"
-            id="descriptionFormControl"
-            required
-            matInput
-            formControlName="descriptionFormControl"
-            [(ngModel)]="cardPosting.description"
-          />
-          <input
-            *ngIf="cardPosting.adding && !cardPosting.description"
+            #descriptionInput
             type="text"
             id="descriptionFormControl"
             required
@@ -73,7 +64,6 @@
             formControlName="descriptionFormControl"
             [(ngModel)]="cardPosting.description"
             (blur)="onDescriptionChange()"
-            cdkFocusInitial
           />
           <mat-error
             *ngIf="cardPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
@@ -95,6 +85,7 @@
               mat-input
               [(ngModel)]="cardPosting.categoryId"
               formControlName="categoryIdFormControl"
+              (ngModelChange)="onCategorySelected()"
             >
               <mat-option>-- Nenhuma --</mat-option>
               <mat-option
@@ -356,6 +347,24 @@
             playlist_add
           </span>
         </div>
+      </div>
+
+      <div class="row">
+        <mat-form-field appearance="fill" floatLabel="always">
+          <mat-label>Despesa</mat-label>
+          <mat-select
+            mat-input
+            [(ngModel)]="cardPosting.expenseId"
+            formControlName="expenseIdFormControl"
+          >
+            <mat-option>-- Nenhuma --</mat-option>
+            <mat-option
+              *ngFor="let i of cardPosting.expensesList"
+              [value]="i.id"
+              >{{ i.description }}</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
       </div>
 
       <div class="row">

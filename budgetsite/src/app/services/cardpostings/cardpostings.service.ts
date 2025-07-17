@@ -11,19 +11,18 @@ import { CardsPostingsDTO } from 'src/app/models/cardspostingsdto.model';
   providedIn: 'root',
 })
 export class CardPostingsService {
-  constructor(private http: HttpClient, private messenger: Messenger) {}
+  constructor(private http: HttpClient, private messenger: Messenger) { }
 
   create(cardPosting: CardsPostings): Observable<CardsPostings> {
     cardPosting.others = cardPosting.peopleId ? true : false;
 
     return this.http
       .post<CardsPostings>(
-        `${ApiUrls.cardspostings}${
-          cardPosting.generateParcels || cardPosting.repeatParcels
-            ? `/allparcels?repeat=${
-                cardPosting.repeatParcels ?? false
-              }&qtyMonths=${cardPosting.monthsToRepeat ?? 0}`
-            : ''
+        `${ApiUrls.cardspostings}${cardPosting.generateParcels || cardPosting.repeatParcels
+          ? `/allparcels?repeat=${cardPosting.repeatParcels ?? false
+          }&qtyMonths=${cardPosting.monthsToRepeat ?? 0}${cardPosting.expenseId != null ? `&expenseId=${cardPosting.expenseId}` : ''
+          }`
+          : `${cardPosting.expenseId != null ? `?expenseId=${cardPosting.expenseId}` : ''}`
         }`,
         cardPosting
       )
@@ -32,6 +31,7 @@ export class CardPostingsService {
         catchError((e) => this.messenger.errorHandler(e))
       );
   }
+
 
   read(cardId: number, reference: string): Observable<CardsPostings[]> {
     return this.http
@@ -100,29 +100,28 @@ export class CardPostingsService {
   update(cardPosting: CardsPostings): Observable<CardsPostings> {
     cardPosting.others = cardPosting.peopleId ? true : false;
 
-    let url = `${ApiUrls.cardspostings}${
-      cardPosting.generateParcels || cardPosting.repeatParcels
-        ? '/allparcels'
+    let url = `${ApiUrls.cardspostings}${cardPosting.generateParcels || cardPosting.repeatParcels
+      ? '/allparcels'
+      : ''
+      }/${cardPosting.id}${cardPosting.generateParcels || cardPosting.repeatParcels
+        ? `?repeat=${cardPosting.repeatParcels ?? false}&qtyMonths=${cardPosting.monthsToRepeat ?? 0}`
         : ''
-    }/${cardPosting.id}${
-      cardPosting.generateParcels || cardPosting.repeatParcels
-        ? `?repeat=${cardPosting.repeatParcels ?? false}&qtyMonths=${
-            cardPosting.monthsToRepeat ?? 0
-          }`
+      }${cardPosting.repeatToNextMonths
+        ? `${cardPosting.generateParcels || cardPosting.repeatParcels ? '&' : '?'
+        }repeatToNextMonths=${cardPosting.repeatToNextMonths ?? false}`
         : ''
-    }${
-      cardPosting.repeatToNextMonths
-        ? `${
-            cardPosting.generateParcels || cardPosting.repeatParcels ? '&' : '?'
-          }repeatToNextMonths=${cardPosting.repeatToNextMonths ?? false}`
-        : ''
-    }`;
+      }`;
+
+    if (cardPosting.expenseId != null) {
+      url += `${url.includes('?') ? '&' : '?'}expenseId=${cardPosting.expenseId}`;
+    }
 
     return this.http.put<CardsPostings>(url, cardPosting).pipe(
       map((obj) => obj),
       catchError((e) => this.messenger.errorHandler(e))
     );
   }
+
 
   updatePositions(cardPostings: CardsPostings[]): Observable<CardsPostings> {
     return this.http
@@ -133,9 +132,12 @@ export class CardPostingsService {
       );
   }
 
-  delete(id: number): Observable<CardsPostings> {
+  delete(cardPosting: CardsPostings): Observable<CardsPostings> {
     return this.http
-      .delete<CardsPostings>(`${ApiUrls.cardspostings}/${id}`)
+      .delete<CardsPostings>(
+        `${ApiUrls.cardspostings}/${cardPosting.id}${cardPosting.expenseId != null ? `?expenseId=${cardPosting.expenseId}` : ''
+        }`
+      )
       .pipe(
         map((obj) => obj),
         catchError((e) => this.messenger.errorHandler(e))

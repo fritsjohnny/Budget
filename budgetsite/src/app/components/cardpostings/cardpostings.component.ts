@@ -45,6 +45,7 @@ export class CardPostingsComponent implements OnInit {
 
   @ViewChild('input') filterInput!: ElementRef;
 
+  expenses!: Expenses[];
   cardpostings!: CardsPostings[];
   cardpostingspeople!: CardsPostingsDTO[];
   expensesByCategories!: ExpensesByCategories[];
@@ -152,6 +153,16 @@ export class CardPostingsComponent implements OnInit {
     this.accountService.readNotDisabled().subscribe({
       next: (accounts) => {
         this.accountsList = accounts;
+
+        this.hideProgress = true;
+      },
+      error: () => (this.hideProgress = true),
+    });
+
+    this.expenseService.readComboList(this.reference!).subscribe({
+      next: (expenses) => {
+        this.expenses = expenses.sort((a, b) =>
+          a.description.localeCompare(b.description));
 
         this.hideProgress = true;
       },
@@ -364,6 +375,7 @@ export class CardPostingsComponent implements OnInit {
         peopleList: this.peopleList,
         categoriesList: this.categoriesList,
         cardsList: this.cardsList,
+        expensesList: this.expenses,
         editing: this.editing,
         adding: true,
       },
@@ -443,6 +455,7 @@ export class CardPostingsComponent implements OnInit {
         peopleList: this.peopleList,
         categoriesList: this.categoriesList,
         cardsList: this.cardsList,
+        expensesList: this.expenses,
         editing: this.editing,
         deleting: false,
         fixed: cardPosting.fixed,
@@ -540,7 +553,7 @@ export class CardPostingsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (confirmed) {
-        this.cardPostingsService.delete(cardPosting.id!).subscribe({
+        this.cardPostingsService.delete(cardPosting).subscribe({
           next: () => {
             this.messenger.message(
               'Lançamento de cartão removido com sucesso.'
@@ -760,7 +773,7 @@ export class CardPostingsComponent implements OnInit {
 
     this.expenseService.create(expense).subscribe({
       next: () => {
-        this.cardPostingsService.delete(posting.id!).subscribe(() => {
+        this.cardPostingsService.delete(posting).subscribe(() => {
           this.messenger.message(
             'Despesa criada e lançamento de cartão removido.'
           );

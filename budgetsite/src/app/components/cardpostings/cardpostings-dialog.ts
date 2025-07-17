@@ -5,6 +5,7 @@ import {
   ViewChild,
   Inject,
   ChangeDetectorRef,
+  ElementRef,
 } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import {
@@ -31,6 +32,7 @@ import {
 })
 export class CardPostingsDialog implements OnInit, AfterViewInit {
   @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;
+  @ViewChild('descriptionInput') descriptionInput!: ElementRef;
 
   disableCheck: boolean = true;
   editing: boolean = false;
@@ -61,6 +63,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     relatedIdFormControl: new FormControl(''),
     dueDateFormControl: new FormControl(''),
     isPaidFormControl: new FormControl(''),
+    expenseIdFormControl: new FormControl(''),
   });
 
   constructor(
@@ -71,7 +74,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     private peopleService: PeopleService,
     private cardPostingsService: CardPostingsService,
     private cd: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.disableCheck =
@@ -106,6 +109,12 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
 
     if (this.cardPosting.description) {
       this.onDescriptionChange();
+    }
+
+    if (this.cardPosting.adding && !this.cardPosting.description) {
+      setTimeout(() => {
+        this.descriptionInput.nativeElement.focus();
+      }, 500);
     }
   }
 
@@ -265,5 +274,20 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   setPositiveOrNegative() {
     this.cardPosting.totalAmount = this.cardPosting.totalAmount! * -1;
     this.cardPosting.amount = this.cardPosting.amount * -1;
+  }
+
+  onCategorySelected() {
+    debugger
+    const category = this.cardPosting.categoriesList?.find(c => c.id === this.cardPosting.categoryId);
+
+    if (!category?.hasExpense) return;
+
+    const expense = this.cardPosting.expensesList?.find(
+      e => e.description.trim() === category.name.trim() && e.categoryId === null
+    );
+
+    if (expense) {
+      this.cardPosting.expenseId = expense.id;
+    }
   }
 }

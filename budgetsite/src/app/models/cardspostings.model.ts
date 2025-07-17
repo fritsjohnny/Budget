@@ -1,5 +1,6 @@
 import { Cards } from './cards.model';
 import { Categories } from "./categories.model";
+import { Expenses } from './expenses.model';
 import { People } from "./people.model";
 
 export interface CardsPostings {
@@ -39,4 +40,6 @@ export interface CardsPostings {
   isPaid?: boolean;
   overdue?: boolean;
   duetoday?: boolean;
+  expenseId?: number;
+  expensesList?: Expenses[];
 }

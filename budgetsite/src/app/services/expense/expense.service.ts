@@ -11,17 +11,15 @@ import { Expenses } from 'src/app/models/expenses.model';
   providedIn: 'root',
 })
 export class ExpenseService {
-  constructor(private http: HttpClient, private messenger: Messenger) {}
+  constructor(private http: HttpClient, private messenger: Messenger) { }
 
   create(expense: Expenses): Observable<Expenses> {
     return this.http
       .post<Expenses>(
-        `${ApiUrls.expenses}${
-          expense.generateParcels || expense.repeatParcels
-            ? `/allparcels?repeat=${expense.repeatParcels ?? false}&qtyMonths=${
-                expense.monthsToRepeat ?? 0
-              }`
-            : ''
+        `${ApiUrls.expenses}${expense.generateParcels || expense.repeatParcels
+          ? `/allparcels?repeat=${expense.repeatParcels ?? false}&qtyMonths=${expense.monthsToRepeat ?? 0
+          }`
+          : ''
         }`,
         expense
       )
@@ -32,9 +30,8 @@ export class ExpenseService {
   }
 
   read(reference: string, justMyValues: boolean): Observable<Expenses[]> {
-    const url = `${ApiUrls.expenses}/reference${
-      justMyValues ? '2' : ''
-    }/${reference}`;
+    const url = `${ApiUrls.expenses}/reference${justMyValues ? '2' : ''
+      }/${reference}`;
 
     return this.http.get<Expenses[]>(url).pipe(
       map((obj) => obj),
@@ -91,14 +88,11 @@ export class ExpenseService {
   update(expense: Expenses): Observable<Expenses> {
     return this.http
       .put<Expenses>(
-        `${ApiUrls.expenses}${
-          expense.generateParcels || expense.repeatParcels ? '/allparcels' : ''
-        }/${expense.id}${
-          expense.generateParcels || expense.repeatParcels
-            ? `?repeat=${expense.repeatParcels ?? false}&qtyMonths=${
-                expense.monthsToRepeat ?? 0
-              }`
-            : ''
+        `${ApiUrls.expenses}${expense.generateParcels || expense.repeatParcels ? '/allparcels' : ''
+        }/${expense.id}${expense.generateParcels || expense.repeatParcels
+          ? `?repeat=${expense.repeatParcels ?? false}&qtyMonths=${expense.monthsToRepeat ?? 0
+          }`
+          : ''
         }`,
         expense
       )

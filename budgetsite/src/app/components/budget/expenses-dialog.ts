@@ -55,6 +55,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     fixedFormControl: new FormControl(''),
     peopleFormControl: new FormControl(''),
     dueDayFormControl: new FormControl(''),
+    expectedValueFormControl: new FormControl(''),
   });
 
   constructor(

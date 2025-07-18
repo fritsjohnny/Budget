@@ -43,10 +43,6 @@ import { ExpensesDialog } from './expenses-dialog';
 import { IncomesDialog } from './incomes-dialog';
 import { PaymentReceiveDialog } from './payment-receive-dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
-import {
-  LocalNotifications,
-  ScheduleOptions,
-} from '@capacitor/local-notifications';
 import { BackgroundTask } from '@capawesome/capacitor-background-task';
 
 @Component({
@@ -184,16 +180,12 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     private accountPostingsService: AccountPostingsService,
     private budget: BudgetService,
     private _liveAnnouncer: LiveAnnouncer
-  ) {}
+  ) { }
 
   @ViewChild('sortPeople') sortPeople!: MatSort;
   @ViewChild('sortCategories') sortCategories!: MatSort;
 
-  async ngOnInit() {
-    const permission = await LocalNotifications.requestPermissions();
-    if (permission.display === 'granted') {
-      this.startBackgroundExpenseCheck();
-    }
+  ngOnInit() {
   }
 
   ngAfterViewInit(): void {
@@ -462,26 +454,26 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   getIncomesTotals() {
     this.toReceiveTotal = this.incomes
       ? this.incomes
-          .map((t) => t.toReceive)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.toReceive)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.receivedTotal = this.incomes
       ? this.incomes
-          .map((t) => t.received)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.received)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.incomesRemainingTotal = this.incomes
       ? this.incomes
-          .map((t) => t.remaining)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.remaining)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.toReceiveTotalNoFilter = this.incomesNoFilter
       ? this.incomesNoFilter
-          .map((t) => t.toReceive)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.toReceive)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.expectedBalance =
@@ -501,14 +493,14 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.expensesRemainingTotal = this.expenses
       ? this.expenses
-          .map((t) => t.remaining)
-          .reduce((acc, value) => acc! + value!, 0)
+        .map((t) => t.remaining)
+        .reduce((acc, value) => acc! + value!, 0)
       : 0;
 
     this.toPayTotalNoFilter = this.expensesNoFilter
       ? this.expensesNoFilter
-          .map((t) => t.toPay)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.toPay)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.expectedBalance =
@@ -520,34 +512,34 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   getTotalPeople() {
     this.toReceiveTotalPeople = this.cardpostingspeople
       ? this.cardpostingspeople
-          .map((t) => t.toReceive)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.toReceive)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.receivedTotalPeople = this.cardpostingspeople
       ? this.cardpostingspeople
-          .map((t) => t.received)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.received)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.remainingTotalPeople = this.cardpostingspeople
       ? this.cardpostingspeople
-          .map((t) => t.remaining)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.remaining)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
   }
 
   getTotalByCategories() {
     this.amountTotalCategory = this.expensesByCategories
       ? this.expensesByCategories
-          .map((t) => t.amount!)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.amount!)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
 
     this.percTotalCategory = this.expensesByCategories
       ? this.expensesByCategories
-          .map((t) => t.perc!)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.perc!)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
   }
 
@@ -639,7 +631,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       next: () => {
         this.refresh();
       },
-      error: () => {},
+      error: () => { },
     });
   }
 
@@ -678,6 +670,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         peopleList: this.peopleList,
         fixed: expense.fixed,
         dueDay: expense.dueDay,
+        expectedValue: expense.expectedValue,
       },
     });
 
@@ -715,6 +708,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                   t.duetoday = this.dueToday(t);
                   t.fixed = result.fixed;
                   t.dueDay = result.dueDay;
+                  t.expectedValue = result.expectedValue;
                 });
 
               this.expenses = [
@@ -812,7 +806,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       next: () => {
         this.refresh();
       },
-      error: () => {},
+      error: () => { },
     });
   }
 
@@ -1210,14 +1204,14 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           let received =
             cpp.received > 0
               ? (
-                  '-' +
-                  cpp.received
-                    .toLocaleString('pt-br', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })
-                    .replace('R$ ', '')
-                ).padStart(8, ' ') + ' (Valor pago)\n'
+                '-' +
+                cpp.received
+                  .toLocaleString('pt-br', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
+                  .replace('R$ ', '')
+              ).padStart(8, ' ') + ' (Valor pago)\n'
               : '';
 
           message += received;
@@ -1394,17 +1388,17 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.expenses = this.showUpcomingExpenses
       ? this.expensesNoFilter.filter((e) => {
-          if (!e.dueDate) return false;
+        if (!e.dueDate) return false;
 
-          const due = new Date(e.dueDate);
-          due.setHours(0, 0, 0, 0);
+        const due = new Date(e.dueDate);
+        due.setHours(0, 0, 0, 0);
 
-          const isWithinRange = due >= now && due <= nextDate;
-          const isPending =
-            !this.onlyPendingExpenses || (e.remaining && e.remaining > 0);
+        const isWithinRange = due >= now && due <= nextDate;
+        const isPending =
+          !this.onlyPendingExpenses || (e.remaining && e.remaining > 0);
 
-          return isWithinRange && isPending;
-        })
+        return isWithinRange && isPending;
+      })
       : [...this.expensesNoFilter];
 
     this.getExpensesTotals();
@@ -1453,42 +1447,17 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     this.getExpensesTotals();
   }
 
-  async scheduleExpenseNotifications(expenses: Expenses[]) {
-    await LocalNotifications.cancel({ notifications: [] }); // limpa todas notificações anteriores
+  ajustarDespesaPorCategoria(expense: any): void {
+    if (!expense?.id) return;
 
-    const now = new Date();
-
-    const upcomingExpenses = expenses.filter((expense) => {
-      const dueDate = new Date(expense.dueDate!);
-      const timeDiff = dueDate.getTime() - now.getTime();
-      const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
-      return daysDiff >= 0 && daysDiff <= 3; // vencendo em até 3 dias
-    });
-
-    const notifications: ScheduleOptions['notifications'] =
-      upcomingExpenses.map((expense, index) => ({
-        id: index + 1,
-        title: 'Despesa vencendo',
-        body: `${expense.description} vence em breve (${expense.dueDate})`,
-        schedule: {
-          at: new Date(new Date().getTime() + 1000), // dispara 1s depois só pra teste
-        },
-      }));
-
-    if (notifications.length) {
-      await LocalNotifications.schedule({ notifications });
-    }
-  }
-
-  async startBackgroundExpenseCheck() {
-    const taskId = await BackgroundTask.beforeExit(async () => {
-      await this.expenseService.read(this.reference!, false).subscribe({
-        next: async (expenses: Expenses[]) => {
-          await this.scheduleExpenseNotifications(expenses);
-          BackgroundTask.finish({ taskId });
-        },
-        error: () => BackgroundTask.finish({ taskId }),
-      });
+    this.expenseService.ajustarPorCategoria(expense.id).subscribe({
+      next: (msg) => {
+        this.messenger.message(msg);
+        this.getExpensesByCategories();
+      },
+      error: (err) => {
+        this.messenger.errorHandler(err);
+      }
     });
   }
 }

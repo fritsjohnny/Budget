@@ -216,6 +216,27 @@
       </div>
 
       <div class="row center">
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Valor Previsto</mat-label>
+            <input
+              matInput
+              inputmode="numeric"
+              currencyMask
+              formControlName="expectedValueFormControl"
+              [(ngModel)]="expenses.expectedValue"
+              placeholder="0"
+              autocomplete="off"
+            />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row center">
         <div class="col-7">
           <mat-form-field appearance="fill" style="width: 100% !important">
             <mat-label>Vencimento</mat-label>

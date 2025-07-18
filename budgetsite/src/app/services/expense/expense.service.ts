@@ -147,4 +147,8 @@ export class ExpenseService {
         catchError((e) => this.messenger.errorHandler(e))
       );
   }
+
+  public ajustarPorCategoria(id: number): Observable<any> {
+    return this.http.post(`${ApiUrls.expenses}/AjustarPorCategoria/${id}`, null);
+  }
 }

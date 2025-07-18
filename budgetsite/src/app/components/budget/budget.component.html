@@ -290,20 +290,34 @@
                 }"
               >
                 <div style="display: flex">
-                  {{ row.description
-                  }}<span *ngIf="row.parcels > 1"
-                    >&nbsp;({{ row.parcelNumber }}/{{ row.parcels }})
+                  {{ row.description }}
+                  <span *ngIf="row.parcels > 1">
+                    &nbsp;({{ row.parcelNumber }}/{{ row.parcels }})
                   </span>
                   <span *ngIf="row.scheduled" class="material-icons scheduled"
                     >schedule</span
                   >
                 </div>
+
+                <!-- Vencimento -->
                 <div class="small-text" *ngIf="row.dueDate !== null">
-                  <span
-                    ><i class="red"
-                      >Venc.:&nbsp;{{ row.dueDate | date : "dd/MM" }}</i
-                    ></span
-                  >
+                  <span>
+                    <i class="red">
+                      Venc.:&nbsp;{{ row.dueDate | date : "dd/MM" }}
+                    </i>
+                  </span>
+                </div>
+
+                <!-- Valor Previsto -->
+                <div class="small-text" *ngIf="row.expectedValue">
+                  <span>
+                    <i class="green">
+                      Previsto:&nbsp;{{
+                        row.expectedValue
+                          | currency : "BRL" : "symbol" : "1.2-2"
+                      }}
+                    </i>
+                  </span>
                 </div>
               </td>
               <td mat-footer-cell *matFooterCellDef>Total</td>
@@ -412,6 +426,20 @@
                       >credit_score</mat-icon
                     >
                     <span>Pagar com Cartão</span>
+                  </button>
+                  <button
+                    mat-menu-item
+                    [id]="!row.categoryId && !row.cardId ? 'menu-expenses' : ''"
+                    (click)="ajustarDespesaPorCategoria(row)"
+                    [disabled]="row.categoryId || row.cardId"
+                  >
+                    <mat-icon
+                      [id]="
+                        !row.categoryId && !row.cardId ? 'menu-expenses' : ''
+                      "
+                      >tune</mat-icon
+                    >
+                    <span>Ajustar pelo total da categoria</span>
                   </button>
                   <button
                     mat-menu-item

@@ -24,13 +24,12 @@ export class TokenInterceptor implements HttpInterceptor {
       });
 
       return next.handle(request).pipe(catchError(err => {
-
         if (err instanceof HttpErrorResponse) {
           if (err.status === 401) {
             this.userService.logout();
           }
         }
-        return throwError(err.message);
+        return throwError(err);
       }));
     }
     else {

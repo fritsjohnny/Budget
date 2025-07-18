@@ -228,7 +228,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   onCheckboxJustToPayChange(): void {
-    debugger;
     if (this.justToPay) {
       this.expenses = this.expensesNoFilter.filter((e) => e.remaining > 0);
     } else {

@@ -277,7 +277,6 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   onCategorySelected() {
-    debugger
     const category = this.cardPosting.categoriesList?.find(c => c.id === this.cardPosting.categoryId);
 
     if (!category?.hasExpense) return;

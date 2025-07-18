@@ -1451,9 +1451,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     if (!expense?.id) return;
 
     this.expenseService.ajustarPorCategoria(expense.id).subscribe({
-      next: (msg) => {
-        this.messenger.message(msg);
-        this.getExpensesByCategories();
+      next: (res) => {
+        this.messenger.message('Despesa ajustada com sucesso');
+        expense.toPay = res.toPay;
+        expense.totalToPay = res.totalToPay;
       },
       error: (err) => {
         this.messenger.errorHandler(err);

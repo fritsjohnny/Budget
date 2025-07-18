@@ -846,3 +846,13 @@ body.dark-theme {
 .default-margin-bottom {
   margin-bottom: 65px !important;
 }
+
+.snackbar-success {
+  background-color: #d4edda !important; // verde clarinho
+  color: #155724 !important; // texto verde escuro
+}
+
+.snackbar-error {
+  background-color: #f8d7da !important; // vermelho clarinho
+  color: #721c24 !important; // texto vermelho escuro
+}

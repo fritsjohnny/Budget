@@ -470,7 +470,7 @@ export class CardPostingsComponent implements OnInit {
         //this.hideProgress = false;
 
         if (result.deleting) {
-          this.cardPostingsService.delete(result.id).subscribe({
+          this.cardPostingsService.delete(result).subscribe({
             next: () => {
               this.afterDelete(result);
 

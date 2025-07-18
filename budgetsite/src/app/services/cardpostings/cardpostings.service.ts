@@ -20,9 +20,8 @@ export class CardPostingsService {
       .post<CardsPostings>(
         `${ApiUrls.cardspostings}${cardPosting.generateParcels || cardPosting.repeatParcels
           ? `/allparcels?repeat=${cardPosting.repeatParcels ?? false
-          }&qtyMonths=${cardPosting.monthsToRepeat ?? 0}${cardPosting.expenseId != null ? `&expenseId=${cardPosting.expenseId}` : ''
-          }`
-          : `${cardPosting.expenseId != null ? `?expenseId=${cardPosting.expenseId}` : ''}`
+          }&qtyMonths=${cardPosting.monthsToRepeat ?? 0}`
+          : ''
         }`,
         cardPosting
       )
@@ -31,7 +30,6 @@ export class CardPostingsService {
         catchError((e) => this.messenger.errorHandler(e))
       );
   }
-
 
   read(cardId: number, reference: string): Observable<CardsPostings[]> {
     return this.http
@@ -112,10 +110,6 @@ export class CardPostingsService {
         : ''
       }`;
 
-    if (cardPosting.expenseId != null) {
-      url += `${url.includes('?') ? '&' : '?'}expenseId=${cardPosting.expenseId}`;
-    }
-
     return this.http.put<CardsPostings>(url, cardPosting).pipe(
       map((obj) => obj),
       catchError((e) => this.messenger.errorHandler(e))
@@ -135,8 +129,7 @@ export class CardPostingsService {
   delete(cardPosting: CardsPostings): Observable<CardsPostings> {
     return this.http
       .delete<CardsPostings>(
-        `${ApiUrls.cardspostings}/${cardPosting.id}${cardPosting.expenseId != null ? `?expenseId=${cardPosting.expenseId}` : ''
-        }`
+        `${ApiUrls.cardspostings}/${cardPosting.id}`
       )
       .pipe(
         map((obj) => obj),

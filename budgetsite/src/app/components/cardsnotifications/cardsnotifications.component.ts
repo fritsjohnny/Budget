@@ -96,6 +96,8 @@ export class CardsNotificationsComponent implements OnInit {
   private parseNotification(
     payload: NotificationPayload
   ): CardsPostings | null {
+    console.log('[DEBUG] Notification payload recebido:', payload);
+
     const text = payload.text ?? '';
     const title = payload.title ?? '';
     const pkg = payload.package?.toLowerCase() ?? '';
@@ -149,7 +151,7 @@ export class CardsNotificationsComponent implements OnInit {
     }
 
     // Nubank
-    if (pkg.includes('nubank') || title.toLowerCase().includes('nubank')) {
+    if (pkg === 'com.nu.production') {
       try {
         const valorMatch = text.match(/R\$ ?([\d,.]+)/);
         const lojaMatch = text.match(/em (.+?) para o cartão/i);

@@ -39,13 +39,12 @@ export class Messenger {
 
     if (typeof input === 'string') return input;
 
-    if (input?.message) return input.message;
-
     if (input?.error?.message) return input.error.message;
 
     if (input?.error?.detail) return input.error.detail;
-
     if (input?.error && typeof input.error === 'string') return input.error;
+
+    if (input?.message) return input.message;
 
     return 'Erro inesperado.';
   }

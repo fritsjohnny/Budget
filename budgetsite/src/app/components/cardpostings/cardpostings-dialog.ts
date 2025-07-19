@@ -24,6 +24,7 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
+import { ExpenseService } from 'src/app/services/expense/expense.service';
 
 @Component({
   selector: 'cardpostings-dialog',
@@ -73,6 +74,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     private categoryService: CategoryService,
     private peopleService: PeopleService,
     private cardPostingsService: CardPostingsService,
+    private expenseService: ExpenseService,
     private cd: ChangeDetectorRef
   ) { }
 
@@ -88,6 +90,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       this.cardPosting.parcels === 1;
 
     this.cardPosting.monthsToRepeat = 12;
+
+    this.getLists();
   }
 
   ngAfterViewInit(): void {
@@ -116,6 +120,29 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
         this.descriptionInput.nativeElement.focus();
       }, 500);
     }
+  }
+
+  getLists() {
+    this.peopleService.read().subscribe({
+      next: (people) => {
+        this.cardPosting.peopleList = people;
+      },
+    });
+
+    this.categoryService.readWithExpenses(this.cardPosting.reference!).subscribe({
+      next: (categories) => {
+        this.cardPosting.categoriesList = categories.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+      },
+    });
+
+    this.expenseService.readComboList(this.cardPosting.reference!).subscribe({
+      next: (expenses) => {
+        this.cardPosting.expensesList = expenses.sort((a, b) =>
+          a.description.localeCompare(b.description));
+      },
+    });
   }
 
   cancel(): void {

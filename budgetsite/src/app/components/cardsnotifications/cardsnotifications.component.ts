@@ -148,6 +148,26 @@ export class CardsNotificationsComponent implements OnInit {
       }
     }
 
+    // Nubank
+    if (pkg.includes('nubank') || title.toLowerCase().includes('nubank')) {
+      try {
+        const valorMatch = text.match(/R\$ ?([\d,.]+)/);
+        const lojaMatch = text.match(/em (.+?) para o cartão/i);
+
+        if (!valorMatch || !lojaMatch) return null;
+
+        const amount = parseFloat(
+          valorMatch[1].replace('.', '').replace(',', '.')
+        );
+        const description = lojaMatch[1].trim();
+        const date = new Date(); // Assume data atual
+
+        return { amount, date, description, note: text } as CardsPostings;
+      } catch {
+        return null;
+      }
+    }
+
     // Outros bancos no futuro aqui...
 
     return null;

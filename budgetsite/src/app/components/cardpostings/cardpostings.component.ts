@@ -789,5 +789,10 @@ export class CardPostingsComponent implements OnInit {
   onCardPostingCreated(posting: CardsPostings) {
     this.cardpostings.unshift(posting);
     this.sort();
+
+    this.getTotalAmount();
+
+    this.getCardsPostingsPeople();
+    this.getExpensesByCategories();
   }
 }

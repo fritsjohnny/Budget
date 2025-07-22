@@ -142,7 +142,10 @@ export class CardsNotificationsComponent implements OnInit {
         const amount = parseFloat(
           valorMatch[1].replace('.', '').replace(',', '.')
         );
-        const description = lojaMatch[1].trim();
+
+        let description = lojaMatch[1].trim();
+        // Remove prefixo de parcelamento como "2x em", "3x em", etc.
+        description = description.replace(/^\d+x em /i, '').trim();
         const parcels = parcelasMatch ? parseInt(parcelasMatch[1], 10) : 1;
         const date = new Date(); // Assume data atual
 

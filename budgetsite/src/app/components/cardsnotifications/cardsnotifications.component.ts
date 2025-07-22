@@ -134,7 +134,8 @@ export class CardsNotificationsComponent implements OnInit {
     if (pkg.includes('picpay') || title.toLowerCase().includes('cashback')) {
       try {
         const valorMatch = text.match(/R\$ ?([\d,.]+)/);
-        const lojaMatch = text.match(/em (.+?) (APROVADA|APROVADO)/i);
+        const lojaMatch = text.match(/em (.+?) APROVADA/i);
+        const parcelasMatch = text.match(/em (\d+)x/i); // ← detecta "2x", "3x" etc.
 
         if (!valorMatch || !lojaMatch) return null;
 
@@ -142,9 +143,16 @@ export class CardsNotificationsComponent implements OnInit {
           valorMatch[1].replace('.', '').replace(',', '.')
         );
         const description = lojaMatch[1].trim();
+        const parcels = parcelasMatch ? parseInt(parcelasMatch[1], 10) : 1;
         const date = new Date(); // Assume data atual
 
-        return { amount, date, description, note: text } as CardsPostings;
+        return {
+          amount,
+          date,
+          description,
+          note: text,
+          parcels
+        } as CardsPostings;
       } catch {
         return null;
       }
@@ -186,7 +194,7 @@ export class CardsNotificationsComponent implements OnInit {
         description: notification.description,
         amount: notification.amount,
         totalAmount: notification.amount,
-        parcels: 1,
+        parcels: notification.parcels || 1,
         parcelNumber: 1,
         peopleList: this.peopleList,
         categoriesList: this.categoriesList,

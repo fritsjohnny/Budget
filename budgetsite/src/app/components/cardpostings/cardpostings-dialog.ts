@@ -120,6 +120,11 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
         this.descriptionInput.nativeElement.focus();
       }, 500);
     }
+
+    if (this.cardPosting.parcels! > 1) {
+      this.atualizarParcelamento(this.cardPosting.parcels!);
+      this.calculateAmount();
+    }
   }
 
   getLists() {
@@ -188,8 +193,14 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   onParcelsChanged(event: any): void {
-    this.disableCheck =
-      event.target.value == '' || this.cardPosting.parcels! <= 1;
+    const value = event.target.value;
+    this.atualizarParcelamento(value);
+    this.calculateAmount();
+  }
+
+  private atualizarParcelamento(parcels: number | string): void {
+    const val = +parcels;
+    this.disableCheck = parcels === '' || val <= 1;
 
     if (this.disableCheck) {
       this.cardPosting.generateParcels = false;
@@ -197,11 +208,9 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       this.cardPosting.generateParcels = true;
     }
 
-    if (event.target.value == '') {
+    if (parcels === '') {
       this.cardPosting.parcels = 1;
     }
-
-    this.calculateAmount();
   }
 
   onParcelNumberChanged(event: any): void {

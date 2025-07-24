@@ -302,7 +302,11 @@
                 <!-- Vencimento -->
                 <div class="small-text" *ngIf="row.dueDate !== null">
                   <span>
-                    <i class="red">
+                    <i
+                      [ngClass]="[
+                        row.overdue || row.duetoday ? 'red3 bold' : 'red'
+                      ]"
+                    >
                       Venc.:&nbsp;{{ row.dueDate | date : "dd/MM" }}
                     </i>
                   </span>
@@ -388,7 +392,14 @@
                   class="icon-actions"
                   [matMenuTriggerFor]="menu"
                 >
-                  <mat-icon class="expenses-actions">more_vert</mat-icon>
+                  <mat-icon
+                    [ngClass]="[
+                      row.overdue || row.duetoday
+                        ? 'expenses-actions2'
+                        : 'expenses-actions'
+                    ]"
+                    >more_vert</mat-icon
+                  >
                 </button>
                 <mat-menu #menu="matMenu">
                   <button
@@ -466,7 +477,9 @@
               *matRowDef="let row; columns: displayedExpensesColumns"
               cdkDrag
               [cdkDragData]="row"
-              [ngClass]="{ 'card-yield-checked': row.overdue || row.duetoday }"
+              [ngClass]="{
+                'card-yield-checked bold': row.overdue || row.duetoday
+              }"
             ></tr>
             <tr
               class="expenses"

@@ -144,6 +144,7 @@ $primary-light: map-get($light-theme, primary);
   --expansion-panel-header: var(--white-color);
   --accent: rgb(233, 30, 99);
   --yellow: #ffc107;
+  --red3-color: #880e4f;
 
   .mat-table {
     border-top: 1px solid #e0e0e0;
@@ -179,6 +180,10 @@ $primary-light: map-get($light-theme, primary);
 
   .green {
     color: var(--green-color);
+  }
+
+  .red3 {
+    color: var(--red3-color);
   }
 
   .sidenav {
@@ -218,6 +223,10 @@ $primary-light: map-get($light-theme, primary);
 
   .expenses-actions {
     color: var(--red2-color);
+  }
+
+  .expenses-actions2 {
+    color: var(--red3-color);
   }
 
   .incomes-actions {
@@ -414,6 +423,14 @@ $primary-light: map-get($light-theme, primary);
 
     td.mat-cell {
       color: #393939 !important;
+    }
+  }
+
+  .card-yield-checked2 {
+    background-color: var(--yellow) !important;
+
+    td.mat-cell {
+      color: var(--red3-color) !important;
     }
   }
 

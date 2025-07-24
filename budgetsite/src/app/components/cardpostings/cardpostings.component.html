@@ -257,10 +257,14 @@
                   class="small-text"
                   *ngIf="row.peopleId !== null || row.parcels > 1"
                 >
-                  <span class="red" *ngIf="row.parcels > 1"
+                  <span
+                    [ngClass]="[row.isSelected ? 'red3' : 'red']"
+                    *ngIf="row.parcels > 1"
                     >({{ row.parcelNumber }}/{{ row.parcels }})
                   </span>
-                  <span class="red" *ngIf="row.peopleId !== null"
+                  <span
+                    [ngClass]="[row.isSelected ? 'red3' : 'red']"
+                    *ngIf="row.peopleId !== null"
                     ><i>{{ row.peopleId }}</i></span
                   >
                 </div>
@@ -349,8 +353,9 @@
               [cdkDragData]="row"
               [ngClass]="{
                 'card-yield-checked':
-                  row.isSelected ||
-                  (!row.isPaid && (row.overdue || row.duetoday))
+                  (row.isSelected && row.amount >= 0) ||
+                  (!row.isPaid && (row.overdue || row.duetoday)),
+                'card-yield-checked2': row.isSelected && row.amount < 0
               }"
             ></tr>
             <tr
@@ -552,7 +557,7 @@
   </mat-accordion>
 </div>
 
-<div *ngIf="hideProgress" class="row" style="margin-top: 10px;">
+<div *ngIf="hideProgress" class="row" style="margin-top: 10px">
   <app-cards-notifications
     [cardId]="cardId"
     [reference]="reference"

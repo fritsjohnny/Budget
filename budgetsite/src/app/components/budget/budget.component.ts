@@ -43,7 +43,7 @@ import { ExpensesDialog } from './expenses-dialog';
 import { IncomesDialog } from './incomes-dialog';
 import { PaymentReceiveDialog } from './payment-receive-dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
-import { BackgroundTask } from '@capawesome/capacitor-background-task';
+import { PeopleComponent } from '../people/people.component';
 
 @Component({
   selector: 'app-budget',
@@ -1143,6 +1143,30 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
+  editPeople(cpp: CardsPostingsDTO) {
+    let person = this.peopleList!.find(c => c.id === cpp.peopleId);
+
+    person!.canDelete = false;
+    person!.editing = true;
+
+    const dialogRef = this.dialog.open(PeopleComponent, {
+      width: '400px',
+      data: person,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.peopleService.update(result).subscribe({
+          next: () => {
+            cpp.peopleId = result.id;
+            cpp.person = result.name;
+            cpp.phoneNumber = result.phoneNumber;
+          },
+        });
+      }
+    });
+  }
+
   charge(cpp: CardsPostingsDTO, noFee: boolean = false) {
     let message = '';
 
@@ -1157,7 +1181,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     }
 
     this.cardPostingsService
-      .readByPeopleId(cpp.person, this.reference!, 0)
+      .readByPeopleId(cpp.peopleId, this.reference!, 0)
       .subscribe({
         next: (cardPostingsPeople) => {
           message += '\nSeguem os valores deste mês:';
@@ -1325,7 +1349,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
       if (row.cardsPostings == null) {
         this.cardPostingsService
-          .readByPeopleId(row.person, row.reference, row.cardId)
+          .readByPeopleId(row.peopleId, row.reference, row.cardId)
           .subscribe({
             next: (people) => {
               row.cardsPostings = people.cardsPostings;

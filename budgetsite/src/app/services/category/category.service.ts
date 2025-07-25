@@ -37,7 +37,7 @@ export class CategoryService {
 
   update(category: Categories): Observable<Categories> {
 
-    return this.http.put<Categories>(`${ApiUrls.categories}/${category.id}`, category).pipe(
+    return this.http.put<Categories>(`${ApiUrls.categories}`, category).pipe(
       map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))
     );

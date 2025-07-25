@@ -41,7 +41,7 @@ export class CardPostingsService {
   }
 
   readCardsPostingsByPeople(
-    peopleId: string,
+    peopleId: number,
     reference?: string
   ): Observable<CardsPostings[]> {
     return this.http
@@ -69,7 +69,7 @@ export class CardPostingsService {
   }
 
   readByPeopleId(
-    peopleId?: string,
+    peopleId?: number,
     reference?: string,
     cardId?: number
   ): Observable<CardsPostingsDTO> {

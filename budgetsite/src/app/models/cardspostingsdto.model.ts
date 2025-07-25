@@ -5,6 +5,7 @@ import { Incomes } from "./incomes.model";
 export interface CardsPostingsDTO {
 	reference: string;
 	cardId: number;
+	peopleId: number;
 	person: string;
 	toReceive: number;
 	received: number;
@@ -14,4 +15,5 @@ export interface CardsPostingsDTO {
 	accountsPostings: AccountsPostings[];
 	expanded?: boolean;
 	expanding?: boolean;
+  phoneNumber?: string;
 }

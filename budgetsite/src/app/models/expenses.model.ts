@@ -20,7 +20,7 @@ export interface Expenses {
   categoryId?: number;
   category?: string;
   scheduled?: boolean;
-  peopleId?: string;
+  peopleId?: number;
   adding?: boolean;
   editing?: boolean;
   deleting?: boolean;

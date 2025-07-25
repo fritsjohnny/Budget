@@ -6,7 +6,7 @@ export interface CardsReceipts {
   reference: string;
   date: Date;
   cardId: number;
-  peopleId: string;
+  peopleId: number;
   accountId: number;
   amount?: number;
   change?: number;

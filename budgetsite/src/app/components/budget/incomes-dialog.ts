@@ -29,8 +29,6 @@ export class IncomesDialog implements OnInit, AfterViewInit {
   accounts?: Accounts[];
   types?: IncomesTypes[];
 
-  editing: boolean = false;
-
   incomesFormGroup = new FormGroup({
     descriptionFormControl: new FormControl('', Validators.required),
     toReceiveFormControl: new FormControl('', Validators.required),
@@ -51,7 +49,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public incomes: Incomes,
     private peopleService: PeopleService,
     private cd: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cards = this.incomes.cardsList;
@@ -114,13 +112,9 @@ export class IncomesDialog implements OnInit, AfterViewInit {
   }
 
   addPeople() {
-    this.editing = false;
-
     const dialogRef = this.dialog.open(PeopleComponent, {
       width: '400px',
-      data: {
-        editing: this.editing,
-      },
+      data: this.incomes.peopleList!.find(p => p.id === this.incomes.peopleId),
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -130,7 +124,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
             this.incomes.peopleList = [
               ...this.incomes.peopleList!,
               people,
-            ].sort((a, b) => a.id.localeCompare(b.id));
+            ].sort((a, b) => a.name.localeCompare(b.name));
             this.incomes.peopleId = people.id;
           },
         });

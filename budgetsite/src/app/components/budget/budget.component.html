@@ -790,6 +790,15 @@
                   <mat-icon class="people-actions">more_vert</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
+                  <button
+                    mat-menu-item
+                    [id]="'menu-people'"
+                    (click)="editPeople(row)"
+                    [disabled]="false"
+                  >
+                    <mat-icon [id]="'menu-icon-people'">edit</mat-icon>
+                    <span>Editar</span>
+                  </button>
                   <button mat-menu-item id="menu-people" (click)="charge(row)">
                     <mat-icon id="menu-icon-people">whatsapp</mat-icon>
                     <span>Copiar lançamentos p/ WhatsApp</span>

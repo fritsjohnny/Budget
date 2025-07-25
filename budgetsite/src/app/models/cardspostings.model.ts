@@ -10,7 +10,7 @@ export interface CardsPostings {
   reference: string;
   position?: number;
   description: string;
-  peopleId?: string;
+  peopleId?: number;
   parcelNumber?: number;
   parcels?: number;
   amount: number;

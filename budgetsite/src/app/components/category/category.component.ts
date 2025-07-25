@@ -20,25 +20,23 @@ export class CategoryComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public category: Categories) { }
 
   ngOnInit(): void {
+    this.category ??= {} as Categories;
+    this.category.editing = !!this.category.id;
   }
 
   setTitle() {
-
     return 'Categoria - ' + (this.category.editing ? 'Editar' : 'Incluir');
   }
 
   cancel(): void {
-
     this.dialogRef.close();
   }
 
   save(): void {
-
     this.dialogRef.close(this.category);
   }
 
   delete(): void {
-
     this.category.deleting = true;
 
     this.dialogRef.close(this.category);

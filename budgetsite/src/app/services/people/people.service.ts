@@ -31,7 +31,7 @@ export class PeopleService {
 
   update(people: People): Observable<People> {
 
-    return this.http.put<People>(`${ApiUrls.people}/${people.id}`, people).pipe(
+    return this.http.put<People>(`${ApiUrls.people}`, people).pipe(
       map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))
     );

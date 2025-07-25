@@ -7,7 +7,7 @@ export interface CardsPostings {
 	date: Date;
 	reference: string;
 	description: string;
-	peopleId?: string;
+	peopleId?: number;
 	parcelNumber?: number;
 	parcels?: number;
 	amount: number;

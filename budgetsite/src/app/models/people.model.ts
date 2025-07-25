@@ -1,6 +1,9 @@
 export interface People {
-	id: string;
-	color: string;
+	id: number;
+	name: string;
+	color?: string;
+  phoneNumber?: string;
 	editing?: boolean;
 	deleting?: boolean;
+  canDelete?: boolean;
 }

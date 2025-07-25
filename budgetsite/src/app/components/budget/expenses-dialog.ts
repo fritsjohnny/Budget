@@ -22,6 +22,8 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
+import { People } from 'src/app/models/people.model';
+import { Messenger } from 'src/app/common/messenger';
 
 @Component({
   selector: 'expenses-dialog',
@@ -30,7 +32,6 @@ import {
 })
 export class ExpensesDialog implements OnInit, AfterViewInit {
   cards?: Cards[];
-  editing: boolean = false;
   isScreenInit: boolean = true;
 
   disableGenerateParcelsCheck: boolean = true;
@@ -65,8 +66,9 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     private categoryService: CategoryService,
     private peopleService: PeopleService,
     private cd: ChangeDetectorRef,
-    private expenseService: ExpenseService
-  ) {}
+    private expenseService: ExpenseService,
+    private messenger: Messenger
+  ) { }
 
   ngOnInit(): void {
     this.cards = this.expenses.cardsList;
@@ -131,7 +133,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     ).toFixed(2);
   }
 
-  onParcelNumberChanged(event: any): void {}
+  onParcelNumberChanged(event: any): void { }
 
   calculateToPay(): void {
     if (this.isScreenInit) return;
@@ -185,13 +187,11 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   }
 
   addCategory() {
-    this.editing = false;
+    const selectedCategory = this.expenses.categoriesList!.find(c => c.id === this.expenses.categoryId);
 
     const dialogRef = this.dialog.open(CategoryComponent, {
       width: '400px',
-      data: {
-        editing: this.editing,
-      },
+      data: selectedCategory ? { ...selectedCategory } : undefined, // ← envia uma cópia
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -209,27 +209,40 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     });
   }
 
-  addPeople() {
-    this.editing = false;
+  addPeople(): void {
+    const selectedPerson = this.expenses.peopleList?.find(p => p.id === this.expenses.peopleId);
 
     const dialogRef = this.dialog.open(PeopleComponent, {
       width: '400px',
       data: {
-        editing: this.editing,
+        id: selectedPerson ? selectedPerson.id : undefined,
+        name: selectedPerson ? selectedPerson.name : '',
+        phoneNumber: selectedPerson ? selectedPerson.phoneNumber : '',
+        editing: !!selectedPerson,
       },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.peopleService.create(result).subscribe({
-          next: (people) => {
-            this.expenses.peopleList = [
-              ...this.expenses.peopleList!,
-              people,
-            ].sort((a, b) => a.id.localeCompare(b.id));
-            this.expenses.peopleId = people.id;
-          },
-        });
+    dialogRef.afterClosed().subscribe((result: People) => {
+      if (!result) return; // usuário cancelou
+
+      if (result.deleting) {
+        this.expenses.peopleList = this.expenses.peopleList!.filter(p => p.id !== result.id);
+        this.expenses.peopleId = undefined;
+      }
+      else if (result.editing) {
+        this.expenses.peopleList = this.expenses.peopleList!.map(p =>
+          p.id === result.id ? result : p
+        ).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+
+        this.expenses.peopleId = result.id;
+      }
+      else {
+        this.expenses.peopleList = [
+          ...this.expenses.peopleList!,
+          result,
+        ].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+
+        this.expenses.peopleId = result.id;
       }
     });
   }

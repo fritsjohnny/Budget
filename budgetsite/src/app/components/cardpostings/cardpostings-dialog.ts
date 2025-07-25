@@ -36,7 +36,6 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   @ViewChild('descriptionInput') descriptionInput!: ElementRef;
 
   disableCheck: boolean = true;
-  editing: boolean = false;
   isScreenInit: boolean = true;
 
   disableGenerateParcelsCheck: boolean = true;
@@ -232,13 +231,9 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   addPeople() {
-    this.editing = false;
-
     const dialogRef = this.dialog.open(PeopleComponent, {
       width: '400px',
-      data: {
-        editing: this.editing,
-      },
+      data: this.cardPosting.peopleList!.find(p => p.id === this.cardPosting.peopleId),
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -248,7 +243,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
             this.cardPosting.peopleList = [
               ...this.cardPosting.peopleList!,
               people,
-            ].sort((a, b) => a.id.localeCompare(b.id));
+            ].sort((a, b) => a.name.localeCompare(b.name));
+
             this.cardPosting.peopleId = people.id;
           },
         });
@@ -257,13 +253,10 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   addCategory() {
-    this.editing = false;
 
     const dialogRef = this.dialog.open(CategoryComponent, {
       width: '400px',
-      data: {
-        editing: this.editing,
-      },
+      data: this.cardPosting.categoriesList!.find(c => c.id === this.cardPosting.categoryId),
     });
 
     dialogRef.afterClosed().subscribe((result) => {

@@ -20,7 +20,7 @@ export class CardReceiptsService {
     );
   }
 
-  // read(cardId: number, reference: string, peopleId: string): Observable<CardsReceipts[]> {
+  // read(cardId: number, reference: string, peopleId: number): Observable<CardsReceipts[]> {
 
   //   return this.http.get<CardsReceipts[]>(`${ApiUrls.cardspostings}/${cardId}/${reference}/${peopleId}`).pipe(
   //     map(obj => obj),

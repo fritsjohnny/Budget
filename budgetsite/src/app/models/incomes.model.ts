@@ -16,7 +16,7 @@ export interface Incomes {
   cardId?: number;
   accountId?: number;
   type?: string;
-  peopleId?: string;
+  peopleId?: number;
   adding?: boolean;
   editing?: boolean;
   deleting?: boolean;

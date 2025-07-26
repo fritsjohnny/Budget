@@ -873,3 +873,18 @@ body.dark-theme {
   background-color: #f8d7da !important; // vermelho clarinho
   color: #721c24 !important; // texto vermelho escuro
 }
+
+.ready-to-drag {
+  border: 2px solid var(--yellow);
+  box-shadow: 0 0 4px 2px rgba(255, 255, 0, 0.4); // sombra amarela suave
+}
+
+// ✅ O CDK adiciona automaticamente um elemento com a classe `.cdk-drag-placeholder`
+// no lugar do item que está sendo arrastado. Por padrão, esse placeholder não mantém
+// a borda visual aplicada antes do início do drag (como a borda de `.ready-to-drag`).
+// Ao usar `border: inherit`, garantimos que o placeholder preserve exatamente
+// a mesma borda que o item tinha antes do arrasto começar — evitando que a linha
+// "pisque" ou perca seu destaque visual durante a transição para o drag.
+.cdk-drag-placeholder {
+  border: inherit;
+}

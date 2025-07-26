@@ -87,6 +87,7 @@ import { BottomTabsComponent } from './shared/bottom-tabs/bottom-tabs.component'
 import { RouteReuseStrategy } from '@angular/router';
 import { CustomReuseStrategy } from './core/strategies/custom-reuse-strategy';
 import { CardsNotificationsComponent } from './components/cardsnotifications/cardsnotifications.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -182,6 +183,7 @@ registerLocaleData(localePt);
     ClipboardModule,
     NgxMatColorPickerModule,
     CurrencyMaskModule,
+    FontAwesomeModule,
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'pt-BR' },

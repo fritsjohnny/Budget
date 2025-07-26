@@ -44,7 +44,8 @@ import { IncomesDialog } from './incomes-dialog';
 import { PaymentReceiveDialog } from './payment-receive-dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
 import { PeopleComponent } from '../people/people.component';
-
+import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 @Component({
   selector: 'app-budget',
   templateUrl: './budget.component.html',
@@ -179,8 +180,11 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     private clipboardService: ClipboardService,
     private accountPostingsService: AccountPostingsService,
     private budget: BudgetService,
-    private _liveAnnouncer: LiveAnnouncer
-  ) { }
+    private _liveAnnouncer: LiveAnnouncer,
+    library: FaIconLibrary
+  ) {
+    library.addIcons(faWhatsapp);
+  }
 
   @ViewChild('sortPeople') sortPeople!: MatSort;
   @ViewChild('sortCategories') sortCategories!: MatSort;
@@ -1151,114 +1155,119 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     const dialogRef = this.dialog.open(PeopleComponent, {
       width: '400px',
-      data: person,
+      data: { ...person }, // envia cópia para evitar mutação imediata
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.peopleService.update(result).subscribe({
-          next: () => {
-            cpp.peopleId = result.id;
-            cpp.person = result.name;
-            cpp.phoneNumber = result.phoneNumber;
-          },
-        });
+        // atualiza os dados em cpp
+        cpp.peopleId = result.id;
+        cpp.person = result.name;
+        cpp.phoneNumber = result.phoneNumber;
+
+        // atualiza a lista peopleList
+        this.peopleList = this.peopleList!.map(p =>
+          p.id === result.id ? result : p
+        );
       }
     });
   }
 
   charge(cpp: CardsPostingsDTO, noFee: boolean = false) {
     let message = '';
+    const hour = new Date().getHours();
 
-    let hour = new Date().getHours();
+    if (hour < 12) message = 'Bom dia!';
+    else if (hour < 18) message = 'Boa tarde!';
+    else message = 'Boa noite!';
 
-    if (hour < 12) {
-      message = 'Bom dia!';
-    } else if (hour < 18) {
-      message = 'Boa tarde!';
-    } else {
-      message = 'Boa noite!';
-    }
+    this.cardPostingsService.readByPeopleId(cpp.peopleId, this.reference!, 0).subscribe({
+      next: (cardPostingsPeople) => {
+        message += '\nSeguem os valores deste mês:';
 
-    this.cardPostingsService
-      .readByPeopleId(cpp.peopleId, this.reference!, 0)
-      .subscribe({
-        next: (cardPostingsPeople) => {
-          message += '\nSeguem os valores deste mês:';
-          let month = Number(this.reference?.substring(4, 6));
-          message +=
-            '\n\n*Vencimento 01/' +
-            (month + 1).toString().padStart(2, '0') +
-            '*\n\n';
-          message += '```';
+        // ✅ Corrigir bug do mês 13
+        const refYear = Number(this.reference!.substring(0, 4));
+        const refMonth = Number(this.reference!.substring(4, 6)) - 1;
+        const vencDate = new Date(refYear, refMonth + 1); // mês já começa do zero
 
-          cardPostingsPeople.cardsPostings.forEach((cp) => {
-            let strAmount = cp.amount
-              .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
-              .replace('R$ ', '')
-              .padStart(8, ' ');
+        const vencimento = vencDate.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+        });
 
-            let strParcels =
-              cp.parcels! > 1
-                ? ' (' + cp.parcelNumber! + '/' + cp.parcels! + ')'
-                : '';
+        message += `\n\n*Vencimento ${vencimento}*\n\n`;
+        message += '```';
 
-            message += strAmount + ' ' + cp.description + strParcels + '\n';
-          });
+        cardPostingsPeople.cardsPostings.forEach((cp) => {
+          const strAmount = cp.amount
+            .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+            .replace('R$ ', '')
+            .padStart(8, ' ');
 
-          cardPostingsPeople.incomes.forEach((i) => {
-            let strAmount = i.toReceive
-              .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
-              .replace('R$ ', '')
-              .padStart(8, ' ');
+          const strParcels =
+            cp.parcels! > 1 ? ` (${cp.parcelNumber}/${cp.parcels})` : '';
 
-            message += strAmount + ' ' + i.description + '\n';
-          });
+          message += `${strAmount} ${cp.description}${strParcels}\n`;
+        });
 
-          let tax = noFee ? 0 : 3;
+        cardPostingsPeople.incomes.forEach((i) => {
+          const strAmount = i.toReceive
+            .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+            .replace('R$ ', '')
+            .padStart(8, ' ');
 
-          if (!noFee) {
-            message +=
-              tax
+          message += `${strAmount} ${i.description}\n`;
+        });
+
+        const tax = noFee ? 0 : 3;
+        if (!noFee) {
+          const strTax = tax
+            .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+            .replace('R$ ', '')
+            .padStart(8, ' ');
+          message += `${strTax} Tarifa de Serviços\n`;
+        }
+
+        const received =
+          cpp.received > 0
+            ? (
+              '-' +
+              cpp.received
                 .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
                 .replace('R$ ', '')
-                .padStart(8, ' ') + ' Tarifa de Serviços\n';
+            ).padStart(8, ' ') + ' (Valor pago)\n'
+            : '';
+
+        message += received;
+
+        const total = (cpp.remaining + tax).toLocaleString('pt-br', {
+          style: 'currency',
+          currency: 'BRL',
+        });
+
+        message += '----------------------------```\n';
+        message += `*Total: ${total}*`;
+        message += '\n\n*PIX: (92)98447-9364*';
+
+        this.clipboardService.copy(message);
+
+        if (cpp.phoneNumber) {
+          // ✅ Formatar número e redirecionar pro WhatsApp
+          const encodedMessage = encodeURIComponent(message);
+
+          let phone = cpp.phoneNumber.replace(/\D/g, ''); // remove tudo que não for número
+
+          if (!phone.startsWith('55')) {
+            phone = '55' + phone;
           }
 
-          let received =
-            cpp.received > 0
-              ? (
-                '-' +
-                cpp.received
-                  .toLocaleString('pt-br', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  })
-                  .replace('R$ ', '')
-              ).padStart(8, ' ') + ' (Valor pago)\n'
-              : '';
-
-          message += received;
-
-          let total = (cpp.remaining + tax).toLocaleString('pt-br', {
-            style: 'currency',
-            currency: 'BRL',
-          });
-
-          message += '----------------------------```\n';
-          message += '*Total: ' + total + '*';
-
-          message += '\n\n*PIX: (92)98447-9364*';
-
-          console.log(message);
-
-          this.clipboardService.copy(message);
-
-          this.messenger.message(
-            'Mensagem copiada para área de transferência.'
-          );
-        },
-      });
+          const whatsappURL = `https://wa.me/${phone}?text=${encodedMessage}`;
+          window.open(whatsappURL, '_blank');
+        } else {
+          this.messenger.message('Mensagem copiada para área de transferência.');
+        }
+      },
+    });
   }
 
   dropExpenses(event: CdkDragDrop<any[]>) {

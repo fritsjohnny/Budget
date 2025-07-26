@@ -588,7 +588,7 @@ export class CardPostingsComponent implements OnInit {
       data: {
         reference: this.reference,
         cardId: this.cardId,
-        peopleId: cardspostingsdto.person,
+        peopleId: cardspostingsdto.peopleId,
         amount:
           cardspostingsdto.remaining == cardspostingsdto.toReceive
             ? cardspostingsdto.toReceive

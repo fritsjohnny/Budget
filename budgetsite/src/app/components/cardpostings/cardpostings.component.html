@@ -82,27 +82,44 @@
   </div>
 </div>
 
+<!-- Botão com ícone de engrenagem para exibir/ocultar as opções -->
 <div class="row">
-  <mat-checkbox
-    *ngIf="hideProgress"
-    [(ngModel)]="justMyShopping"
-    (change)="getTotalAmount()"
-    >Apenas minhas compras (Ciclo)</mat-checkbox
+  <button
+    mat-icon-button
+    (click)="showOptions = !showOptions"
+    [matTooltip]="showOptions ? 'Ocultar opções' : 'Mostrar opções'"
   >
+    <mat-icon>{{ showOptions ? "expand_less" : "settings" }}</mat-icon>
+  </button>
 </div>
-<div class="row">
-  <mat-checkbox *ngIf="hideProgress" [(ngModel)]="checkCard"
-    >Conferir Cartão</mat-checkbox
-  >
-</div>
-<div class="row">
-  <mat-checkbox
-    *ngIf="hideProgress"
-    [(ngModel)]="hideFuturePurchases"
-    (change)="filterCardPostings()"
-  >
-    Remover compras futuras
-  </mat-checkbox>
+
+<!-- Opções de checkbox exibidas condicionalmente -->
+<div *ngIf="showOptions">
+  <div class="row">
+    <mat-checkbox
+      *ngIf="hideProgress"
+      [(ngModel)]="justMyShopping"
+      (change)="getTotalAmount()"
+    >
+      Apenas minhas compras (Ciclo)
+    </mat-checkbox>
+  </div>
+
+  <div class="row">
+    <mat-checkbox *ngIf="hideProgress" [(ngModel)]="checkCard">
+      Conferir Cartão
+    </mat-checkbox>
+  </div>
+
+  <div class="row">
+    <mat-checkbox
+      *ngIf="hideProgress"
+      [(ngModel)]="hideFuturePurchases"
+      (change)="filterCardPostings()"
+    >
+      Remover compras futuras
+    </mat-checkbox>
+  </div>
 </div>
 
 <div class="row">

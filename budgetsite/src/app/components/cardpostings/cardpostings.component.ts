@@ -90,6 +90,7 @@ export class CardPostingsComponent implements OnInit {
   dataSource = new MatTableDataSource(this.cardpostings);
 
   hideFuturePurchases: boolean = false;
+  showOptions = false;
 
   constructor(
     private cardPostingsService: CardPostingsService,

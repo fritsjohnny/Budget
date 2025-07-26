@@ -122,7 +122,21 @@ export class CardsNotificationsComponent implements OnInit {
         const date = new Date(
           `${dataMatch[1].split('/').reverse().join('-')}T${dataMatch[2]}:00`
         );
-        const description = lojaMatch[1].split(/\s{2,}/)[0].trim();
+        let description = lojaMatch[1].trim();
+
+        // Remove múltiplos espaços e o que vem depois (ex: "       BRA")
+        description = description.replace(/\s{2,}.*$/, '');
+
+        // Remove sufixos ", BRA", " USA", " SP", etc.
+        description = description.replace(/[, ]+\b(BRA|USA|SP|RJ|MG|AM|CE|PE|BA|DF)\b$/i, '');
+
+        // Remove nomes de cidades/estados que aparecem ao final
+        const cidadesUFs = ['MANAUS', 'FORTALEZA', 'BRASILIA', 'BELO HORIZONTE', 'RIO DE JANEIRO', 'SALVADOR'];
+        for (const cidade of cidadesUFs) {
+          description = description.replace(new RegExp(`\\s*${cidade}\\b`, 'i'), '');
+        }
+
+        description = description.trim();
 
         return { amount, date, description, note: text } as CardsPostings;
       } catch {

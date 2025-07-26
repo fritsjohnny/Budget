@@ -476,7 +476,9 @@
               mat-row
               *matRowDef="let row; columns: displayedExpensesColumns"
               cdkDrag
+              appDragReadyFeedback
               [cdkDragData]="row"
+              [cdkDragStartDelay]="300"
               [ngClass]="{
                 'card-yield-checked bold': row.overdue || row.duetoday
               }"
@@ -648,8 +650,9 @@
               mat-row
               *matRowDef="let row; columns: displayedIncomesColumns"
               cdkDrag
-              cdkDragDelay="2000"
+              appDragReadyFeedback
               [cdkDragData]="row"
+              [cdkDragStartDelay]="300"
             ></tr>
             <tr
               class="incomes"

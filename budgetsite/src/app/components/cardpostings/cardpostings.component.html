@@ -83,7 +83,7 @@
 </div>
 
 <!-- Botão com ícone de engrenagem para exibir/ocultar as opções -->
-<div class="row">
+<div class="row" *ngIf="hideProgress">
   <button
     mat-icon-button
     (click)="showOptions = !showOptions"
@@ -376,12 +376,16 @@
               (click)="editOrDelete(row, $event)"
               *matRowDef="let row; columns: displayedColumns"
               cdkDrag
+              appDragReadyFeedback
               [cdkDragData]="row"
+              [cdkDragStartDelay]="300"
               [ngClass]="{
                 'card-yield-checked':
                   (row.isSelected && row.amount >= 0) ||
                   (!row.isPaid && (row.overdue || row.duetoday)),
-                'card-yield-checked2': row.isSelected && row.amount < 0
+                'card-yield-checked2': row.isSelected && row.amount < 0,
+                'ready-to-drag': row.readyToDrag,
+                'dragging-row': row.dragging
               }"
             ></tr>
             <tr

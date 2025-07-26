@@ -88,6 +88,7 @@ import { RouteReuseStrategy } from '@angular/router';
 import { CustomReuseStrategy } from './core/strategies/custom-reuse-strategy';
 import { CardsNotificationsComponent } from './components/cardsnotifications/cardsnotifications.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { DragReadyFeedbackDirective } from './directives/drag-ready-feedback.directive';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -141,6 +142,7 @@ registerLocaleData(localePt);
     ConfirmDialogComponent,
     BottomTabsComponent,
     CardsNotificationsComponent,
+    DragReadyFeedbackDirective
   ],
   imports: [
     BrowserModule,
@@ -184,6 +186,9 @@ registerLocaleData(localePt);
     NgxMatColorPickerModule,
     CurrencyMaskModule,
     FontAwesomeModule,
+  ],
+  exports: [
+    DragReadyFeedbackDirective
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'pt-BR' },

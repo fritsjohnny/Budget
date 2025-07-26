@@ -95,6 +95,15 @@
     >Conferir Cartão</mat-checkbox
   >
 </div>
+<div class="row">
+  <mat-checkbox
+    *ngIf="hideProgress"
+    [(ngModel)]="hideFuturePurchases"
+    (change)="filterCardPostings()"
+  >
+    Remover compras futuras
+  </mat-checkbox>
+</div>
 
 <div class="row">
   <mat-accordion

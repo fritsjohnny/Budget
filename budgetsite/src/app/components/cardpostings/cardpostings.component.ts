@@ -89,6 +89,8 @@ export class CardPostingsComponent implements OnInit {
   filterOpend: boolean = false;
   dataSource = new MatTableDataSource(this.cardpostings);
 
+  hideFuturePurchases: boolean = false;
+
   constructor(
     private cardPostingsService: CardPostingsService,
     private cardReceiptsService: CardReceiptsService,
@@ -190,6 +192,10 @@ export class CardPostingsComponent implements OnInit {
 
           this.checkDueAlerts();
 
+          if (this.hideFuturePurchases) {
+            this.filterCardPostings();
+          }
+
           this.hideProgress = true;
         },
         error: () => (this.hideProgress = true),
@@ -237,86 +243,56 @@ export class CardPostingsComponent implements OnInit {
       });
   }
 
-  getTotalAmount() {
-    this.total = this.cardpostings
-      ? this.cardpostings
-        .map((t) => t.amount)
-        .reduce((acc, value) => acc + value, 0)
-      : 0;
+  getTotalAmount(): void {
+    const source = this.dataSource?.data ?? this.cardpostings ?? [];
 
-    this.myTotal = this.cardpostings
-      ? this.cardpostings
-        .filter((t) => !t.others)
-        .map((t) => t.amount)
-        .reduce((acc, value) => acc + value, 0)
-      : 0;
+    this.total = source
+      .map((t) => t.amount)
+      .reduce((acc, value) => acc + value, 0);
 
-    this.othersTotal = this.cardpostings
-      ? this.cardpostings
-        .filter((t) => t.others)
-        .map((t) => t.amount)
-        .reduce((acc, value) => acc + value, 0)
-      : 0;
+    this.myTotal = source
+      .filter((t) => !t.others)
+      .map((t) => t.amount)
+      .reduce((acc, value) => acc + value, 0);
+
+    this.othersTotal = source
+      .filter((t) => t.others)
+      .map((t) => t.amount)
+      .reduce((acc, value) => acc + value, 0);
 
     this.percMyTotal =
-      (this.total ? (this.myTotal / this.total) * 100 : 0)
-        .toFixed(2)
-        ?.toString() + '%';
+      (this.total ? (this.myTotal / this.total) * 100 : 0).toFixed(2) + '%';
+
     this.percOthersTotal =
-      (this.total ? (this.othersTotal / this.total) * 100 : 0)
-        .toFixed(2)
-        ?.toString() + '%';
-
-    // this.inTheCycleTotal = this.cardpostings ?
-    //   this.cardpostings.filter(t => t.inTheCycle).map(t => t.amount).reduce((acc, value) => acc + value, 0) : 0;
-
-    // this.outTheCycleTotal = this.cardpostings ?
-    //   this.cardpostings.filter(t => !t.inTheCycle).map(t => t.amount).reduce((acc, value) => acc + value, 0) : 0;
-
-    // this.percInTheCycleTotal = (this.total ? this.inTheCycleTotal / this.total * 100 : 0).toFixed(2)?.toString() + '%';
-    // this.percOutTheCycleTotal = (this.total ? this.outTheCycleTotal / this.total * 100 : 0).toFixed(2)?.toString() + '%';
+      (this.total ? (this.othersTotal / this.total) * 100 : 0).toFixed(2) + '%';
 
     if (this.justMyShopping) {
-      this.inTheCycleTotal = this.cardpostings
-        ? this.cardpostings
-          .filter(
-            (t) =>
-              !t.others && (t.parcelNumber == 1 || t.parcelNumber == null)
-          )
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
-        : 0;
+      this.inTheCycleTotal = source
+        .filter((t) => !t.others && (t.parcelNumber === 1 || t.parcelNumber == null))
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0);
 
-      this.outTheCycleTotal = this.cardpostings
-        ? this.cardpostings
-          .filter((t) => !t.others && t.parcelNumber! > 1)
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
-        : 0;
+      this.outTheCycleTotal = source
+        .filter((t) => !t.others && t.parcelNumber! > 1)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0);
     } else {
-      this.inTheCycleTotal = this.cardpostings
-        ? this.cardpostings
-          .filter((t) => t.parcelNumber == 1 || t.parcelNumber == null)
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
-        : 0;
+      this.inTheCycleTotal = source
+        .filter((t) => t.parcelNumber === 1 || t.parcelNumber == null)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0);
 
-      this.outTheCycleTotal = this.cardpostings
-        ? this.cardpostings
-          .filter((t) => t.parcelNumber! > 1)
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
-        : 0;
+      this.outTheCycleTotal = source
+        .filter((t) => t.parcelNumber! > 1)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0);
     }
 
     this.percInTheCycleTotal =
-      (this.total ? (this.inTheCycleTotal / this.total) * 100 : 0)
-        .toFixed(2)
-        ?.toString() + '%';
+      (this.total ? (this.inTheCycleTotal / this.total) * 100 : 0).toFixed(2) + '%';
+
     this.percOutTheCycleTotal =
-      (this.total ? (this.outTheCycleTotal / this.total) * 100 : 0)
-        .toFixed(2)
-        ?.toString() + '%';
+      (this.total ? (this.outTheCycleTotal / this.total) * 100 : 0).toFixed(2) + '%';
   }
 
   getFilteredTotalAmount() {
@@ -402,6 +378,10 @@ export class CardPostingsComponent implements OnInit {
               this.cardPostingsLength = this.cardpostings.length;
 
               this.dataSource = new MatTableDataSource(this.cardpostings);
+
+              if (this.hideFuturePurchases) {
+                this.filterCardPostings();
+              }
             }
 
             this.categoriesList = result.categoriesList;
@@ -520,6 +500,10 @@ export class CardPostingsComponent implements OnInit {
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
 
+              if (this.hideFuturePurchases) {
+                this.filterCardPostings();
+              }
+
               //this.hideProgress = true;
             },
             //error: () => this.hideProgress = true
@@ -533,6 +517,10 @@ export class CardPostingsComponent implements OnInit {
     this.cardpostings = this.cardpostings.filter((t) => t.id! != result.id!);
 
     this.dataSource = new MatTableDataSource(this.cardpostings);
+
+    if (this.hideFuturePurchases) {
+      this.filterCardPostings();
+    }
 
     this.getTotalAmount();
 
@@ -641,6 +629,11 @@ export class CardPostingsComponent implements OnInit {
   }
 
   drop(event: CdkDragDrop<any[]>) {
+    if (this.hideFuturePurchases) {
+      this.messenger.errorHandler('Ordenação não é possível com filtro de compras futuras ativo.');
+      return;
+    }
+
     const previousIndex = this.cardpostings.findIndex(
       (row) => row === event.item.data
     );
@@ -658,9 +651,18 @@ export class CardPostingsComponent implements OnInit {
     this.dataSource = new MatTableDataSource(this.cardpostings);
 
     this.cardPostingsService.updatePositions(this.cardpostings).subscribe();
+
+    if (this.hideFuturePurchases) {
+      this.filterCardPostings();
+    }
   }
 
   sort() {
+    if (this.hideFuturePurchases) {
+      this.messenger.errorHandler('Ordenação não é possível com filtro de compras futuras ativo.');
+      return;
+    }
+
     this.cardpostings = this.cardpostings.sort((a, b) => {
       const dateA = a.date ? new Date(a.date).getTime() : 0; // Converte a.date para timestamp
       const dateB = b.date ? new Date(b.date).getTime() : 0; // Converte b.date para timestamp
@@ -794,5 +796,21 @@ export class CardPostingsComponent implements OnInit {
 
     this.getCardsPostingsPeople();
     this.getExpensesByCategories();
+  }
+
+  filterCardPostings(): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const filtered = this.cardpostings.filter(p => {
+      const purchaseDate = new Date(p.date);
+      purchaseDate.setHours(0, 0, 0, 0);
+      return !this.hideFuturePurchases || purchaseDate <= today;
+    });
+
+    this.dataSource = new MatTableDataSource(filtered);
+    this.cardPostingsLength = filtered.length;
+
+    this.getTotalAmount();
   }
 }

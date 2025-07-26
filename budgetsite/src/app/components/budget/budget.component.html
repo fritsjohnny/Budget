@@ -790,26 +790,53 @@
                   <mat-icon class="people-actions">more_vert</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
-                  <button
-                    mat-menu-item
-                    [id]="'menu-people'"
-                    (click)="editPeople(row)"
-                    [disabled]="false"
-                  >
-                    <mat-icon [id]="'menu-icon-people'">edit</mat-icon>
+                  <button mat-menu-item (click)="editPeople(row)">
+                    <mat-icon>edit</mat-icon>
                     <span>Editar</span>
                   </button>
+
                   <button mat-menu-item id="menu-people" (click)="charge(row)">
-                    <mat-icon id="menu-icon-people">whatsapp</mat-icon>
-                    <span>Copiar lançamentos p/ WhatsApp</span>
+                    <ng-container *ngIf="row.phoneNumber; else chatIcon">
+                      <fa-icon
+                        [icon]="['fab', 'whatsapp']"
+                        class="whatsapp-icon"
+                      ></fa-icon>
+                    </ng-container>
+                    <ng-template #chatIcon>
+                      <mat-icon id="menu-icon-people">chat</mat-icon>
+                    </ng-template>
+
+                    <span>
+                      {{
+                        row.phoneNumber
+                          ? "Compartilhar via WhatsApp"
+                          : "Copiar lançamentos p/ WhatsApp"
+                      }}
+                    </span>
                   </button>
+
                   <button
                     mat-menu-item
                     id="menu-people"
                     (click)="charge(row, true)"
                   >
-                    <mat-icon id="menu-icon-people">whatsapp</mat-icon>
-                    <span>Copiar lançamentos p/ WhatsApp (sem taxa)</span>
+                    <ng-container *ngIf="row.phoneNumber; else chatIcon2">
+                      <fa-icon
+                        [icon]="['fab', 'whatsapp']"
+                        class="whatsapp-icon"
+                      ></fa-icon>
+                    </ng-container>
+                    <ng-template #chatIcon2>
+                      <mat-icon id="menu-icon-people">chat</mat-icon>
+                    </ng-template>
+
+                    <span>
+                      {{
+                        row.phoneNumber
+                          ? "Compartilhar via WhatsApp (sem taxa)"
+                          : "Copiar lançamentos p/ WhatsApp (sem taxa)"
+                      }}
+                    </span>
                   </button>
                 </mat-menu>
               </td>

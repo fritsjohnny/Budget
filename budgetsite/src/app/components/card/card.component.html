@@ -59,6 +59,14 @@
             format_list_bulleted
           </span>
           <span
+            class="material-icons add-card"
+            matTooltip="Atualizar"
+            matTooltipPosition="above"
+            (click)="refresh()"
+          >
+            autorenew
+          </span>
+          <span
             *ngIf="card?.appPackageName"
             class="material-icons add-card"
             matTooltip="Abrir App do Banco"

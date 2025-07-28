@@ -5,6 +5,7 @@ import { CardService } from 'src/app/services/card/card.service';
 import { CardDialog } from './card-dialog';
 import { NotificationReader } from 'capacitor-notification-reader/src';
 import { Messenger } from 'src/app/common/messenger';
+import { delay, retryWhen, tap } from 'rxjs';
 
 @Component({
   selector: 'app-card',
@@ -39,26 +40,37 @@ export class CardComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.refresh();
+  }
 
-    this.cardService.read().subscribe(
-      {
-        next: cards => {
+  refresh() {
+    this.hideProgress = false;
 
-          this.cards = cards;
+    this.cardService.read().pipe(
+      retryWhen(errors =>
+        errors.pipe(
+          tap((err) => console.warn('🔁 Erro ao carregar cartões. Tentando novamente em 10 segundos...', err)),
+          delay(10000)
+        )
+      )
+    ).subscribe({
+      next: (cards) => {
+        this.cards = cards;
 
-          this.hideProgress = true;
+        this.cards.forEach(card => {
+          if (card.id === this.cardId) {
+            this.setCard(card);
+          }
+        });
 
-          this.cards.forEach(card => {
-
-            if (card.id == this.cardId) {
-
-              this.setCard(card);
-            }
-          });
-        },
-        error: () => this.hideProgress = true
+        this.hideProgress = true;
+      },
+      error: (err) => {
+        console.error('Erro irrecuperável ao carregar cartões:', err);
+        this.cards = [];
+        this.hideProgress = true;
       }
-    );
+    });
   }
 
   setReference(reference: string) {

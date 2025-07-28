@@ -70,6 +70,27 @@
           </span>
 
           <span
+            class="material-icons add-account"
+            matTooltip="Atualizar"
+            matTooltipPosition="above"
+            (click)="refresh()"
+          >
+            autorenew
+          </span>
+
+          <!-- <button
+            class="default-button"
+            mat-mini-fab
+            matTooltip="atualizar"
+            matTooltipPosition="above"
+            color="warn"
+            aria-label="Atualizar"
+            (click)="refresh()"
+          >
+            <mat-icon class="default-icon">autorenew</mat-icon>
+          </button> -->
+
+          <span
             *ngIf="account?.appPackageName"
             class="material-icons add-account"
             matTooltip="Abrir App do Banco"

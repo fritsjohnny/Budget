@@ -145,6 +145,7 @@ $primary-light: map-get($light-theme, primary);
   --accent: rgb(233, 30, 99);
   --yellow: #ffc107;
   --red3-color: #880e4f;
+  --bright-rose: #ff6197;
 
   .mat-table {
     border-top: 1px solid #e0e0e0;
@@ -184,6 +185,10 @@ $primary-light: map-get($light-theme, primary);
 
   .red3 {
     color: var(--red3-color);
+  }
+
+  .bright-rose {
+    color: var(--bright-rose);
   }
 
   .sidenav {

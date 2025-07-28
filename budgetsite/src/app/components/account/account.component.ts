@@ -6,6 +6,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AccountDialog } from './account-dialog';
 import { NotificationReader } from 'capacitor-notification-reader/src';
 import { Messenger } from 'src/app/common/messenger';
+import { delay, retryWhen, take, tap } from 'rxjs';
 
 @Component({
   selector: 'app-account',
@@ -31,33 +32,50 @@ export class AccountComponent implements OnInit {
     this.accountId = Number(localStorage.getItem('accountId'));
   }
 
+  ngOnInit(): void {
+    this.refresh();
+  }
+
   ngAfterViewInit(): void {
     this.cd.detectChanges();
   }
 
-  ngOnInit(): void {
-    this.accountService.read().subscribe({
+  refresh() {
+    this.hideProgress = false;
+
+    this.accountService.read().pipe(
+      retryWhen(errors =>
+        errors.pipe(
+          tap((err) => console.warn('🔁 Erro ao carregar contas. Tentando novamente em 10 segundos...', err)),
+          delay(10000) // 10 segundos entre tentativas infinitas
+        )
+      )
+    ).subscribe({
       next: (accounts) => {
         this.accounts = accounts;
 
         this.accounts.forEach((account) => {
-          if (account.id == this.accountId) {
+          if (account.id === this.accountId) {
             this.setAccount(account);
           }
         });
 
         this.accountsNotDisabled = accounts?.filter(
-          (account) => account.disabled == null || account.disabled == false
+          (account) => account.disabled == null || account.disabled === false
         );
 
-        this.accountsNotDisabled =
-          this.accountsNotDisabled.length > 0
-            ? this.accountsNotDisabled.sort((a, b) => a.position! - b.position!)
-            : this.accountsNotDisabled;
+        if (this.accountsNotDisabled?.length > 0) {
+          this.accountsNotDisabled.sort((a, b) => a.position! - b.position!);
+        }
 
         this.hideProgress = true;
       },
-      error: () => (this.hideProgress = true),
+      error: (err) => {
+        // ⚠️ isso só será chamado se a stream for encerrada por erro fora do retryWhen
+        console.error('Erro irrecuperável:', err);
+        this.accounts = [];
+        this.hideProgress = true;
+      },
     });
   }
 

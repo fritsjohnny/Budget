@@ -1,3 +1,4 @@
+import { delay } from 'rxjs';
 import {
   Component,
   OnInit,
@@ -814,31 +815,35 @@ export class CardPostingsComponent implements OnInit {
     this.getTotalAmount();
   }
 
-  private lastPointerTime = 0;
-  private pointerTimer: any;
+  private lastClickTime = 0;
+  private clickTimer: any;
+  private delay = 0;
 
-  onPointerDown(cardPosting: CardsPostings, event: PointerEvent): void {
-    const now = new Date().getTime();
-    const timeSinceLast = now - this.lastPointerTime;
+  handleClickCardPosting(row: CardsPostings, event: MouseEvent): void {
+    this.editOrDelete(row, event);
 
-    if (timeSinceLast < 300) {
-      // Duplo toque
-      this.lastPointerTime = 0;
-      clearTimeout(this.pointerTimer);
-      event.preventDefault(); // previne zoom no mobile
-      //this.update(row);
-      return;
-    }
+    // const now = new Date().getTime();
+    // const timeSinceLast = now - this.lastClickTime;
 
-    this.lastPointerTime = now;
+    // this.lastClickTime = now;
 
-    this.pointerTimer = setTimeout(() => {
-      const timeSince = new Date().getTime() - this.lastPointerTime;
+    // if (timeSinceLast < this.delay) {
+    //   return;
+    // }
 
-      if (timeSince >= 300) {
-        this.editOrDelete(cardPosting, event);
-      }
-    }, 300);
+    // this.clickTimer = setTimeout(() => {
+    //   const since = new Date().getTime() - this.lastClickTime;
+
+    //   if (since >= this.delay) {
+    //     this.editOrDelete(row, event);
+    //   }
+    // }, this.delay);
+  }
+
+  handleDoubleClickCardPosting(row: CardsPostings, event: MouseEvent): void {
+    console.log('Double click detected on card posting:', row);
+    // clearTimeout(this.clickTimer);
+    this.update(row);
   }
 
   update(cardposting: CardsPostings): void {

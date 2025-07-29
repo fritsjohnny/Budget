@@ -1495,31 +1495,33 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private lastPointerTime = 0;
-  private pointerTimer: any;
+  private lastClickTime = 0;
+  private clickTimer: any;
 
-  onPointerDownExpense(expense: Expenses, event: PointerEvent): void {
-    const now = new Date().getTime();
-    const timeSinceLast = now - this.lastPointerTime;
+  handleClickExpense(expense: Expenses, event: MouseEvent): void {
+    this.editOrDeleteExpense(expense, event);
 
-    if (timeSinceLast < 300) {
-      // Duplo toque
-      this.lastPointerTime = 0;
-      clearTimeout(this.pointerTimer);
-      event.preventDefault(); // previne zoom no mobile
-      this.updateExpense(expense);
-      return;
-    }
+    //     const now = new Date().getTime();
+    // const timeSinceLast = now - this.lastClickTime;
 
-    this.lastPointerTime = now;
+    // this.lastClickTime = now;
 
-    this.pointerTimer = setTimeout(() => {
-      const timeSince = new Date().getTime() - this.lastPointerTime;
+    // if (timeSinceLast < 300) {
+    //   return;
+    // }
 
-      if (timeSince >= 300) {
-        this.editOrDeleteExpense(expense, event);
-      }
-    }, 300);
+    // this.clickTimer = setTimeout(() => {
+    //   const since = new Date().getTime() - this.lastClickTime;
+
+    //   if (since >= 300) {
+    //     this.editOrDeleteExpense(expense, event);
+    //   }
+    // }, 300);
+  }
+
+  handleDoubleClickExpense(expense: Expenses, event: MouseEvent): void {
+    // clearTimeout(this.clickTimer);
+    this.updateExpense(expense);
   }
 
   updateExpense(expense: Expenses): void {
@@ -1534,28 +1536,30 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onPointerDownIncome(income: Incomes, event: PointerEvent): void {
-    const now = new Date().getTime();
-    const timeSinceLast = now - this.lastPointerTime;
+  handleClickIncome(income: Incomes, event: MouseEvent): void {
+    this.editOrDeleteIncome(income, event);
 
-    if (timeSinceLast < 300) {
-      // Duplo toque
-      this.lastPointerTime = 0;
-      clearTimeout(this.pointerTimer);
-      event.preventDefault(); // previne zoom no mobile
-      this.updateIncome(income);
-      return;
-    }
+    // const now = new Date().getTime();
+    // const timeSinceLast = now - this.lastClickTime;
 
-    this.lastPointerTime = now;
+    // this.lastClickTime = now;
 
-    this.pointerTimer = setTimeout(() => {
-      const timeSince = new Date().getTime() - this.lastPointerTime;
+    // if (timeSinceLast < 300) {
+    //   return;
+    // }
 
-      if (timeSince >= 300) {
-        this.editOrDeleteIncome(income, event);
-      }
-    }, 300);
+    // this.clickTimer = setTimeout(() => {
+    //   const since = new Date().getTime() - this.lastClickTime;
+
+    //   if (since >= 300) {
+    //     this.editOrDeleteIncome(income, event);
+    //   }
+    // }, 300);
+  }
+
+  handleDoubleClickIncome(income: Incomes, event: MouseEvent): void {
+    // clearTimeout(this.clickTimer);
+    this.updateIncome(income);
   }
 
   updateIncome(income: Incomes): void {

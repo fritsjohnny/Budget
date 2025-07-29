@@ -472,7 +472,8 @@
             ></tr>
             <tr
               class="expenses"
-              (pointerdown)="onPointerDownExpense(row, $event)"
+              (click)="handleClickExpense(row, $event)"
+              (dblclick)="handleDoubleClickExpense(row, $event)"
               mat-row
               *matRowDef="let row; columns: displayedExpensesColumns"
               cdkDrag
@@ -646,7 +647,8 @@
             ></tr>
             <tr
               class="incomes"
-              (pointerdown)="onPointerDownIncome(row, $event)"
+              (click)="handleClickIncome(row, $event)"
+              (dblclick)="handleDoubleClickIncome(row, $event)"
               mat-row
               *matRowDef="let row; columns: displayedIncomesColumns"
               cdkDrag

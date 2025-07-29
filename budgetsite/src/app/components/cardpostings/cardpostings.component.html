@@ -373,7 +373,8 @@
             ></tr>
             <tr
               mat-row
-              (pointerdown)="onPointerDown(row, $event)"
+              (click)="handleClickCardPosting(row, $event)"
+              (dblclick)="handleDoubleClickCardPosting(row, $event)"
               *matRowDef="let row; columns: displayedColumns"
               cdkDrag
               appDragReadyFeedback

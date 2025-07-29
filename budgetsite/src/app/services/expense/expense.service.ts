@@ -39,6 +39,15 @@ export class ExpenseService {
     );
   }
 
+  readById(id?: number): Observable<Expenses> {
+    const url = `${ApiUrls.expenses}/${id}`;
+
+    return this.http.get<Expenses>(url).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
   readComboList(reference: string): Observable<Expenses[]> {
     return this.http
       .get<Expenses[]>(`${ApiUrls.expenses}/combolist/${reference}`)

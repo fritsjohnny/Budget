@@ -617,9 +617,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             this.categoriesList = result.categoriesList;
             this.peopleList = result.peopleList;
 
-            this.getBudgetTotals();
-            this.getExpensesTotals();
-            this.getExpensesByCategories();
+            this.refreshExpenses();
           },
           error: () => {
             this.hideExpensesProgress = true;
@@ -628,6 +626,12 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  refreshExpenses() {
+    this.getBudgetTotals();
+    this.getExpensesTotals();
+    this.getExpensesByCategories();
   }
 
   orderExpensesByPreviousMonth(): void {
@@ -728,9 +732,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
 
-              this.getBudgetTotals();
-              this.getExpensesTotals();
-              this.getExpensesByCategories();
+              this.refreshExpenses();
             },
             error: () => {
               this.hideExpensesProgress = true;
@@ -750,9 +752,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           (t) => t.id! != expense.id!
         );
 
-        this.getBudgetTotals();
-        this.getExpensesTotals();
-        this.getExpensesByCategories();
+        this.refreshExpenses();
       },
       error: () => {
         this.hideExpensesProgress = true;
@@ -795,14 +795,18 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
             this.peopleList = result.peopleList;
 
-            this.getCardsPostingsPeople();
-            this.getBudgetTotals();
-            this.getIncomesTotals();
+            this.refreshIncomes();
           },
           error: () => (this.hideIncomesProgress = true),
         });
       }
     });
+  }
+
+  refreshIncomes() {
+    this.getCardsPostingsPeople();
+    this.getBudgetTotals();
+    this.getIncomesTotals();
   }
 
   orderIncomesByPreviousMonth(): void {
@@ -859,9 +863,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                 (t) => t.id! != result.id!
               );
 
-              this.getCardsPostingsPeople();
-              this.getBudgetTotals();
-              this.getIncomesTotals();
+              this.refreshIncomes();
             },
             error: () => (this.hideIncomesProgress = true),
           });
@@ -898,9 +900,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
               this.peopleList = result.peopleList;
 
-              this.getCardsPostingsPeople();
-              this.getBudgetTotals();
-              this.getIncomesTotals();
+              this.refreshIncomes();
             },
             error: () => (this.hideIncomesProgress = true),
           });
@@ -1507,7 +1507,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       this.lastPointerTime = 0;
       clearTimeout(this.pointerTimer);
       event.preventDefault(); // previne zoom no mobile
-      this.editOrDeleteExpense(expense, event);
+      this.updateExpense(expense);
       return;
     }
 
@@ -1517,9 +1517,21 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       const timeSince = new Date().getTime() - this.lastPointerTime;
 
       if (timeSince >= 300) {
-        //this.updateExpense(expense);
+        this.editOrDeleteExpense(expense, event);
       }
     }, 300);
+  }
+
+  updateExpense(expense: Expenses): void {
+    this.expenseService.readById(expense.id).subscribe({
+      next: (res: Expenses) => {
+        Object.assign(expense, res);
+        this.refreshExpenses();
+      },
+      error: (err) => {
+        this.messenger.errorHandler(err);
+      }
+    });
   }
 
   onPointerDownIncome(income: Incomes, event: PointerEvent): void {
@@ -1531,7 +1543,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       this.lastPointerTime = 0;
       clearTimeout(this.pointerTimer);
       event.preventDefault(); // previne zoom no mobile
-      this.editOrDeleteIncome(income, event);
+      this.updateIncome(income);
       return;
     }
 
@@ -1541,8 +1553,20 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       const timeSince = new Date().getTime() - this.lastPointerTime;
 
       if (timeSince >= 300) {
-        //this.updateIncome(income);
+        this.editOrDeleteIncome(income, event);
       }
     }, 300);
+  }
+
+  updateIncome(income: Incomes): void {
+    this.incomeService.readById(income.id).subscribe({
+      next: (res: Incomes) => {
+        Object.assign(income, res);
+        this.refreshIncomes();
+      },
+      error: (err) => {
+        this.messenger.errorHandler(err);
+      }
+    });
   }
 }

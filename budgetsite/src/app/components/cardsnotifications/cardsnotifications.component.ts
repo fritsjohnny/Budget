@@ -40,10 +40,9 @@ export class CardsNotificationsComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    console.log('[DEBUG] ngOnInit iniciado');
-
     // 1. Recarrega notificações do armazenamento
     const stored = await Preferences.get({ key: this.STORAGE_KEY });
+
     if (stored.value) {
       const parsed = JSON.parse(stored.value);
       this.notifications.push(...parsed);
@@ -70,7 +69,7 @@ export class CardsNotificationsComponent implements OnInit {
         }
       }
     } catch (error) {
-      console.error('[DEBUG] Erro ao buscar notificações ativas:', error);
+      //console.error('[DEBUG] Erro ao buscar notificações ativas:', error);
     }
 
     // 3. Registra o listener para notificações futuras

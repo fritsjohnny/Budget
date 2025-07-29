@@ -40,6 +40,15 @@ export class CardPostingsService {
       );
   }
 
+  readById(id?: number): Observable<CardsPostings> {
+    return this.http
+      .get<CardsPostings>(`${ApiUrls.cardspostings}/${id}`)
+      .pipe(
+        map((obj) => obj),
+        catchError((e) => this.messenger.errorHandler(e))
+      );
+  }
+
   readCardsPostingsByPeople(
     peopleId: number,
     reference?: string

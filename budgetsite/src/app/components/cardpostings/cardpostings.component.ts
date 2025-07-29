@@ -143,7 +143,6 @@ export class CardPostingsComponent implements OnInit {
       error: () => (this.hideProgress = true),
     });
 
-    // this.cardService.readWithCardsInvoiceDate(this.reference).subscribe(
     this.cardService.read().subscribe({
       next: (cards) => {
         this.cardsList = cards.sort((a, b) => a.name.localeCompare(b.name));
@@ -827,7 +826,7 @@ export class CardPostingsComponent implements OnInit {
       this.lastPointerTime = 0;
       clearTimeout(this.pointerTimer);
       event.preventDefault(); // previne zoom no mobile
-      this.editOrDelete(cardPosting, event);
+      //this.update(row);
       return;
     }
 
@@ -837,8 +836,19 @@ export class CardPostingsComponent implements OnInit {
       const timeSince = new Date().getTime() - this.lastPointerTime;
 
       if (timeSince >= 300) {
-        //this.update(row);
+        this.editOrDelete(cardPosting, event);
       }
     }, 300);
+  }
+
+  update(cardposting: CardsPostings): void {
+    this.cardPostingsService.readById(cardposting.id).subscribe({
+      next: (res: CardsPostings) => {
+        Object.assign(cardposting, res);
+      },
+      error: (err) => {
+        this.messenger.errorHandler(err);
+      }
+    });
   }
 }

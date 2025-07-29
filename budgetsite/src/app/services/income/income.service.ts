@@ -10,15 +10,14 @@ import { Incomes } from 'src/app/models/incomes.model';
   providedIn: 'root',
 })
 export class IncomeService {
-  constructor(private http: HttpClient, private messenger: Messenger) {}
+  constructor(private http: HttpClient, private messenger: Messenger) { }
 
   create(income: Incomes): Observable<Incomes> {
     return this.http
       .post<Incomes>(
-        `${ApiUrls.incomes}${
-          income.repeatIncome
-            ? `/repeat?qtyMonths=${income.monthsToRepeat}`
-            : ''
+        `${ApiUrls.incomes}${income.repeatIncome
+          ? `/repeat?qtyMonths=${income.monthsToRepeat}`
+          : ''
         }`,
         income
       )
@@ -39,6 +38,15 @@ export class IncomeService {
       );
   }
 
+  readById(id?: number): Observable<Incomes> {
+    const url = `${ApiUrls.expenses}/${id}`;
+
+    return this.http.get<Incomes>(url).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
   readComboList(reference: string): Observable<Incomes[]> {
     return this.http
       .get<Incomes[]>(`${ApiUrls.incomes}/combolist/${reference}`)
@@ -51,8 +59,7 @@ export class IncomeService {
   update(income: Incomes): Observable<Incomes> {
     return this.http
       .put<Incomes>(
-        `${ApiUrls.incomes}${income.repeatIncome ? '/repeat' : ''}/${
-          income.id
+        `${ApiUrls.incomes}${income.repeatIncome ? '/repeat' : ''}/${income.id
         }${income.repeatIncome ? `?qtyMonths=${income.monthsToRepeat}` : ''}`,
         income
       )

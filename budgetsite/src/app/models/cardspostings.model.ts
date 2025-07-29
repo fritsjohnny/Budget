@@ -29,7 +29,6 @@ export interface CardsPostings {
   deleting?: boolean;
   isSelected?: boolean;
   generateParcels?: boolean;
-  inTheCycle?: boolean;
   repeatParcels?: boolean;
   monthsToRepeat?: number;
   payWithCard?: boolean;

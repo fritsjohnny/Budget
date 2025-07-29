@@ -373,7 +373,7 @@
             ></tr>
             <tr
               mat-row
-              (click)="editOrDelete(row, $event)"
+              (pointerdown)="onPointerDown(row, $event)"
               *matRowDef="let row; columns: displayedColumns"
               cdkDrag
               appDragReadyFeedback

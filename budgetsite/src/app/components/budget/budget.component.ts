@@ -1494,4 +1494,55 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+  private lastPointerTime = 0;
+  private pointerTimer: any;
+
+  onPointerDownExpense(expense: Expenses, event: PointerEvent): void {
+    const now = new Date().getTime();
+    const timeSinceLast = now - this.lastPointerTime;
+
+    if (timeSinceLast < 300) {
+      // Duplo toque
+      this.lastPointerTime = 0;
+      clearTimeout(this.pointerTimer);
+      event.preventDefault(); // previne zoom no mobile
+      this.editOrDeleteExpense(expense, event);
+      return;
+    }
+
+    this.lastPointerTime = now;
+
+    this.pointerTimer = setTimeout(() => {
+      const timeSince = new Date().getTime() - this.lastPointerTime;
+
+      if (timeSince >= 300) {
+        //this.updateExpense(expense);
+      }
+    }, 300);
+  }
+
+  onPointerDownIncome(income: Incomes, event: PointerEvent): void {
+    const now = new Date().getTime();
+    const timeSinceLast = now - this.lastPointerTime;
+
+    if (timeSinceLast < 300) {
+      // Duplo toque
+      this.lastPointerTime = 0;
+      clearTimeout(this.pointerTimer);
+      event.preventDefault(); // previne zoom no mobile
+      this.editOrDeleteIncome(income, event);
+      return;
+    }
+
+    this.lastPointerTime = now;
+
+    this.pointerTimer = setTimeout(() => {
+      const timeSince = new Date().getTime() - this.lastPointerTime;
+
+      if (timeSince >= 300) {
+        //this.updateIncome(income);
+      }
+    }, 300);
+  }
 }

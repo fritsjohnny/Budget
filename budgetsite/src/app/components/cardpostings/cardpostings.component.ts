@@ -814,4 +814,31 @@ export class CardPostingsComponent implements OnInit {
 
     this.getTotalAmount();
   }
+
+  private lastPointerTime = 0;
+  private pointerTimer: any;
+
+  onPointerDown(cardPosting: CardsPostings, event: PointerEvent): void {
+    const now = new Date().getTime();
+    const timeSinceLast = now - this.lastPointerTime;
+
+    if (timeSinceLast < 300) {
+      // Duplo toque
+      this.lastPointerTime = 0;
+      clearTimeout(this.pointerTimer);
+      event.preventDefault(); // previne zoom no mobile
+      this.editOrDelete(cardPosting, event);
+      return;
+    }
+
+    this.lastPointerTime = now;
+
+    this.pointerTimer = setTimeout(() => {
+      const timeSince = new Date().getTime() - this.lastPointerTime;
+
+      if (timeSince >= 300) {
+        //this.update(row);
+      }
+    }, 300);
+  }
 }

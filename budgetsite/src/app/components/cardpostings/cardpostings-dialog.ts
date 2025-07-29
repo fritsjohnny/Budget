@@ -120,9 +120,14 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       }, 500);
     }
 
-    if (this.cardPosting.parcels! > 1) {
-      this.atualizarParcelamento(this.cardPosting.parcels!);
-      this.calculateAmount();
+    if (!this.cardPosting.editing) {
+      if (this.cardPosting.parcels! > 1) {
+        this.atualizarParcelamento(this.cardPosting.parcels!);
+        this.calculateAmount();
+      }
+    }
+    else {
+      this.cardPosting.generateParcels = false;
     }
   }
 

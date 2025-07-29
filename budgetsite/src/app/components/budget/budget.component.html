@@ -472,7 +472,7 @@
             ></tr>
             <tr
               class="expenses"
-              (click)="editOrDeleteExpense(row, $event)"
+              (pointerdown)="onPointerDownExpense(row, $event)"
               mat-row
               *matRowDef="let row; columns: displayedExpensesColumns"
               cdkDrag
@@ -646,7 +646,7 @@
             ></tr>
             <tr
               class="incomes"
-              (click)="editOrDeleteIncome(row, $event)"
+              (pointerdown)="onPointerDownIncome(row, $event)"
               mat-row
               *matRowDef="let row; columns: displayedIncomesColumns"
               cdkDrag

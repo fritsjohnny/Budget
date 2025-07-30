@@ -123,19 +123,17 @@ export class CardsNotificationsComponent implements OnInit {
         );
         let description = lojaMatch[1].trim();
 
-        // Remove múltiplos espaços e o que vem depois (ex: "       BRA")
-        description = description.replace(/\s{2,}.*$/, '');
+        // Remove sufixos como ", BRA", "SP", etc. no final
+        description = description.replace(/[, ]+\b(BRA|USA|SP|RJ|MG|AM|CE|PE|BA|DF)\b[\s,.]*$/i, '');
 
-        // Remove sufixos ", BRA", " USA", " SP", etc.
-        description = description.replace(/[, ]+\b(BRA|USA|SP|RJ|MG|AM|CE|PE|BA|DF)\b$/i, '');
-
-        // Remove nomes de cidades/estados que aparecem ao final
+        // Remove nomes de cidades/estados no final
         const cidadesUFs = ['MANAUS', 'FORTALEZA', 'BRASILIA', 'BELO HORIZONTE', 'RIO DE JANEIRO', 'SALVADOR'];
         for (const cidade of cidadesUFs) {
-          description = description.replace(new RegExp(`\\s*${cidade}\\b`, 'i'), '');
+          description = description.replace(new RegExp(`\\s+${cidade}\\b[\\s,.]*$`, 'i'), '');
         }
 
-        description = description.trim();
+        // Substitui múltiplos espaços internos por único espaço
+        description = description.replace(/\s{2,}/g, ' ').trim();
 
         return { amount, date, description, note: text } as CardsPostings;
       } catch {

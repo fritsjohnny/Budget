@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
 import moment from 'moment';
@@ -18,7 +18,7 @@ import { Preferences } from '@capacitor/preferences';
   templateUrl: './cardsnotifications.component.html',
   styleUrls: ['./cardsnotifications.component.scss'],
 })
-export class CardsNotificationsComponent implements OnInit {
+export class CardsNotificationsComponent implements OnInit, OnDestroy {
   @Input() cardId?: number;
   @Input() reference?: string;
   @Input() peopleList?: People[];
@@ -33,6 +33,8 @@ export class CardsNotificationsComponent implements OnInit {
   private readonly STORAGE_KEY = 'persisted_notifications';
 
   notifications = [] as CardsPostings[];
+
+  private intervalId?: any;
 
   constructor(
     private dialog: MatDialog,
@@ -50,6 +52,27 @@ export class CardsNotificationsComponent implements OnInit {
     }
 
     // 2. Busca notificações ativas do sistema
+    await this.loadNotifications();
+
+    this.intervalId = setInterval(() => {
+      this.loadNotifications();
+    }, 30000);
+
+    // 3. Registra o listener para notificações futuras
+    NotificationReader.addListener('notificationReceived', async (payload) => {
+      console.log('[DEBUG] Nova notificação recebida:', payload);
+
+      const cardPosting = this.parseNotification(payload);
+
+      if (cardPosting) {
+        this.notifications.unshift(cardPosting);
+        this.sortNotificationsByDate();
+        await this.saveNotificationsToStorage();
+      }
+    });
+  }
+
+  private async loadNotifications(): Promise<void> {
     try {
       const result = await NotificationReader.getActiveNotifications();
       console.log('[DEBUG] getActiveNotifications result:', result);
@@ -69,21 +92,8 @@ export class CardsNotificationsComponent implements OnInit {
         }
       }
     } catch (error) {
-      //console.error('[DEBUG] Erro ao buscar notificações ativas:', error);
+      console.error('[DEBUG] Erro ao buscar notificações ativas:', error);
     }
-
-    // 3. Registra o listener para notificações futuras
-    NotificationReader.addListener('notificationReceived', async (payload) => {
-      console.log('[DEBUG] Nova notificação recebida:', payload);
-
-      const cardPosting = this.parseNotification(payload);
-
-      if (cardPosting) {
-        this.notifications.unshift(cardPosting);
-        this.sortNotificationsByDate();
-        await this.saveNotificationsToStorage();
-      }
-    });
   }
 
   private sortNotificationsByDate(): void {
@@ -261,5 +271,11 @@ export class CardsNotificationsComponent implements OnInit {
 
   private isCardPostingDuplicate(note: string | undefined): boolean {
     return this.cardsPostings?.some(p => p.note === note) ?? false;
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
   }
 }

@@ -203,6 +203,33 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
       }
     }
 
+    // Cartão Amazon (SMS)
+    if (text.toUpperCase().includes('CARTAO AMAZON')) {
+      try {
+        const valorMatch = text.match(/VALOR DE R\$([\d,.]+)/i);
+        const dataMatch = text.match(/(\d{2}\/\d{2}\/\d{4}) (\d{2}:\d{2})/);
+        const parcelasMatch = text.match(/em (\d{1,2}) ?[xX]/);
+        const lojaMatch = text.match(/em\s+\d+\s*[xX][\s,]+(.+?)\./);
+
+        if (!valorMatch || !dataMatch || !lojaMatch) return null;
+
+        const amount = parseFloat(valorMatch[1].replace('.', '').replace(',', '.'));
+        const date = new Date(`${dataMatch[1].split('/').reverse().join('-')}T${dataMatch[2]}:00`);
+        const parcels = parcelasMatch ? parseInt(parcelasMatch[1], 10) : 1;
+        const description = lojaMatch[1].trim();
+
+        return {
+          amount,
+          date,
+          description,
+          note: text,
+          parcels
+        } as CardsPostings;
+      } catch {
+        return null;
+      }
+    }
+
     // Outros bancos no futuro aqui...
 
     return null;

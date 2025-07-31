@@ -137,7 +137,8 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         description = description.replace(/[, ]+\b(BRA|USA|SP|RJ|MG|AM|CE|PE|BA|DF)\b[\s,.]*$/i, '');
 
         // Remove nomes de cidades/estados no final
-        const cidadesUFs = ['MANAUS', 'FORTALEZA', 'BRASILIA', 'BELO HORIZONTE', 'RIO DE JANEIRO', 'SALVADOR'];
+        // const cidadesUFs = ['MANAUS', 'FORTALEZA', 'BRASILIA', 'BELO HORIZONTE', 'RIO DE JANEIRO', 'SALVADOR'];
+        const cidadesUFs = ['MANAUS'];
         for (const cidade of cidadesUFs) {
           description = description.replace(new RegExp(`\\s+${cidade}\\b[\\s,.]*$`, 'i'), '');
         }

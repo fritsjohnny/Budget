@@ -13,6 +13,7 @@ import {
   MatDialog,
 } from '@angular/material/dialog';
 import { AccountsPostings } from 'src/app/models/accountspostings.model';
+import { YieldService } from 'src/app/services/yield/yield.service';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -43,10 +44,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     public dialog: MatDialog,
     public dialogRef: MatDialogRef<AccountPostingsDialog>,
     @Inject(MAT_DIALOG_DATA) public accountPosting: AccountsPostings,
-    private cd: ChangeDetectorRef
-  ) {}
+    private cd: ChangeDetectorRef,
+    private yieldService: YieldService
+  ) { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   ngAfterViewInit(): void {
     this.accountPosting.date = this.datepickerinput.date.value._d;
@@ -85,11 +87,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     });
   }
 
-  onTypeChange(): void {
+  async onTypeChange() {
     if (this.accountPosting.type === 'Y') {
       this.accountPosting.description = 'Rendimento';
 
-      this.accountPosting.amount = this.accountPosting.lastYield;
+      let account = this.accountPosting.accountsList?.find((a) => a.id === this.accountPosting.accountId);
+
+      account!.totalBalance = this.accountPosting.totalBalance;
+
+      this.accountPosting.amount = await this.yieldService.suggestYield(account!);
+
     } else if (this.accountPosting.type === 'C') {
       this.accountPosting.description = 'Troco';
     } else {

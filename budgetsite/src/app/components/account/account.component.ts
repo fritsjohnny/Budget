@@ -159,6 +159,10 @@ export class AccountComponent implements OnInit {
                 t.position = result.position;
                 t.appPackageName = result.appPackageName;
                 t.calcInGeneral = result.calcInGeneral;
+                t.irPercent = result.irPercent;
+                t.yieldPercent = result.yieldPercent;
+                t.isTaxExempt = result.isTaxExempt;
+                t.totalBalanceGross = result.totalBalanceGross;
               });
 
               if (result.disabled && this.accounts!.length > 0) {

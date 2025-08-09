@@ -7,6 +7,8 @@ import {
   ChangeDetectorRef,
   ViewChild,
   ElementRef,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { AccountsPostings } from '../../models/accountspostings.model';
 import { AccountService } from 'src/app/services/account/account.service';
@@ -32,6 +34,9 @@ import { AccountPostingsDialog } from './accountpostings-dialog';
 export class AccountPostingsComponent implements OnInit, AfterViewInit {
   @Input() accountId?: number;
   @Input() reference?: string;
+  @Input() accountsList?: Accounts[];
+
+  @Output() accountsListChange = new EventEmitter<Accounts[]>();
 
   @ViewChild('input') filterInput!: ElementRef;
 
@@ -57,8 +62,6 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   minBalance: number = 0;
   accountPostingsLength: number = 0;
 
-  accountsList?: Accounts[];
-
   filterOpend: boolean = false;
   dataSource = new MatTableDataSource(this.accountpostings);
 
@@ -68,12 +71,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     private incomeService: IncomeService,
     private expenseService: ExpenseService,
     public dialog: MatDialog,
-    private cd: ChangeDetectorRef
-  ) {}
+    private cd: ChangeDetectorRef,
+  ) { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void { }
 
   ngOnChanges(changes: SimpleChanges): void {
     // if (changes['accountId']?.currentValue || changes['reference']?.currentValue) {
@@ -184,24 +187,35 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   getTotalAmount() {
     this.total = this.accountpostings
       ? this.accountpostings
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
   }
 
   getFilteredTotalAmount() {
     this.total = this.dataSource.filteredData
       ? Array(this.dataSource.filteredData)[0]
-          .map((t) => t.amount)
-          .reduce((acc, value) => acc + value, 0)
+        .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0)
       : 0;
   }
 
   getLastYield() {
+    // Filtra a data e verifica se existe um valor com tipo 'Y'
     let lastYield =
       this.dataSource.filteredData.filter((t) => t.type === 'Y').length > 0
         ? this.dataSource.filteredData.filter((t) => t.type === 'Y')[0].amount
         : 0;
+
+    // Atualiza o valor de lastYield no accountsList
+    const account = this.accountsList?.find((a) => a.id === this.accountId);
+
+    if (account) {
+      account.lastYield = lastYield;
+
+      // Emite a alteração para o componente pai
+      this.accountsListChange.emit(this.accountsList);
+    }
 
     return lastYield;
   }

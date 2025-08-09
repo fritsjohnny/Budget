@@ -11,8 +11,14 @@ export interface Accounts {
   grandTotalBalance?: number | undefined;
   grandTotalYields?: number | undefined;
   totalBalance?: number | undefined;
+  totalBalanceGross?: number | undefined;
   previousBalance?: number | undefined;
   totalYields?: number | undefined;
   editing?: boolean;
   deleting?: boolean;
+  yieldPercent?: number;
+  yiedlIndex?: number;
+  irPercent?: number;
+  isTaxExempt?: boolean;
+  lastYield?: number;
 }

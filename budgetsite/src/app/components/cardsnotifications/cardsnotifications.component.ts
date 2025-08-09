@@ -136,12 +136,11 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         // Remove sufixos como ", BRA", "SP", etc. no final
         description = description.replace(/[, ]+\b(BRA|USA|SP|RJ|MG|AM|CE|PE|BA|DF)\b[\s,.]*$/i, '');
 
-        // Remove nomes de cidades/estados no final
-        // const cidadesUFs = ['MANAUS', 'FORTALEZA', 'BRASILIA', 'BELO HORIZONTE', 'RIO DE JANEIRO', 'SALVADOR'];
-        const cidadesUFs = ['MANAUS'];
-        for (const cidade of cidadesUFs) {
-          description = description.replace(new RegExp(`\\s+${cidade}\\b[\\s,.]*$`, 'i'), '');
-        }
+        // Remove capital brasileira somente se estiver no FINAL da descrição
+        description = description.replace(this.getCapitaisRegex(), '');
+
+        // Normaliza espaços internos duplicados
+        description = description.replace(/\s{2,}/g, ' ').trim();
 
         // Substitui múltiplos espaços internos por único espaço
         description = description.replace(/\s{2,}/g, ' ').trim();
@@ -299,6 +298,39 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
 
   private isCardPostingDuplicate(note: string | undefined): boolean {
     return this.cardsPostings?.some(p => p.note === note) ?? false;
+  }
+
+  // Transforma um texto em um padrão regex que aceita versões com e sem acento
+  private toAccentInsensitivePattern(text: string): string {
+    // remove acentos para obter as letras "base"
+    const base = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    // substitui vogais/ç por classes que aceitam todas as variantes com/sem acento
+    return base
+      .replace(/a/gi, '[aàáâãä]')
+      .replace(/e/gi, '[eèéêë]')
+      .replace(/i/gi, '[iìíîï]')
+      .replace(/o/gi, '[oòóôõö]')
+      .replace(/u/gi, '[uùúûü]')
+      .replace(/c/gi, '[cç]');
+  }
+
+  // Lista enxuta (com acentos corretos, apenas uma vez)
+  private getCapitaisBrasilBase(): string[] {
+    return [
+      'RIO BRANCO', 'MACEIÓ', 'MACAPÁ', 'MANAUS', 'SALVADOR', 'FORTALEZA',
+      'BRASÍLIA', 'VITÓRIA', 'GOIÂNIA', 'SÃO LUÍS', 'CUIABÁ', 'CAMPO GRANDE',
+      'BELO HORIZONTE', 'BELÉM', 'JOÃO PESSOA', 'CURITIBA', 'RECIFE',
+      'TERESINA', 'RIO DE JANEIRO', 'NATAL', 'PORTO ALEGRE', 'PORTO VELHO',
+      'BOA VISTA', 'FLORIANÓPOLIS', 'SÃO PAULO', 'ARACAJU', 'PALMAS'
+    ];
+  }
+
+  // Gera UMA regex acento‑insensível para remover a capital se estiver no final
+  private getCapitaisRegex(): RegExp {
+    const patterns = this.getCapitaisBrasilBase()
+      .map(c => this.toAccentInsensitivePattern(c));
+    // \s+  (espaço antes), (capital) no fim, seguido de espaços/vírgula/ponto opcionais
+    return new RegExp(`\\s+(?:${patterns.join('|')})\\b[\\s,.]*$`, 'i');
   }
 
   ngOnDestroy(): void {

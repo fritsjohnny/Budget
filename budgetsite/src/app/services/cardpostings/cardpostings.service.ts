@@ -147,8 +147,10 @@ export class CardPostingsService {
   }
 
   getCategoryByDescription(description: string): Observable<any> {
+    const safeDescription = encodeURIComponent(description.trim());
+
     return this.http
-      .get<any>(`${ApiUrls.cardspostings}/ByDescription/${description}`)
+      .get<any>(`${ApiUrls.cardspostings}/ByDescription/${safeDescription}`)
       .pipe(
         map((obj) => obj),
         catchError((e) => this.messenger.errorHandler(e))

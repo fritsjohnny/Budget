@@ -31,6 +31,10 @@ export class AccountDialog implements OnInit, AfterViewInit {
     calcInGeneralFormControl: new FormControl(''),
     positionFormControl: new FormControl(''),
     appPackageNameFormControl: new FormControl(''),
+    yieldPercentFormControl: new FormControl(''),
+    irPercentFormControl: new FormControl(''),
+    isTaxExemptFormControl: new FormControl(false),
+    totalBalanceGrossFormControl: new FormControl(''),
   });
 
   constructor(
@@ -66,6 +70,10 @@ export class AccountDialog implements OnInit, AfterViewInit {
       calcInGeneral: this.accountFormGroup.get('calcInGeneralFormControl')?.value,
       position: this.accountFormGroup.get('positionFormControl')?.value,
       appPackageName: this.accountFormGroup.get('appPackageNameFormControl')?.value,
+      yieldPercent: parseFloat(this.accountFormGroup.get('yieldPercentFormControl')?.value?.toString().replace(',', '.') ?? '0'),
+      irPercent: parseFloat(this.accountFormGroup.get('irPercentFormControl')?.value?.toString().replace(',', '.') ?? '0'),
+      isTaxExempt: this.accountFormGroup.get('isTaxExemptFormControl')?.value,
+      totalBalanceGross: parseFloat(this.accountFormGroup.get('totalBalanceGrossFormControl')?.value?.toString().replace(',', '.') ?? '0'),
       editing: this.id != undefined,
       deleting: false
     };
@@ -116,6 +124,10 @@ export class AccountDialog implements OnInit, AfterViewInit {
       this.accountFormGroup.get('calcInGeneralFormControl')?.setValue(account.calcInGeneral);
       this.accountFormGroup.get('positionFormControl')?.setValue(account.position);
       this.accountFormGroup.get('appPackageNameFormControl')?.setValue(account.appPackageName);
+      this.accountFormGroup.get('yieldPercentFormControl')?.setValue(account.yieldPercent);
+      this.accountFormGroup.get('irPercentFormControl')?.setValue(account.irPercent);
+      this.accountFormGroup.get('isTaxExemptFormControl')?.setValue(account.isTaxExempt);
+      this.accountFormGroup.get('totalBalanceGrossFormControl')?.setValue(account.totalBalanceGross);
 
       this.setBackgroundAndColor(account.background!, account.color!);
     }

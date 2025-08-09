@@ -69,62 +69,134 @@
       </div>
 
       <div class="row">
-        <mat-form-field appearance="fill" style="width: 180px">
-          <mat-label>Cor de fundo</mat-label>
-          <input
-            matInput
-            [ngxMatColorPicker]="picker1"
-            id="backgroundFormControl"
-            formControlName="backgroundFormControl"
-          />
-          <ngx-mat-color-toggle
-            matSuffix
-            [for]="picker1"
-          ></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #picker1></ngx-mat-color-picker>
-          <mat-error
-            *ngIf="accountFormGroup.get('backgroundFormControl')?.hasError('required')"
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
           >
-            Campo <strong>obrigatório</strong>.
-          </mat-error>
-        </mat-form-field>
+            <mat-label>Percentual Rendimento</mat-label>
+            <input
+              matInput
+              inputmode="numeric"
+              formControlName="yieldPercentFormControl"
+              placeholder="0"
+              autocomplete="off"
+            />
+          </mat-form-field>
+        </div>
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Percentual IR</mat-label>
+            <input
+              matInput
+              inputmode="numeric"
+              formControlName="irPercentFormControl"
+              placeholder="0"
+              autocomplete="off"
+            />
+          </mat-form-field>
+        </div>
       </div>
 
       <div class="row">
-        <mat-form-field appearance="fill" style="width: 180px">
-          <mat-label>Cor do texto</mat-label>
-          <input
-            matInput
-            [ngxMatColorPicker]="picker2"
-            id="colorFormControl"
-            formControlName="colorFormControl"
-          />
-          <ngx-mat-color-toggle
-            matSuffix
-            [for]="picker2"
-          ></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #picker2></ngx-mat-color-picker>
-          <mat-error
-            *ngIf="accountFormGroup.get('colorFormControl')?.hasError('required')"
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
           >
-            Campo <strong>obrigatório</strong>.
-          </mat-error>
-        </mat-form-field>
+            <mat-label>Saldo Bruto</mat-label>
+            <input
+              matInput
+              inputmode="numeric"
+              currencyMask
+              formControlName="totalBalanceGrossFormControl"
+              placeholder="0"
+              autocomplete="off"
+            />
+          </mat-form-field>
+        </div>
       </div>
 
-      <p>
-        Posição
-        <span>
-          <input
-            type="number"
-            inputmode="numeric"
-            style="width: 40px !important"
-            onfocus="this.select()"
-            min="1"
-            formControlName="positionFormControl"
-          />
-        </span>
-      </p>
+      <div class="row mat-form-field-wrapper">
+        <mat-checkbox formControlName="isTaxExemptFormControl">
+          Insento de IR
+        </mat-checkbox>
+      </div>
+
+      <div class="row">
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Cor de fundo</mat-label>
+            <input
+              matInput
+              [ngxMatColorPicker]="picker1"
+              id="backgroundFormControl"
+              formControlName="backgroundFormControl"
+            />
+            <ngx-mat-color-toggle
+              matSuffix
+              [for]="picker1"
+            ></ngx-mat-color-toggle>
+            <ngx-mat-color-picker #picker1></ngx-mat-color-picker>
+            <mat-error
+              *ngIf="accountFormGroup.get('backgroundFormControl')?.hasError('required')"
+            >
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="col-6">
+          <mat-form-field
+            appearance="fill"
+            floatLabel="always"
+            style="width: 100% !important"
+          >
+            <mat-label>Cor do texto</mat-label>
+            <input
+              matInput
+              [ngxMatColorPicker]="picker2"
+              id="colorFormControl"
+              formControlName="colorFormControl"
+            />
+            <ngx-mat-color-toggle
+              matSuffix
+              [for]="picker2"
+            ></ngx-mat-color-toggle>
+            <ngx-mat-color-picker #picker2></ngx-mat-color-picker>
+            <mat-error
+              *ngIf="accountFormGroup.get('colorFormControl')?.hasError('required')"
+            >
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <p>
+          Posição
+          <span>
+            <input
+              type="number"
+              inputmode="numeric"
+              style="width: 40px !important"
+              onfocus="this.select()"
+              min="1"
+              formControlName="positionFormControl"
+            />
+          </span>
+        </p>
+      </div>
 
       <div class="row">
         <mat-checkbox formControlName="disabledFormControl">

@@ -34,9 +34,20 @@ import { AccountPostingsDialog } from './accountpostings-dialog';
 export class AccountPostingsComponent implements OnInit, AfterViewInit {
   @Input() accountId?: number;
   @Input() reference?: string;
-  @Input() accountsList?: Accounts[];
 
+  // two-way binding [(accountsList)]
   @Output() accountsListChange = new EventEmitter<Accounts[]>();
+
+  private _accountsList: Accounts[] = [];
+  @Input() set accountsList(value: Accounts[] | undefined) {
+    this._accountsList = value ?? [];
+    this.rebindAccount();                // 🔑 reamarrar toda vez que a lista muda
+  }
+  get accountsList(): Accounts[] {
+    return this._accountsList;
+  }
+
+  account: Accounts | null = null;
 
   @ViewChild('input') filterInput!: ElementRef;
 
@@ -71,30 +82,34 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     private incomeService: IncomeService,
     private expenseService: ExpenseService,
     public dialog: MatDialog,
-    private cd: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef,
   ) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+  }
 
-  ngAfterViewInit(): void { }
+  ngAfterViewInit(): void {
+
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // if (changes['accountId']?.currentValue || changes['reference']?.currentValue) {
+    if (changes['accountId']?.currentValue || changes['reference']?.currentValue)
+      this.refresh();
+  }
 
-    this.refresh();
+  private rebindAccount(): void {
+    // pega SEMPRE a versão mais recente do item dentro da lista nova
+    this.account =
+      this._accountsList?.find(a => a.id === this.accountId) ?? null;
+
+    // se o componente usa OnPush / ou o update veio fora da zona
+    this.cdr.markForCheck();
+    // em cenários teimosos (animações/overlays), pode forçar:
+    // setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   getLists() {
-    this.accountService.readNotDisabled().subscribe({
-      next: (accounts) => {
-        this.accountsList = accounts.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
-
-        this.hideProgress = true;
-      },
-      error: () => (this.hideProgress = true),
-    });
+    this.getAccountsList();
 
     this.incomeService.readComboList(this.reference!).subscribe({
       next: (incomes) => {
@@ -108,6 +123,23 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.expenseService.readComboList(this.reference!).subscribe({
       next: (expenses) => {
         this.expenses = expenses;
+
+        this.hideProgress = true;
+      },
+      error: () => (this.hideProgress = true),
+    });
+  }
+
+  getAccountsList() {
+    this.accountService.readNotDisabled().subscribe({
+      next: (accounts) => {
+        this.accountsList = accounts.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+
+        this.account = this.accountsList?.find((a) => a.id === this.accountId)!;
+
+        this.accountsListChange.emit(this.accountsList);
 
         this.hideProgress = true;
       },
@@ -207,17 +239,22 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         ? this.dataSource.filteredData.filter((t) => t.type === 'Y')[0].amount
         : 0;
 
-    // Atualiza o valor de lastYield no accountsList
+    this.refreshAccountsList(lastYield);
+
+    return lastYield;
+  }
+
+  refreshAccountsList(lastYield?: number, totalBalanceGross?: number) {
     const account = this.accountsList?.find((a) => a.id === this.accountId);
 
     if (account) {
-      account.lastYield = lastYield;
+      // Atualiza o valor de lastYield no accountsList
+      if (lastYield !== undefined)
+        account.lastYield = lastYield;
 
       // Emite a alteração para o componente pai
       this.accountsListChange.emit(this.accountsList);
     }
-
-    return lastYield;
   }
 
   add() {
@@ -266,6 +303,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
             this.getTotalAmount();
             this.getAccountTotals();
+            this.getAccountsList();
           },
           // error: () => this.hideProgress = true
         });
@@ -317,6 +355,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
               this.getTotalAmount();
               this.getAccountTotals();
+              this.getAccountsList();
             },
             // error: () => this.hideProgress = true
           });
@@ -353,6 +392,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
               this.getTotalAmount();
               this.getAccountTotals();
+              this.getAccountsList();
             },
             // error: () => this.hideProgress = true
           });
@@ -402,7 +442,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   openFilter() {
     this.filterOpend = !this.filterOpend;
 
-    this.cd.detectChanges();
+    this.cdr.detectChanges();
 
     if (this.filterOpend) {
       this.filterInput.nativeElement.focus();

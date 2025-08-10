@@ -165,6 +165,8 @@ export class AccountComponent implements OnInit {
                 t.totalBalanceGross = result.totalBalanceGross;
               });
 
+              this.accounts = [...this.accounts!]; // nova referência para disparar change detection
+
               if (result.disabled && this.accounts!.length > 0) {
                 this.setAccount(this.accounts![0]);
               } else {

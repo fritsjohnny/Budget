@@ -2,18 +2,14 @@
   <mat-spinner color="accent" *ngIf="!hideProgress"></mat-spinner>
 </div>
 <div class="row center">
-  <div class="col d-flex justify-content-center" *ngIf="hideProgress">
-    <button
-      class="default-button"
-      mat-mini-fab
-      matTooltip="atualizar"
-      matTooltipPosition="right"
-      color="warn"
-      aria-label="Atualizar"
-      (click)="refresh()"
+  <div
+    class="col d-flex flex-column justify-content-center"
+    *ngIf="hideProgress"
+  >
+    <span class="center">Saldo Anterior:</span>
+    <span class="center"
+      ><b>{{ previousBalance | currency : "" : "" }}</b></span
     >
-      <mat-icon class="default-icon">autorenew</mat-icon>
-    </button>
   </div>
   <div
     class="col d-flex flex-column justify-content-center"
@@ -34,15 +30,15 @@
     >
   </div>
 </div>
-<div class="row center" *ngIf="hideProgress">
+<div class="row center mt-2 mb-2" *ngIf="hideProgress">
   <div class="col text-center">
-    <span>Saldo Anterior:</span><br />
-    <span
-      ><b>{{ previousBalance | currency : "" : "" }}</b></span
+    <span class="center">Saldo Bruto:</span>
+    <span class="center"
+      ><b>{{ account?.totalBalanceGross! | currency : "" : "" }}</b></span
     >
   </div>
   <div class="col text-center">
-    <span>Saldo Atual:</span><br />
+    <span>Saldo Líquido:</span><br />
     <span
       ><b>{{ totalBalance | currency : "" : "" }}</b></span
     >
@@ -56,7 +52,19 @@
 </div>
 <!-- Add button -->
 <div class="row center" *ngIf="hideProgress">
-  <div class="col center"></div>
+  <div class="col center">
+    <span
+      class="default-button center"
+      mat-mini-fab
+      matTooltip="Filtrar"
+      matTooltipPosition="right"
+      color="accent"
+      aria-label="Filtrar"
+      (click)="openFilter()"
+    >
+      <mat-icon class="default-icon">search</mat-icon>
+    </span>
+  </div>
   <div class="col center">
     <button
       class="default-button"
@@ -70,18 +78,18 @@
       <mat-icon class="default-icon">post_add</mat-icon>
     </button>
   </div>
-  <div class="col right">
-    <span
-      class="default-button center"
+  <div class="col center">
+    <button
+      class="default-button"
       mat-mini-fab
-      matTooltip="Filtrar"
-      matTooltipPosition="right"
-      color="accent"
-      aria-label="Filtrar"
-      (click)="openFilter()"
+      matTooltip="atualizar"
+      matTooltipPosition="left"
+      color="warn"
+      aria-label="Atualizar"
+      (click)="refresh()"
     >
-      <mat-icon class="default-icon">search</mat-icon>
-    </span>
+      <mat-icon class="default-icon">autorenew</mat-icon>
+    </button>
   </div>
 </div>
 <!--Filter-->
@@ -93,7 +101,7 @@
   </mat-form-field>
 </div>
 <!-- Table -->
-<div class="row center">
+<div class="row center mt-2">
   <div class="mytable" *ngIf="hideProgress">
     <div class="table-container mat-elevation-z8">
       <table

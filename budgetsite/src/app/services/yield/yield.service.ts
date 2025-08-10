@@ -29,7 +29,6 @@ export class YieldService {
   }
 
   async suggestYield(account: Accounts): Promise<number> {
-    debugger
     if (!account || !account.yieldPercent) return account.lastYield ?? 0;
 
     const saldoBruto = Number(account.totalBalanceGross ?? account.totalBalance);

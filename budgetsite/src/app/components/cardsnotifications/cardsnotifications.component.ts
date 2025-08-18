@@ -205,25 +205,28 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
     // Cartão Amazon (SMS)
     if (text.toUpperCase().includes('CARTAO AMAZON')) {
       try {
-        const valorMatch = text.match(/VALOR DE R\$([\d,.]+)/i);
-        const dataMatch = text.match(/(\d{2}\/\d{2}\/\d{4}) (\d{2}:\d{2})/);
-        const parcelasMatch = text.match(/em (\d{1,2}) ?[xX]/);
-        const lojaMatch = text.match(/em\s+\d+\s*[xX][\s,]+(.+?)\./);
+        const valorMatch = text.match(/VALOR DE R\$\s*([\d,.]+)/i);
+        const dataMatch = text.match(/(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2})/);
+        const parcelasMatch = text.match(/em\s+(\d{1,2})\s*[xX]\b/); // opcional
+
+        // 1) Tenta extrair a loja quando há parcelamento (em X)
+        let lojaMatch = text.match(/em\s+\d+\s*[xX]\s*,?\s*(.+?)\./i);
+
+        // 2) Fallback: sem parcelamento — pega loja após a vírgula do "VALOR DE R$..."
+        if (!lojaMatch) {
+          lojaMatch = text.match(/VALOR DE R\$\s*[\d,.]+\s*,\s*(.+?)\./i);
+        }
 
         if (!valorMatch || !dataMatch || !lojaMatch) return null;
 
-        const amount = parseFloat(valorMatch[1].replace('.', '').replace(',', '.'));
+        const amount = parseFloat(valorMatch[1].replace(/\./g, '').replace(',', '.'));
         const date = new Date(`${dataMatch[1].split('/').reverse().join('-')}T${dataMatch[2]}:00`);
         const parcels = parcelasMatch ? parseInt(parcelasMatch[1], 10) : 1;
-        const description = lojaMatch[1].trim();
 
-        return {
-          amount,
-          date,
-          description,
-          note: text,
-          parcels
-        } as CardsPostings;
+        // Normaliza descrição (tira espaços múltiplos)
+        const description = lojaMatch[1].replace(/\s{2,}/g, ' ').trim();
+
+        return { amount, date, description, note: text, parcels } as CardsPostings;
       } catch {
         return null;
       }

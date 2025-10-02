@@ -10,7 +10,9 @@
     "test": "ng test",
     "production": "ng serve --configuration=production",
     "build:mobile": "ng build --configuration production && npx cap sync android && npx cap run android --target=RXCWC0762EX",
-    "build:tablet": "ng build --configuration production && npx cap sync android && npx cap run android --target=RX2W202Q52E"
+    "build:mobile2": "npx cap sync android && npx cap run android --target=RXCWC0762EX",
+    "build:tablet": "ng build --configuration production && npx cap sync android && npx cap run android --target=RX2W202Q52E",
+    "build:tablet2": "npx cap sync android && npx cap run android --target=RX2W202Q52E"
   },
   "private": true,
   "dependencies": {

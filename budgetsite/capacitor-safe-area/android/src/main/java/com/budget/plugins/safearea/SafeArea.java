@@ -4,15 +4,14 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.view.View;
 import android.view.Window;
-import android.webkit.WebView;
 import android.view.WindowManager;
+import android.webkit.WebView;
 
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
-import com.budget.plugins.safearea.AppearanceConfig;
 
 public class SafeArea {
     private final Activity activity;
@@ -27,15 +26,17 @@ public class SafeArea {
     }
 
     public void enable(boolean updateInsets, AppearanceConfig appearanceConfig) {
-        View decorView = activity.getWindow().getDecorView().getRootView();
+        View decorView = activity.getWindow().getDecorView();
 
-        decorView.setOnApplyWindowInsetsListener((v, insets) -> {
+        // mantém a mesma ideia do teu código: atualiza insets e aparência no primeiro callback
+        ViewCompat.setOnApplyWindowInsetsListener(decorView, (v, insets) -> {
             updateInsets();
             if (!appearanceUpdatedInListener) {
                 updateAppearance(appearanceConfig);
                 appearanceUpdatedInListener = true;
             }
-            return v.onApplyWindowInsets(insets);
+            // não consome; deixa o sistema propagar
+            return insets;
         });
 
         resetDecorFitsSystemWindows();
@@ -49,7 +50,7 @@ public class SafeArea {
     public void disable(AppearanceConfig appearanceConfig) {
         activity.runOnUiThread(() -> {
             WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), true);
-            activity.getWindow().getDecorView().getRootView().setOnApplyWindowInsetsListener(null);
+            ViewCompat.setOnApplyWindowInsetsListener(activity.getWindow().getDecorView(), null);
             resetProperties();
             updateAppearance(appearanceConfig);
         });
@@ -62,17 +63,25 @@ public class SafeArea {
     private void updateAppearance(AppearanceConfig config) {
         activity.runOnUiThread(() -> {
             Window window = activity.getWindow();
-            WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());
+            WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(window, window.getDecorView());
 
             controller.setAppearanceLightStatusBars("dark".equals(config.statusBarContent));
             controller.setAppearanceLightNavigationBars("dark".equals(config.navigationBarContent));
 
+            // desenhar barras pelo app
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+            // padrão: transparente (evita faixa preta em tablet)
+            window.setStatusBarColor(Color.TRANSPARENT);
+            window.setNavigationBarColor(Color.TRANSPARENT);
+
+            // se vierem cores customizadas, aplica
             if (config.customColorsForSystemBars) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                window.setStatusBarColor(Color.parseColor(config.statusBarColor));
-                window.setNavigationBarColor(Color.parseColor(config.navigationBarColor));
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                try {
+                    window.setStatusBarColor(Color.parseColor(config.statusBarColor));
+                    window.setNavigationBarColor(Color.parseColor(config.navigationBarColor));
+                } catch (IllegalArgumentException ignore) { /* mantém transparente */ }
             }
         });
     }
@@ -85,7 +94,9 @@ public class SafeArea {
             }
 
             WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(activity.getWindow().getDecorView());
+            // system bars visíveis
             Insets systemBarsInsets = (windowInsets != null) ? windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()) : Insets.NONE;
+            // teclado
             Insets imeInsets = (windowInsets != null) ? windowInsets.getInsets(WindowInsetsCompat.Type.ime()) : Insets.NONE;
 
             float density = activity.getResources().getDisplayMetrics().density;
@@ -100,9 +111,8 @@ public class SafeArea {
             setProperty("right", Math.round(systemBarsInsets.right / density));
 
             int navBarHeight = systemBarsInsets.bottom;
-            int imeHeight = Math.max(imeInsets.bottom - navBarHeight, navBarHeight);
-            int statusBarHeight = systemBarsInsets.top;
-
+            int imeHeight = Math.max(imeInsets.bottom, navBarHeight);
+            int statusBarHeight = Math.max(systemBarsInsets.top, 0);
             activity.getWindow().getDecorView().setPadding(0, statusBarHeight, 0, imeHeight);
         });
     }
@@ -112,12 +122,13 @@ public class SafeArea {
         setProperty("left", 0);
         setProperty("bottom", 0);
         setProperty("right", 0);
+        webView.setPadding(0, 0, 0, 0);
     }
 
     private void setProperty(String position, int size) {
         activity.runOnUiThread(() -> {
             String js = String.format(
-                "javascript:document.querySelector(':root')?.style.setProperty('--safe-area-inset-%s', 'max(env(safe-area-inset-%s), %dpx)');void(0);",
+                "javascript:document.querySelector(':root')?.style.setProperty('--safe-area-inset-%s','max(env(safe-area-inset-%s), %dpx)');void(0);",
                 position, position, size
             );
             webView.loadUrl(js);
@@ -125,6 +136,6 @@ public class SafeArea {
     }
 
     public void setOffset(int offset) {
-        this.offset = offset;
+        this.offset = Math.max(offset, 0);
     }
 }

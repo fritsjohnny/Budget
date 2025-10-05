@@ -1,0 +1,41 @@
+.table-container {
+  width: 100%;
+  height: 470px;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.mat-column-index {
+  width: 30px;
+}
+
+.mat-column-date {
+  width: 50px;
+  padding-right: 10px;
+}
+
+.mat-column-account {
+  width: 300px;
+}
+
+.mat-column-amount {
+  width: 125px;
+  text-align: right;
+}
+
+.mat-column-runningTotal {
+  width: 125px;
+  text-align: right;
+}
+
+.mat-column-dayTotal {
+  width: 125px;
+  text-align: right;
+}
+
+tr.mat-footer-row {
+  font-weight: bold;
+}

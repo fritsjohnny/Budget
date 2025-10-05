@@ -25,6 +25,7 @@ import { ExpenseService } from 'src/app/services/expense/expense.service';
 import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
 import { AccountPostingsDialog } from './accountpostings-dialog';
+import { YieldsComponent } from '../yields/yields.component';
 
 @Component({
   selector: 'app-accountpostings',
@@ -455,6 +456,28 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
 
     this.getFilteredTotalAmount();
+  }
+
+  openAccountYields() {
+    this.dialog.open(YieldsComponent, {
+      width: '100%',
+      maxWidth: '100%',
+      data: {
+        reference: this.reference,
+        accountId: this.accountId,
+      },
+    });
+  }
+
+  openGeneralYields() {
+    this.dialog.open(YieldsComponent, {
+      width: '100%',
+      maxWidth: '100%',
+      data: {
+        reference: this.reference,
+        accountId: null,
+      },
+    });
   }
 }
 

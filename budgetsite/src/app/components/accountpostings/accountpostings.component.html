@@ -8,7 +8,7 @@
   >
     <span class="center">Saldo Anterior:</span>
     <span class="center"
-      ><b>{{ previousBalance | currency : "" : "" }}</b></span
+      ><b>{{ previousBalance | currency: "" : "" }}</b></span
     >
   </div>
   <div
@@ -17,16 +17,17 @@
   >
     <span class="center">Saldo Geral:</span>
     <span class="center"
-      ><b>{{ grandTotalBalance | currency : "" : "" }}</b></span
+      ><b>{{ grandTotalBalance | currency: "" : "" }}</b></span
     >
   </div>
   <div
     class="col d-flex flex-column justify-content-center"
     *ngIf="hideProgress"
+    (click)="openGeneralYields()"
   >
     <span class="center">Rend. Geral:</span>
     <span class="center"
-      ><b>{{ grandTotalYields | currency : "" : "" }}</b></span
+      ><b>{{ grandTotalYields | currency: "" : "" }}</b></span
     >
   </div>
 </div>
@@ -34,19 +35,19 @@
   <div class="col text-center">
     <span class="center">Saldo Bruto:</span>
     <span class="center"
-      ><b>{{ account?.totalBalanceGross! | currency : "" : "" }}</b></span
+      ><b>{{ account?.totalBalanceGross! | currency: "" : "" }}</b></span
     >
   </div>
   <div class="col text-center">
     <span>Saldo Líquido:</span><br />
     <span
-      ><b>{{ totalBalance | currency : "" : "" }}</b></span
+      ><b>{{ totalBalance | currency: "" : "" }}</b></span
     >
   </div>
-  <div class="col text-center">
+  <div class="col text-center" (click)="openAccountYields()">
     <span>Rendimentos:</span><br />
     <span
-      ><b>{{ totalYields | currency : "" : "" }}</b></span
+      ><b>{{ totalYields | currency: "" : "" }}</b></span
     >
   </div>
 </div>
@@ -121,8 +122,8 @@
               row.type == 'Y'
                 ? 'yield'
                 : row.amount < 0
-                ? 'negative'
-                : 'positive'
+                  ? 'negative'
+                  : 'positive'
             "
           >
             {{ accountPostingsLength - i }}
@@ -146,11 +147,11 @@
               row.type == 'Y'
                 ? 'yield'
                 : row.amount < 0
-                ? 'negative'
-                : 'positive'
+                  ? 'negative'
+                  : 'positive'
             "
           >
-            {{ row.date | date : "dd/MM" }}
+            {{ row.date | date: "dd/MM" }}
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
@@ -165,8 +166,8 @@
               row.type == 'Y'
                 ? 'yield'
                 : row.amount < 0
-                ? 'negative'
-                : 'positive'
+                  ? 'negative'
+                  : 'positive'
             "
           >
             {{ row.description }}
@@ -184,18 +185,18 @@
               row.type == 'Y'
                 ? 'yield'
                 : row.amount < 0
-                ? 'negative'
-                : 'positive'
+                  ? 'negative'
+                  : 'positive'
             "
           >
-            {{ row.amount | currency : "" : "" }}
+            {{ row.amount | currency: "" : "" }}
           </td>
           <td
             mat-footer-cell
             *matFooterCellDef
             [ngClass]="total < 0 ? 'negative' : 'positive'"
           >
-            {{ total | currency : "" : "" }}
+            {{ total | currency: "" : "" }}
           </td>
         </ng-container>
 
@@ -208,7 +209,7 @@
             [ngClass]="row.runningAmount < 0 ? 'negative' : 'positive'"
             style="padding-left: 15px"
           >
-            {{ row.runningAmount | currency : "" : "" }}
+            {{ row.runningAmount | currency: "" : "" }}
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
@@ -240,13 +241,13 @@
   <div>
     <span class="min-balance-label">Menor saldo:</span
     ><span class="min-balance"
-      ><b>{{ minBalance | currency : "" : "" }}</b></span
+      ><b>{{ minBalance | currency: "" : "" }}</b></span
     >
   </div>
   <div>
     <span class="min-balance-label">Maior saldo:</span
     ><span class="max-balance"
-      ><b>{{ maxBalance | currency : "" : "" }}</b></span
+      ><b>{{ maxBalance | currency: "" : "" }}</b></span
     >
   </div>
   <p></p>

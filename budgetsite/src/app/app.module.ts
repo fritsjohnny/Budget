@@ -89,6 +89,7 @@ import { CustomReuseStrategy } from './core/strategies/custom-reuse-strategy';
 import { CardsNotificationsComponent } from './components/cardsnotifications/cardsnotifications.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DragReadyFeedbackDirective } from './directives/drag-ready-feedback.directive';
+import { YieldsComponent } from './components/yields/yields.component';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -142,7 +143,8 @@ registerLocaleData(localePt);
     ConfirmDialogComponent,
     BottomTabsComponent,
     CardsNotificationsComponent,
-    DragReadyFeedbackDirective
+    DragReadyFeedbackDirective,
+    YieldsComponent
   ],
   imports: [
     BrowserModule,

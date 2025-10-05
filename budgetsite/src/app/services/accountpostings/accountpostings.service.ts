@@ -5,6 +5,7 @@ import { ApiUrls } from 'src/app/common/api-urls'
 import { AccountsPostings } from 'src/app/models/accountspostings.model';
 import { catchError, map } from 'rxjs/operators';
 import { Messenger } from 'src/app/common/messenger';
+import { AccountsYieldsDto } from 'src/app/models/accountsyields.model';
 
 @Injectable({
   providedIn: 'root'
@@ -48,6 +49,19 @@ export class AccountPostingsService {
   delete(id: number): Observable<AccountsPostings> {
 
     return this.http.delete<AccountsPostings>(`${ApiUrls.accountspostings}/${id}`).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
+  getAccountsYields(reference: string | null, accountId: number | null): Observable<AccountsYieldsDto[]> {
+    const base = ApiUrls.accountsyields;
+
+    const url = (accountId != null)
+      ? `${base}/${reference}/${accountId}`
+      : `${base}/${reference}`;
+
+    return this.http.get<AccountsYieldsDto[]>(url).pipe(
       map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))
     );

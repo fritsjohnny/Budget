@@ -465,6 +465,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       data: {
         reference: this.reference,
         accountId: this.accountId,
+        title: 'Rendimentos da Conta',
       },
     });
   }
@@ -476,6 +477,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       data: {
         reference: this.reference,
         accountId: null,
+        title: 'Rendimentos Gerais',
       },
     });
   }

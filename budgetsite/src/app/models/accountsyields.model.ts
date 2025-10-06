@@ -8,4 +8,5 @@ export interface AccountsYieldsDto {
   amount: number;
   runningTotal: number;
   dayTotal: number;
+  rowNum: number;
 }

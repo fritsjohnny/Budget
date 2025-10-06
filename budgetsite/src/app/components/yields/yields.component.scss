@@ -1,6 +1,6 @@
 .table-container {
   width: 100%;
-  height: 470px;
+  height: 100%;
   overflow: auto;
 }
 
@@ -38,4 +38,40 @@ table {
 
 tr.mat-footer-row {
   font-weight: bold;
+}
+
+.mat-column-subtotalLabel {
+  width: 300px;
+}
+
+.mat-column-subtotalAmount {
+  width: 125px;
+  text-align: right;
+}
+
+.min-yield,
+.max-yield {
+  display: inline-block;
+  text-align: right;
+  width: 50px;
+}
+
+.min-yield-label,
+.max-yield-label {
+  display: inline-block;
+  width: 120px;
+}
+
+.min-yield-date,
+.max-yield-date {
+  display: inline-block;
+  text-align: right;
+  width: 50px;
+}
+
+.min-yield-date-label,
+.max-yield-date-label {
+  display: inline-block;
+  text-align: right;
+  width: 60px;
 }

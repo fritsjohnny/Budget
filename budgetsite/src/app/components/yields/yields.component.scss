@@ -1,77 +1,77 @@
 .table-container {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 
 table {
-  width: 100%;
+    width: 100%;
 }
 
 .mat-column-index {
-  width: 30px;
+    width: 30px;
 }
 
 .mat-column-date {
-  width: 50px;
-  padding-right: 10px;
+    width: 50px;
+    padding-right: 10px;
 }
 
 .mat-column-account {
-  width: 300px;
+    width: 300px;
 }
 
 .mat-column-amount {
-  width: 125px;
-  text-align: right;
+    width: 125px;
+    text-align: right;
 }
 
 .mat-column-runningTotal {
-  width: 125px;
-  text-align: right;
+    width: 125px;
+    text-align: right;
 }
 
 .mat-column-dayTotal {
-  width: 125px;
-  text-align: right;
+    width: 125px;
+    text-align: right;
 }
 
 tr.mat-footer-row {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .mat-column-subtotalLabel {
-  width: 300px;
+    width: 300px;
 }
 
 .mat-column-subtotalAmount {
-  width: 125px;
-  text-align: right;
+    width: 125px;
+    text-align: right;
 }
 
 .min-yield,
 .max-yield {
-  display: inline-block;
-  text-align: right;
-  width: 50px;
+    display: inline-block;
+    text-align: right;
+    width: 50px;
 }
 
 .min-yield-label,
 .max-yield-label {
-  display: inline-block;
-  width: 120px;
+    display: inline-block;
+    width: 120px;
 }
 
 .min-yield-date,
 .max-yield-date {
-  display: inline-block;
-  text-align: right;
-  width: 50px;
+    display: inline-block;
+    text-align: right;
+    width: 50px;
 }
 
 .min-yield-date-label,
 .max-yield-date-label {
-  display: inline-block;
-  text-align: right;
-  width: 60px;
+    display: inline-block;
+    text-align: right;
+    width: 60px;
 }

@@ -120,10 +120,7 @@
                                 class="subtotal-label"
                                 [attr.colspan]="3"
                             >
-                                <b
-                                    >Total dia
-                                    {{ row.date | date: "dd/MM" }}</b
-                                >
+                                <b>Total dia {{ row.date | date: "dd/MM" }}</b>
                             </td>
                         </ng-container>
 
@@ -171,29 +168,61 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" style="margin-bottom: 5px; align-items: center">
         <p></p>
-        <div>
+        <div class="col-4">
             <span class="min-yield-label">Menor rendimento:</span>
+        </div>
+        <div class="col-2">
             <span class="min-yield">
-                <b>{{ minYield | currency: "" : "" }}</b>
+                <b>{{ minYieldData?.amount | currency: "" : "" }}</b>
             </span>
-            <!-- <span class="min-yield-date-label">Data:</span> -->
-            <span *ngIf="minYieldDate" class="min-yield-date"
-                ><i>({{ minYieldDate | date: "dd/MM" }})</i></span
+        </div>
+        <div class="col-2">
+            <span class="min-yield-date"
+                ><i>({{ minYieldData?.date | date: "dd/MM" }})</i></span
             >
         </div>
+        <div class="col-4">
+            <span
+                class="card-detail"
+                [ngStyle]="{
+                    backgroundColor: minYieldData?.background,
+                    color: minYieldData?.color,
+                    whiteSpace: 'nowrap'
+                }"
+            >
+                {{ minYieldData?.account }}
+            </span>
+        </div>
     </div>
-    <div class="row">
-        <div>
+    <div class="row" style="align-items: center">
+        <div></div>
+        <div class="col-4">
             <span class="min-yield-label">Maior rendimento:</span>
+        </div>
+        <div class="col-2">
             <span class="max-yield">
-                <b>{{ maxYield | currency: "" : "" }}</b>
+                <b>{{ maxYieldData?.amount | currency: "" : "" }}</b>
             </span>
-            <!-- <span class="min-yield-date-label">Data:</span> -->
-            <span *ngIf="maxYieldDate" class="max-yield-date"
-                ><i>({{ maxYieldDate | date: "dd/MM" }})</i></span
+        </div>
+        <div class="col-2">
+            <span class="max-yield-date"
+                ><i>({{ maxYieldData?.date | date: "dd/MM" }})</i></span
             >
         </div>
+        <div class="col-4">
+            <span
+                class="card-detail"
+                [ngStyle]="{
+                    backgroundColor: maxYieldData?.background,
+                    color: maxYieldData?.color,
+                    whiteSpace: 'nowrap'
+                }"
+            >
+                {{ maxYieldData?.account }}
+            </span>
+        </div>
     </div>
+    <div class=""></div>
 </div>

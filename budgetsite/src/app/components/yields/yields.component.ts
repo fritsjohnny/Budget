@@ -43,10 +43,8 @@ export class YieldsComponent implements OnInit {
     return key(row.date) !== key(data[index + 1].date);
   };
 
-  minYield = 0;
-  maxYield = 0;
-  minYieldDate: string | Date | null = null;
-  maxYieldDate: string | Date | null = null;
+  minYieldData: AccountsYieldsDto | null = null;
+  maxYieldData: AccountsYieldsDto | null = null;
 
   constructor(
     private accountPostingsService: AccountPostingsService,
@@ -91,23 +89,18 @@ export class YieldsComponent implements OnInit {
   private computeExtremes(): void {
     const data = this.accountyields ?? [];
     if (data.length === 0) {
-      this.minYield = this.maxYield = 0;
-      this.minYieldDate = this.maxYieldDate = null;
+      this.minYieldData = null;
+      this.maxYieldData = null;
       return;
     }
 
     // pega o primeiro como referência
-    let min = data[0];
-    let max = data[0];
+    this.minYieldData = data[0];
+    this.maxYieldData = data[0];
 
     for (const r of data) {
-      if (Number(r.amount) < Number((min).amount)) min = r;
-      if (Number(r.amount) > Number((max).amount)) max = r;
+      if (Number(r.amount) < Number((this.minYieldData).amount)) this.minYieldData = r;
+      if (Number(r.amount) > Number((this.maxYieldData).amount)) this.maxYieldData = r;
     }
-
-    this.minYield = Number((min).amount) || 0;
-    this.maxYield = Number((max).amount) || 0;
-    this.minYieldDate = (min).date ?? null;
-    this.maxYieldDate = (max).date ?? null;
   }
 }

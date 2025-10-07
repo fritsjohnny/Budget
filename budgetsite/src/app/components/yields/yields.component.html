@@ -112,19 +112,6 @@
                             <td mat-footer-cell *matFooterCellDef></td>
                         </ng-container>
 
-                        <!-- Total Dia Column -->
-                        <!-- <ng-container matColumnDef="dayTotal">
-                  <th mat-header-cell *matHeaderCellDef>Total Dia</th>
-                  <td
-                    mat-cell
-                    *matCellDef="let row"
-                    [ngClass]="row.dayTotal < 0 ? 'negative' : 'positive'"
-                  >
-                    {{ row.dayTotal | currency: "" : "" }}
-                  </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container> -->
-
                         <!-- Linha de SUBTOTAL -->
                         <ng-container matColumnDef="subtotalLabel">
                             <td
@@ -134,8 +121,8 @@
                                 [attr.colspan]="3"
                             >
                                 <b
-                                    >Total do dia
-                                    {{ row.date | date: "dd/MM" }}:</b
+                                    >Total dia
+                                    {{ row.date | date: "dd/MM" }}</b
                                 >
                             </td>
                         </ng-container>

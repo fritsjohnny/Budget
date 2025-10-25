@@ -91,6 +91,8 @@ export class CardPostingsComponent implements OnInit {
   dataSource = new MatTableDataSource(this.cardpostings);
 
   hideFuturePurchases: boolean = false;
+  justLastParcel: boolean = false;
+  justOthersShopping: boolean = false;
   showOptions = false;
 
   constructor(
@@ -205,7 +207,7 @@ export class CardPostingsComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // sempre começa da lista completa
+    // 1. parte base: esconder compras futuras se marcado
     let filtered = this.cardpostings.filter(p => {
       if (!this.hideFuturePurchases) {
         return true;
@@ -214,20 +216,32 @@ export class CardPostingsComponent implements OnInit {
       const purchaseDate = new Date(p.date);
       purchaseDate.setHours(0, 0, 0, 0);
 
-      // mantém somente compras com data <= hoje
       return purchaseDate <= today;
     });
 
-    // se "Apenas minhas compras" estiver marcado, remove lançamentos de terceiros
+    // 2. apenas minhas compras
     if (this.justMyShopping) {
       filtered = filtered.filter(p => !p.others);
     }
 
-    // atualiza datasource e tamanho
+    // 2b. apenas compras de terceiros
+    if (this.justOthersShopping) {
+      filtered = filtered.filter(p => p.others);
+    }
+
+    // 3. apenas última parcela
+    if (this.justLastParcel) {
+      filtered = filtered.filter(p => {
+        // manter só se essa é a última parcela e tem mais de 1 parcela
+        return p.parcelNumber === p.parcels && p.parcels! > 1;
+      });
+    }
+
+    // 4. atualiza datasource e tamanho
     this.dataSource = new MatTableDataSource(filtered);
     this.cardPostingsLength = filtered.length;
 
-    // recalcula totais / percentuais / ciclo etc.
+    // 5. recalcula totais / % / ciclo etc.
     this.getTotalAmount();
   }
 
@@ -651,6 +665,17 @@ export class CardPostingsComponent implements OnInit {
       this.messenger.errorHandler('Reordenação não é possível com o filtro "Apenas minhas compras" ativo.');
       return false;
     }
+
+    if (this.justOthersShopping) {
+      this.messenger.errorHandler('Reordenação não é possível com o filtro "Apenas compras de terceiros" ativo.');
+      return false;
+    }
+    
+    if (this.justLastParcel) {
+      this.messenger.errorHandler('Reordenação não é possível com o filtro "Apenas última parcela" ativo.');
+      return false;
+    }
+
     return true;
   }
 

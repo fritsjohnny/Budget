@@ -102,14 +102,30 @@
             *ngIf="hideProgress"
             [(ngModel)]="justMyShopping"
             (change)="setDataByFilters()"
+            [disabled]="justOthersShopping"
         >
             Apenas minhas compras
         </mat-checkbox>
     </div>
 
     <div class="row">
-        <mat-checkbox *ngIf="hideProgress" [(ngModel)]="checkCard">
-            Conferir Cartão
+        <mat-checkbox
+            *ngIf="hideProgress"
+            [(ngModel)]="justOthersShopping"
+            (change)="setDataByFilters()"
+            [disabled]="justMyShopping"
+        >
+            Apenas compras de terceiros
+        </mat-checkbox>
+    </div>
+
+    <div class="row">
+        <mat-checkbox
+            *ngIf="hideProgress"
+            [(ngModel)]="justLastParcel"
+            (change)="setDataByFilters()"
+        >
+            Apenas última parcela
         </mat-checkbox>
     </div>
 
@@ -120,6 +136,12 @@
             (change)="setDataByFilters()"
         >
             Remover compras futuras
+        </mat-checkbox>
+    </div>
+
+    <div class="row">
+        <mat-checkbox *ngIf="hideProgress" [(ngModel)]="checkCard">
+            Modo conferência
         </mat-checkbox>
     </div>
 </div>

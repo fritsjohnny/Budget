@@ -185,17 +185,11 @@ export class CardPostingsComponent implements OnInit {
             (a, b) => b.position! - a.position!
           );
 
-          this.cardPostingsLength = this.cardpostings.length;
-
-          this.dataSource = new MatTableDataSource(this.cardpostings);
+          this.setDataByFilters();
 
           this.getTotalAmount();
 
           this.checkDueAlerts();
-
-          if (this.hideFuturePurchases) {
-            this.filterCardPostings();
-          }
 
           this.hideProgress = true;
         },
@@ -205,6 +199,36 @@ export class CardPostingsComponent implements OnInit {
       this.getCardsPostingsPeople();
       this.getExpensesByCategories();
     }
+  }
+
+  setDataByFilters(): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // sempre começa da lista completa
+    let filtered = this.cardpostings.filter(p => {
+      if (!this.hideFuturePurchases) {
+        return true;
+      }
+
+      const purchaseDate = new Date(p.date);
+      purchaseDate.setHours(0, 0, 0, 0);
+
+      // mantém somente compras com data <= hoje
+      return purchaseDate <= today;
+    });
+
+    // se "Apenas minhas compras" estiver marcado, remove lançamentos de terceiros
+    if (this.justMyShopping) {
+      filtered = filtered.filter(p => !p.others);
+    }
+
+    // atualiza datasource e tamanho
+    this.dataSource = new MatTableDataSource(filtered);
+    this.cardPostingsLength = filtered.length;
+
+    // recalcula totais / percentuais / ciclo etc.
+    this.getTotalAmount();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -288,6 +312,8 @@ export class CardPostingsComponent implements OnInit {
         .map((t) => t.amount)
         .reduce((acc, value) => acc + value, 0);
     }
+
+    this.cardPostingsLength = this.dataSource.data.length;
 
     this.percInTheCycleTotal =
       (this.total ? (this.inTheCycleTotal / this.total) * 100 : 0).toFixed(2) + '%';
@@ -376,13 +402,7 @@ export class CardPostingsComponent implements OnInit {
                 (a, b) => b.position! - a.position!
               );
 
-              this.cardPostingsLength = this.cardpostings.length;
-
-              this.dataSource = new MatTableDataSource(this.cardpostings);
-
-              if (this.hideFuturePurchases) {
-                this.filterCardPostings();
-              }
+              this.setDataByFilters();
             }
 
             this.categoriesList = result.categoriesList;
@@ -492,7 +512,7 @@ export class CardPostingsComponent implements OnInit {
                 ),
               ];
 
-              this.dataSource = new MatTableDataSource(this.cardpostings);
+              this.setDataByFilters();
 
               this.getTotalAmount();
               this.getExpensesByCategories();
@@ -500,10 +520,6 @@ export class CardPostingsComponent implements OnInit {
 
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
-
-              if (this.hideFuturePurchases) {
-                this.filterCardPostings();
-              }
 
               //this.hideProgress = true;
             },
@@ -517,11 +533,7 @@ export class CardPostingsComponent implements OnInit {
   afterDelete(result: CardsPostings) {
     this.cardpostings = this.cardpostings.filter((t) => t.id! != result.id!);
 
-    this.dataSource = new MatTableDataSource(this.cardpostings);
-
-    if (this.hideFuturePurchases) {
-      this.filterCardPostings();
-    }
+    this.setDataByFilters();
 
     this.getTotalAmount();
 
@@ -629,11 +641,21 @@ export class CardPostingsComponent implements OnInit {
     });
   }
 
-  drop(event: CdkDragDrop<any[]>) {
+  validateConditions(): boolean {
     if (this.hideFuturePurchases) {
-      this.messenger.errorHandler('Ordenação não é possível com filtro de compras futuras ativo.');
-      return;
+      this.messenger.errorHandler('Reordenação não é possível com filtro de compras futuras ativo.');
+      return false;
     }
+
+    if (this.justMyShopping) {
+      this.messenger.errorHandler('Reordenação não é possível com o filtro "Apenas minhas compras" ativo.');
+      return false;
+    }
+    return true;
+  }
+
+  drop(event: CdkDragDrop<any[]>) {
+    if (!this.validateConditions()) return;
 
     const previousIndex = this.cardpostings.findIndex(
       (row) => row === event.item.data
@@ -652,17 +674,10 @@ export class CardPostingsComponent implements OnInit {
     this.dataSource = new MatTableDataSource(this.cardpostings);
 
     this.cardPostingsService.updatePositions(this.cardpostings).subscribe();
-
-    if (this.hideFuturePurchases) {
-      this.filterCardPostings();
-    }
   }
 
   sort() {
-    if (this.hideFuturePurchases) {
-      this.messenger.errorHandler('Ordenação não é possível com filtro de compras futuras ativo.');
-      return;
-    }
+    if (!this.validateConditions()) return;
 
     this.cardpostings = this.cardpostings.sort((a, b) => {
       const dateA = a.date ? new Date(a.date).getTime() : 0; // Converte a.date para timestamp
@@ -797,22 +812,6 @@ export class CardPostingsComponent implements OnInit {
 
     this.getCardsPostingsPeople();
     this.getExpensesByCategories();
-  }
-
-  filterCardPostings(): void {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const filtered = this.cardpostings.filter(p => {
-      const purchaseDate = new Date(p.date);
-      purchaseDate.setHours(0, 0, 0, 0);
-      return !this.hideFuturePurchases || purchaseDate <= today;
-    });
-
-    this.dataSource = new MatTableDataSource(filtered);
-    this.cardPostingsLength = filtered.length;
-
-    this.getTotalAmount();
   }
 
   private lastClickTime = 0;

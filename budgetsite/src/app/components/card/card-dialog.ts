@@ -16,7 +16,7 @@ export class CardDialog implements OnInit, AfterViewInit {
   @ViewChild('picker2') picker2!: NgxMatColorPickerComponent;
 
   id?: number;
-  userId!: number;
+  userId?: number;
   buttonName: string = "";
   buttonText: string = "Nome do Cartão";
 

@@ -1,4 +1,3 @@
-import { delay } from 'rxjs';
 import {
   Component,
   OnInit,
@@ -50,7 +49,7 @@ export class CardPostingsComponent implements OnInit {
   cardpostings!: CardsPostings[];
   cardpostingspeople!: CardsPostingsDTO[];
   expensesByCategories!: ExpensesByCategories[];
-  displayedColumns = ['index', 'date', 'description', 'amount', 'actions'];
+  displayedColumns = ['index', 'date', 'card', 'description', 'amount', 'actions'];
   displayedPeopleColumns = [
     'person',
     'toReceive',
@@ -95,6 +94,9 @@ export class CardPostingsComponent implements OnInit {
   justOthersShopping: boolean = false;
   showOptions = false;
   justFirstParcel: boolean = false;
+
+  startingParcels: number | null = null;
+  endingParcels: number | null = null;
 
   constructor(
     private cardPostingsService: CardPostingsService,
@@ -179,7 +181,12 @@ export class CardPostingsComponent implements OnInit {
   refresh() {
     this.getLists();
 
-    if (this.cardId) {
+    if (this.cardId! >= 0 && this.reference) {
+
+      this.displayedColumns = this.cardId! == 0
+        ? ['index', 'date', 'description', 'amount', 'card', 'actions']
+        : ['index', 'date', 'description', 'amount', 'actions'];
+
       this.hideProgress = false;
 
       this.cardPostingsService.read(this.cardId!, this.reference!).subscribe({
@@ -244,6 +251,15 @@ export class CardPostingsComponent implements OnInit {
       filtered = filtered.filter(p => {
         // manter só se essa é a última parcela e tem mais de 1 parcela
         return p.parcelNumber === p.parcels && p.parcels! > 1;
+      });
+    }
+
+    if (this.cardId! == 0) {
+      // ordenar por data desc
+      filtered = filtered.sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        return dateB - dateA;
       });
     }
 
@@ -336,6 +352,16 @@ export class CardPostingsComponent implements OnInit {
         .map((t) => t.amount)
         .reduce((acc, value) => acc + value, 0);
     }
+
+    this.startingParcels = source
+      .filter(t => t.parcels! > 1 && t.parcelNumber == 1)
+      .map(t => t.amount)
+      .reduce((acc, value) => acc + value, 0) ?? 0;
+
+    this.endingParcels = source
+      .filter(t => t.parcels! > 1 && t.parcelNumber == t.parcels)
+      .map(t => t.amount)
+      .reduce((acc, value) => acc + value, 0) ?? 0;
 
     this.cardPostingsLength = this.dataSource.data.length;
 

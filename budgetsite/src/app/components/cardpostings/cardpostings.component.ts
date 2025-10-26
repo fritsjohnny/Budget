@@ -233,7 +233,7 @@ export class CardPostingsComponent implements OnInit {
     // 3. apenas primeira parcela
     if (this.justFirstParcel) {
       filtered = filtered.filter(p => {
-        // manter só se essa é a primeira parcela
+        // manter só se essa é a primeira parcela e tem mais de 1 parcela
         return p.parcelNumber === 1 && p.parcels! > 1;
       }
       );

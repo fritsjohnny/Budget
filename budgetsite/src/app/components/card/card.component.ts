@@ -55,6 +55,17 @@ export class CardComponent implements OnInit, AfterViewInit {
       )
     ).subscribe({
       next: (cards) => {
+
+        let allCard: Cards = {
+          id: 0,
+          name: 'Todos',
+          color: '#000000',
+          background: '#FFFFFF',
+          disabled: false,
+        }
+        
+        cards.unshift(allCard);
+        
         this.cards = cards;
 
         this.cards.forEach(card => {

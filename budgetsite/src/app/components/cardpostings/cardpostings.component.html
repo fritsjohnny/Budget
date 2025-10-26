@@ -186,6 +186,7 @@
                         color="primary"
                         aria-label="Ordernar"
                         (click)="sort()"
+                        [disabled]="cardId! <= 0"
                     >
                         <span
                             class="material-icons"
@@ -313,6 +314,24 @@
                             <td mat-footer-cell *matFooterCellDef></td>
                         </ng-container>
 
+                        <!-- Cartão Column -->
+                        <ng-container matColumnDef="card">
+                            <th mat-header-cell *matHeaderCellDef>Cartão</th>
+                            <td mat-cell *matCellDef="let row">
+                                <span
+                                    class="card-detail"
+                                    [ngStyle]="{
+                                        backgroundColor: row.card?.background,
+                                        color: row.card?.color,
+                                        whiteSpace: 'nowrap'
+                                    }"
+                                >
+                                    {{ row.card?.name }}
+                                </span>
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef></td>
+                        </ng-container>
+
                         <!-- Descrição Column -->
                         <ng-container matColumnDef="description">
                             <th mat-header-cell *matHeaderCellDef>Descrição</th>
@@ -331,7 +350,8 @@
                                     color:
                                         row.peopleId && !darkTheme
                                             ? row.people?.color
-                                            : ''
+                                            : '',
+                                    paddingLeft: cardId! == 0 ? '5px' : '0px'
                                 }"
                             >
                                 {{ row.description }}
@@ -711,6 +731,33 @@
             </div>
         </mat-expansion-panel>
     </mat-accordion>
+</div>
+
+<div
+    class="row"
+    style="margin-bottom: 5px; align-items: center"
+    *ngIf="hideProgress"
+>
+    <p></p>
+    <div class="col-4">
+        <span class="parcels-label">Parcelas iniciando:</span>
+    </div>
+    <div class="col-2">
+        <span class="parcels-value">
+            <b>{{ startingParcels! | currency: "" : "" }}</b>
+        </span>
+    </div>
+</div>
+<div class="row form-group" style="align-items: center" *ngIf="hideProgress">
+    <div></div>
+    <div class="col-4">
+        <span class="parcels-label">Parcelas terminando:</span>
+    </div>
+    <div class="col-2">
+        <span class="parcels-value">
+            <b>{{ endingParcels! | currency: "" : "" }}</b>
+        </span>
+    </div>
 </div>
 
 <div *ngIf="hideProgress" class="row" style="margin-top: 10px">

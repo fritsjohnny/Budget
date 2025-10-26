@@ -17,8 +17,13 @@ table {
   // padding-right: 10px;
 }
 
+.mat-column-card {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
 .mat-column-description {
-  max-width: 100px;
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -60,4 +65,15 @@ tr.mat-footer-row {
 .button-pn {
   font-size: 20px;
   font-weight: bold;
+}
+
+.parcels-value {
+    display: inline-block;
+    text-align: right;
+    width: 70px;
+}
+
+.parcels-label {
+    display: inline-block;
+    width: 170px;
 }

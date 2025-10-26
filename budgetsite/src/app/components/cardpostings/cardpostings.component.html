@@ -122,8 +122,20 @@
     <div class="row">
         <mat-checkbox
             *ngIf="hideProgress"
+            [(ngModel)]="justFirstParcel"
+            (change)="setDataByFilters()"
+            [disabled]="justLastParcel"
+        >
+            Apenas primeira parcela
+        </mat-checkbox>
+    </div>
+
+    <div class="row">
+        <mat-checkbox
+            *ngIf="hideProgress"
             [(ngModel)]="justLastParcel"
             (change)="setDataByFilters()"
+            [disabled]="justFirstParcel"
         >
             Apenas última parcela
         </mat-checkbox>

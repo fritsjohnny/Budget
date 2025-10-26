@@ -94,6 +94,7 @@ export class CardPostingsComponent implements OnInit {
   justLastParcel: boolean = false;
   justOthersShopping: boolean = false;
   showOptions = false;
+  justFirstParcel: boolean = false;
 
   constructor(
     private cardPostingsService: CardPostingsService,
@@ -229,7 +230,16 @@ export class CardPostingsComponent implements OnInit {
       filtered = filtered.filter(p => p.others);
     }
 
-    // 3. apenas última parcela
+    // 3. apenas primeira parcela
+    if (this.justFirstParcel) {
+      filtered = filtered.filter(p => {
+        // manter só se essa é a primeira parcela
+        return p.parcelNumber === 1 && p.parcels! > 1;
+      }
+      );
+    }
+
+    // 4. apenas última parcela
     if (this.justLastParcel) {
       filtered = filtered.filter(p => {
         // manter só se essa é a última parcela e tem mais de 1 parcela
@@ -237,11 +247,11 @@ export class CardPostingsComponent implements OnInit {
       });
     }
 
-    // 4. atualiza datasource e tamanho
+    // 5. atualiza datasource e tamanho
     this.dataSource = new MatTableDataSource(filtered);
     this.cardPostingsLength = filtered.length;
 
-    // 5. recalcula totais / % / ciclo etc.
+    // 6. recalcula totais / % / ciclo etc.
     this.getTotalAmount();
   }
 
@@ -670,7 +680,7 @@ export class CardPostingsComponent implements OnInit {
       this.messenger.errorHandler('Reordenação não é possível com o filtro "Apenas compras de terceiros" ativo.');
       return false;
     }
-    
+
     if (this.justLastParcel) {
       this.messenger.errorHandler('Reordenação não é possível com o filtro "Apenas última parcela" ativo.');
       return false;

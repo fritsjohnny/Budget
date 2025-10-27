@@ -764,21 +764,6 @@
 >
     <p></p>
     <div class="col-5">
-        <span class="parcels-label">Não parcelado:</span>
-    </div>
-    <div class="col-2">
-        <span class="parcels-value">
-            <b>{{ singleParcels! | currency: "" : "" }}</b>
-        </span>
-    </div>
-</div>
-
-<div
-    class="row"
-    style="margin-bottom: 5px; align-items: center"
-    *ngIf="hideProgress"
->
-    <div class="col-5">
         <span class="parcels-label">Parcelas iniciando:</span>
     </div>
     <div class="col-2">
@@ -812,6 +797,35 @@
     <div class="col-3">
         <span class="parcels-value">
             <b>{{ endingParcels! | currency: "" : "" }}</b>
+        </span>
+    </div>
+</div>
+
+<div class="row form-group" style="align-items: center" *ngIf="hideProgress">
+    <div class="col-5">
+        <span class="parcels-label">Total parcelado:</span>
+    </div>
+    <div class="col-3" style="border-top: 1px solid">
+        <span class="parcels-value">
+            <b>{{
+                startingParcels! + othersParcels! + endingParcels!
+                    | currency: "" : ""
+            }}</b>
+        </span>
+    </div>
+</div>
+<div
+    class="row"
+    style="margin-bottom: 5px; align-items: center"
+    *ngIf="hideProgress"
+>
+    <p></p>
+    <div class="col-5">
+        <span class="parcels-label">Não parcelado:</span>
+    </div>
+    <div class="col-2">
+        <span class="parcels-value">
+            <b>{{ singleParcels! | currency: "" : "" }}</b>
         </span>
     </div>
 </div>

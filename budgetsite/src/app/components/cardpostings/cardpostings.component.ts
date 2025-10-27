@@ -94,9 +94,13 @@ export class CardPostingsComponent implements OnInit {
   justOthersShopping: boolean = false;
   showOptions = false;
   justFirstParcel: boolean = false;
+  justOthersParcels: boolean = false;
+  justSingleParcel: boolean = false;
 
   startingParcels: number | null = null;
   endingParcels: number | null = null;
+  othersParcels: number | null = null;
+  singleParcels: number | null = null;
 
   constructor(
     private cardPostingsService: CardPostingsService,
@@ -232,12 +236,12 @@ export class CardPostingsComponent implements OnInit {
       filtered = filtered.filter(p => !p.others);
     }
 
-    // 2b. apenas compras de terceiros
+    // 3. apenas compras de terceiros
     if (this.justOthersShopping) {
       filtered = filtered.filter(p => p.others);
     }
 
-    // 3. apenas primeira parcela
+    // 4. apenas primeira parcela
     if (this.justFirstParcel) {
       filtered = filtered.filter(p => {
         // manter só se essa é a primeira parcela e tem mais de 1 parcela
@@ -246,11 +250,27 @@ export class CardPostingsComponent implements OnInit {
       );
     }
 
-    // 4. apenas última parcela
+    // 5. apenas última parcela
     if (this.justLastParcel) {
       filtered = filtered.filter(p => {
         // manter só se essa é a última parcela e tem mais de 1 parcela
         return p.parcelNumber === p.parcels && p.parcels! > 1;
+      });
+    }
+
+    // 6. apenas demais parcelas
+    if (this.justOthersParcels) {
+      filtered = filtered.filter(p => {
+        // manter só se essa não é a primeira nem a última parcela e tem mais de 2 parcelas
+        return p.parcels! > 2 && p.parcelNumber! > 1 && p.parcelNumber! < p.parcels!;
+      });
+    }
+
+    // 7. parcela única
+    if (this.justSingleParcel) {
+      filtered = filtered.filter(p => {
+        // manter só se essa é parcela única
+        return p.parcels! === 1;
       });
     }
 
@@ -263,11 +283,11 @@ export class CardPostingsComponent implements OnInit {
       });
     }
 
-    // 5. atualiza datasource e tamanho
+    // 7. atualiza datasource e tamanho
     this.dataSource = new MatTableDataSource(filtered);
     this.cardPostingsLength = filtered.length;
 
-    // 6. recalcula totais / % / ciclo etc.
+    // 8. recalcula totais / % / ciclo etc.
     this.getTotalAmount();
   }
 
@@ -360,6 +380,16 @@ export class CardPostingsComponent implements OnInit {
 
     this.endingParcels = source
       .filter(t => t.parcels! > 1 && t.parcelNumber == t.parcels)
+      .map(t => t.amount)
+      .reduce((acc, value) => acc + value, 0) ?? 0;
+
+    this.othersParcels = source
+      .filter(t => t.parcels! > 1 && t.parcelNumber! > 1 && t.parcelNumber! < t.parcels!)
+      .map(t => t.amount)
+      .reduce((acc, value) => acc + value, 0) ?? 0;
+
+    this.singleParcels = source
+      .filter(t => t.parcels! === 1)
       .map(t => t.amount)
       .reduce((acc, value) => acc + value, 0) ?? 0;
 

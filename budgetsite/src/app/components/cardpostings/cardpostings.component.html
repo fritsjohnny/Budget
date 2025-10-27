@@ -100,11 +100,21 @@
     <div class="row">
         <mat-checkbox
             *ngIf="hideProgress"
+            [(ngModel)]="hideFuturePurchases"
+            (change)="setDataByFilters()"
+        >
+            Remover compras futuras
+        </mat-checkbox>
+    </div>
+
+    <div class="row">
+        <mat-checkbox
+            *ngIf="hideProgress"
             [(ngModel)]="justMyShopping"
             (change)="setDataByFilters()"
             [disabled]="justOthersShopping"
         >
-            Apenas minhas compras
+            Minhas compras
         </mat-checkbox>
     </div>
 
@@ -115,7 +125,18 @@
             (change)="setDataByFilters()"
             [disabled]="justMyShopping"
         >
-            Apenas compras de terceiros
+            Compras de terceiros
+        </mat-checkbox>
+    </div>
+
+    <div class="row">
+        <mat-checkbox
+            *ngIf="hideProgress"
+            [(ngModel)]="justSingleParcel"
+            (change)="setDataByFilters()"
+            [disabled]="justFirstParcel || justLastParcel || justOthersParcels"
+        >
+            Compras não parceladas
         </mat-checkbox>
     </div>
 
@@ -124,7 +145,7 @@
             *ngIf="hideProgress"
             [(ngModel)]="justFirstParcel"
             (change)="setDataByFilters()"
-            [disabled]="justLastParcel"
+            [disabled]="justLastParcel || justOthersParcels || justSingleParcel"
         >
             Apenas primeira parcela
         </mat-checkbox>
@@ -135,7 +156,9 @@
             *ngIf="hideProgress"
             [(ngModel)]="justLastParcel"
             (change)="setDataByFilters()"
-            [disabled]="justFirstParcel"
+            [disabled]="
+                justFirstParcel || justOthersParcels || justSingleParcel
+            "
         >
             Apenas última parcela
         </mat-checkbox>
@@ -144,10 +167,11 @@
     <div class="row">
         <mat-checkbox
             *ngIf="hideProgress"
-            [(ngModel)]="hideFuturePurchases"
+            [(ngModel)]="justOthersParcels"
             (change)="setDataByFilters()"
+            [disabled]="justFirstParcel || justLastParcel || justSingleParcel"
         >
-            Remover compras futuras
+            Apenas demais parcelas
         </mat-checkbox>
     </div>
 
@@ -739,7 +763,22 @@
     *ngIf="hideProgress"
 >
     <p></p>
-    <div class="col-4">
+    <div class="col-5">
+        <span class="parcels-label">Não parcelado:</span>
+    </div>
+    <div class="col-2">
+        <span class="parcels-value">
+            <b>{{ singleParcels! | currency: "" : "" }}</b>
+        </span>
+    </div>
+</div>
+
+<div
+    class="row"
+    style="margin-bottom: 5px; align-items: center"
+    *ngIf="hideProgress"
+>
+    <div class="col-5">
         <span class="parcels-label">Parcelas iniciando:</span>
     </div>
     <div class="col-2">
@@ -748,14 +787,47 @@
         </span>
     </div>
 </div>
-<div class="row form-group" style="align-items: center" *ngIf="hideProgress">
-    <div></div>
-    <div class="col-4">
+<div
+    class="row"
+    style="margin-bottom: 5px; align-items: center"
+    *ngIf="hideProgress"
+>
+    <div class="col-5">
+        <span class="parcels-label">Outras parcelas:</span>
+    </div>
+    <div class="col-3">
+        <span class="parcels-value">
+            <b>{{ othersParcels! | currency: "" : "" }}</b>
+        </span>
+    </div>
+</div>
+<div
+    class="row"
+    style="margin-bottom: 5px; align-items: center"
+    *ngIf="hideProgress"
+>
+    <div class="col-5">
         <span class="parcels-label">Parcelas terminando:</span>
     </div>
-    <div class="col-2">
+    <div class="col-3">
         <span class="parcels-value">
             <b>{{ endingParcels! | currency: "" : "" }}</b>
+        </span>
+    </div>
+</div>
+
+<div class="row form-group" style="align-items: center" *ngIf="hideProgress">
+    <div class="col-5">
+        <span class="parcels-label">Total:</span>
+    </div>
+    <div class="col-3" style="border-top: 1px solid">
+        <span class="parcels-value">
+            <b>{{
+                startingParcels! +
+                    othersParcels! +
+                    endingParcels! +
+                    singleParcels! | currency: "" : ""
+            }}</b>
         </span>
     </div>
 </div>

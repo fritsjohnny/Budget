@@ -21,4 +21,6 @@ export interface Accounts {
   irPercent?: number;
   isTaxExempt?: boolean;
   lastYield?: number;
+  description?: string;
+  hasParens?: boolean;
 }

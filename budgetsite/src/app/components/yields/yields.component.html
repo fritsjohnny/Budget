@@ -62,14 +62,14 @@
                             <th mat-header-cell *matHeaderCellDef>Conta</th>
                             <td mat-cell *matCellDef="let row">
                                 <span
-                                    class="card-detail"
+                                    class="account-button"
+                                    [class.has-parens]="row.hasParens"
                                     [ngStyle]="{
                                         backgroundColor: row.background,
-                                        color: row.color,
-                                        whiteSpace: 'nowrap'
+                                        color: row.color
                                     }"
                                 >
-                                    {{ row.account }}
+                                    {{ getDescription(row) }}
                                 </span>
                             </td>
                             <td mat-footer-cell *matFooterCellDef></td>
@@ -185,14 +185,14 @@
         </div>
         <div class="col-4">
             <span
-                class="card-detail"
+                class="account-button"
+                [class.has-parens]="minYieldData?.hasParens"
                 [ngStyle]="{
                     backgroundColor: minYieldData?.background,
-                    color: minYieldData?.color,
-                    whiteSpace: 'nowrap'
+                    color: minYieldData?.color
                 }"
             >
-                {{ minYieldData?.account }}
+                {{ getDescription(minYieldData!) }}
             </span>
         </div>
     </div>
@@ -213,14 +213,14 @@
         </div>
         <div class="col-4">
             <span
-                class="card-detail"
+                class="account-button"
+                [class.has-parens]="minYieldData?.hasParens"
                 [ngStyle]="{
                     backgroundColor: maxYieldData?.background,
-                    color: maxYieldData?.color,
-                    whiteSpace: 'nowrap'
+                    color: maxYieldData?.color
                 }"
             >
-                {{ maxYieldData?.account }}
+                {{ getDescription(maxYieldData!) }}
             </span>
         </div>
     </div>

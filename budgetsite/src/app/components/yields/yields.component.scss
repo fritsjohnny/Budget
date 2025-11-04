@@ -21,6 +21,23 @@ table {
     width: 300px;
 }
 
+.account-button {
+    display: inline-block;
+    min-width: 50px;
+    border-radius: 4px;
+    padding: 5px;
+    text-align: center;
+    white-space: nowrap;
+
+    &.has-parens {
+        line-height: normal; // só aplica quando tiver parênteses
+        padding-bottom: 4px;
+        white-space: pre-line; /* interpreta \n como quebra */
+        margin-top: 3px;
+        margin-bottom: 3px;
+    }
+}
+
 .mat-column-amount {
     width: 125px;
     text-align: right;

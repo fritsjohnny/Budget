@@ -9,4 +9,5 @@ export interface AccountsYieldsDto {
   runningTotal: number;
   dayTotal: number;
   rowNum: number;
+  hasParens?: boolean;
 }

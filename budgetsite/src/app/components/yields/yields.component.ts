@@ -103,4 +103,25 @@ export class YieldsComponent implements OnInit {
       if (Number(r.amount) > Number((this.maxYieldData).amount)) this.maxYieldData = r;
     }
   }
+
+  getDescription(account: AccountsYieldsDto): string {
+    if (!account || !account.account) {
+      return '';
+    }
+
+    // pega todos os "(...)" e monta a 2ª linha
+    const parensMatches = account.account.match(/\([^)]*\)/g) || [];
+    account.hasParens = parensMatches.length > 0;
+
+    const secondLine = parensMatches.join(' ').trim();
+
+    // remove todos os "(...)" do texto principal (1ª linha)
+    const firstLine = account.account
+      .replace(/\([^)]*\)/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // monta o texto final com quebra de linha somente se existir conteúdo nos parênteses
+    return secondLine ? `${firstLine}\n${secondLine}` : firstLine;
+  }
 }

@@ -28,6 +28,8 @@
     "@angular/platform-browser": "~13.0.0",
     "@angular/platform-browser-dynamic": "~13.0.0",
     "@angular/router": "~13.0.0",
+    "@aparajita/capacitor-biometric-auth": "^9.1.2",
+    "@aparajita/capacitor-secure-storage": "^7.1.6",
     "@capacitor-community/safe-area": "^7.0.0-alpha.1",
     "@capacitor/android": "^7.3.0",
     "@capacitor/cli": "^7.3.0",

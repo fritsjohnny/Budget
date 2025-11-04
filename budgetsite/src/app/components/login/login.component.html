@@ -1,49 +1,101 @@
 <div class="row">
-  <mat-card class="container">
-    <mat-card-header>
-      <mat-card-title>
-        <img src="../../../assets/img/budget512.png" style="height: 100px; padding-right: 5px;">
-        <span>Budget</span>
-      </mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <form [formGroup]="loginFormGroup">
-        <div class="row">
-          <mat-form-field appearance="fill">
-            <mat-label>Usuário</mat-label>
-            <input type="text" id="loginFormControl" required matInput formControlName="loginFormControl"
-              [(ngModel)]="_login" cdkFocusInitial>
-            <mat-error *ngIf="loginFormGroup.get('loginFormControl')?.hasError('required')">
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-        <div class="row">
-          <mat-form-field appearance="fill">
-            <mat-label>Senha</mat-label>
-            <input matInput [type]="hide ? 'password' : 'text'" id="passwordFormControl" required matInput
-              formControlName="passwordFormControl" [(ngModel)]="_password">
-            <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
-              [attr.aria-pressed]="hide">
-              <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+    <mat-card class="container">
+        <mat-card-header>
+            <mat-card-title>
+                <img
+                    src="../../../assets/img/budget512.png"
+                    style="height: 100px; padding-right: 5px"
+                />
+                <span>Budget</span>
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <form [formGroup]="loginFormGroup">
+                <div class="row">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Usuário</mat-label>
+                        <input
+                            type="text"
+                            id="loginFormControl"
+                            required
+                            matInput
+                            formControlName="loginFormControl"
+                            [(ngModel)]="_login"
+                            cdkFocusInitial
+                        />
+                        <mat-error
+                            *ngIf="
+                                loginFormGroup
+                                    .get('loginFormControl')
+                                    ?.hasError('required')
+                            "
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div class="row">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Senha</mat-label>
+                        <input
+                            matInput
+                            [type]="hide ? 'password' : 'text'"
+                            id="passwordFormControl"
+                            required
+                            matInput
+                            formControlName="passwordFormControl"
+                            [(ngModel)]="_password"
+                        />
+                        <button
+                            mat-icon-button
+                            matSuffix
+                            (click)="hide = !hide"
+                            [attr.aria-label]="'Hide password'"
+                            [attr.aria-pressed]="hide"
+                        >
+                            <mat-icon>{{
+                                hide ? "visibility_off" : "visibility"
+                            }}</mat-icon>
+                        </button>
+                        <mat-error
+                            *ngIf="
+                                loginFormGroup
+                                    .get('passwordFormControl')
+                                    ?.hasError('required')
+                            "
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                    <a [routerLink]="['/usersregister']">Cadastrar-se</a>
+                </div>
+            </form>
+        </mat-card-content>
+        <div class="row center">
+            <button mat-fab color="warn" (click)="login()" *ngIf="hideProgress">
+                <mat-icon class="default-icon">login</mat-icon>
             </button>
-            <mat-error *ngIf="loginFormGroup.get('passwordFormControl')?.hasError('required')">
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-          <a [routerLink]="['/usersregister']">Cadastrar-se</a>
+            <!-- Botão de biometria -->
+            <button
+                mat-fab
+                color="primary"
+                style="margin-left: 16px"
+                (click)="loginWithBiometrics()"
+                [disabled]="!canBiometric"
+                *ngIf="hideProgress"
+            >
+                <mat-icon>fingerprint</mat-icon>
+            </button>
+            <div class="row center">
+                <div class="row justify-content-center">
+                    <mat-spinner
+                        color="accent"
+                        strokeWidth="7"
+                        diameter="50"
+                        *ngIf="!hideProgress"
+                    ></mat-spinner>
+                </div>
+            </div>
         </div>
-      </form>
-    </mat-card-content>
-    <div class="row center">
-      <button mat-fab color="warn" (click)="login()" *ngIf="hideProgress">
-        <mat-icon class="default-icon">login</mat-icon>
-      </button>
-      <div class="row center">
-        <div class="row justify-content-center">
-          <mat-spinner color="accent" strokeWidth="7" diameter="50" *ngIf="!hideProgress"></mat-spinner>
-        </div>
-      </div>
-    </div>
-  </mat-card>
+    </mat-card>
 </div>

@@ -88,7 +88,6 @@ export class AccountComponent implements OnInit {
 
   setAccount(account: Accounts) {
     if (account) {
-      this.buttonName = account.name;
       this.hideProgress = false;
 
       this.accountId = account.id;
@@ -98,6 +97,27 @@ export class AccountComponent implements OnInit {
     }
 
     this.hideProgress = true;
+  }
+
+  getDescription(account: Accounts): string {
+    if (!account || !account.name) {
+      return '';
+    }
+
+    // pega todos os "(...)" e monta a 2ª linha
+    const parensMatches = account.name.match(/\([^)]*\)/g) || [];
+    account.hasParens = parensMatches.length > 0;
+
+    const secondLine = parensMatches.join(' ').trim();
+
+    // remove todos os "(...)" do texto principal (1ª linha)
+    const firstLine = account.name
+      .replace(/\([^)]*\)/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // monta o texto final com quebra de linha somente se existir conteúdo nos parênteses
+    return secondLine ? `${firstLine}\n${secondLine}` : firstLine;
   }
 
   // getAccountsNotDisabled(accounts: Accounts[]) {

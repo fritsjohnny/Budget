@@ -22,6 +22,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
 
   editing: boolean = false;
   deleting: boolean = false;
+  hasParens = false;
 
   accountFormGroup = new FormGroup({
     nameFormControl: new FormControl('', Validators.required),
@@ -105,9 +106,29 @@ export class AccountDialog implements OnInit, AfterViewInit {
     this.setBackgroundAndColor('#000000', '#ffffff');
   }
 
-  onNameChange(name: any) {
+  onNameChange(name: string) {
+    const raw = (name ?? '').trim();
 
-    this.buttonText = name != '' ? name : "Nome da Conta";
+    if (!raw) {
+      this.buttonText = 'Nome da Conta';
+      this.hasParens = false;
+      return;
+    }
+
+    // pega todos os "(...)" e monta a 2ª linha
+    const parensMatches = raw.match(/\([^)]*\)/g) || [];
+    this.hasParens = parensMatches.length > 0;
+    
+    const secondLine = parensMatches.join(' ').trim();
+
+    // remove todos os "(...)" do texto principal (1ª linha)
+    const firstLine = raw
+      .replace(/\([^)]*\)/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // monta o texto final com quebra de linha somente se existir conteúdo nos parênteses
+    this.buttonText = secondLine ? `${firstLine}\n${secondLine}` : firstLine;
   }
 
   setAccount(account: Accounts) {

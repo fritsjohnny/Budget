@@ -31,7 +31,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     accountIdFormControl: new FormControl('', Validators.required),
     descriptionFormControl: new FormControl('', Validators.required),
     amountFormControl: new FormControl('', Validators.required),
-    grossAmountFormControl: new FormControl('', Validators.required),
+    grossAmountFormControl: new FormControl(''),
     noteFormControl: new FormControl(''),
     typeFormControl: new FormControl(''),
     incomeIdFormControl: new FormControl(''),

@@ -66,6 +66,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   grandTotalBalance?: number = 0;
   grandTotalYields?: number = 0;
   totalBalance?: number = 0;
+  totalGrossBalance?: number = 0;
   previousBalance?: number = 0;
   totalYields?: number = 0;
   hideProgress: boolean = true;
@@ -134,9 +135,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   getAccountsList() {
     this.accountService.readNotDisabled().subscribe({
       next: (accounts) => {
-        this.accountsList = accounts.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
+        this.accountsList = accounts;
 
         this.account = this.accountsList?.find((a) => a.id === this.accountId)!;
 
@@ -180,6 +179,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           this.grandTotalBalance = account.grandTotalBalance;
           this.grandTotalYields = account.grandTotalYields;
           this.totalBalance = account.totalBalance;
+          this.totalGrossBalance = account.totalBalanceGross;
           this.previousBalance = account.previousBalance;
           this.totalYields = account.totalYields;
 
@@ -273,6 +273,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         incomesList: this.incomes,
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
+        totalGrossBalance: this.totalGrossBalance,
         lastYield: this.getLastYield(),
       },
     });
@@ -326,6 +327,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         position: accountPosting.position,
         description: accountPosting.description,
         amount: accountPosting.amount,
+        grossAmount: accountPosting.grossAmount,
+        originalAmount: accountPosting.amount,
+        originalGrossAmount: accountPosting.grossAmount,
         note: accountPosting.note,
         editing: this.editing,
         accountsList: this.accountsList,
@@ -337,6 +341,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         incomesList: this.incomes,
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
+        totalGrossBalance: this.totalGrossBalance,
         lastYield: this.getLastYield(),
       },
     });
@@ -377,6 +382,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
                   t.reference = result.reference;
                   t.description = result.description;
                   t.amount = result.amount;
+                  t.grossAmount = result.grossAmount;
                   t.note = result.note;
                   t.type = result.type;
                 });

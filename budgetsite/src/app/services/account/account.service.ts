@@ -33,7 +33,7 @@ export class AccountService {
   readNotDisabled(): Observable<Accounts[]> {
 
     return this.http.get<Accounts[]>(ApiUrls.accounts).pipe(
-      map(obj => obj.filter(x => x.disabled === false)),
+      map(obj => obj.filter(x => x.disabled === false).sort((a, b) => a.name.localeCompare(b.name))),
       catchError(e => this.messenger.errorHandler(e))
     );
   }

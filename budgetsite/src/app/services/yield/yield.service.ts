@@ -28,8 +28,9 @@ export class YieldService {
       .catch(() => 13.65); // fallback: valor aproximado para CDI diário (%)
   }
 
-  async suggestYield(account: Accounts): Promise<number> {
-    if (!account || !account.yieldPercent) return account.lastYield ?? 0;
+  async suggestYield(account: Accounts): Promise<{ grossAmount: number; netAmount: number }> {
+    if (!account || !account.yieldPercent)
+      return { grossAmount: 0, netAmount: 0 };
 
     const saldoBruto = Number(account.totalBalanceGross ?? account.totalBalance);
     const yieldPercent = Number(account.yieldPercent);    // Ex: 108 (%)
@@ -43,7 +44,7 @@ export class YieldService {
     } catch (error) {
       this.messenger.errorHandler('Erro ao obter CDI diário. Usando valor do último rendimento.');
       // Caso erro na obtenção do CDI, utiliza o último rendimento
-      return account.lastYield ?? 0;
+      return { grossAmount: account.lastYield ?? 0, netAmount: account.lastYield ?? 0 };
     }
 
     const cdiDiario = cdiDiarioPercent / 100;
@@ -56,7 +57,11 @@ export class YieldService {
       ? rendimentoBruto
       : rendimentoBruto * (1 - irPercent / 100);
 
-    // Arredonda para 2 casas decimais
-    return Math.trunc(rendimentoLiquido * 100) / 100;
+    let suggestYield = {
+      grossAmount: Math.trunc(rendimentoBruto * 100) / 100,
+      netAmount: Math.trunc(rendimentoLiquido * 100) / 100
+    };
+
+    return suggestYield;
   }
 }

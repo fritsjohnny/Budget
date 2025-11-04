@@ -31,14 +31,17 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     accountIdFormControl: new FormControl('', Validators.required),
     descriptionFormControl: new FormControl('', Validators.required),
     amountFormControl: new FormControl('', Validators.required),
+    grossAmountFormControl: new FormControl('', Validators.required),
     noteFormControl: new FormControl(''),
     typeFormControl: new FormControl(''),
     incomeIdFormControl: new FormControl(''),
     expenseIdFormControl: new FormControl(''),
     totalBalanceFormControl: new FormControl(''),
+    totalGrossBalanceFormControl: new FormControl(''),
   });
 
   totalBalance!: number;
+  totalGrossBalance!: number;
 
   constructor(
     public dialog: MatDialog,
@@ -94,8 +97,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
       let account = this.accountPosting.accountsList?.find((a) => a.id === this.accountPosting.accountId);
 
       account!.totalBalance = this.accountPosting.totalBalance;
+      account!.totalBalanceGross = this.accountPosting.totalGrossBalance;
 
-      this.accountPosting.amount = await this.yieldService.suggestYield(account!);
+      let suggestYield = await this.yieldService.suggestYield(account!);
+
+      this.accountPosting.grossAmount = suggestYield.grossAmount;
+      this.accountPosting.amount = suggestYield.netAmount;
 
     } else if (this.accountPosting.type === 'C') {
       this.accountPosting.description = 'Troco';
@@ -109,6 +116,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     }
   }
 
+
   onAmountChanged(event: any): void {
     if (this.accountPosting.type !== 'Y') return;
 
@@ -116,7 +124,18 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
       this.totalBalance = this.accountPosting.totalBalance;
     } else {
       this.totalBalance =
-        this.accountPosting.totalBalance + this.accountPosting.amount;
+        this.accountPosting.totalBalance + this.accountPosting.amount - (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0);
+    }
+  }
+
+  onGrossAmountChanged(event: any): void {
+    if (this.accountPosting.type !== 'Y') return;
+
+    if (!event) {
+      this.totalGrossBalance = this.accountPosting.totalGrossBalance;
+    } else {
+      this.totalGrossBalance =
+        this.accountPosting.totalGrossBalance + this.accountPosting.grossAmount - (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0);
     }
   }
 
@@ -124,7 +143,14 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     if (this.accountPosting.type !== 'Y') return;
 
     this.accountPosting.amount =
-      this.totalBalance - this.accountPosting.totalBalance;
+      this.totalBalance - this.accountPosting.totalBalance + (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0);
+  }
+
+  onTotalGrossBalanceChanged(event: any): void {
+    if (this.accountPosting.type !== 'Y') return;
+
+    this.accountPosting.grossAmount =
+      this.totalGrossBalance - this.accountPosting.totalGrossBalance + (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0);
   }
 
   setTitle() {

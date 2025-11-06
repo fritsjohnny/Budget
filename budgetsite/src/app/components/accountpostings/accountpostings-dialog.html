@@ -197,6 +197,17 @@
                 </div>
             </div>
 
+            <div class="row" *ngIf="accountPosting.type == 'Y'">
+                <div class="col-6">
+                    <mat-checkbox
+                        [(ngModel)]="noRecalculate"
+                        formControlName="noRecalculateFormControl"
+                        >Não calcular valores relacionados</mat-checkbox
+                    >
+                </div>
+                <p></p>
+            </div>
+
             <div class="row">
                 <mat-form-field appearance="fill" floatLabel="always">
                     <mat-label>Receita</mat-label>

@@ -15,7 +15,7 @@ export class YieldService {
     private messenger: Messenger,
     private accountApplicationsService: AccountApplicationsService) { }
 
-  async getCdiDiarioPercent(): Promise<number> {
+  async getCdiDiarioPercentOld(): Promise<number> {
     if (this.cdiCache) return Promise.resolve(this.cdiCache);
 
     // URL oficial da série SGS 12: CDI diário (percentual ao dia)
@@ -34,6 +34,85 @@ export class YieldService {
       .catch(() => 13.65); // fallback: valor aproximado para CDI diário (%)
   }
 
+  // Propriedades auxiliares (adicione na sua classe)
+  private cdiCacheByDate = new Map<string, number>(); // chave: 'YYYY-MM-DD'
+  private cdiLastKnown?: number;
+
+  // Helpers locais
+  private formatYMD(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private formatBR(d: Date): string {
+    const day = String(d.getDate()).padStart(2, '0');
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const y = d.getFullYear();
+    return `${day}/${m}/${y}`;
+  }
+
+  private addDays(d: Date, delta: number): Date {
+    const x = new Date(d);
+    x.setDate(x.getDate() + delta);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  }
+
+  /**
+   * Retorna o CDI DIÁRIO em percentual do dia (ex.: 0.0551014 para 0,0551014% ao dia).
+   * Se 'date' não for informada, usa hoje. Recuará até 7 dias atrás se o BCB não tiver ponto.
+   */
+  async getCdiDiarioPercent(date?: Date): Promise<number> {
+    const start = new Date(date ?? new Date());
+    start.setHours(0, 0, 0, 0);
+
+    // 1) Cache por data
+    const cacheKey = this.formatYMD(start);
+    if (this.cdiCacheByDate.has(cacheKey)) {
+      return this.cdiCacheByDate.get(cacheKey)!;
+    }
+
+    // 2) Função de busca para um dia específico
+    const fetchFor = async (d: Date): Promise<number | null> => {
+      const dayBR = this.formatBR(d);
+      const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=${dayBR}&dataFinal=${dayBR}`;
+
+      try {
+        const data = await this.http.get<any[]>(url).toPromise();
+        const valorStr = data?.[0]?.valor;
+        const valor = parseFloat(String(valorStr).replace(',', '.'));
+        if (isNaN(valor)) return null;
+
+        // Guarda em cache específico da data e como "último conhecido"
+        const key = this.formatYMD(d);
+        this.cdiCacheByDate.set(key, valor);
+        this.cdiLastKnown = valor;
+        return valor;
+      } catch {
+        return null;
+      }
+    };
+
+    // 3) Tenta na data pedida; se não tiver ponto, recua até 7 dias
+    let d = start;
+    for (let i = 0; i < 7; i++) {
+      const v = await fetchFor(d);
+      if (v != null) return v;
+      d = this.addDays(d, -1);
+    }
+
+    // 4) Fallback final: usa o último valor conhecido (se houver) ou lança erro
+    if (typeof this.cdiLastKnown === 'number') {
+      // opcional: também cacheia na data solicitada
+      this.cdiCacheByDate.set(cacheKey, this.cdiLastKnown);
+      return this.cdiLastKnown;
+    }
+
+    throw new Error('CDI diário indisponível para a data informada.');
+  }
+
   async suggestYieldOld(account: Accounts): Promise<{ grossAmount: number; netAmount: number }> {
     if (!account || !account.yieldPercent)
       return { grossAmount: 0, netAmount: 0 };
@@ -46,7 +125,7 @@ export class YieldService {
     let cdiDiarioPercent = 0;
     try {
       // Obtém CDI diário percentual (ex: 0.0551014%)
-      cdiDiarioPercent = await this.getCdiDiarioPercent();
+      cdiDiarioPercent = await this.getCdiDiarioPercentOld();
     } catch (error) {
       this.messenger.errorHandler('Erro ao obter CDI diário. Usando valor do último rendimento.');
       // Caso erro na obtenção do CDI, utiliza o último rendimento
@@ -111,7 +190,160 @@ export class YieldService {
     return this.IOF_TABLE[daysCorridos] ?? 0;
   }
 
+  // Helpers de dia útil (sem feriados; se quiser, injete um calendário depois)
+  isWeekend(d: Date): boolean {
+    const w = d.getDay();
+    return w === 0 || w === 6; // 0=Dom, 6=Sáb
+  }
+
+  nthPreviousBusinessDay(base: Date, n: number): Date {
+    let d = new Date(base);
+    d.setHours(0, 0, 0, 0);
+    let count = 0;
+    while (count < n) {
+      d = this.addDays(d, -1);
+      if (!this.isWeekend(d)) count++;
+    }
+    // se cair em fim de semana por acaso (ex.: n=0 e hoje é domingo), recua até sexta
+    while (this.isWeekend(d)) d = this.addDays(d, -1);
+    return d;
+  }
+
+  // Wrapper que resolve a data-alvo da taxa conforme a política da conta
+  async getCdiDiarioPercentByAccountPolicy(account: Accounts): Promise<number> {
+    debugger
+    // prioridade: campo novo; fallback para isD0 (retrocompat.)
+    const lagDays = Number((account as any).cdiRateLagDays ?? ((account as any).isD0 ? 0 : 1));
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let targetDate: Date;
+    if (lagDays <= 0) {
+      // D0: se hoje for fim de semana, recua até sexta (último dia útil com CDI publicado)
+      targetDate = this.isWeekend(today) ? this.nthPreviousBusinessDay(today, 1) : today;
+    } else {
+      // D-N úteis
+      targetDate = this.nthPreviousBusinessDay(today, lagDays);
+    }
+
+    // Ideal: sua função aceitar a data. Se ainda não aceitar, crie uma sobrecarga simples.
+    // Exemplo esperado: this.getCdiDiarioPercent(targetDate)
+    return await this.getCdiDiarioPercent(targetDate);
+  }
+
+  // Helper: decide a data-alvo da taxa (0 = D0, 1 = D-1 útil, etc.)
+  resolveCdiTargetDate(account: Accounts): Date {
+    const lag = Number((account as any).cdiRateLagDays ?? ((account as any).isD0 ? 0 : 1));
+    const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
+    const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.getDate() + n); x.setHours(0, 0, 0, 0); return x; };
+
+    let target = new Date(); target.setHours(0, 0, 0, 0);
+    if (lag > 0) {
+      let count = 0;
+      while (count < lag) {
+        target = addDays(target, -1);
+        if (!isWeekend(target)) count++;
+      }
+    } else if (isWeekend(target)) {
+      while (isWeekend(target)) target = addDays(target, -1);
+    }
+    return target;
+  }
+
   async suggestYield(account: Accounts): Promise<{
+    totalGross: number;
+    totalNet: number;
+    grossYield: number;
+    netYield: number;
+  }> {
+    if (!account || !account.yieldPercent)
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0 };
+
+    const yieldPercent = Number(account.yieldPercent);
+    const irPercent = Number(account.irPercent ?? 22.5);
+    const isTaxExempt = account.isTaxExempt ?? false;
+
+    // CDI do dia-alvo (D0/D-1…)
+    let cdiDiarioPercent = 0;
+    try {
+      const targetDate = this.resolveCdiTargetDate(account);
+      cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
+    } catch {
+      this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
+      return {
+        totalGross: account.totalBalanceGross ?? 0,
+        totalNet: account.totalBalance ?? 0,
+        grossYield: account.lastYield ?? 0,
+        netYield: account.lastYield ?? 0,
+      };
+    }
+
+    // helpers em centavos
+    const toCents = (v: number) => Math.round(v * 100);
+    const fromCents = (c: number) => c / 100;
+
+    // bases em centavos (evita drift binário)
+    const baseGrossC = toCents(Number(account.totalBalanceGross ?? account.totalBalance) || 0);
+    const baseNetC = toCents(Number(account.totalBalance ?? account.totalBalanceGross) || 0);
+
+    // taxa aplicada do dia
+    const cdiDiario = cdiDiarioPercent / 100;                  // ex.: 0.055% => 0.00055
+    const taxaAplicada = cdiDiario * (yieldPercent / 100);     // ex.: 120% do CDI
+
+    // rendimento bruto do dia (centavos)
+    const grossRaw = (baseGrossC / 100) * taxaAplicada;        // em reais (float)
+    const grossC = toCents(grossRaw);                         // arredonda para 2 casas
+
+    // --- IOF regressivo ponderado por principal (mantido) ---
+    let applications: AccountsApplications[] = [];
+    try {
+      applications = await firstValueFrom(this.accountApplicationsService.readByAccount(account.id!));
+    } catch {
+      applications = [];
+    }
+
+    let iofWeighted = 0;
+    if (applications && applications.length > 0) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      let principalTotal = 0;
+      let principalXRate = 0;
+
+      for (const app of applications) {
+        const principal = Number(app.amountApplied) || 0;
+        if (principal <= 0) continue;
+
+        const d0 = new Date(app.dateApplied); d0.setHours(0, 0, 0, 0);
+        const days = Math.ceil((today.getTime() - d0.getTime()) / 86400000); // dias corridos
+        const rate = this.iofRateFromTable(days); // usa a tabela IOF
+        principalTotal += principal;
+        principalXRate += principal * rate;
+      }
+
+      if (principalTotal > 0) {
+        iofWeighted = principalXRate / principalTotal;
+      }
+    }
+
+    // degraus em centavos (alinha com bancos)
+    const iofC = toCents((grossC / 100) * iofWeighted);                     // IOF sobre gross
+    const irBaseC = grossC - iofC;                                             // base de IR (centavos)
+    const irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercent) / 100); // **TRUNCA** IR
+    const netC = grossC - iofC - irC;                                       // líquido do dia
+
+    // totais em centavos → reais
+    const totalGrossC = baseGrossC + grossC;
+    const totalNetC = baseNetC + netC;
+
+    return {
+      totalGross: fromCents(totalGrossC),
+      totalNet: fromCents(totalNetC),
+      grossYield: fromCents(grossC),
+      netYield: fromCents(netC),
+    };
+  }
+
+  async suggestYield2(account: Accounts): Promise<{
     totalGross: number;
     totalNet: number;
     grossYield: number;
@@ -124,10 +356,11 @@ export class YieldService {
     const irPercent = Number(account.irPercent ?? 22.5);
     const isTaxExempt = account.isTaxExempt ?? false;
 
-    // CDI do dia (percentual, ex.: 0.0551014%)
+    // CDI do dia-alvo (D0/D-1…)
     let cdiDiarioPercent = 0;
     try {
-      cdiDiarioPercent = await this.getCdiDiarioPercent();
+      const targetDate = this.resolveCdiTargetDate(account);
+      cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
     } catch {
       this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
       return {

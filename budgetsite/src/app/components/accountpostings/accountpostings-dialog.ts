@@ -103,7 +103,19 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
       account!.totalBalance = this.accountPosting.totalBalance;
       account!.totalBalanceGross = this.accountPosting.totalGrossBalance;
 
-      let suggestYield = await this.yieldService.suggestYield(account!);
+      let suggestYield = {
+        grossYield: 0, netYield: 0, totalGross: 0, totalNet: 0
+      };
+
+      if (account!.name.includes('Nubank')) {
+        suggestYield = await this.yieldService.suggestYield(account!);
+      }
+      else if (account!.name.includes('Neon')) {
+        suggestYield = await this.yieldService.suggestYield2(account!);
+      }
+      else if (account!.name.includes('Mercado Pago')) {
+        suggestYield = await this.yieldService.suggestYield(account!);
+      }
 
       // this.accountPosting.totalBalance = suggestYield.totalNet;
       // this.accountPosting.totalGrossBalance = suggestYield.totalGross;

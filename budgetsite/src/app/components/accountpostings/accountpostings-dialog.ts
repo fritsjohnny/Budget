@@ -38,10 +38,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     expenseIdFormControl: new FormControl(''),
     totalBalanceFormControl: new FormControl(''),
     totalGrossBalanceFormControl: new FormControl(''),
+    noRecalculateFormControl: new FormControl(''),
   });
 
   totalBalance!: number;
   totalGrossBalance!: number;
+  noRecalculate: boolean = false;
 
   constructor(
     public dialog: MatDialog,
@@ -91,6 +93,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
   }
 
   async onTypeChange() {
+    this.noRecalculate = false;
+
     if (this.accountPosting.type === 'Y') {
       this.accountPosting.description = 'Rendimento';
 
@@ -101,8 +105,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
 
       let suggestYield = await this.yieldService.suggestYield(account!);
 
-      this.accountPosting.grossAmount = suggestYield.grossAmount;
-      this.accountPosting.amount = suggestYield.netAmount;
+      // this.accountPosting.totalBalance = suggestYield.totalNet;
+      // this.accountPosting.totalGrossBalance = suggestYield.totalGross;
+      this.accountPosting.grossAmount = suggestYield.grossYield;
+      this.accountPosting.amount = suggestYield.netYield;
 
     } else if (this.accountPosting.type === 'C') {
       this.accountPosting.description = 'Troco';
@@ -116,9 +122,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     }
   }
 
-
   onAmountChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y') return;
+    if (this.accountPosting.type !== 'Y' || this.noRecalculate) return;
 
     if (!event) {
       this.totalBalance = this.accountPosting.totalBalance;
@@ -129,7 +134,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
   }
 
   onGrossAmountChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y') return;
+    if (this.accountPosting.type !== 'Y' || this.noRecalculate) return;
 
     if (!event) {
       this.totalGrossBalance = this.accountPosting.totalGrossBalance;
@@ -140,14 +145,14 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
   }
 
   onTotalBalanceChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y') return;
+    if (this.accountPosting.type !== 'Y' || this.noRecalculate) return;
 
     this.accountPosting.amount =
       this.totalBalance - this.accountPosting.totalBalance + (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0);
   }
 
   onTotalGrossBalanceChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y') return;
+    if (this.accountPosting.type !== 'Y' || this.noRecalculate) return;
 
     this.accountPosting.grossAmount =
       this.totalGrossBalance - this.accountPosting.totalGrossBalance + (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0);

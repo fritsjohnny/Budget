@@ -430,4 +430,105 @@ export class YieldService {
       netYield: trunc2(netYield),
     };
   }
+
+  async suggestYield3(account: Accounts): Promise<{
+    totalGross: number;
+    totalNet: number;
+    grossYield: number;
+    netYield: number;
+  }> {
+    if (!account || !account.yieldPercent) {
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0 };
+    }
+
+    const yieldPercent = Number(account.yieldPercent);      // ex.: 107
+    const irPercent = Number(account.irPercent ?? 22.5);
+    const isTaxExempt = account.isTaxExempt ?? false;
+
+    // helpers
+    const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
+    const toCents = (v: number) => Math.round(v * 100);
+    const fromCents = (c: number) => c / 100;
+
+    // 1) CDI do dia-alvo
+    let cdiDiarioPercent = 0;
+    try {
+      const targetDate = this.resolveCdiTargetDate(account); // p/ Mercado Pago deixe cdiRateLagDays=0 (D0) no cadastro
+      cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
+    } catch {
+      this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
+      return {
+        totalGross: account.totalBalanceGross ?? 0,
+        totalNet: account.totalBalance ?? 0,
+        grossYield: account.lastYield ?? 0,
+        netYield: account.lastYield ?? 0,
+      };
+    }
+
+    // 2) Base (usar valor exibido para evitar drift)
+    const baseGrossDisplay = round2(Number(account.totalBalanceGross ?? account.totalBalance) || 0);
+    const baseNetDisplay = round2(Number(account.totalBalance ?? account.totalBalanceGross) || 0);
+
+    // 3) Taxa aplicada do dia
+    const cdiDiario = cdiDiarioPercent / 100;                 // ex.: 0.055% -> 0.00055
+    const taxaAplicada = cdiDiario * (yieldPercent / 100);       // ex.: 107% do CDI
+
+    // 4) Rendimento BRUTO "cru" (sem arredondar ainda)
+    const grossYieldRaw = baseGrossDisplay * taxaAplicada;
+
+    // 5) IOF regressivo ponderado APENAS pelos aportes dentro de D+29, escalonado pela fração do saldo sob IOF
+    let applications: AccountsApplications[] = [];
+    try {
+      applications = await firstValueFrom(this.accountApplicationsService.readByAccount(account.id!));
+    } catch { applications = []; }
+
+    let iofWeightedEffective = 0;
+    if (applications && applications.length > 0) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+
+      let principalInWindow = 0;   // soma dos aportes dentro de D+29
+      let principalXRate = 0;   // soma(aporte * taxaIOF(do dia))
+      let principalTotal = 0;   // soma total (apenas p/ telemetria se quiser)
+
+      for (const app of applications) {
+        const principal = Number(app.amountApplied) || 0;
+        if (principal <= 0) continue;
+
+        principalTotal += principal;
+
+        const d0 = new Date(app.dateApplied); d0.setHours(0, 0, 0, 0);
+        const days = Math.ceil((today.getTime() - d0.getTime()) / 86400000); // dias corridos
+        const rate = this.iofRateFromTable(days); // 1.00 (D0) ... 0.00 (>=D+30)
+
+        if (days <= 29) { // considera apenas dentro da janela de IOF
+          principalInWindow += principal;
+          principalXRate += principal * rate;
+        }
+      }
+
+      if (principalInWindow > 0) {
+        const avgIofOnWindow = principalXRate / principalInWindow;                       // média ponderada dos "recentes"
+        const fractionOnIof = Math.min(1, principalInWindow / (baseGrossDisplay || 1)); // fração do saldo sob IOF
+        iofWeightedEffective = avgIofOnWindow * fractionOnIof;                           // IOF efetivo sobre o rendimento
+      }
+    }
+
+    // 6) Pipeline do LÍQUIDO em centavos (estável) — IR TRUNCADO
+    const grossC = toCents(grossYieldRaw);                           // arredonda p/ exibir "Valor Bruto"
+    const iofC = toCents(grossYieldRaw * iofWeightedEffective);    // IOF sobre o BRUTO CRU
+    const irBaseC = grossC - iofC;
+    const irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercent) / 100); // IR truncado (centavos)
+    const netC = grossC - iofC - irC;
+
+    // 7) Totais (Mercado Pago exibe líquido total; vamos calcular ambos)
+    const totalGross = round2(baseGrossDisplay + fromCents(grossC)); // bruto: saldo + rendimento arredondado
+    const totalNet = round2(baseNetDisplay + fromCents(netC));   // líquido: saldo + líquido do dia
+
+    return {
+      totalGross,
+      totalNet,
+      grossYield: fromCents(grossC),
+      netYield: fromCents(netC),
+    };
+  }
 }

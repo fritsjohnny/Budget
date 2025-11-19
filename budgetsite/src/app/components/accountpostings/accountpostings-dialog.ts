@@ -114,7 +114,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
         suggestYield = await this.yieldService.suggestYield2(account!);
       }
       else if (account!.name.includes('Mercado Pago')) {
-        suggestYield = await this.yieldService.suggestYield(account!);
+        suggestYield = await this.yieldService.suggestYield3(account!);
       }
 
       // this.accountPosting.totalBalance = suggestYield.totalNet;

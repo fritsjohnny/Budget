@@ -315,7 +315,7 @@ export class CardPostingsComponent implements OnInit {
 
   getExpensesByCategories() {
     this.expenseService
-      .readByCategories(this.reference!, this.cardId!)
+      .readByCategories(this.reference!, this.cardId! == 0 ? -1 : this.cardId!)
       .subscribe({
         next: (expensesByCategories) => {
           this.expensesByCategories = expensesByCategories;

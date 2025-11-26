@@ -82,6 +82,7 @@ import { UserComponent } from './components/user/user.component';
 import { UserRegisterViewComponent } from './views/userregister-view/userregister-view.component';
 import { FixedExpensesReportComponent } from './components/reports/fixed-expenses-report/fixed-expenses-report.component';
 import { ThirdPartyExpensesReportComponent } from './components/reports/third-party-expenses-report/third-party-expenses-report.component';
+import { ExpensesByCategoryReportComponent } from './components/reports/expenses-by-category/expenses-by-category-report.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
 import { BottomTabsComponent } from './shared/bottom-tabs/bottom-tabs.component';
 import { RouteReuseStrategy } from '@angular/router';
@@ -144,7 +145,8 @@ registerLocaleData(localePt);
     BottomTabsComponent,
     CardsNotificationsComponent,
     DragReadyFeedbackDirective,
-    YieldsComponent
+    YieldsComponent,
+    ExpensesByCategoryReportComponent,
   ],
   imports: [
     BrowserModule,

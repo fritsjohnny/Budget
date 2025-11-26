@@ -20,13 +20,13 @@ export class CategoryService {
     );
   }
 
-  // read(): Observable<Categories[]> {
+  read(): Observable<Categories[]> {
 
-  //   return this.http.get<Categories[]>(`${ApiUrls.categories}`).pipe(
-  //     map(obj => obj),
-  //     catchError(e => this.messenger.errorHandler(e))
-  //   );
-  // }
+    return this.http.get<Categories[]>(`${ApiUrls.categories}`).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
 
   readWithExpenses(reference: string): Observable<Categories[]> {
     return this.http.get<Categories[]>(`${ApiUrls.categories}/WithExpenses/${reference}`).pipe(

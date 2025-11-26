@@ -15,14 +15,14 @@ import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.
 import { ExpenseService } from 'src/app/services/expense/expense.service';
 
 @Component({
-  selector: 'app-third-party-expenses-report',
-  templateUrl: './third-party-expenses-report.component.html',
-  styleUrls: ['./third-party-expenses-report.component.scss']
+  selector: 'app-expenses-by-category-report',
+  templateUrl: './expenses-by-category-report.component.html',
+  styleUrls: ['./expenses-by-category-report.component.scss'],
 })
-export class ThirdPartyExpensesReportComponent implements OnInit {
+export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit {
+  @Input() categoryId: number | undefined;
   @Input() initialReference: string | undefined;
   @Input() finalReference: string | undefined;
-  @Input() others: boolean | undefined;
 
   @ViewChild('sortReport') sortReport!: MatSort;
 
@@ -52,14 +52,14 @@ export class ThirdPartyExpensesReportComponent implements OnInit {
       expenses: this.expenseService.readByReferences(
         this.initialReference!,
         this.finalReference!,
-        0,
-        this.others ?? false
+        this.categoryId ?? 0,
+        false
       ),
       cardPostings: this.cardPostingsService.readByReferences(
         this.initialReference!,
         this.finalReference!,
-        0,
-        this.others ?? false
+        this.categoryId ?? 0,
+        false
       ),
     })
       .pipe(finalize(() => (this.showReportProgress = false)))
@@ -140,5 +140,4 @@ export class ThirdPartyExpensesReportComponent implements OnInit {
 
     this.dataSourceReport.data = sortedData; // Força a atualização da tabela
   }
-
 }

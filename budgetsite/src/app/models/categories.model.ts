@@ -1,7 +1,7 @@
 export interface Categories {
 	id?: number;
 	name: string;
-  hasExpense?: boolean;
+	hasExpense?: boolean;
 	editing?: boolean;
 	deleting?: boolean;
 }

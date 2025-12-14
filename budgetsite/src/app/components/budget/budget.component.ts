@@ -1147,6 +1147,55 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
+  expenseClone(row: Expenses): void {
+    const clone = {
+      ...row,
+
+      // campos que NÃO podem ser reaproveitados
+      id: undefined,
+      generateParcels: false,
+      repeatExpense: false
+    };
+
+    this.expenseService.create(clone).subscribe({
+      next: (expenses) => {
+        expenses.remaining = expenses.toPay - expenses.paid;
+
+        expenses.overdue = this.overDue(expenses);
+        expenses.duetoday = this.dueToday(expenses);
+
+        this.expenses = [...this.expenses, expenses];
+        this.expensesNoFilter = [...this.expensesNoFilter, expenses];
+
+        this.refreshExpenses();
+      },
+      error: () => {
+        this.hideExpensesProgress = true;
+        this.hideCategoriesProgress = true;
+      },
+    });
+  }
+
+  incomeClone(row: Incomes): void {
+    const clone = {
+      ...row,
+      // campos que NÃO podem ser reaproveitados
+      id: undefined,
+      repeatIncome: false
+    };
+    this.incomeService.create(clone).subscribe({
+      next: (incomes) => {
+        incomes.remaining = incomes.toReceive - incomes.received;
+
+        this.incomes = [...this.incomes, incomes];
+        this.incomesNoFilter = [...this.incomesNoFilter, incomes];
+
+        this.refreshIncomes();
+      },
+      error: () => (this.hideIncomesProgress = true),
+    });
+  }
+
   editPeople(cpp: CardsPostingsDTO) {
     let person = this.peopleList!.find(c => c.id === cpp.peopleId);
 
@@ -1488,6 +1537,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         this.messenger.message('Despesa ajustada com sucesso');
 
         Object.assign(expense, res);
+
+        this.refreshExpenses();
       },
       error: (err) => {
         this.messenger.errorHandler(err);

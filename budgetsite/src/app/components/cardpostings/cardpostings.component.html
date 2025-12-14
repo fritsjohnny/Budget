@@ -756,7 +756,19 @@
         </mat-expansion-panel>
     </mat-accordion>
 </div>
-
+<!-- Notificações de cartões -->
+<div *ngIf="hideProgress" class="row" style="margin-top: 10px">
+    <app-cards-notifications
+        [cardId]="cardId"
+        [reference]="reference"
+        [(categoriesList)]="categoriesList"
+        [(peopleList)]="peopleList"
+        [cardsList]="cardsList"
+        (cardPostingCreated)="onCardPostingCreated($event)"
+        [cardsPostings]="cardpostings"
+    ></app-cards-notifications>
+</div>
+<!-- Parcelas iniciando -->
 <div
     class="row"
     style="margin-bottom: 5px; align-items: center"
@@ -772,6 +784,7 @@
         </span>
     </div>
 </div>
+<!-- Outras parcelas -->
 <div
     class="row"
     style="margin-bottom: 5px; align-items: center"
@@ -786,6 +799,7 @@
         </span>
     </div>
 </div>
+<!-- Parcelas terminando -->
 <div
     class="row"
     style="margin-bottom: 5px; align-items: center"
@@ -800,7 +814,7 @@
         </span>
     </div>
 </div>
-
+<!-- Total parcelado -->
 <div class="row form-group" style="align-items: center" *ngIf="hideProgress">
     <div class="col-5">
         <span class="parcels-label">Total parcelado:</span>
@@ -814,6 +828,7 @@
         </span>
     </div>
 </div>
+<!-- Não parcelado -->
 <div
     class="row"
     style="margin-bottom: 5px; align-items: center"
@@ -829,7 +844,7 @@
         </span>
     </div>
 </div>
-
+<!-- Total -->
 <div class="row form-group" style="align-items: center" *ngIf="hideProgress">
     <div class="col-5">
         <span class="parcels-label">Total:</span>
@@ -844,16 +859,4 @@
             }}</b>
         </span>
     </div>
-</div>
-
-<div *ngIf="hideProgress" class="row" style="margin-top: 10px">
-    <app-cards-notifications
-        [cardId]="cardId"
-        [reference]="reference"
-        [(categoriesList)]="categoriesList"
-        [(peopleList)]="peopleList"
-        [cardsList]="cardsList"
-        (cardPostingCreated)="onCardPostingCreated($event)"
-        [cardsPostings]="cardpostings"
-    ></app-cards-notifications>
 </div>

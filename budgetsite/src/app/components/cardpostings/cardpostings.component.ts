@@ -864,34 +864,48 @@ export class CardPostingsComponent implements OnInit {
   }
 
   convertToExpense(posting: CardsPostings): void {
-    const expense: Expenses = {
-      reference: this.reference!,
-      description: posting.description,
-      toPay: posting.amount,
-      totalToPay: posting.amount,
-      paid: 0,
-      remaining: 0,
-      dueDate: posting.dueDate,
-      categoryId: posting.categoryId,
-      peopleId: posting.peopleId,
-      parcelNumber: posting.parcelNumber,
-      parcels: posting.parcels,
-      note: posting.note,
-      fixed: posting.fixed,
-    };
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Transformar em Despesa',
+        message: 'Confirma a Transformação em Despesa?',
+        confirmText: 'Sim',
+        cancelText: 'Cancelar',
+      },
+    });
 
-    this.expenseService.create(expense).subscribe({
-      next: () => {
-        this.cardPostingsService.delete(posting).subscribe(() => {
-          this.messenger.message(
-            'Despesa criada e lançamento de cartão removido.'
-          );
-          this.afterDelete(posting);
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        const expense: Expenses = {
+          reference: this.reference!,
+          description: posting.description,
+          toPay: posting.amount,
+          totalToPay: posting.amount,
+          paid: 0,
+          remaining: 0,
+          dueDate: posting.dueDate,
+          categoryId: posting.categoryId,
+          peopleId: posting.peopleId,
+          parcelNumber: posting.parcelNumber,
+          parcels: posting.parcels,
+          note: posting.note,
+          fixed: posting.fixed,
+        };
+
+        this.expenseService.create(expense).subscribe({
+          next: () => {
+            this.cardPostingsService.delete(posting).subscribe(() => {
+              this.messenger.message(
+                'Despesa criada e lançamento de cartão removido.'
+              );
+              this.afterDelete(posting);
+            });
+          },
+          error: () => {
+            this.messenger.message('Erro ao transformar em despesa.');
+          },
         });
-      },
-      error: () => {
-        this.messenger.message('Erro ao transformar em despesa.');
-      },
+      }
     });
   }
 

@@ -108,22 +108,25 @@
     <!-- Relatório - Exibição Condicional -->
     <div class="row mt-3 report-container">
         <div class="col d-flex">
-            <div *ngIf="reportType === 1 && showReport">
+            <div class="col" *ngIf="reportType === 1 && showReport">
                 <app-fixed-expenses-report
+                    class="col"
                     [initialReference]="initialReference"
                     [finalReference]="finalReference"
                 ></app-fixed-expenses-report>
             </div>
-            <div *ngIf="reportType === 2">
+            <div class="col" *ngIf="reportType === 2 && showReport">
                 <app-third-party-expenses-report
+                    class="col"
                     [initialReference]="initialReference"
                     [finalReference]="finalReference"
                     [others]="true"
                 >
                 </app-third-party-expenses-report>
             </div>
-            <div *ngIf="reportType === 3 && showReport">
+            <div class="col" *ngIf="reportType === 3 && showReport">
                 <app-expenses-by-category-report
+                    class="col"
                     [categoryId]="categoryId"
                     [initialReference]="initialReference"
                     [finalReference]="finalReference"

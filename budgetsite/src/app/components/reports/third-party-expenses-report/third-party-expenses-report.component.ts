@@ -1,6 +1,5 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {
-  AfterViewInit,
   Component,
   Input,
   OnInit,

@@ -1,43 +1,49 @@
 <div class="">
-  <form>
-    <div class="cancel">
-      <button
-        class="default-button"
-        mat-mini-fab
-        matTooltip="Cancelar"
-        color="accent"
-        aria-label="Cancelar"
-        (click)="onCancel()"
-      >
-        <mat-icon class="default-icon">close</mat-icon>
-      </button>
-    </div>
-    <h2 mat-dialog-title>{{ data.title || "Confirmação" }}</h2>
-    <div mat-dialog-content>
-      <div class="row">
-        <div class="col">
-          <p>{{ data.message }}</p>
+    <form>
+        <div class="cancel">
+            <div class="col-11">
+                <h2 class="mt-0" mat-dialog-title>
+                    {{ data.title || "Confirmação" }}
+                </h2>
+            </div>
+            <div class="col-1" style="margin-top: -24px">
+                <button
+                    class="default-button"
+                    mat-mini-fab
+                    matTooltip="Cancelar"
+                    color="accent"
+                    aria-label="Cancelar"
+                    (click)="onCancel()"
+                >
+                    <mat-icon class="default-icon">close</mat-icon>
+                </button>
+            </div>
         </div>
-      </div>
-    </div>
+        <div mat-dialog-content>
+            <div class="row">
+                <div class="col">
+                    <p>{{ data.message }}</p>
+                </div>
+            </div>
+        </div>
 
-    <div class="row justify-content-center" style="gap: 20px">
-      <button
-        mat-raised-button
-        color="accent"
-        (click)="onCancel()"
-        style="width: 100px"
-      >
-        {{ data.cancelText || "Cancelar" }}
-      </button>
-      <button
-        mat-raised-button
-        color="warn"
-        (click)="onConfirm()"
-        style="width: 100px"
-      >
-        {{ data.confirmText || "Confirmar" }}
-      </button>
-    </div>
-  </form>
+        <div class="row justify-content-center" style="gap: 20px">
+            <button
+                mat-raised-button
+                color="accent"
+                (click)="onCancel()"
+                style="width: 100px"
+            >
+                {{ data.cancelText || "Cancelar" }}
+            </button>
+            <button
+                mat-raised-button
+                color="warn"
+                (click)="onConfirm()"
+                style="width: 100px"
+            >
+                {{ data.confirmText || "Confirmar" }}
+            </button>
+        </div>
+    </form>
 </div>

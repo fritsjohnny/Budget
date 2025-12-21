@@ -2,5 +2,6 @@ export const environment = {
   production: true,
   // baseUrl: 'https://budgetapi2-apim.azure-api.net/api/'
   // baseUrl: 'https://budgetapiapi.azure-api.net/api/'
-  baseUrl: 'https://budgetapimanagementservice.azure-api.net/api/'
+  // baseUrl: 'https://budgetapimanagementservice.azure-api.net/api/'
+  baseUrl: 'https://budgetappapi-e2dhfhgpgwctgueq.brazilsouth-01.azurewebsites.net/api/'
 };

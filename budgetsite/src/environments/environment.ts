@@ -5,7 +5,8 @@
 export const environment = {
   production: false,
   // baseUrl: 'https://localhost:44364/api/'
-  baseUrl: 'https://budgetapimanagementservice.azure-api.net/api/'
+  // baseUrl: 'https://budgetapimanagementservice.azure-api.net/api/'
+  baseUrl: 'https://budgetappapi-e2dhfhgpgwctgueq.brazilsouth-01.azurewebsites.net/api/'
 };
 
 /*

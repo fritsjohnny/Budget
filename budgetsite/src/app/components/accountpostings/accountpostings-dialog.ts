@@ -107,13 +107,18 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
         grossYield: 0, netYield: 0, totalGross: 0, totalNet: 0
       };
 
-      if (account!.name.includes('Nubank')) {
-        suggestYield = await this.yieldService.suggestYield(account!);
+      const name: string = (account!.name || '').toLowerCase();
+
+      if (name.includes('nubank')) {
+        suggestYield = await this.yieldService.suggestYield1(account!);
       }
-      else if (account!.name.includes('Neon')) {
+      else if (name.includes('neon')) {
         suggestYield = await this.yieldService.suggestYield2(account!);
       }
-      else if (account!.name.includes('Mercado Pago')) {
+      else if (name.includes('mercado pago')) {
+        suggestYield = await this.yieldService.suggestYield3(account!);
+      }
+      else if (name.includes('picpay')) {
         suggestYield = await this.yieldService.suggestYield3(account!);
       }
 

@@ -208,7 +208,7 @@
                 <p></p>
             </div>
 
-            <div class="row">
+            <div class="row" *ngIf="accountPosting.type !== 'Y'">
                 <mat-form-field appearance="fill" floatLabel="always">
                     <mat-label>Receita</mat-label>
                     <mat-select
@@ -226,7 +226,7 @@
                 </mat-form-field>
             </div>
 
-            <div class="row">
+            <div class="row" *ngIf="accountPosting.type !== 'Y'">
                 <mat-form-field appearance="fill" floatLabel="always">
                     <mat-label>Despesa</mat-label>
                     <mat-select

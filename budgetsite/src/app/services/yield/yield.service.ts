@@ -251,7 +251,7 @@ export class YieldService {
     return target;
   }
 
-  async suggestYield(account: Accounts): Promise<{
+  async suggestYield1(account: Accounts): Promise<{
     totalGross: number;
     totalNet: number;
     grossYield: number;

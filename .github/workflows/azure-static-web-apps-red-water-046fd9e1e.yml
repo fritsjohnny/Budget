@@ -42,9 +42,7 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_WATER_046FD9E1E }}
           action: "upload"
-          app_location: "./budgetsite"
-          api_location: "api"
-          app_artifact_location: "dist/budgetsite"
+          app_location: "budgetsite/dist/budgetsite"
           skip_app_build: true
 
   close_pull_request_job:
@@ -57,4 +55,5 @@ jobs:
         with:
           action: "close"
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_WATER_046FD9E1E }}
+
 

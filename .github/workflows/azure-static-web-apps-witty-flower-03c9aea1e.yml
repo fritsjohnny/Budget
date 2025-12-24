@@ -37,6 +37,16 @@ jobs:
         working-directory: budgetsite
         run: npm run build
 
+      - name: Sanity check token exists
+        run: |
+          if [ -z "${{ secrets.SWA_DEPLOY_TOKEN }}" ]; then
+            echo "Token is EMPTY"
+            exit 1
+          fi
+          echo "Token present (length: ${#TOKEN})"
+        env:
+          TOKEN: ${{ secrets.SWA_DEPLOY_TOKEN }}
+
       - name: Deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -56,5 +66,6 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
 
 

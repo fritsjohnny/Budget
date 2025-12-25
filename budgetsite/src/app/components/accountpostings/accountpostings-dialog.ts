@@ -25,6 +25,7 @@ import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepic
   templateUrl: 'accountpostings-dialog.html',
 })
 export class AccountPostingsDialog implements OnInit, AfterViewInit {
+
   @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;
 
   accountPostingFormGroup = new FormGroup({
@@ -39,11 +40,19 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     totalBalanceFormControl: new FormControl(''),
     totalGrossBalanceFormControl: new FormControl(''),
     noRecalculateFormControl: new FormControl(''),
+    algorithmTypeFormControl: new FormControl(''),
   });
 
   totalBalance!: number;
   totalGrossBalance!: number;
   noRecalculate: boolean = false;
+
+  algorithmTypes = [
+    { value: '1', viewValue: 'Nubank' },
+    { value: '2', viewValue: 'Neon' },
+    { value: '3', viewValue: 'Mercado Pago' },
+    { value: '4', viewValue: 'PicPay' },
+  ];
 
   constructor(
     public dialog: MatDialog,
@@ -53,11 +62,19 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     private yieldService: YieldService
   ) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.algorithmTypes = this.algorithmTypes.sort((a, b) => a.viewValue.localeCompare(b.viewValue));
+  }
 
   ngAfterViewInit(): void {
     this.accountPosting.date = this.datepickerinput.date.value._d;
     this.cd.detectChanges();
+
+    let account = this.accountPosting.accountsList?.find((a) => a.id === this.accountPosting.accountId);
+
+    let selectedAlgorithmType = this.algorithmTypes.find(a => account?.name.toLowerCase().includes(a.viewValue.toLowerCase()));
+
+    this.accountPosting.algorithmType = selectedAlgorithmType?.value;
   }
 
   cancel(): void {
@@ -66,6 +83,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
 
   currentDateChanged(date: Date) {
     this.accountPosting.date = date;
+
+    if (this.accountPosting.type === 'Y') {
+      this.onTypeChange();
+    }
   }
 
   save(): void {
@@ -92,6 +113,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
     });
   }
 
+  onAlgorithmTypeChange(value: any) {
+    this.onTypeChange();
+  }
+
   async onTypeChange() {
     this.noRecalculate = false;
 
@@ -107,19 +132,17 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit {
         grossYield: 0, netYield: 0, totalGross: 0, totalNet: 0
       };
 
-      const name: string = (account!.name || '').toLowerCase();
-
-      if (name.includes('nubank')) {
+      if (this.accountPosting.algorithmType === '1') { // Nubank
         suggestYield = await this.yieldService.suggestYield1(account!);
       }
-      else if (name.includes('neon')) {
+      else if (this.accountPosting.algorithmType === '2') { // Neon
         suggestYield = await this.yieldService.suggestYield2(account!);
       }
-      else if (name.includes('mercado pago')) {
+      else if (this.accountPosting.algorithmType === '3') { // Mercado Pago
         suggestYield = await this.yieldService.suggestYield3(account!);
       }
-      else if (name.includes('picpay')) {
-        suggestYield = await this.yieldService.suggestYield3(account!);
+      else if (this.accountPosting.algorithmType === '4') { // PicPay
+        suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date);
       }
 
       // this.accountPosting.totalBalance = suggestYield.totalNet;

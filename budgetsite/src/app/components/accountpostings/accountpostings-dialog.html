@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row" *ngIf="accountPosting.type !== 'Y'">
                 <mat-form-field appearance="fill">
                     <mat-label>Descrição</mat-label>
                     <input
@@ -106,6 +106,53 @@
                         Campo <strong>obrigatório</strong>.
                     </mat-error>
                 </mat-form-field>
+            </div>
+
+            <div class="row" *ngIf="accountPosting.type == 'Y'">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Descrição</mat-label>
+                        <input
+                            type="text"
+                            id="descriptionFormControl"
+                            required
+                            matInput
+                            formControlName="descriptionFormControl"
+                            [(ngModel)]="accountPosting.description"
+                            [readonly]="accountPosting.type == 'Y'"
+                        />
+                        <mat-error
+                            *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Algoritmo de Cálculo</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="accountPosting.algorithmType"
+                            formControlName="algorithmTypeFormControl"
+                            (selectionChange)="onAlgorithmTypeChange($event)"
+                        >
+                            <mat-option
+                                *ngFor="let at of algorithmTypes"
+                                [value]="at.value"
+                                >{{ at.viewValue }}</mat-option
+                            >
+                        </mat-select>
+                    </mat-form-field>
+                </div>
             </div>
 
             <div class="row">

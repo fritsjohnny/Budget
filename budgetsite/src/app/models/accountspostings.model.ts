@@ -31,4 +31,5 @@ export interface AccountsPostings {
   grossAmount: number;
   originalAmount?: number;
   originalGrossAmount?: number;
+  algorithmType?: string;
 }

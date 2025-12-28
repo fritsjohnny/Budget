@@ -27,9 +27,15 @@ export interface AccountsPostings {
   cardReceipt?: CardsReceipts;
   totalBalance: number;
   totalGrossBalance: number;
+  totalYields?: number;
   lastYield: number;
   grossAmount: number;
   originalAmount?: number;
   originalGrossAmount?: number;
   algorithmType?: string;
+  totalIOF?: number;
+  totalIR?: number;
+  accountPostingsYields?: AccountsPostings[];
+  iofElapsedDays?: number;
+  iofElapsedDate?: Date;
 }

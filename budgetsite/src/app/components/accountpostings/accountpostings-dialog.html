@@ -15,40 +15,21 @@
 
         <h2 mat-dialog-title>{{setTitle()}}</h2>
         <div mat-dialog-content>
-            <div class="row">
-                <mat-radio-group
-                    name="typeFormControl"
-                    id="typeFormControl"
-                    formControlName="typeFormControl"
-                    [(ngModel)]="accountPosting.type"
-                    (change)="onTypeChange()"
-                    style="
-                        padding: 10px;
-                        display: flex;
-                        flex-wrap: wrap;
-                        justify-content: space-between;
-                        align-items: center;
-                    "
-                >
-                    <div class="col-5">
-                        <mat-radio-button
-                            value="R"
-                            style="padding-bottom: 5px"
-                            cdkFocusInitial
-                            >Recebimento
-                        </mat-radio-button>
-                        <mat-radio-button value="P"
-                            >Pagamento
-                        </mat-radio-button>
-                    </div>
-                    <div class="col-5">
-                        <mat-radio-button value="Y" style="padding-bottom: 5px"
-                            >Rendimento</mat-radio-button
-                        >
-                        <mat-radio-button value="C">Troco</mat-radio-button>
-                    </div>
-                </mat-radio-group>
-            </div>
+            <mat-radio-group
+                name="typeFormControl"
+                id="typeFormControl"
+                formControlName="typeFormControl"
+                [(ngModel)]="accountPosting.type"
+                (change)="onTypeChange()"
+                class="radio-grid mb-3"
+            >
+                <mat-radio-button value="R" cdkFocusInitial
+                    >Recebimento
+                </mat-radio-button>
+                <mat-radio-button value="Y">Rendimento</mat-radio-button>
+                <mat-radio-button value="P">Pagamento </mat-radio-button>
+                <mat-radio-button value="C">Troco</mat-radio-button>
+            </mat-radio-group>
 
             <!-- Retirado em 22-06-2022 por acreditar que não se deve mover um lançamento de conta para outro mês -->
             <!-- <div class="row">
@@ -244,6 +225,79 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Desconto de IOF</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="iofTotalFormControl"
+                            [(ngModel)]="accountPosting.totalIOF"
+                            placeholder="0"
+                            autocomplete="off"
+                            (ngModelChange)="onIofTotalChanged()"
+                        />
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Desconto de IR</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="irTotalFormControl"
+                            [(ngModel)]="accountPosting.totalIR"
+                            placeholder="0"
+                            autocomplete="off"
+                            (ngModelChange)="onIrTotalChanged()"
+                        />
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row mb-1" *ngIf="accountPosting.type == 'Y'">
+                <div class="col-12">
+                    <label>Dias corridos para cálculo do IOF:</label>
+                    <button
+                        type="button"
+                        style="border-radius: 2px; margin-left: 2px"
+                        (click)="changeDays(-1)"
+                    >
+                        −
+                    </button>
+                    <input
+                        type="number"
+                        inputmode="numeric"
+                        style="
+                            width: 40px !important;
+                            border-radius: 4px 4px 0 0;
+                            margin: 0px 2px 0 2px;
+                            text-align: center;
+                        "
+                        min="0"
+                        formControlName="iofElapsedDaysFormControl"
+                    />
+                    <button
+                        type="button"
+                        style="border-radius: 2px"
+                        (click)="changeDays(1)"
+                    >
+                        +
+                    </button>
+                </div>
+            </div>
             <div class="row" *ngIf="accountPosting.type == 'Y'">
                 <div class="col-6">
                     <mat-checkbox

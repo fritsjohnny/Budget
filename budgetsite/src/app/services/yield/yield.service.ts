@@ -152,7 +152,7 @@ export class YieldService {
 
   // IOF por dia corrido (1..29). 30+ => 0
   IOF_TABLE: number[] = [
-    0,     // 0 (não usado)
+    // 0,     // 0 (não usado)
     0.96,  // 1
     0.93,  // 2
     0.90,  // 3
@@ -256,9 +256,11 @@ export class YieldService {
     totalNet: number;
     grossYield: number;
     netYield: number;
+    iofTotal: number;
+    irTotal: number;
   }> {
     if (!account || !account.yieldPercent)
-      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0 };
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0 };
 
     const yieldPercent = Number(account.yieldPercent);
     const irPercent = Number(account.irPercent ?? 22.5);
@@ -276,6 +278,8 @@ export class YieldService {
         totalNet: account.totalBalance ?? 0,
         grossYield: account.lastYield ?? 0,
         netYield: account.lastYield ?? 0,
+        iofTotal: 0,
+        irTotal: 0,
       };
     }
 
@@ -340,6 +344,8 @@ export class YieldService {
       totalNet: fromCents(totalNetC),
       grossYield: fromCents(grossC),
       netYield: fromCents(netC),
+      iofTotal: fromCents(iofC),
+      irTotal: fromCents(irC),
     };
   }
 
@@ -348,9 +354,11 @@ export class YieldService {
     totalNet: number;
     grossYield: number;
     netYield: number;
+    iofTotal: number;
+    irTotal: number;
   }> {
     if (!account || !account.yieldPercent)
-      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0 };
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0 };
 
     const yieldPercent = Number(account.yieldPercent);    // ex.: 107, 108
     const irPercent = Number(account.irPercent ?? 22.5);
@@ -368,6 +376,8 @@ export class YieldService {
         totalNet: account.totalBalance ?? 0,
         grossYield: account.lastYield ?? 0,
         netYield: account.lastYield ?? 0,
+        iofTotal: 0,
+        irTotal: 0,
       };
     }
 
@@ -428,6 +438,8 @@ export class YieldService {
       totalNet: trunc2(saldoBruto + netYield),
       grossYield: trunc2(grossYield),
       netYield: trunc2(netYield),
+      iofTotal: trunc2(iofAmount),
+      irTotal: trunc2(irBase * (irPercent / 100)),
     };
   }
 
@@ -436,9 +448,11 @@ export class YieldService {
     totalNet: number;
     grossYield: number;
     netYield: number;
+    iofTotal: number;
+    irTotal: number;
   }> {
     if (!account || !account.yieldPercent) {
-      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0 };
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0 };
     }
 
     const yieldPercent = Number(account.yieldPercent);      // ex.: 107
@@ -462,6 +476,8 @@ export class YieldService {
         totalNet: account.totalBalance ?? 0,
         grossYield: account.lastYield ?? 0,
         netYield: account.lastYield ?? 0,
+        iofTotal: 0,
+        irTotal: 0,
       };
     }
 
@@ -529,17 +545,26 @@ export class YieldService {
       totalNet,
       grossYield: fromCents(grossC),
       netYield: fromCents(netC),
+      iofTotal: fromCents(iofC),
+      irTotal: fromCents(irC),
     };
   }
 
-  async suggestYield4(account: Accounts, launchDate: Date): Promise<{
+  async suggestYield4(
+    account: Accounts,
+    launchDate: Date,
+    prevNetAccumulated: number,
+    iofElapsedDays: number
+  ): Promise<{
     totalGross: number;
     totalNet: number;
     grossYield: number;
     netYield: number;
+    iofTotal: number;
+    irTotal: number;
   }> {
     if (!account || !account.yieldPercent) {
-      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0 };
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0 };
     }
 
     const yieldPercent = Number(account.yieldPercent);
@@ -549,49 +574,46 @@ export class YieldService {
     const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
     const trunc2 = (v: number) => Math.trunc(v * 100) / 100;
 
-    // 1) CDI do dia-alvo
-    //    Mantém a mesma lógica dos outros bancos (resolve data-alvo e busca a taxa diária).
+    // 1) CDI diário do dia-alvo
     let cdiDiarioPercent = 0;
     try {
+      // mantém sua regra de “qual data buscar CDI”
+      // (normalmente CDI do último dia útil / fechamento)
       const targetDate = this.resolveCdiTargetDate(account);
       cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
     } catch {
+      // fallback conservador
       this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
       return {
         totalGross: account.totalBalanceGross ?? 0,
         totalNet: account.totalBalance ?? 0,
         grossYield: account.lastYield ?? 0,
         netYield: account.lastYield ?? 0,
+        iofTotal: 0,
+        irTotal: 0,
       };
     }
 
-    // 2) Saldos base do dia (antes de aplicar o rendimento do próprio dia)
-    //    baseGross: saldo bruto atual do app
-    //    baseNet  : saldo líquido atual do app
+    // 2) Saldos base (antes do rendimento do dia)
     const baseGross = round2(Number(account.totalBalanceGross ?? account.totalBalance) || 0);
     const baseNet = round2(Number(account.totalBalance ?? account.totalBalanceGross) || 0);
 
-    // 3) Rendimento bruto do dia (PicPay: %CDI aplicado sobre a taxa DI diária)
-    //    Obs.: aqui calculamos o "bruto do dia" que o app vai sugerir (campo Valor Bruto).
+    // 3) Rendimento BRUTO do dia (igual aos outros bancos: saldo_base * taxa_diária * (%CDI))
     const cdiDiario = cdiDiarioPercent / 100;
     const taxaAplicada = cdiDiario * (yieldPercent / 100);
     const grossYieldDay = round2(baseGross * taxaAplicada);
 
-    // 4) Aplicações (lotes) para estimar principal e calcular IOF ponderado
-    //    PicPay cobra IOF por lote (idade do dinheiro). Sem aplicações não dá para
-    //    estimar corretamente o IOF, então fazemos fallback.
+    // 4) Pega aplicações apenas para estimar “IOF efetivo” sobre o total de rendimento acumulado
+    //    (a diferença é que NÃO vamos mais recalcular ‘ontem’ — isso vem por parâmetro)
     let applications: AccountsApplications[] = [];
     try {
-      applications = await firstValueFrom(
-        this.accountApplicationsService.readByAccount(account.id!)
-      );
+      applications = await firstValueFrom(this.accountApplicationsService.readByAccount(account.id!));
     } catch {
       applications = [];
     }
 
-    // 4.1) Principal total (aprox): soma de amountApplied.
-    //      Se não houver aplicações cadastradas, assumimos principal = baseGross
-    //      (ou seja, rendimento acumulado bruto ~ 0).
+    // Principal total (aprox) = soma das aplicações
+    // Se não houver aplicações, não dá pra inferir IOF corretamente -> fallback conservador
     let principalTotal = 0;
     if (applications && applications.length > 0) {
       for (const app of applications) {
@@ -599,34 +621,19 @@ export class YieldService {
         if (p > 0) principalTotal += p;
       }
     } else {
+      // sem aplicações: assume que não há rendimento acumulado identificável (principal ≈ saldo bruto base)
       principalTotal = baseGross;
     }
 
-    // 5) Bruto acumulado (ontem e hoje)
-    //    - grossEndToday: saldo bruto "após" aplicar o rendimento bruto do dia
-    //    - grossYieldTotalYest: rendimento bruto acumulado até ontem (aprox)
-    //    - grossYieldTotalToday: rendimento bruto acumulado até hoje (aprox)
-    const grossEndToday = round2(baseGross + grossYieldDay);
-    const grossYieldTotalYest = Math.max(0, round2(baseGross - principalTotal));
-    const grossYieldTotalToday = Math.max(0, round2(grossEndToday - principalTotal));
+    // 5) Rendimento bruto ACUMULADO após o crédito do dia (estimado)
+    //    totalYieldGrossNow = (saldo_bruto_apos_credito) - principal
+    const grossEndNow = round2(baseGross + grossYieldDay);
+    const totalYieldGrossNow = Math.max(0, round2(grossEndNow - principalTotal));
 
-    // 6) Datas de referência para IOF/IR (PicPay)
-    //    IMPORTANTE: para o PicPay, o "contador de dias" do IOF casa melhor quando:
-    //    - HOJE: refDate = a própria data do lançamento (D)
-    //    - ONTEM: refDate = (D - 1)
-    //
-    //    Isso é intencional e foi o que fez bater com os valores do PicPay no seu teste.
-    //    (Ou seja: não é D-1/D-2 aqui; é D e D-1.)
-    launchDate.setHours(0, 0, 0, 0);
-
-    const refForToday = new Date(launchDate); // D
-    const refForYest = new Date(launchDate);  // D-1
-    refForYest.setDate(refForYest.getDate() - 1);
-
-    // 7) Calcula IOF/IR totais do acumulado em uma data de referência
-    //    A ideia é: calcular o "líquido acumulado" e depois tirar o delta (hoje - ontem),
-    //    pois o PicPay exibe o líquido do dia já refletindo a liberação diária do IOF/IR.
-    const calcTotals = (totalYield: number, refDate: Date, baseForFraction: number) => {
+    // 6) Calcula o LÍQUIDO ACUMULADO “agora” (IOF + IR sobre o acumulado)
+    //    IMPORTANTE: o “do dia” será a diferença para o acumulado anterior (prevNetAccumulated).
+    const calcNetAccumulated = (totalYieldGross: number, refDate: Date, baseForFraction: number) => {
+      // IOF efetivo ponderado: olha as aplicações com <= 29 dias corridos (tabela IOF)
       let principalInWindow = 0;
       let principalXRate = 0;
 
@@ -638,54 +645,47 @@ export class YieldService {
           const d0 = new Date(app.dateApplied);
           d0.setHours(0, 0, 0, 0);
 
-          // 7.1) Dias corridos do lote para a tabela de IOF
-          //      - Para o "refDate == launchDate (hoje)", somamos +1 (D+1) para casar com o PicPay
-          //      - Para o "refDate == launchDate-1 (ontem)", não soma
-          //      Isso foi necessário para bater com a tabela efetiva aplicada pelo PicPay.
-          const diff = Math.floor((refDate.getTime() - d0.getTime()) / 86400000);
-          const addOne = (refDate.getDate() == launchDate.getDate()) ? 1 : 0;
-          const daysCorridos = Math.max(1, diff + addOne);
+          // dias corridos inclusivo (D+1)
+          const rate = this.iofRateFromTable(iofElapsedDays);
 
-          const rate = this.iofRateFromTable(daysCorridos);
-
-          // 7.2) IOF só existe até 29 dias (30º dia em diante é 0%)
-          if (daysCorridos <= 29) {
+          if (iofElapsedDays <= 29) {
             principalInWindow += principal;
-            principalXRate += principal * rate; // pondera a alíquota pelo principal do lote
+            principalXRate += principal * rate;
           }
         }
       }
 
-      // 7.3) iofRateEff = alíquota média ponderada * fração do saldo que ainda está dentro do IOF
-      //      A "fração" evita cobrar IOF sobre valores que não fazem parte do principal dentro da janela.
       let iofRateEff = 0;
       if (principalInWindow > 0) {
         const avgIofOnWindow = principalXRate / principalInWindow;
+
+        // fração do saldo que está sujeito a IOF (não pode exceder 100%)
+        // usa baseForFraction = saldo bruto “após crédito” do dia
         const fractionOnIof = round2(Math.min(1, principalInWindow / (baseForFraction || 1)));
         iofRateEff = avgIofOnWindow * fractionOnIof;
       }
 
-      // 7.4) IOF e IR totais (acumulados) na data de referência
-      //      - IOF arredondado em 2 casas
-      //      - IR truncado em 2 casas (padrão que você adotou para bater com o app)
-      const iofTotal = round2(totalYield * iofRateEff);
-      const irBase = round2(Math.max(0, totalYield - iofTotal));
+      const iofTotal = round2(totalYieldGross * iofRateEff);
+      const irBase = round2(Math.max(0, totalYieldGross - iofTotal));
       const irTotal = isTaxExempt ? 0 : trunc2(irBase * (irPercent / 100));
-      const netTotal = round2(totalYield - iofTotal - irTotal);
+      const netTotal = round2(totalYieldGross - iofTotal - irTotal);
 
-      return { iofTotal, irTotal, netTotal };
+      return { iofTotal, netTotal, irTotal };
     };
 
-    // 8) Bases para "fração do IOF"
-    //    - Hoje: usa o saldo bruto após crédito (grossEndToday)
-    //    - Ontem: usa o saldo bruto antes do crédito do dia (baseGross)
-    const tToday = calcTotals(grossYieldTotalToday, refForToday, grossEndToday);
-    const tYest = calcTotals(grossYieldTotalYest, refForYest, baseGross);
+    // referência do lançamento (o dia do crédito)
+    const ref = new Date(launchDate);
+    ref.setHours(0, 0, 0, 0);
 
-    // 9) Líquido do dia (PicPay) = delta do líquido acumulado
-    const netYieldDay = round2(tToday.netTotal - tYest.netTotal);
+    // líquido acumulado “agora”
+    const calculated = calcNetAccumulated(totalYieldGrossNow, ref, grossEndNow);
 
-    // 10) Totais exibidos no modal (aplicando somente o rendimento do dia)
+    // 7) LÍQUIDO DO DIA = (líquido acumulado agora) - (líquido acumulado anterior vindo da tela)
+    const prev = round2(Number(prevNetAccumulated) || 0);
+    const netYieldDay = round2(calculated.netTotal - prev);
+
+    // 8) Totais exibidos no modal
+    // (mantém seu contrato atual: totalNet = baseNet + netYieldDay, etc.)
     const totalGross = round2(baseGross + grossYieldDay);
     const totalNet = round2(baseNet + netYieldDay);
 
@@ -694,6 +694,8 @@ export class YieldService {
       totalNet,
       grossYield: grossYieldDay,
       netYield: netYieldDay,
+      iofTotal: calculated.iofTotal,
+      irTotal: calculated.irTotal
     };
   }
 }

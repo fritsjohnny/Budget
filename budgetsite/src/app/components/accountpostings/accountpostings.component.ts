@@ -70,13 +70,15 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   previousBalance?: number = 0;
   totalYields?: number = 0;
   hideProgress: boolean = true;
-  editing: boolean = false;
   maxBalance: number = 0;
   minBalance: number = 0;
   accountPostingsLength: number = 0;
 
   filterOpend: boolean = false;
   dataSource = new MatTableDataSource(this.accountpostings);
+
+  readonly IOF_DAYS_STORAGE_KEY = 'budget.iofElapsedDays';
+  readonly IOF_DATE_STORAGE_KEY = 'budget.iofElapsedDate';
 
   constructor(
     private accountPostingsService: AccountPostingsService,
@@ -259,22 +261,22 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   add() {
-    this.editing = false;
-
     const dialogRef = this.dialog.open(AccountPostingsDialog, {
       width: '100%',
       maxWidth: '100%',
       data: {
         reference: this.reference,
         accountId: this.accountId,
-        editing: this.editing,
+        editing: false,
         type: 'R',
         accountsList: this.accountsList,
         incomesList: this.incomes,
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
         totalGrossBalance: this.totalGrossBalance,
+        totalYields: this.totalYields,
         lastYield: this.getLastYield(),
+        accountPostingsYields: this.accountpostings.filter(t => t.type === 'Y'),
       },
     });
 
@@ -301,6 +303,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
               this.dataSource = new MatTableDataSource(this.accountpostings);
 
               this.accountPostingsLength = this.accountpostings.length;
+
+              localStorage.setItem(this.IOF_DAYS_STORAGE_KEY, result.iofElapsedDays?.toString());
+              localStorage.setItem(this.IOF_DATE_STORAGE_KEY, accountpostings.date?.toString());
             }
 
             this.getTotalAmount();
@@ -314,8 +319,6 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   editOrDelete(accountPosting: AccountsPostings) {
-    this.editing = true;
-
     const dialogRef = this.dialog.open(AccountPostingsDialog, {
       width: '100%',
       maxWidth: '100%',
@@ -331,7 +334,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         originalAmount: accountPosting.amount,
         originalGrossAmount: accountPosting.grossAmount,
         note: accountPosting.note,
-        editing: this.editing,
+        editing: true,
         accountsList: this.accountsList,
         deleting: false,
         type: accountPosting.type,
@@ -342,6 +345,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
         totalGrossBalance: this.totalGrossBalance,
+        totalIOF: accountPosting.totalIOF,
+        totalIR: accountPosting.totalIR,
+        iofElapsedDays: accountPosting.iofElapsedDays,
         lastYield: this.getLastYield(),
       },
     });

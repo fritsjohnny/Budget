@@ -51,34 +51,8 @@
         >
     </div>
 </div>
-<!-- Add button -->
+<!-- Refresh button -->
 <div class="row center" *ngIf="hideProgress">
-    <div class="col center">
-        <span
-            class="default-button center"
-            mat-mini-fab
-            matTooltip="Filtrar"
-            matTooltipPosition="right"
-            color="accent"
-            aria-label="Filtrar"
-            (click)="openFilter()"
-        >
-            <mat-icon class="default-icon">search</mat-icon>
-        </span>
-    </div>
-    <div class="col center">
-        <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="Adicionar compra no cartão"
-            matTooltipPosition="right"
-            color="accent"
-            aria-label="Adicionar compra no cartão"
-            (click)="add()"
-        >
-            <mat-icon class="default-icon">post_add</mat-icon>
-        </button>
-    </div>
     <div class="col center">
         <button
             class="default-button"
@@ -93,169 +67,233 @@
         </button>
     </div>
 </div>
-<!--Filter-->
-<div class="row" *ngIf="hideProgress && filterOpend">
-    <!-- <div class="row" *ngIf="hideProgress"> -->
-    <mat-form-field appearance="standard">
-        <mat-label>Filtrar</mat-label>
-        <input matInput (keyup)="applyFilter($event)" placeholder="" #input />
-    </mat-form-field>
-</div>
-<!-- Table -->
-<div class="row center mt-2">
-    <div class="mytable" *ngIf="hideProgress">
-        <div class="table-container mat-elevation-z8">
-            <table
-                mat-table
-                [dataSource]="dataSource"
-                cdkDropList
-                [cdkDropListData]="accountpostings"
-                (cdkDropListDropped)="drop($event)"
-            >
-                <!-- # Column -->
-                <ng-container matColumnDef="index">
-                    <th mat-header-cell *matHeaderCellDef>#</th>
-                    <td
-                        mat-cell
-                        *matCellDef="let row; let i = index"
-                        [ngClass]="
-                            row.type == 'Y'
-                                ? 'yield'
-                                : row.amount < 0
-                                  ? 'negative'
-                                  : 'positive'
-                        "
-                    >
-                        {{ accountPostingsLength - i }}
-                    </td>
-                    <td
-                        mat-footer-cell
-                        *matFooterCellDef
-                        [ngStyle]="{
-                            color: total < 0 ? 'negative' : 'positive'
-                        }"
-                    >
-                        Total
-                    </td>
-                </ng-container>
 
-                <!-- Data Column -->
-                <ng-container matColumnDef="date">
-                    <th mat-header-cell *matHeaderCellDef>Data</th>
-                    <td
-                        mat-cell
-                        *matCellDef="let row"
-                        [ngClass]="
-                            row.type == 'Y'
-                                ? 'yield'
-                                : row.amount < 0
-                                  ? 'negative'
-                                  : 'positive'
-                        "
-                    >
-                        {{ row.date | date: "dd/MM" }}
-                    </td>
-                    <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <!-- Descrição Column -->
-                <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef>Descrição</th>
-                    <td
-                        mat-cell
-                        *matCellDef="let row"
-                        [ngClass]="
-                            row.type == 'Y'
-                                ? 'yield'
-                                : row.amount < 0
-                                  ? 'negative'
-                                  : 'positive'
-                        "
-                    >
-                        {{ row.description }}
-                    </td>
-                    <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <!-- Valor Column -->
-                <ng-container matColumnDef="amount">
-                    <th mat-header-cell *matHeaderCellDef>Valor</th>
-                    <td
-                        mat-cell
-                        *matCellDef="let row"
-                        [ngClass]="
-                            row.type == 'Y'
-                                ? 'yield'
-                                : row.amount < 0
-                                  ? 'negative'
-                                  : 'positive'
-                        "
-                    >
-                        {{ row.amount | currency: "" : "" }}
-                    </td>
-                    <td
-                        mat-footer-cell
-                        *matFooterCellDef
-                        [ngClass]="total < 0 ? 'negative' : 'positive'"
-                    >
-                        {{ total | currency: "" : "" }}
-                    </td>
-                </ng-container>
-
-                <!-- Running Column -->
-                <ng-container matColumnDef="runningAmount">
-                    <th mat-header-cell *matHeaderCellDef>Saldo</th>
-                    <td
-                        mat-cell
-                        *matCellDef="let row"
-                        [ngClass]="
-                            row.runningAmount < 0 ? 'negative' : 'positive'
-                        "
-                        style="padding-left: 15px"
-                    >
-                        {{ row.runningAmount | currency: "" : "" }}
-                    </td>
-                    <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <tr
-                    mat-header-row
-                    *matHeaderRowDef="displayedColumns; sticky: true"
-                ></tr>
-                <tr
-                    mat-row
-                    (click)="editOrDelete(row)"
-                    *matRowDef="let row; columns: displayedColumns"
-                    cdkDrag
-                    appDragReadyFeedback
-                    [cdkDragData]="row"
-                    [cdkDragStartDelay]="300"
-                ></tr>
-                <tr
-                    mat-footer-row
-                    *matFooterRowDef="displayedColumns; sticky: true"
-                ></tr>
-            </table>
-        </div>
-    </div>
-</div>
-<div class="row" *ngIf="hideProgress">
-    <p></p>
-    <p></p>
-    <div>
-        <span class="min-balance-label">Menor saldo:</span
-        ><span class="min-balance"
-            ><b>{{ minBalance | currency: "" : "" }}</b></span
+<!-- Lançamentos -->
+<div class="row">
+    <mat-accordion
+        displayMode="default"
+        [multi]="true"
+        [hideToggle]="false"
+        *ngIf="hideProgress"
+    >
+        <mat-expansion-panel
+            class="mat-panel-postings"
+            [hideToggle]="false"
+            [(expanded)]="accountPostingsPanelExpanded"
+            (closed)="accountPostingsPanelClosed()"
+            (opened)="accountPostingsPanelOpened()"
         >
-    </div>
-    <div>
-        <span class="min-balance-label">Maior saldo:</span
-        ><span class="max-balance"
-            ><b>{{ maxBalance | currency: "" : "" }}</b></span
-        >
-    </div>
-    <p></p>
+            <mat-expansion-panel-header>
+                <span class="material-icons center green">receipt_long</span>
+                <span class="center green">Lançamentos</span>
+            </mat-expansion-panel-header>
+            <!-- Add / Filter button -->
+            <div class="row mb-2" *ngIf="hideProgress">
+                <div class="col-4 left">
+                    <button
+                        class="default-button center"
+                        mat-mini-fab
+                        matTooltip="Filtrar"
+                        color="primary"
+                        aria-label="Filtrar"
+                        (click)="openFilter()"
+                    >
+                        <span
+                            class="default-button center"
+                            mat-mini-fab
+                            color="accent"
+                            style="user-select: none"
+                        >
+                            <mat-icon class="default-icon">search</mat-icon>
+                        </span>
+                    </button>
+                </div>
+                <div class="col-4 center">
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Adicionar compra no cartão"
+                        matTooltipPosition="right"
+                        color="accent"
+                        aria-label="Adicionar compra no cartão"
+                        (click)="add()"
+                    >
+                        <mat-icon class="default-icon">post_add</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!--Filter-->
+            <div class="row" *ngIf="hideProgress && filterOpend">
+                <!-- <div class="row" *ngIf="hideProgress"> -->
+                <mat-form-field appearance="standard">
+                    <mat-label>Filtrar</mat-label>
+                    <input
+                        matInput
+                        (keyup)="applyFilter($event)"
+                        placeholder=""
+                        #input
+                    />
+                </mat-form-field>
+            </div>
+
+            <div class="mytable" *ngIf="hideProgress">
+                <div class="table-container mat-elevation-z8">
+                    <table
+                        mat-table
+                        [dataSource]="dataSource"
+                        cdkDropList
+                        [cdkDropListData]="accountpostings"
+                        (cdkDropListDropped)="drop($event)"
+                    >
+                        <!-- # Column -->
+                        <ng-container matColumnDef="index">
+                            <th mat-header-cell *matHeaderCellDef>#</th>
+                            <td
+                                mat-cell
+                                *matCellDef="let row; let i = index"
+                                [ngClass]="
+                                    row.type == 'Y'
+                                        ? 'yield'
+                                        : row.amount < 0
+                                          ? 'negative'
+                                          : 'positive'
+                                "
+                            >
+                                {{ accountPostingsLength - i }}
+                            </td>
+                            <td
+                                mat-footer-cell
+                                *matFooterCellDef
+                                [ngStyle]="{
+                                    color: total < 0 ? 'negative' : 'positive'
+                                }"
+                            >
+                                Total
+                            </td>
+                        </ng-container>
+
+                        <!-- Data Column -->
+                        <ng-container matColumnDef="date">
+                            <th mat-header-cell *matHeaderCellDef>Data</th>
+                            <td
+                                mat-cell
+                                *matCellDef="let row"
+                                [ngClass]="
+                                    row.type == 'Y'
+                                        ? 'yield'
+                                        : row.amount < 0
+                                          ? 'negative'
+                                          : 'positive'
+                                "
+                            >
+                                {{ row.date | date: "dd/MM" }}
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef></td>
+                        </ng-container>
+
+                        <!-- Descrição Column -->
+                        <ng-container matColumnDef="description">
+                            <th mat-header-cell *matHeaderCellDef>Descrição</th>
+                            <td
+                                mat-cell
+                                *matCellDef="let row"
+                                [ngClass]="
+                                    row.type == 'Y'
+                                        ? 'yield'
+                                        : row.amount < 0
+                                          ? 'negative'
+                                          : 'positive'
+                                "
+                            >
+                                {{ row.description }}
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef></td>
+                        </ng-container>
+
+                        <!-- Valor Column -->
+                        <ng-container matColumnDef="amount">
+                            <th mat-header-cell *matHeaderCellDef>Valor</th>
+                            <td
+                                mat-cell
+                                *matCellDef="let row"
+                                [ngClass]="
+                                    row.type == 'Y'
+                                        ? 'yield'
+                                        : row.amount < 0
+                                          ? 'negative'
+                                          : 'positive'
+                                "
+                            >
+                                {{ row.amount | currency: "" : "" }}
+                            </td>
+                            <td
+                                mat-footer-cell
+                                *matFooterCellDef
+                                [ngClass]="total < 0 ? 'negative' : 'positive'"
+                            >
+                                {{ total | currency: "" : "" }}
+                            </td>
+                        </ng-container>
+
+                        <!-- Running Column -->
+                        <ng-container matColumnDef="runningAmount">
+                            <th mat-header-cell *matHeaderCellDef>Saldo</th>
+                            <td
+                                mat-cell
+                                *matCellDef="let row"
+                                [ngClass]="
+                                    row.runningAmount < 0
+                                        ? 'negative'
+                                        : 'positive'
+                                "
+                                style="padding-left: 15px"
+                            >
+                                {{ row.runningAmount | currency: "" : "" }}
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef></td>
+                        </ng-container>
+
+                        <tr
+                            mat-header-row
+                            *matHeaderRowDef="displayedColumns; sticky: true"
+                        ></tr>
+                        <tr
+                            mat-row
+                            (click)="editOrDelete(row)"
+                            *matRowDef="let row; columns: displayedColumns"
+                            cdkDrag
+                            appDragReadyFeedback
+                            [cdkDragData]="row"
+                            [cdkDragStartDelay]="300"
+                        ></tr>
+                        <tr
+                            mat-footer-row
+                            *matFooterRowDef="displayedColumns; sticky: true"
+                        ></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row mt-3" *ngIf="hideProgress">
+                <div>
+                    <span class="min-balance-label">Menor saldo:</span
+                    ><span class="min-balance"
+                        ><b>{{ minBalance | currency: "" : "" }}</b></span
+                    >
+                </div>
+                <div>
+                    <span class="min-balance-label">Maior saldo:</span
+                    ><span class="max-balance"
+                        ><b>{{ maxBalance | currency: "" : "" }}</b></span
+                    >
+                </div>
+                <p></p>
+            </div>
+        </mat-expansion-panel>
+    </mat-accordion>
 </div>
+
 <!-- Aplicações -->
 <div class="row">
     <mat-accordion
@@ -265,13 +303,15 @@
         *ngIf="hideProgress"
     >
         <mat-expansion-panel
-            class="mat-panel-cards"
+            class="mat-panel-postings"
             [hideToggle]="false"
-            [expanded]="accountApplications.length > 0"
+            [(expanded)]="accountApplicationsPanelExpanded"
+            (closed)="accountApplicationsPanelClosed()"
+            (opened)="accountApplicationsPanelOpened()"
         >
             <mat-expansion-panel-header>
-                <span class="material-icons center green">trending_up</span>
-                <span class="center green">Aplicações</span>
+                <span class="material-icons center primary">trending_up</span>
+                <span class="center primary">Aplicações</span>
             </mat-expansion-panel-header>
             <!-- Add button -->
             <div class="row center mb-2" *ngIf="hideProgress">
@@ -303,7 +343,7 @@
                             <td
                                 mat-cell
                                 *matCellDef="let row; let i = index"
-                                class="yield"
+                                class="primary"
                             >
                                 {{ i + 1 }}
                             </td>
@@ -319,7 +359,7 @@
                         <!-- Data Column -->
                         <ng-container matColumnDef="dateApplication">
                             <th mat-header-cell *matHeaderCellDef>Data</th>
-                            <td mat-cell *matCellDef="let row" class="yield">
+                            <td mat-cell *matCellDef="let row" class="primary">
                                 {{ row.dateApplied | date: "dd/MM/yyyy" }}
                             </td>
                             <td mat-footer-cell *matFooterCellDef></td>
@@ -328,12 +368,25 @@
                         <!-- Valor Column -->
                         <ng-container matColumnDef="amountApplication">
                             <th mat-header-cell *matHeaderCellDef>Valor</th>
-                            <td mat-cell *matCellDef="let row" class="yield">
+                            <td mat-cell *matCellDef="let row" class="primary">
                                 {{ row.amountApplied | currency: "" : "" }}
                             </td>
-                            <td mat-footer-cell *matFooterCellDef class="yield">
+                            <td
+                                mat-footer-cell
+                                *matFooterCellDef
+                                class="primary"
+                            >
                                 {{ totalApplications | currency: "" : "" }}
                             </td>
+                        </ng-container>
+
+                        <!-- CDI Column -->
+                        <ng-container matColumnDef="cdiApplication">
+                            <th mat-header-cell *matHeaderCellDef>CDI</th>
+                            <td mat-cell *matCellDef="let row" class="primary">
+                                {{ row.cdiPercent * 100 | number: "1.0-2" }}%
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef></td>
                         </ng-container>
 
                         <!-- Vencimento Column -->
@@ -341,7 +394,7 @@
                             <th mat-header-cell *matHeaderCellDef>
                                 Vencimento
                             </th>
-                            <td mat-cell *matCellDef="let row" class="yield">
+                            <td mat-cell *matCellDef="let row" class="primary">
                                 {{ row.maturityDate | date: "dd/MM/yyyy" }}
                             </td>
                             <td mat-footer-cell *matFooterCellDef></td>

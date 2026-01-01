@@ -70,6 +70,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     'indexApplication',
     'dateApplication',
     'amountApplication',
+    'cdiApplication',
     'dueDateApplication',
   ];
   total: number = 0;
@@ -93,6 +94,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   readonly IOF_DAYS_STORAGE_KEY = 'budget.iofElapsedDays';
   readonly IOF_DATE_STORAGE_KEY = 'budget.iofElapsedDate';
 
+  accountPostingsPanelExpanded: boolean = false;
+  accountApplicationsPanelExpanded: boolean = false;
+
   constructor(
     private accountPostingsService: AccountPostingsService,
     private accountApplicationsService: AccountApplicationsService,
@@ -104,15 +108,35 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
+    this.accountPostingsPanelExpanded =
+      localStorage.getItem('accountPostingsPanelExpanded') === 'true';
+
+      this.accountApplicationsPanelExpanded =
+      localStorage.getItem('accountApplicationsPanelExpanded') === 'true';
   }
 
   ngAfterViewInit(): void {
-
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['accountId']?.currentValue || changes['reference']?.currentValue)
       this.refresh();
+  }
+
+  accountPostingsPanelClosed() {
+    localStorage.setItem('accountPostingsPanelExpanded', 'false');
+  }
+
+  accountPostingsPanelOpened() {
+    localStorage.setItem('accountPostingsPanelExpanded', 'true');
+  }
+
+  accountApplicationsPanelClosed() {
+    localStorage.setItem('accountApplicationsPanelExpanded', 'false');
+  }
+
+  accountApplicationsPanelOpened() {
+    localStorage.setItem('accountApplicationsPanelExpanded', 'true');
   }
 
   private rebindAccount(): void {

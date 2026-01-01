@@ -741,6 +741,12 @@ input.right-align {
   align-items: center !important;
 }
 
+.left {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+}
+
 .mytable {
   --bs-gutter-y: 0;
   display: flex;
@@ -892,4 +898,8 @@ body.dark-theme {
 // "pisque" ou perca seu destaque visual durante a transição para o drag.
 .cdk-drag-placeholder {
   border: inherit;
+}
+
+.mat-expansion-panel-body {
+    padding: 0 14px 17px !important;
 }

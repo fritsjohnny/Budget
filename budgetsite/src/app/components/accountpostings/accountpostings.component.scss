@@ -31,6 +31,12 @@ table {
     text-align: right;
 }
 
+.mat-column-cdiApplication {
+    width: 50px;
+    // padding-left: 10px;
+    text-align: right;
+}
+
 .mat-column-description {
     width: 500px;
 }
@@ -65,4 +71,9 @@ tr.mat-footer-row {
 .max-balance-label {
     display: inline-block;
     width: 85px;
+}
+
+.mat-panel-postings {
+  margin-top: 10px !important;
+  padding-bottom: -50px !important;
 }

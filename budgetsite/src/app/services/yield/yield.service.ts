@@ -650,19 +650,19 @@ export class YieldService {
 
           if (iofElapsedDays <= 29) {
             principalInWindow += principal;
-            principalXRate += principal * rate;
+            principalXRate += round2(principal * rate);
           }
         }
       }
 
       let iofRateEff = 0;
       if (principalInWindow > 0) {
-        const avgIofOnWindow = principalXRate / principalInWindow;
+        const avgIofOnWindow = round2(principalXRate / principalInWindow);
 
         // fração do saldo que está sujeito a IOF (não pode exceder 100%)
         // usa baseForFraction = saldo bruto “após crédito” do dia
         const fractionOnIof = round2(Math.min(1, principalInWindow / (baseForFraction || 1)));
-        iofRateEff = avgIofOnWindow * fractionOnIof;
+        iofRateEff = applications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
       }
 
       const iofTotal = round2(totalYieldGross * iofRateEff);

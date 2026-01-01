@@ -173,6 +173,19 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     }
   }
 
+  getPreviousReference(reference: string): string {
+    const year = Number(reference.substring(0, 4));
+    const month = Number(reference.substring(4, 6)); // 1–12
+
+    const date = new Date(year, month - 1, 1);
+    date.setMonth(date.getMonth() - 1);
+
+    const prevYear = date.getFullYear();
+    const prevMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+
+    return `${prevYear}${prevMonth}`;
+  }
+
   getAccountTotals() {
     this.accountService
       .getAccountTotals(this.accountId, this.reference)
@@ -184,6 +197,16 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           this.totalGrossBalance = account.totalBalanceGross;
           this.previousBalance = account.previousBalance;
           this.totalYields = account.totalYields;
+
+          if (!this.totalYields) {
+            this.accountService
+              .getAccountTotals(this.accountId, this.getPreviousReference(this.reference!))
+              .subscribe({
+                next: (account) => {
+                  this.totalYields = account.totalYields;
+                },
+              });
+          }
 
           let runningValue = this.previousBalance ?? 0;
 

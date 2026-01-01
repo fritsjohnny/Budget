@@ -234,6 +234,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     const value = Number(control?.value || 0);
     control?.setValue(Math.max(0, value + delta));
     this.accountPosting.iofElapsedDays = control?.value;
+    this.onTypeChange();
   }
 
   async onTypeChange(firstLoad: boolean = false) {

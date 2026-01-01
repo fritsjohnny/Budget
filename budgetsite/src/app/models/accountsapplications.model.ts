@@ -1,3 +1,5 @@
+import { Accounts } from "./accounts.model";
+
 export interface AccountsApplications {
   id?: number;
   accountId: number;
@@ -7,4 +9,7 @@ export interface AccountsApplications {
   fixedRate: number | null;
   maturityDate: Date | null;
   createdAt: Date | null;
+  editing?: boolean;
+  deleting?: boolean;
+  accountsList?: Accounts[];
 }

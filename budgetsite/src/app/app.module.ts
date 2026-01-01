@@ -70,6 +70,7 @@ import { DatepickerreferenceComponent } from './shared/datepickerreference/datep
 import { PeopleComponent } from './components/people/people.component';
 import { ReportViewComponent } from './views/report-view/report-view.component';
 import { ReportComponent } from './components/report/report.component';
+import { AccountApplicationsDialog } from './components/accountpostings/accountapplications-dialog';
 
 import { MAT_COLOR_FORMATS, NgxMatColorPickerModule, NGX_MAT_COLOR_FORMATS } from '@angular-material-components/color-picker';
 import { AddvalueComponent } from './shared/addvalue/addvalue.component';
@@ -122,6 +123,7 @@ registerLocaleData(localePt);
     CardPostingsDialog,
     CardReceiptsDialog,
     AccountPostingsDialog,
+    AccountApplicationsDialog,
     ExpensesDialog,
     PaymentReceiveDialog,
     IncomesDialog,

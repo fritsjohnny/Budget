@@ -1,0 +1,188 @@
+<div class="">
+    <form [formGroup]="accountApplicationFormGroup">
+        <div class="cancel">
+            <button
+                class="default-button"
+                mat-mini-fab
+                matTooltip="Cancelar"
+                color="accent"
+                aria-label="Cancelar"
+                (click)="cancel()"
+            >
+                <mat-icon class="default-icon">close</mat-icon>
+            </button>
+        </div>
+
+        <h2 mat-dialog-title>{{ setTitle() }}</h2>
+
+        <div mat-dialog-content>
+            <div class="row">
+                <div class="col-6">
+                    <app-datepickerinput
+                        #datepickerinput
+                        [currentDate]="accountApplication.dateApplied"
+                        (currentDateChanged)="currentDateChanged($event)"
+                    >
+                    </app-datepickerinput>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Conta</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="accountApplication.accountId"
+                            formControlName="accountIdFormControl"
+                        >
+                            <mat-option
+                                *ngFor="let c of accountApplication.accountsList"
+                                [value]="c.id"
+                            >
+                                {{ c.name }}
+                            </mat-option>
+                        </mat-select>
+                        <mat-error
+                            *ngIf="accountApplicationFormGroup.get('accountIdFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Valor aplicado</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="amountAppliedFormControl"
+                            [(ngModel)]="accountApplication.amountApplied"
+                            placeholder="0"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="accountApplicationFormGroup.get('amountAppliedFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>% do CDI (ex: 1,07)</mat-label>
+                        <input
+                            matInput
+                            inputmode="decimal"
+                            formControlName="cdiPercentFormControl"
+                            [(ngModel)]="accountApplication.cdiPercent"
+                            placeholder="1,00"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="accountApplicationFormGroup.get('cdiPercentFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Taxa fixa (a.a)</mat-label>
+                        <input
+                            matInput
+                            inputmode="decimal"
+                            formControlName="fixedRateFormControl"
+                            [(ngModel)]="accountApplication.fixedRate"
+                            placeholder="Opcional"
+                            autocomplete="off"
+                        />
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Vencimento</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="pickerMaturity"
+                            formControlName="maturityDateFormControl"
+                            [(ngModel)]="accountApplication.maturityDate"
+                            placeholder="Opcional"
+                            autocomplete="off"
+                        />
+                        <mat-datepicker-toggle
+                            matSuffix
+                            [for]="pickerMaturity"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #pickerMaturity></mat-datepicker>
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div mat-dialog-actions>
+                    <button
+                        [disabled]="!accountApplicationFormGroup.valid"
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Salvar"
+                        matTooltipPosition="right"
+                        class="bg-primary"
+                        aria-label="Salvar"
+                        [mat-dialog-close]="accountApplication"
+                        (click)="save()"
+                    >
+                        <mat-icon class="default-icon">save</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div class="col" *ngIf="accountApplication.editing">
+                <div mat-dialog-actions>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Excluir"
+                        matTooltipPosition="left"
+                        color="warn"
+                        aria-label="Excluir"
+                        (click)="delete()"
+                    >
+                        <mat-icon class="default-icon">delete</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

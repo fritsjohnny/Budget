@@ -1,49 +1,68 @@
 .table-container {
-  width: 100%;
-  height: 470px;
-  overflow: auto;
+    width: 100%;
+    height: 470px;
+    overflow: auto;
 }
 
 table {
-  width: 100%;
+    width: 100%;
 }
 
 .mat-column-index {
-  width: 30px;
+    width: 30px;
+}
+
+.mat-column-indexApplication {
+    width: 30px;
 }
 
 .mat-column-date {
-  width: 50px;
-  padding-right: 10px;
+    width: 50px;
+    padding-right: 10px;
+}
+
+.mat-column-dateApplication {
+    width: 30px;
+}
+
+.mat-column-dueDateApplication {
+    // width: 50px;
+    padding-left: 10px;
+    text-align: right;
 }
 
 .mat-column-description {
-  width: 500px;
+    width: 500px;
 }
 
 .mat-column-amount {
-  width: 125px;
-  text-align: right;
+    width: 125px;
+    text-align: right;
+}
+
+.mat-column-amountApplication {
+    // width: 125px;
+    text-align: right;
 }
 
 .mat-column-runningAmount {
-  width: 125px;
-  text-align: right;
+    width: 125px;
+    text-align: right;
 }
 
 tr.mat-footer-row {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .min-balance,
 .max-balance {
-  display: inline-block;
-  text-align: right;
-  width: 80px;
+    display: inline-block;
+    text-align: right;
+    width: 80px;
 }
 
 .min-balance-label,
 .max-balance-label {
-  display: inline-block;
-  width: 85px;
+    display: inline-block;
+    width: 85px;
 }

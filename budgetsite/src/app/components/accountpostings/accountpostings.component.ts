@@ -26,6 +26,9 @@ import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
 import { AccountPostingsDialog } from './accountpostings-dialog';
 import { YieldsComponent } from '../yields/yields.component';
+import { AccountsApplications } from 'src/app/models/accountsapplications.model';
+import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
+import { AccountApplicationsDialog } from './accountapplications-dialog';
 
 @Component({
   selector: 'app-accountpostings',
@@ -53,6 +56,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   @ViewChild('input') filterInput!: ElementRef;
 
   accountpostings!: AccountsPostings[];
+  accountApplications!: AccountsApplications[];
   incomes!: Incomes[];
   expenses!: Expenses[];
   displayedColumns = [
@@ -62,13 +66,21 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     'amount',
     'runningAmount',
   ];
+  accountApplicationsDisplayedColumns = [
+    'indexApplication',
+    'dateApplication',
+    'amountApplication',
+    'dueDateApplication',
+  ];
   total: number = 0;
+  totalApplications: number = 0;
   grandTotalBalance?: number = 0;
   grandTotalYields?: number = 0;
   totalBalance?: number = 0;
   totalGrossBalance?: number = 0;
   previousBalance?: number = 0;
   totalYields?: number = 0;
+  totalForYieldsDialog?: number = 0;
   hideProgress: boolean = true;
   maxBalance: number = 0;
   minBalance: number = 0;
@@ -76,12 +88,14 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
   filterOpend: boolean = false;
   dataSource = new MatTableDataSource(this.accountpostings);
+  accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);
 
   readonly IOF_DAYS_STORAGE_KEY = 'budget.iofElapsedDays';
   readonly IOF_DATE_STORAGE_KEY = 'budget.iofElapsedDate';
 
   constructor(
     private accountPostingsService: AccountPostingsService,
+    private accountApplicationsService: AccountApplicationsService,
     private accountService: AccountService,
     private incomeService: IncomeService,
     private expenseService: ExpenseService,
@@ -170,6 +184,21 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           },
           error: () => (this.hideProgress = true),
         });
+
+      this.accountApplicationsService
+        .readByAccount(this.accountId!)
+        .subscribe({
+          next: (accountApplications) => {
+            this.accountApplications = accountApplications;
+
+            // this.accountApplicationsLength = this.accountApplications.length;
+
+            this.accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);
+
+            this.getTotalApplications();
+          },
+          error: () => (this.hideProgress = true),
+        });
     }
   }
 
@@ -196,14 +225,14 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           this.totalBalance = account.totalBalance;
           this.totalGrossBalance = account.totalBalanceGross;
           this.previousBalance = account.previousBalance;
-          this.totalYields = account.totalYields;
+          this.totalYields = this.totalForYieldsDialog = account.totalYields;
 
-          if (!this.totalYields) {
+          if (!this.totalForYieldsDialog) {
             this.accountService
               .getAccountTotals(this.accountId, this.getPreviousReference(this.reference!))
               .subscribe({
                 next: (account) => {
-                  this.totalYields = account.totalYields;
+                  this.totalForYieldsDialog = account.totalYields;
                 },
               });
           }
@@ -246,6 +275,14 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.total = this.accountpostings
       ? this.accountpostings
         .map((t) => t.amount)
+        .reduce((acc, value) => acc + value, 0)
+      : 0;
+  }
+
+  getTotalApplications() {
+    this.totalApplications = this.accountApplications
+      ? this.accountApplications
+        .map((t) => t.amountApplied)
         .reduce((acc, value) => acc + value, 0)
       : 0;
   }
@@ -297,7 +334,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
         totalGrossBalance: this.totalGrossBalance,
-        totalYields: this.totalYields,
+        totalYields: this.totalForYieldsDialog,
         lastYield: this.getLastYield(),
         accountPostingsYields: this.accountpostings.filter(t => t.type === 'Y'),
       },
@@ -371,6 +408,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         totalIOF: accountPosting.totalIOF,
         totalIR: accountPosting.totalIR,
         iofElapsedDays: accountPosting.iofElapsedDays,
+        totalYields: this.totalForYieldsDialog,
         lastYield: this.getLastYield(),
       },
     });
@@ -429,6 +467,99 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
               this.getTotalAmount();
               this.getAccountTotals();
               this.getAccountsList();
+            },
+            // error: () => this.hideProgress = true
+          });
+        }
+      }
+    });
+  }
+
+  addApplication() {
+    const dialogRef = this.dialog.open(AccountApplicationsDialog, {
+      width: '100%',
+      maxWidth: '100%',
+      data: {
+        reference: this.reference,
+        accountId: this.accountId,
+        editing: false,
+        accountsList: this.accountsList,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        Date.prototype.toJSON = function () {
+          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
+        };
+
+        this.accountApplicationsService.create(result).subscribe({
+          next: (accountApplication) => {
+            if (accountApplication.accountId === this.accountId
+            ) {
+              this.accountApplications = [...this.accountApplications, accountApplication];
+
+              this.accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);
+
+              // this.accountApplicationsLength = this.accountApplications.length;
+            }
+
+            this.getTotalApplications();
+          },
+          // error: () => this.hideProgress = true
+        });
+      }
+    });
+  }
+
+  editOrDeleteApplication(accountApplication: AccountsApplications) {
+    const dialogRef = this.dialog.open(AccountApplicationsDialog, {
+      width: '100%',
+      maxWidth: '100%',
+      data: {
+        ...accountApplication,
+        editing: true,
+        accountsList: this.accountsList,
+      },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        if (result.deleting) {
+          this.accountApplicationsService.delete(accountApplication.id!).subscribe({
+            next: () => {
+              this.accountApplications = this.accountApplications.filter(
+                (t) => t.id! != accountApplication.id!
+              );
+              this.accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);
+
+              this.getTotalApplications();
+            },
+            // error: () => this.hideProgress = true
+          });
+        } else {
+          this.accountApplicationsService.update(result).subscribe({
+            next: () => {
+              this.accountApplications
+                .filter((t) => t.id === result.id)
+                .map((t) => {
+                  t.dateApplied = result.dateApplied;
+                  t.accountId = result.accountId;
+                  t.amountApplied = result.amountApplied;
+                  t.cdiPercent = result.cdiPercent;
+                  t.fixedRate = result.fixedRate;
+                  t.maturityDate = result.maturityDate;
+                });
+
+              this.accountApplications = [
+                ...this.accountApplications.filter(
+                  (ap) =>
+                    ap.accountId === this.accountId
+                ),
+              ];
+
+              this.accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);
+
+              this.getTotalApplications();
             },
             // error: () => this.hideProgress = true
           });

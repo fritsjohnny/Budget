@@ -1,0 +1,9 @@
+.dialog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}

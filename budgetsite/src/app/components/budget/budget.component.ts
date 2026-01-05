@@ -46,6 +46,7 @@ import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
 import { PeopleComponent } from '../people/people.component';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { ConfirmDialogComponent, ConfirmDialogData } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
 @Component({
   selector: 'app-budget',
   templateUrl: './budget.component.html',
@@ -814,7 +815,34 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       next: () => {
         this.refresh();
       },
-      error: () => { },
+      error: (e) => {
+        this.messenger.errorHandler(e);
+      },
+    });
+  }
+
+  repeatPreviousMonth(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Repetir mês anterior',
+        message: 'Essa ação irá apagar TODAS as receitas do mês atual e recriar com base no mês anterior. Deseja continuar?',
+        confirmText: 'Confirmar',
+        cancelText: 'Cancelar',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (!confirmed) return;
+
+      this.incomeService.repeatPreviousMonth(this.reference!).subscribe({
+        next: () => {
+          this.refresh();
+        },
+        error: (e) => {
+          this.messenger.errorHandler(e);
+        },
+      });
     });
   }
 

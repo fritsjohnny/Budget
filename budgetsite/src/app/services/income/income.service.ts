@@ -96,4 +96,16 @@ export class IncomeService {
         catchError((e) => this.messenger.errorHandler(e))
       );
   }
+
+  repeatPreviousMonth(reference: string): Observable<any> {
+    return this.http
+      .post<any>(
+        `${ApiUrls.incomes}/RepeatPreviousMonth?Reference=${reference}`,
+        null
+      )
+      .pipe(
+        map((obj) => obj),
+        catchError((e) => this.messenger.errorHandler(e))
+      );
+  }
 }

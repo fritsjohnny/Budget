@@ -64,6 +64,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     { value: '2', viewValue: 'Neon' },
     { value: '3', viewValue: 'Mercado Pago' },
     { value: '4', viewValue: 'PicPay' },
+    { value: '5', viewValue: 'PagBank' },
   ];
 
   readonly IOF_DAYS_STORAGE_KEY = 'budget.iofElapsedDays';
@@ -126,7 +127,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       finish(this.accountPosting.iofElapsedDays);
       return;
     }
-    
+
     // 1) localStorage
     const stored = localStorage.getItem(this.IOF_DAYS_STORAGE_KEY);
 
@@ -271,6 +272,9 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         else if (this.accountPosting.algorithmType === '4') { // PicPay
           suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.totalYields!, this.accountPosting.iofElapsedDays!);
         }
+        else if (this.accountPosting.algorithmType === '5') { // PagBank
+          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.totalYields!, this.accountPosting.iofElapsedDays!);
+        }
 
         this.accountPosting.grossAmount = suggestYield.grossYield;
         this.accountPosting.amount = suggestYield.netYield;
@@ -288,13 +292,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     } finally {
+      this.calcAmount();
       this.isCalculating = false;
     }
   }
 
+  // Valor
   onAmountChanged(event: any): void {
     if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
 
+    // Saldo Liquido
     if (!event) {
       this.totalBalance = this.accountPosting.totalBalance;
     } else {
@@ -303,9 +310,30 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // Saldo Liquido
+  onTotalBalanceChanged(event: any): void {
+    if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
+
+    // Valor
+    if (this.accountPosting.algorithmType !== '4') {
+      this.isCalculating = true;
+
+      try {
+        this.accountPosting.amount =
+          +(this.totalBalance - this.accountPosting.totalBalance + (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0)).toFixed(2);
+      } finally {
+        this.isCalculating = false;
+      }
+    } else {
+      this.calcAmount();
+    }
+  }
+
+  // Valor Bruto
   onGrossAmountChanged(event: any): void {
     if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
 
+    // Saldo Bruto
     if (!event) {
       this.totalGrossBalance = this.accountPosting.totalGrossBalance;
     } else {
@@ -314,18 +342,18 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  onTotalBalanceChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
-
-    this.accountPosting.amount =
-      +(this.totalBalance - this.accountPosting.totalBalance + (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0)).toFixed(2);
-  }
-
+  // Saldo Bruto
   onTotalGrossBalanceChanged(event: any): void {
     if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
 
-    this.accountPosting.grossAmount =
-      +(this.totalGrossBalance - this.accountPosting.totalGrossBalance + (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0)).toFixed(2);
+    // Valor Bruto
+    this.isCalculating = true;
+    try {
+      this.accountPosting.grossAmount =
+        +(this.totalGrossBalance - this.accountPosting.totalGrossBalance + (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0)).toFixed(2);
+    } finally {
+      this.isCalculating = false;
+    }
 
     this.calcAmount();
   }
@@ -341,9 +369,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   calcAmount() {
     if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating || this.accountPosting.algorithmType !== '4') return;
 
-    this.accountPosting.amount =
-      +(this.totalGrossBalance - this.accountPosting.totalBalance - this.accountPosting.totalIOF! - this.accountPosting.totalIR!).toFixed(2);
+    this.isCalculating = true;
+
+    try {
+      this.accountPosting.amount =
+        +(this.totalGrossBalance - this.accountPosting.totalBalance - this.accountPosting.totalIOF! - this.accountPosting.totalIR!).toFixed(2);
+    } finally {
+      this.isCalculating = false;
+    }
   }
+
 
   setTitle() {
     return (

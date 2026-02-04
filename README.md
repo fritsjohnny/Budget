@@ -1,8 +1,8 @@
 # 💰 Budget — Frontend
 
-> ⚠️ **Projeto pessoal de controle financeiro**
-> Frontend desenvolvido para uso próprio e disponibilizado publicamente **exclusivamente para fins de portfólio técnico**.
-> O objetivo deste repositório é demonstrar **habilidades técnicas**, **decisões de arquitetura** e **boas práticas de desenvolvimento**.
+> ⚠️ **Projeto pessoal de controle financeiro**  
+> Este frontend foi desenvolvido para uso próprio e está disponível publicamente **exclusivamente para fins de portfólio técnico**.  
+> O objetivo deste repositório é demonstrar **habilidades técnicas**, **decisões de arquitetura** e **boas práticas de desenvolvimento frontend**.  
 > **Não possui finalidade comercial** e **não expõe dados reais, credenciais ou informações sensíveis**.
 
 ---
@@ -25,23 +25,23 @@ O **Budget Frontend** é a interface de um sistema pessoal de controle financeir
 
 ## 🧱 Stack principal
 
-| Camada      | Tecnologia                    |
-| ----------- | ----------------------------- |
-| Framework   | Angular                       |
+| Camada | Tecnologia |
+|------|-----------|
+| Framework | Angular |
 | Arquitetura | SPA (Single Page Application) |
-| Mobile      | Capacitor                     |
-| Comunicação | HTTP / JSON                   |
-| Backend     | API REST (ASP.NET Core)       |
+| Mobile | Capacitor |
+| Comunicação | HTTP / JSON |
+| Backend | API REST (ASP.NET Core) |
 
 ---
 
 ## 🔐 Segurança (ponto-chave do projeto)
 
-✔️ Nenhuma credencial sensível versionada  
-✔️ Nenhum token ou chave exposta no repositório  
-✔️ Configurações sensíveis mantidas fora do código  
-✔️ Arquivos de build, cache e dependências ignorados no Git  
-✔️ Firebase (quando utilizado no app) configurado apenas localmente  
+ ✔️ Nenhuma credencial sensível versionada  
+ ✔️ Nenhum token ou chave exposta no repositório  
+ ✔️ Configurações sensíveis mantidas fora do código  
+ ✔️ Arquivos de build, cache e dependências ignorados no Git  
+ ✔️ Firebase (quando utilizado no app) configurado apenas localmente  
 
 Este repositório foi revisado antes de se tornar público, garantindo que apenas código e decisões técnicas estejam expostos.
 
@@ -49,21 +49,12 @@ Este repositório foi revisado antes de se tornar público, garantindo que apena
 
 ## ⚙️ Decisões de arquitetura
 
-🔹 Base de código única para web e mobile  
-🔹 Frontend responsável apenas pela camada de interface  
-🔹 Regras de negócio concentradas exclusivamente no backend  
-🔹 Consumo de API REST via HTTP/JSON  
-🔹 Baixo acoplamento com o ambiente de execução (browser ou Android)  
-🔹 Evolução do projeto sem bifurcação de código  
-
-## 🗂️ Organização do projeto
-
-* **src/app/** → Componentes, serviços e módulos Angular
-* **src/environments/** → Configurações de ambiente
-* **android/** → Projeto Android gerado via Capacitor
-* **capacitor plugins/** → Integrações nativas quando necessário
-
-A estrutura foi mantida simples e previsível, priorizando **manutenção**, **clareza** e **evolução contínua**.
+ 🔹 Base de código única para web e mobile  
+ 🔹 Frontend responsável apenas pela camada de interface  
+ 🔹 Regras de negócio concentradas exclusivamente no backend  
+ 🔹 Consumo de API REST via HTTP/JSON  
+ 🔹 Baixo acoplamento com o ambiente de execução (browser ou Android)  
+ 🔹 Evolução do projeto sem bifurcação de código  
 
 ---
 
@@ -81,12 +72,12 @@ A escolha do **Capacitor** permitiu empacotar a aplicação Angular como app nat
 
 Este projeto foi tornado público **exclusivamente como portfólio técnico**.
 
-* Produto comercial ❌
-* Sistema aberto ao público ❌
-* Dados reais ❌
-* Credenciais ou segredos ❌
+- Produto comercial ❌  
+- Sistema aberto ao público ❌  
+- Dados reais ❌  
+- Credenciais ou segredos ❌  
 
-O foco do repositório é permitir a avaliação de **qualidade de código**, **arquitetura frontend** e **maturidade técnica** do desenvolvedor.
+O foco está em **arquitetura frontend**, **qualidade de código** e **maturidade técnica** do desenvolvedor.
 
 ---
 
@@ -99,5 +90,3 @@ Senior .NET Backend / Full Stack Developer
  🔹 Integração com APIs REST  
  🔹 Aplicações Web e Mobile  
  🔹 Arquitetura limpa e pragmática  
-
----

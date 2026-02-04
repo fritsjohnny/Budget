@@ -46,3 +46,7 @@ testem.log
 Thumbs.db
 
 .fake
+
+# Firebase
+**/google-services.json
+

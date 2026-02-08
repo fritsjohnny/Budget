@@ -38,3 +38,16 @@ export interface Expenses {
   dueDay?: number;
   expectedValue?: number;
 }
+
+export interface ExpensesDueDateReportRow {
+  id: number;
+  dueDate?: string;
+  reference?: string;
+  description?: string;
+  toPay: number;
+  paid: number;
+  remaining: number;
+  categoryId?: number;
+  categoryName?: string;
+  peopleId?: number;
+}

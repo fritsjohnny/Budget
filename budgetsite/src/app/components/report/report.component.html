@@ -58,7 +58,7 @@
                     </mat-form-field>
                 </div>
             </div>
-            <div class="row d-flex">
+            <div class="row d-flex" *ngIf="selectedReportType != 4">
                 <div class="col mb-2">
                     <div>
                         <label for="">Referência Inicial</label>
@@ -86,9 +86,51 @@
                     </app-datepicker>
                 </div>
             </div>
+
+            <div class="row d-flex" *ngIf="selectedReportType === 4">
+                <div class="col mb-2">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Data inicial</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="pickerStart"
+                            [(ngModel)]="initialDateValue"
+                            (dateInput)="initialDateChanged($event.value)"
+                        />
+                        <mat-datepicker-toggle
+                            matSuffix
+                            [for]="pickerStart"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #pickerStart></mat-datepicker>
+                    </mat-form-field>
+                </div>
+                <div class="col mb-2">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Data final</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="pickerEnd"
+                            [(ngModel)]="finalDateValue"
+                            (dateInput)="finalDateChanged($event.value)"
+                        />
+                        <mat-datepicker-toggle
+                            matSuffix
+                            [for]="pickerEnd"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #pickerEnd></mat-datepicker>
+                    </mat-form-field>
+                </div>
+            </div>
         </mat-expansion-panel>
     </mat-accordion>
-
     <div class="row mt-3">
         <div class="col d-flex justify-content-center">
             <button
@@ -131,6 +173,13 @@
                     [initialReference]="initialReference"
                     [finalReference]="finalReference"
                 ></app-expenses-by-category-report>
+            </div>
+            <div class="col" *ngIf="reportType === 4 && showReport">
+                <app-expenses-by-due-date-report
+                    class="col"
+                    [initialDate]="initialDateValue"
+                    [finalDate]="finalDateValue"
+                ></app-expenses-by-due-date-report>
             </div>
         </div>
     </div>

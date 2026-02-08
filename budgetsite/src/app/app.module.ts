@@ -92,6 +92,7 @@ import { CardsNotificationsComponent } from './components/cardsnotifications/car
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DragReadyFeedbackDirective } from './directives/drag-ready-feedback.directive';
 import { YieldsComponent } from './components/yields/yields.component';
+import { ExpensesByDueDateReportComponent } from './components/reports/expenses-by-due-date-report/expenses-by-due-date-report.component';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -149,6 +150,7 @@ registerLocaleData(localePt);
     DragReadyFeedbackDirective,
     YieldsComponent,
     ExpensesByCategoryReportComponent,
+    ExpensesByDueDateReportComponent
   ],
   imports: [
     BrowserModule,

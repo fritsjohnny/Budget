@@ -1,0 +1,134 @@
+<!-- Filtro (quando não vier via Inputs) -->
+<div class="row center" *ngIf="!showReportProgress">
+    <div class="table-container mat-elevation-z8 mytable2">
+        <table
+            mat-table
+            #sortReport="matSort"
+            [dataSource]="dataSourceReport"
+            multiTemplateDataRows
+            matSort
+            matSortActive="dueDate"
+            matSortDirection="asc"
+            (matSortChange)="announceSortChange($event)"
+        >
+            <!-- # Column -->
+            <ng-container matColumnDef="index">
+                <th mat-header-cell *matHeaderCellDef>#</th>
+                <td mat-cell *matCellDef="let row">{{ row.index }}</td>
+                <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <!-- Vencimento -->
+            <ng-container matColumnDef="dueDate">
+                <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    arrowPosition="after"
+                    start="asc"
+                    sortActionDescription="Ordernar por Vencimento"
+                >
+                    Venc.
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    {{ row.dueDate | date: "dd/MM/yy" }}
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <!-- Descrição -->
+            <ng-container matColumnDef="description">
+                <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    arrowPosition="after"
+                    start="asc"
+                    sortActionDescription="Ordernar por Descrição"
+                >
+                    Descrição
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    <div style="display: flex">{{ row.description }}</div>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <!-- Saldo -->
+            <ng-container matColumnDef="remaining">
+                <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    arrowPosition="before"
+                    start="desc"
+                    sortActionDescription="Ordernar por Saldo"
+                >
+                    Saldo
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    {{ row.remaining | currency: "" : "" }}
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                    {{ total | currency: "" : "" }}
+                </td>
+            </ng-container>
+
+            <!-- Referência -->
+            <ng-container matColumnDef="reference">
+                <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    arrowPosition="after"
+                    start="asc"
+                    sortActionDescription="Ordernar por Referência"
+                >
+                    Ref.
+                </th>
+                <td mat-cell *matCellDef="let row">{{ row.reference }}</td>
+                <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <!-- Categoria -->
+            <ng-container matColumnDef="category">
+                <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    arrowPosition="after"
+                    start="asc"
+                    sortActionDescription="Ordernar por Categoria"
+                >
+                    Categoria
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    <div style="display: flex">
+                        {{ row.categoryName || row.categoryId }}
+                    </div>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <tr
+                mat-header-row
+                *matHeaderRowDef="displayedDataColumns; sticky: false"
+            ></tr>
+            <tr
+                mat-row
+                *matRowDef="let row; columns: displayedDataColumns"
+            ></tr>
+            <tr
+                mat-footer-row
+                *matFooterRowDef="displayedDataColumns; sticky: false"
+            ></tr>
+        </table>
+    </div>
+</div>
+
+<!-- SPINNER -->
+<div class="row center" style="margin-top: 10px">
+    <div class="row justify-content-center">
+        <mat-spinner color="accent" *ngIf="showReportProgress"> </mat-spinner>
+    </div>
+</div>

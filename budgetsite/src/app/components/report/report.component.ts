@@ -21,10 +21,13 @@ export class ReportComponent implements OnInit {
     { id: 1, name: 'Despesas Fixas' },
     { id: 2, name: 'Despesas de Terceiros' },
     { id: 3, name: 'Despesas por Categoria' },
+    { id: 4, name: 'Despesas por Data de Vencimento' },
   ];
   showReport: boolean = false;
   categories: Categories[] = [];
   categoryId: number | undefined;
+  initialDateValue: Date | null = null;
+  finalDateValue: Date | null = null;
 
   constructor(private categoryService: CategoryService) { }
 
@@ -44,6 +47,16 @@ export class ReportComponent implements OnInit {
         localStorage.getItem('lastSelectedCategoryReport') || '0'
       );
     });
+
+    const initialDateStr = localStorage.getItem('report4InitialDate');
+    const finalDateStr = localStorage.getItem('report4FinalDate');
+    
+    if (initialDateStr) {
+      this.initialDateValue = new Date(initialDateStr);
+    }
+    if (finalDateStr) {
+      this.finalDateValue = new Date(finalDateStr);
+    }
   }
 
   initialReferenceChanges(reference: string) {
@@ -91,5 +104,15 @@ export class ReportComponent implements OnInit {
       this.reportType = this.selectedReportType;
       this.showReport = true; // Força a re-renderização
     });
+  }
+
+  initialDateChanged(date: Date) {
+    this.initialDateValue = date;
+    localStorage.setItem('report4InitialDate', date.toISOString());
+  }
+
+  finalDateChanged(date: Date) {
+    this.finalDateValue = date;
+    localStorage.setItem('report4FinalDate', date.toISOString());
   }
 }

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { ApiUrls } from 'src/app/common/api-urls';
 import { catchError, map } from 'rxjs/operators';
 import { Messenger } from 'src/app/common/messenger';
-import { Expenses } from 'src/app/models/expenses.model';
+import { Expenses, ExpensesDueDateReportRow } from 'src/app/models/expenses.model';
 
 @Injectable({
   providedIn: 'root',
@@ -161,5 +161,11 @@ export class ExpenseService {
 
   public ajustarPorCategoria(id: number): Observable<any> {
     return this.http.post(`${ApiUrls.expenses}/AjustarPorCategoria/${id}`, null);
+  }
+
+  readByDueDateRange(initialDate: string, finalDate: string) {
+    return this.http.get<ExpensesDueDateReportRow[]>(
+      `${ApiUrls.expenses}/DueDateRange?initialDate=${initialDate}&finalDate=${finalDate}`
+    );
   }
 }

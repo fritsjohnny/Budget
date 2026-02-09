@@ -29,6 +29,9 @@
                 <mat-radio-button value="Y">Rendimento</mat-radio-button>
                 <mat-radio-button value="P">Pagamento </mat-radio-button>
                 <mat-radio-button value="C">Troco</mat-radio-button>
+                <mat-radio-button value="T"
+                    >Transferência entre contas</mat-radio-button
+                >
             </mat-radio-group>
 
             <!-- Retirado em 22-06-2022 por acreditar que não se deve mover um lançamento de conta para outro mês -->
@@ -50,6 +53,7 @@
                             mat-input
                             [(ngModel)]="accountPosting.accountId"
                             formControlName="accountIdFormControl"
+                            (selectionChange)="onAccountChanged()"
                         >
                             <mat-option
                                 *ngFor="let c of accountPosting.accountsList"
@@ -69,6 +73,28 @@
                 </div>
             </div>
 
+            <div class="row" *ngIf="isTransferMode()">
+                <mat-form-field
+                    appearance="fill"
+                    floatLabel="always"
+                    style="width: 100%"
+                >
+                    <mat-label>Conta destino</mat-label>
+                    <mat-select
+                        mat-input
+                        [(ngModel)]="accountPosting.transferToAccountId"
+                        formControlName="transferToAccountIdFormControl"
+                        (selectionChange)="onTransferToAccountChanged()"
+                    >
+                        <mat-option
+                            *ngFor="let c of transferAccountsList"
+                            [value]="c.id"
+                            >{{ c.name }}</mat-option
+                        >
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
             <div class="row" *ngIf="accountPosting.type !== 'Y'">
                 <mat-form-field appearance="fill">
                     <mat-label>Descrição</mat-label>
@@ -79,7 +105,7 @@
                         matInput
                         formControlName="descriptionFormControl"
                         [(ngModel)]="accountPosting.description"
-                        [readonly]="accountPosting.type == 'Y'"
+                        [readonly]="accountPosting.type == 'Y' || isTransferMode()"
                     />
                     <mat-error
                         *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
@@ -104,7 +130,7 @@
                             matInput
                             formControlName="descriptionFormControl"
                             [(ngModel)]="accountPosting.description"
-                            [readonly]="accountPosting.type == 'Y'"
+                            [readonly]="accountPosting.type == 'Y' || isTransferMode()"
                         />
                         <mat-error
                             *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')"

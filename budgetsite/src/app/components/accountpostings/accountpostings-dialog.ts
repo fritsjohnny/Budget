@@ -14,6 +14,7 @@ import {
   MatDialog,
 } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
+import { Messenger } from 'src/app/common/messenger';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountsPostings } from 'src/app/models/accountspostings.model';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
@@ -49,6 +50,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     iofElapsedDaysFormControl: new FormControl(''),
     iofTotalFormControl: new FormControl(''),
     irTotalFormControl: new FormControl(''),
+    transferToAccountIdFormControl: new FormControl(''),
   });
 
   totalBalance!: number;
@@ -70,13 +72,17 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   readonly IOF_DAYS_STORAGE_KEY = 'budget.iofElapsedDays';
   readonly IOF_DATE_STORAGE_KEY = 'budget.iofElapsedDate';
 
+  transferAccountsList: any[] = [];
+
   constructor(
     public dialog: MatDialog,
     public dialogRef: MatDialogRef<AccountPostingsDialog>,
     @Inject(MAT_DIALOG_DATA) public accountPosting: AccountsPostings,
     private cd: ChangeDetectorRef,
     private yieldService: YieldService,
-    private accountApplicationsService: AccountApplicationsService
+    private accountApplicationsService: AccountApplicationsService,
+    private messenger: Messenger,
+
   ) { }
 
   ngOnInit(): void {
@@ -96,6 +102,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
       this.accountPosting.iofElapsedDays = days;
     });
+
+    this.refreshTransferAccountsList();
   }
 
   ngAfterViewInit(): void {
@@ -201,6 +209,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   save(): void {
+    if (this.isTransferMode()) {
+      if (!this.validateTransferMode(true)) return;
+    }
+
     this.accountPosting.totalGrossBalance = this.totalGrossBalance;
 
     this.dialogRef.close(this.accountPosting);
@@ -238,11 +250,49 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.onTypeChange();
   }
 
+  onAccountChanged(): void {
+    if (this.isTransferMode()) {
+      this.refreshTransferAccountsList();
+      this.applyTransferDescription();
+    }
+  }
+
+  removeValidatorsAndClearFields() {
+    // Remove validators temporariamente para evitar erros enquanto limpa os campos
+    const amountControl = this.accountPostingFormGroup.get('amountFormControl');
+    const descriptionControl = this.accountPostingFormGroup.get('descriptionFormControl');
+    amountControl?.clearValidators();
+    descriptionControl?.clearValidators();
+    amountControl?.updateValueAndValidity({ emitEvent: false });
+    descriptionControl?.updateValueAndValidity({ emitEvent: false });
+
+    // Limpa os campos específicos dos tipos anteriores
+    this.accountPosting.description = '';
+    amountControl?.setValue(null);
+    this.accountPosting.grossAmount = 0;
+    this.accountPosting.note = '';
+    this.accountPosting.incomeId = undefined;
+    this.accountPosting.expenseId = undefined;
+    this.accountPosting.iofElapsedDays = undefined;
+    this.accountPosting.algorithmType = undefined;
+    this.accountPosting.totalIOF = undefined;
+    this.accountPosting.totalIR = undefined;
+
+    // Restaura os validators para os campos que são obrigatórios em alguns tipos
+    amountControl?.setValidators(Validators.required);
+    descriptionControl?.setValidators(Validators.required);
+    amountControl?.updateValueAndValidity({ emitEvent: false });
+    descriptionControl?.updateValueAndValidity({ emitEvent: false });
+  }
+
   async onTypeChange(firstLoad: boolean = false) {
     this.noRecalculate = false;
     this.isCalculating = true;
 
     try {
+
+      this.removeValidatorsAndClearFields();
+
       if (this.accountPosting.type === 'Y') {
         this.accountPosting.description = 'Rendimento';
 
@@ -283,6 +333,14 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
       } else if (this.accountPosting.type === 'C') {
         this.accountPosting.description = 'Troco';
+      } else if (this.accountPosting.type === 'T') {
+        this.refreshTransferAccountsList();
+
+        // 2) descrição automática (origem sempre “Transferido para X”)
+        this.applyTransferDescription();
+
+        // 4) valida o form para refletir required/invalid
+        this.updateTransferValidators();
       } else {
         if (
           this.accountPosting.description === 'Rendimento' ||
@@ -295,6 +353,76 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       this.calcAmount();
       this.isCalculating = false;
     }
+  }
+
+  validateTransferMode(showMessage: boolean): boolean {
+    if (!this.isTransferMode()) return true;
+
+    if (!this.accountPosting.transferToAccountId) {
+      if (showMessage) this.messenger.message('Selecione a conta destino.');
+      return false;
+    }
+
+    if (this.accountPosting.transferToAccountId === this.accountPosting.accountId) {
+      if (showMessage) this.messenger.message('A conta destino deve ser diferente da conta de origem.');
+      return false;
+    }
+
+    return true;
+  }
+
+  updateTransferValidators(): void {
+    const ctrl = this.accountPostingFormGroup.get('transferToAccountIdFormControl');
+    if (!ctrl) return;
+
+    ctrl.setValidators([Validators.required]);
+    ctrl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  refreshTransferAccountsList(): void {
+    const source = this.accountPosting.accountsList || [];
+    const origin = this.accountPosting.accountId;
+
+    this.transferAccountsList = origin
+      ? source.filter(a => a.id !== origin)
+      : source.slice(); // se ainda não tem origem, mantém todas
+
+    if (this.accountPosting.transferToAccountId && this.accountPosting.transferToAccountId === origin) {
+      this.accountPosting.transferToAccountId = undefined;
+
+      const ctrl = this.accountPostingFormGroup.get('transferToAccountIdFormControl');
+      if (ctrl) ctrl.setValue(undefined, { emitEvent: false });
+    }
+  }
+
+  isTransferMode(): boolean {
+    return this.accountPosting.type === 'T';
+  }
+
+  onTransferToAccountChanged(): void {
+    if (!this.isTransferMode()) return;
+    this.applyTransferDescription();
+  }
+
+  applyTransferDescription(): void {
+    if (!this.isTransferMode()) return;
+
+    const destino = this.getAccountName(this.accountPosting.transferToAccountId);
+    this.accountPosting.description = destino
+      ? ('Transferido para ' + destino)
+      : 'Transferência entre contas';
+
+    const control = this.accountPostingFormGroup.get('descriptionFormControl');
+
+    if (control) {
+      control.setValue(this.accountPosting.description, { emitEvent: false });
+    }
+  }
+
+  private getAccountName(accountId?: number): string {
+    if (!accountId) return '';
+    const account = this.accountPosting.accountsList?.find(a => a.id === accountId);
+    return account?.name ?? '';
   }
 
   // Valor

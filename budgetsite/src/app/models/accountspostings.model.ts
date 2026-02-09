@@ -38,4 +38,5 @@ export interface AccountsPostings {
   accountPostingsYields?: AccountsPostings[];
   iofElapsedDays?: number;
   iofElapsedDate?: Date;
+  transferToAccountId?: number;
 }

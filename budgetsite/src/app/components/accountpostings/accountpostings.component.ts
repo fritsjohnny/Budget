@@ -111,7 +111,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.accountPostingsPanelExpanded =
       localStorage.getItem('accountPostingsPanelExpanded') === 'true';
 
-      this.accountApplicationsPanelExpanded =
+    this.accountApplicationsPanelExpanded =
       localStorage.getItem('accountApplicationsPanelExpanded') === 'true';
   }
 
@@ -434,6 +434,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         iofElapsedDays: accountPosting.iofElapsedDays,
         totalYields: this.totalForYieldsDialog,
         lastYield: this.getLastYield(),
+        relatedId: accountPosting.relatedId,
+        toAccountId: accountPosting.toAccountId,
       },
     });
 

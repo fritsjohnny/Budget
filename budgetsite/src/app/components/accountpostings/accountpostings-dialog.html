@@ -23,13 +23,22 @@
                 (change)="onTypeChange()"
                 class="radio-grid mb-3"
             >
-                <mat-radio-button value="R" cdkFocusInitial
+                <mat-radio-button
+                    value="R"
+                    cdkFocusInitial
+                    [disabled]="accountPosting.editing"
                     >Recebimento
                 </mat-radio-button>
-                <mat-radio-button value="Y">Rendimento</mat-radio-button>
-                <mat-radio-button value="P">Pagamento </mat-radio-button>
-                <mat-radio-button value="C">Troco</mat-radio-button>
-                <mat-radio-button value="T"
+                <mat-radio-button value="Y" [disabled]="accountPosting.editing"
+                    >Rendimento</mat-radio-button
+                >
+                <mat-radio-button value="P" [disabled]="accountPosting.editing"
+                    >Pagamento
+                </mat-radio-button>
+                <mat-radio-button value="C" [disabled]="accountPosting.editing"
+                    >Troco</mat-radio-button
+                >
+                <mat-radio-button value="T" [disabled]="accountPosting.editing"
                     >Transferência entre contas</mat-radio-button
                 >
             </mat-radio-group>
@@ -82,9 +91,9 @@
                     <mat-label>Conta destino</mat-label>
                     <mat-select
                         mat-input
-                        [(ngModel)]="accountPosting.transferToAccountId"
-                        formControlName="transferToAccountIdFormControl"
-                        (selectionChange)="onTransferToAccountChanged()"
+                        [(ngModel)]="accountPosting.toAccountId"
+                        formControlName="toAccountIdFormControl"
+                        (selectionChange)="onToAccountChanged()"
                     >
                         <mat-option
                             *ngFor="let c of transferAccountsList"

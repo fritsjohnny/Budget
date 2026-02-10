@@ -50,7 +50,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     iofElapsedDaysFormControl: new FormControl(''),
     iofTotalFormControl: new FormControl(''),
     irTotalFormControl: new FormControl(''),
-    transferToAccountIdFormControl: new FormControl(''),
+    toAccountIdFormControl: new FormControl(''),
   });
 
   totalBalance!: number;
@@ -261,28 +261,22 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     // Remove validators temporariamente para evitar erros enquanto limpa os campos
     const amountControl = this.accountPostingFormGroup.get('amountFormControl');
     const descriptionControl = this.accountPostingFormGroup.get('descriptionFormControl');
+    
     amountControl?.clearValidators();
     descriptionControl?.clearValidators();
-    amountControl?.updateValueAndValidity({ emitEvent: false });
-    descriptionControl?.updateValueAndValidity({ emitEvent: false });
 
     // Limpa os campos específicos dos tipos anteriores
     this.accountPosting.description = '';
     amountControl?.setValue(null);
-    this.accountPosting.grossAmount = 0;
-    this.accountPosting.note = '';
-    this.accountPosting.incomeId = undefined;
-    this.accountPosting.expenseId = undefined;
+    this.accountPosting.grossAmount = null;
+    this.accountPosting.note = null;
     this.accountPosting.iofElapsedDays = undefined;
-    this.accountPosting.algorithmType = undefined;
     this.accountPosting.totalIOF = undefined;
     this.accountPosting.totalIR = undefined;
 
     // Restaura os validators para os campos que são obrigatórios em alguns tipos
     amountControl?.setValidators(Validators.required);
     descriptionControl?.setValidators(Validators.required);
-    amountControl?.updateValueAndValidity({ emitEvent: false });
-    descriptionControl?.updateValueAndValidity({ emitEvent: false });
   }
 
   async onTypeChange(firstLoad: boolean = false) {
@@ -291,7 +285,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
     try {
 
-      this.removeValidatorsAndClearFields();
+      if (!this.accountPosting.editing)
+        this.removeValidatorsAndClearFields();
 
       if (this.accountPosting.type === 'Y') {
         this.accountPosting.description = 'Rendimento';
@@ -358,12 +353,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   validateTransferMode(showMessage: boolean): boolean {
     if (!this.isTransferMode()) return true;
 
-    if (!this.accountPosting.transferToAccountId) {
+    if (!this.accountPosting.toAccountId) {
       if (showMessage) this.messenger.message('Selecione a conta destino.');
       return false;
     }
 
-    if (this.accountPosting.transferToAccountId === this.accountPosting.accountId) {
+    if (this.accountPosting.toAccountId === this.accountPosting.accountId) {
       if (showMessage) this.messenger.message('A conta destino deve ser diferente da conta de origem.');
       return false;
     }
@@ -372,7 +367,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   updateTransferValidators(): void {
-    const ctrl = this.accountPostingFormGroup.get('transferToAccountIdFormControl');
+    const ctrl = this.accountPostingFormGroup.get('toAccountIdFormControl');
     if (!ctrl) return;
 
     ctrl.setValidators([Validators.required]);
@@ -387,10 +382,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       ? source.filter(a => a.id !== origin)
       : source.slice(); // se ainda não tem origem, mantém todas
 
-    if (this.accountPosting.transferToAccountId && this.accountPosting.transferToAccountId === origin) {
-      this.accountPosting.transferToAccountId = undefined;
+    if (this.accountPosting.toAccountId && this.accountPosting.toAccountId === origin) {
+      this.accountPosting.toAccountId = undefined;
 
-      const ctrl = this.accountPostingFormGroup.get('transferToAccountIdFormControl');
+      const ctrl = this.accountPostingFormGroup.get('toAccountIdFormControl');
       if (ctrl) ctrl.setValue(undefined, { emitEvent: false });
     }
   }
@@ -399,7 +394,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     return this.accountPosting.type === 'T';
   }
 
-  onTransferToAccountChanged(): void {
+  onToAccountChanged(): void {
     if (!this.isTransferMode()) return;
     this.applyTransferDescription();
   }
@@ -407,7 +402,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   applyTransferDescription(): void {
     if (!this.isTransferMode()) return;
 
-    const destino = this.getAccountName(this.accountPosting.transferToAccountId);
+    const destino = this.getAccountName(this.accountPosting.toAccountId);
     this.accountPosting.description = destino
       ? ('Transferido para ' + destino)
       : 'Transferência entre contas';
@@ -466,7 +461,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       this.totalGrossBalance = this.accountPosting.totalGrossBalance;
     } else {
       this.totalGrossBalance =
-        +(this.accountPosting.totalGrossBalance + this.accountPosting.grossAmount - (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0)).toFixed(2);
+        +(this.accountPosting.totalGrossBalance + this.accountPosting.grossAmount! - (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0)).toFixed(2);
     }
   }
 

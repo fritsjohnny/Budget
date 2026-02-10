@@ -13,7 +13,7 @@ export interface AccountsPostings {
   amount: number;
   remaining: number;
   runningAmount: number;
-  note?: string;
+  note: string | null;
   type?: string;
   cardReceiptId?: number;
   expenseId?: number;
@@ -27,16 +27,17 @@ export interface AccountsPostings {
   cardReceipt?: CardsReceipts;
   totalBalance: number;
   totalGrossBalance: number;
-  totalYields?: number;
+  totalYields: number | null;
   lastYield: number;
-  grossAmount: number;
-  originalAmount?: number;
-  originalGrossAmount?: number;
+  grossAmount: number | null;
+  originalAmount: number | null;
+  originalGrossAmount: number | null;
   algorithmType?: string;
   totalIOF?: number;
   totalIR?: number;
   accountPostingsYields?: AccountsPostings[];
   iofElapsedDays?: number;
   iofElapsedDate?: Date;
-  transferToAccountId?: number;
+  relatedId?: number;
+  toAccountId?: number;
 }

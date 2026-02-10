@@ -270,7 +270,6 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     amountControl?.setValue(null);
     this.accountPosting.grossAmount = null;
     this.accountPosting.note = null;
-    this.accountPosting.iofElapsedDays = undefined;
     this.accountPosting.totalIOF = undefined;
     this.accountPosting.totalIR = undefined;
 

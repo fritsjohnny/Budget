@@ -1,38 +1,114 @@
 .table-container {
-  width: 100%;
-  height: auto;
-  overflow: auto;
+    width: 100%;
+    height: auto;
+    overflow: auto;
 }
 
 table {
-  width: 100%;
+    width: 100%;
 }
 
 tr.mat-footer-row {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .mat-panel-summary {
-  margin-top: 10px !important;
-  padding-bottom: -50px !important;
+    margin-top: 10px !important;
+    padding-bottom: -50px !important;
+}
+
+.mat-column-description {
+    min-width: 160px;
 }
 
 .mat-column-forecastBalance {
-  width: 150px;
-  text-align: right;
-  padding-right: 5px;
+    width: 150px;
+    text-align: right;
 }
 
 .mat-column-availableBalance {
-  width: 150px;
-  text-align: right;
-  padding-right: 5px;
+    width: 150px;
+    text-align: right;
 }
 
 .saldos {
-  height: 30px;
+    height: 30px;
 }
 
 .summary {
-  border-radius: var(--border-radius);
+    border-radius: var(--border-radius);
+}
+
+.negative {
+    white-space: nowrap;
+}
+
+.money {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.th-top-empty {
+    border-bottom: none !important;
+} /* não desenhar linha feia */
+.th-group {
+    text-align: center;
+    border-bottom: none !important;
+}
+
+.th-sub,
+.th-sub-left {
+    font-weight: 600;
+}
+.th-sub {
+    text-align: right;
+}
+.th-sub-left {
+    text-align: left;
+}
+
+::ng-deep .mytable2 table.mat-table thead tr.mat-header-row.header-top {
+    height: 24px !important;
+    min-height: 24px !important;
+}
+
+::ng-deep
+    .mytable2
+    table.mat-table
+    thead
+    tr.mat-header-row.header-top
+    th.mat-header-cell {
+    padding-top: 10px !important;
+    padding-bottom: 0 !important;
+    line-height: 14px !important;
+}
+
+::ng-deep .mytable2 .mat-header-row.header-top .mat-header-cell {
+    height: 24px !important;
+    min-height: 24px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 14px !important;
+}
+
+::ng-deep
+    .mytable2
+    .mat-header-row.header-top
+    .mat-header-cell
+    .mat-sort-header-container,
+::ng-deep .mytable2 .mat-header-row.header-top .mat-header-cell {
+    align-items: center;
+}
+
+::ng-deep .mytable2 .mat-column-description {
+    width: 40%;
+}
+
+::ng-deep .mytable2 .mat-column-forecastBalance,
+::ng-deep .mytable2 .mat-column-availableBalance {
+    width: 30%;
+}
+
+::ng-deep .mytable2 .mat-column-saldoGroup {
+    text-align: center !important;
 }

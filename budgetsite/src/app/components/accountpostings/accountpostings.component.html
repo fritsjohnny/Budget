@@ -162,7 +162,7 @@
                             >
                                 {{ accountPostingsLength - i }}
                             </td>
-                            <td
+                            <td 
                                 mat-footer-cell
                                 *matFooterCellDef
                                 [ngStyle]="{
@@ -227,7 +227,7 @@
                             >
                                 {{ row.amount | currency: "" : "" }}
                             </td>
-                            <td
+                            <td style="white-space: nowrap;"
                                 mat-footer-cell
                                 *matFooterCellDef
                                 [ngClass]="total < 0 ? 'negative' : 'positive'"

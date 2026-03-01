@@ -66,4 +66,16 @@ export class AccountPostingsService {
       catchError(e => this.messenger.errorHandler(e))
     );
   }
+
+  generateCardReceipt(accountPostingId: number, peopleId: number, cardId: number): Observable<number> {
+    const url =
+      `${ApiUrls.accountspostings}/GenerateCardReceipt` +
+      `?accountPostingId=${accountPostingId}` +
+      `&cardId=${cardId}` +
+      `&peopleId=${peopleId}`;
+
+    return this.http.post<number>(url, null).pipe(
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
 }

@@ -162,7 +162,7 @@
                             >
                                 {{ accountPostingsLength - i }}
                             </td>
-                            <td 
+                            <td
                                 mat-footer-cell
                                 *matFooterCellDef
                                 [ngStyle]="{
@@ -214,7 +214,8 @@
                         <!-- Valor Column -->
                         <ng-container matColumnDef="amount">
                             <th mat-header-cell *matHeaderCellDef>Valor</th>
-                            <td style="white-space: nowrap;"
+                            <td
+                                style="white-space: nowrap"
                                 mat-cell
                                 *matCellDef="let row"
                                 [ngClass]="
@@ -227,7 +228,8 @@
                             >
                                 {{ row.amount | currency: "" : "" }}
                             </td>
-                            <td style="white-space: nowrap;"
+                            <td
+                                style="white-space: nowrap"
                                 mat-footer-cell
                                 *matFooterCellDef
                                 [ngClass]="total < 0 ? 'negative' : 'positive'"
@@ -239,7 +241,8 @@
                         <!-- Running Column -->
                         <ng-container matColumnDef="runningAmount">
                             <th mat-header-cell *matHeaderCellDef>Saldo</th>
-                            <td style="white-space: nowrap;"
+                            <td
+                                style="white-space: nowrap"
                                 mat-cell
                                 *matCellDef="let row"
                                 [ngClass]="
@@ -254,13 +257,41 @@
                             <td mat-footer-cell *matFooterCellDef></td>
                         </ng-container>
 
+                        <!-- Ações Column -->
+                        <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef></th>
+                            <td mat-cell *matCellDef="let row">
+                                <button
+                                    mat-icon-button
+                                    class="icon-actions"
+                                    [matMenuTriggerFor]="menu"
+                                >
+                                    <mat-icon>more_vert</mat-icon>
+                                </button>
+                                <mat-menu #menu="matMenu">
+                                    <button
+                                        mat-menu-item
+                                        (click)="openGenerateCardReceiptDialog(row)"
+                                        [disabled]="
+                                            row.type != 'R' ||
+                                            row.cardReceiptId != null
+                                        "
+                                    >
+                                        <mat-icon>credit_card</mat-icon>
+                                        <span>Gerar recebimento cartão</span>
+                                    </button>
+                                </mat-menu>
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef></td>
+                        </ng-container>
+
                         <tr
                             mat-header-row
                             *matHeaderRowDef="displayedColumns; sticky: true"
                         ></tr>
                         <tr
                             mat-row
-                            (click)="editOrDelete(row)"
+                            (click)="editOrDelete(row, $event)"
                             *matRowDef="let row; columns: displayedColumns"
                             cdkDrag
                             appDragReadyFeedback

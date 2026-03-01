@@ -29,6 +29,8 @@ import { YieldsComponent } from '../yields/yields.component';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
 import { AccountApplicationsDialog } from './accountapplications-dialog';
+import { GenerateCardReceiptDialog } from './generate-cardreceipt-dialog';
+import { Messenger } from 'src/app/common/messenger';
 
 @Component({
   selector: 'app-accountpostings',
@@ -65,6 +67,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     'description',
     'amount',
     'runningAmount',
+    'actions',
   ];
   accountApplicationsDisplayedColumns = [
     'indexApplication',
@@ -105,6 +108,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     private expenseService: ExpenseService,
     public dialog: MatDialog,
     private cdr: ChangeDetectorRef,
+    private messenger: Messenger
   ) { }
 
   ngOnInit(): void {
@@ -402,7 +406,11 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  editOrDelete(accountPosting: AccountsPostings) {
+  editOrDelete(accountPosting: AccountsPostings, event: any) {
+    if (event != null && event.target.textContent === 'more_vert') {
+      return;
+    }
+
     const dialogRef = this.dialog.open(AccountPostingsDialog, {
       width: '100%',
       maxWidth: '100%',
@@ -671,6 +679,32 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         accountId: null,
         title: 'Rendimentos Gerais',
       },
+    });
+  }
+
+  openGenerateCardReceiptDialog(accountPosting: any) {
+    const dialogRef = this.dialog.open(GenerateCardReceiptDialog, {
+      width: '100%',
+      maxWidth: '100%',
+      data: {
+        amount: accountPosting.amount,
+        date: accountPosting.date,
+        description: accountPosting.description
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) return;
+
+      const peopleId = result.peopleId;
+      const cardId = result.cardId;
+
+      this.accountPostingsService.generateCardReceipt(accountPosting.id!, peopleId, cardId).subscribe({
+        next: () => {
+          this.messenger.message('Recebimento de cartão gerado com sucesso!', 5000);
+        },
+        // error: () => this.hideProgress = true
+      });
     });
   }
 }

@@ -1,0 +1,114 @@
+<div class="">
+    <form [formGroup]="formGroup">
+        <div class="cancel">
+            <button
+                class="default-button"
+                mat-mini-fab
+                matTooltip="Cancelar"
+                color="accent"
+                aria-label="Cancelar"
+                (click)="cancel()"
+            >
+                <mat-icon class="default-icon">close</mat-icon>
+            </button>
+        </div>
+
+        <h2 mat-dialog-title>{{ setTitle() }}</h2>
+
+        <div mat-dialog-content>
+            <div class="row">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Valor</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            [ngModel]="data.amount"
+                            [ngModelOptions]="{ standalone: true }"
+                            readonly
+                        />
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Data</mat-label>
+                        <input
+                            matInput
+                            [value]="data.date | date:'dd/MM/yyyy'"
+                            readonly
+                        />
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row">
+                <mat-form-field
+                    appearance="fill"
+                    floatLabel="always"
+                    style="width: 100%"
+                >
+                    <mat-label>Pessoa</mat-label>
+                    <mat-select mat-input formControlName="peopleIdFormControl">
+                        <mat-option *ngFor="let p of peopleList" [value]="p.id">
+                            {{ p.name }}
+                        </mat-option>
+                    </mat-select>
+                    <mat-error
+                        *ngIf="formGroup.get('peopleIdFormControl')?.hasError('required')"
+                    >
+                        Campo <strong>obrigatório</strong>.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="row">
+                <mat-form-field
+                    appearance="fill"
+                    floatLabel="always"
+                    style="width: 100%"
+                >
+                    <mat-label>Cartão</mat-label>
+                    <mat-select mat-input formControlName="cardIdFormControl">
+                        <mat-option *ngFor="let c of cardsList" [value]="c.id">
+                            {{ c.name }}
+                        </mat-option>
+                    </mat-select>
+                    <mat-error
+                        *ngIf="formGroup.get('cardIdFormControl')?.hasError('required')"
+                    >
+                        Campo <strong>obrigatório</strong>.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div mat-dialog-actions>
+                    <button
+                        [disabled]="!formGroup.valid"
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Salvar"
+                        matTooltipPosition="right"
+                        class="bg-primary"
+                        aria-label="Salvar"
+                        (click)="save()"
+                    >
+                        <mat-icon class="default-icon">save</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

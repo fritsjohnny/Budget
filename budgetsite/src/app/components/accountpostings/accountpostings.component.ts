@@ -67,7 +67,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     'description',
     'amount',
     'runningAmount',
-    'actions',
+    // 'actions',
   ];
   accountApplicationsDisplayedColumns = [
     'indexApplication',

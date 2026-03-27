@@ -71,6 +71,19 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   readonly IOF_DAYS_STORAGE_KEY = 'budget.iofElapsedDays';
   readonly IOF_DATE_STORAGE_KEY = 'budget.iofElapsedDate';
+  readonly ALGORITHM_STORAGE_KEY = 'budget.algorithmType';
+
+  private getIofDaysKey(accountId?: number) {
+    return `${this.IOF_DAYS_STORAGE_KEY}.${accountId ?? 0}`;
+  }
+
+  private getIofDateKey(accountId?: number) {
+    return `${this.IOF_DATE_STORAGE_KEY}.${accountId ?? 0}`;
+  }
+
+  private getAlgorithmKey(accountId?: number) {
+    return `${this.ALGORITHM_STORAGE_KEY}.${accountId ?? 0}`;
+  }
 
   transferAccountsList: any[] = [];
 
@@ -101,6 +114,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       }
 
       this.accountPosting.iofElapsedDays = days;
+
+      const accountId = this.accountPosting.accountId;
+
+      localStorage.setItem(this.getIofDaysKey(accountId), String(days));
+      localStorage.setItem(this.getIofDateKey(accountId), new Date().toISOString());
     });
 
     this.refreshTransferAccountsList();
@@ -115,7 +133,14 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     const selectedAlgorithmType = this.algorithmTypes
       .find(a => account?.name?.toLowerCase().includes(a.viewValue.toLowerCase()));
 
-    this.accountPosting.algorithmType = selectedAlgorithmType?.value;
+    const storedAlgorithm = localStorage.getItem(this.getAlgorithmKey(account?.id));
+
+    if (storedAlgorithm) {
+      this.accountPosting.algorithmType = storedAlgorithm;
+    }
+    else {
+      this.accountPosting.algorithmType = selectedAlgorithmType?.value;
+    }
 
     const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
 
@@ -137,12 +162,15 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // 1) localStorage
-    const stored = localStorage.getItem(this.IOF_DAYS_STORAGE_KEY);
+    const stored = localStorage.getItem(this.getIofDaysKey(account?.id)
+    );
 
     if (stored !== null) {
       const baseDays = this.toNonNegativeInt(Number(stored));
 
-      const storedDateStr = localStorage.getItem(this.IOF_DATE_STORAGE_KEY);
+      const storedDateStr = localStorage.getItem(this.getIofDateKey(account?.id)
+      );
+
       if (!storedDateStr) {
         finish(baseDays);
         return;
@@ -239,6 +267,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onAlgorithmTypeChange(value: any) {
+
+    const accountId = this.accountPosting.accountId;
+
+    if (accountId) {
+      localStorage.setItem(
+        this.getAlgorithmKey(accountId),
+        this.accountPosting.algorithmType ?? ''
+      );
+    }
+
     this.onTypeChange();
   }
 
@@ -261,7 +299,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     // Remove validators temporariamente para evitar erros enquanto limpa os campos
     const amountControl = this.accountPostingFormGroup.get('amountFormControl');
     const descriptionControl = this.accountPostingFormGroup.get('descriptionFormControl');
-    
+
     amountControl?.clearValidators();
     descriptionControl?.clearValidators();
 

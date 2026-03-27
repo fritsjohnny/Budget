@@ -20,7 +20,7 @@ export class DragReadyFeedbackDirective implements OnDestroy {
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(event: PointerEvent): void {
-    if (this.timeoutRef) return;
+    this.clearTimeoutOnly();
 
     this.pointerId = event.pointerId;
 
@@ -31,10 +31,19 @@ export class DragReadyFeedbackDirective implements OnDestroy {
     }, this.dragReadyDelay);
   }
 
+  @HostListener('dragstart')
+  onDragStart(): void {
+    this.removeReadyState();
+  }
+
   @HostListener('pointerup')
   @HostListener('pointercancel')
-  @HostListener('pointerleave')
   onPointerUp(): void {
+    this.clear();
+  }
+
+  @HostListener('document:pointerup')
+  onDocumentPointerUp(): void {
     this.clear();
   }
 
@@ -43,9 +52,19 @@ export class DragReadyFeedbackDirective implements OnDestroy {
   }
 
   private clear(): void {
-    clearTimeout(this.timeoutRef);
-    this.timeoutRef = null;
+    this.clearTimeoutOnly();
+    this.removeReadyState();
     this.pointerId = null;
+  }
+
+  private clearTimeoutOnly(): void {
+    if (this.timeoutRef) {
+      clearTimeout(this.timeoutRef);
+      this.timeoutRef = null;
+    }
+  }
+
+  private removeReadyState(): void {
     this.renderer.removeClass(this.el.nativeElement, 'ready-to-drag');
   }
 }

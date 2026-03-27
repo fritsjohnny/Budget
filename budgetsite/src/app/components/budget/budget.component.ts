@@ -47,6 +47,7 @@ import { PeopleComponent } from '../people/people.component';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
+
 @Component({
   selector: 'app-budget',
   templateUrl: './budget.component.html',
@@ -166,6 +167,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   isOrderingByDueDate = false;
   creditCardsFirst = false;
+
+  isMergingExpenses: boolean = false;
+  selectedExpenseIdsToMerge: number[] = [];
 
   constructor(
     private expenseService: ExpenseService,
@@ -745,7 +749,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private deleteExpense(expense: any) {
+  deleteExpense(expense: any) {
     this.expenseService.delete(expense.id).subscribe({
       next: () => {
         this.expenses = this.expenses.filter((t) => t.id! != expense.id!);
@@ -760,6 +764,57 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         this.hideCategoriesProgress = true;
       },
     });
+  }
+
+  startMergeExpenses(): void {
+    this.isMergingExpenses = true;
+    this.selectedExpenseIdsToMerge = [];
+  }
+
+  cancelMergeExpenses(): void {
+    this.isMergingExpenses = false;
+    this.selectedExpenseIdsToMerge = [];
+  }
+
+  toggleExpenseToMerge(expense: Expenses): void {
+    if (!expense?.id) return;
+
+    const index = this.selectedExpenseIdsToMerge.indexOf(expense.id);
+
+    if (index >= 0) {
+      this.selectedExpenseIdsToMerge.splice(index, 1);
+    } else {
+      this.selectedExpenseIdsToMerge.push(expense.id);
+    }
+
+    this.selectedExpenseIdsToMerge = [...this.selectedExpenseIdsToMerge];
+  }
+
+  isExpenseSelectedToMerge(expense: Expenses): boolean {
+    if (!expense?.id) return false;
+
+    return this.selectedExpenseIdsToMerge.includes(expense.id);
+  }
+
+  canSelectExpenseToMerge(expense: Expenses): boolean {
+    if (!expense) return false;
+
+    return !expense.cardId &&
+      !expense.peopleId &&
+      !expense.relatedId &&
+      (!expense.parcels || expense.parcels <= 1) &&
+      (!expense.parcelNumber || expense.parcelNumber <= 1) &&
+      expense.paid === 0;
+  }
+
+  openMergeExpensesDialog(): void {
+    if (this.selectedExpenseIdsToMerge.length < 2) {
+      this.messenger.message('Selecione ao menos 2 despesas para mesclar.');
+      return;
+    }
+
+    // próxima etapa: abrir modal real
+    console.log('Mesclar despesas:', this.selectedExpenseIdsToMerge);
   }
 
   addIncome(): void {
@@ -1574,32 +1629,28 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private lastClickTime = 0;
-  private clickTimer: any;
-
   handleClickExpense(expense: Expenses, event: MouseEvent): void {
+    if (this.isMergingExpenses) {
+      event.stopPropagation();
+
+      if (!this.canSelectExpenseToMerge(expense)) {
+        this.messenger.message('Só é possível mesclar despesas manuais simples.');
+        return;
+      }
+
+      this.toggleExpenseToMerge(expense);
+      return;
+    }
+
     this.editOrDeleteExpense(expense, event);
-
-    //     const now = new Date().getTime();
-    // const timeSinceLast = now - this.lastClickTime;
-
-    // this.lastClickTime = now;
-
-    // if (timeSinceLast < 300) {
-    //   return;
-    // }
-
-    // this.clickTimer = setTimeout(() => {
-    //   const since = new Date().getTime() - this.lastClickTime;
-
-    //   if (since >= 300) {
-    //     this.editOrDeleteExpense(expense, event);
-    //   }
-    // }, 300);
   }
 
   handleDoubleClickExpense(expense: Expenses, event: MouseEvent): void {
-    // clearTimeout(this.clickTimer);
+    if (this.isMergingExpenses) {
+      event.stopPropagation();
+      return;
+    }
+
     this.updateExpense(expense);
   }
 

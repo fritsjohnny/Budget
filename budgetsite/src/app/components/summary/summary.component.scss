@@ -35,7 +35,12 @@ tr.mat-footer-row {
     height: 30px;
 }
 
-.summary {
+.table-container {
+    overflow: hidden;
+    padding-bottom: 5px;
+}
+
+.summary-container {
     border-radius: var(--border-radius);
 }
 

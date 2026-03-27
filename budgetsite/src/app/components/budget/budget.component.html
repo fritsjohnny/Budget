@@ -285,7 +285,7 @@
                         </button>
                     </mat-menu>
                 </div>
-                <div class="row center mb-2" *ngIf="isMergingExpenses">
+                <!-- <div class="row center mb-2" *ngIf="isMergingExpenses">
                     <div
                         class="col-12 d-flex align-items-center justify-content-center"
                         style="gap: 10px; flex-wrap: wrap"
@@ -312,7 +312,7 @@
                             Cancelar
                         </button>
                     </div>
-                </div>
+                </div> -->
             </div>
             <div class="row center">
                 <div class="table-container mat-elevation-z8 mytable2">
@@ -342,7 +342,7 @@
                                         gap: 8px;
                                     "
                                 >
-                                    <mat-checkbox
+                                    <!-- <mat-checkbox
                                         *ngIf="isMergingExpenses"
                                         [checked]="
                                             isExpenseSelectedToMerge(row)
@@ -353,7 +353,7 @@
                                         (click)="$event.stopPropagation()"
                                         (change)="toggleExpenseToMerge(row)"
                                     >
-                                    </mat-checkbox>
+                                    </mat-checkbox> -->
                                     {{ row.description }}
                                     <span *ngIf="row.parcels > 1">
                                         &nbsp;({{ row.parcelNumber }}/{{

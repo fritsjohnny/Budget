@@ -285,6 +285,34 @@
                         </button>
                     </mat-menu>
                 </div>
+                <div class="row center mb-2" *ngIf="isMergingExpenses">
+                    <div
+                        class="col-12 d-flex align-items-center justify-content-center"
+                        style="gap: 10px; flex-wrap: wrap"
+                    >
+                        <span>
+                            Selecionadas:
+                            <b>{{ selectedExpenseIdsToMerge.length }}</b>
+                        </span>
+
+                        <button
+                            mat-raised-button
+                            color="primary"
+                            [disabled]="selectedExpenseIdsToMerge.length < 2"
+                            (click)="openMergeExpensesDialog()"
+                        >
+                            Mesclar selecionadas
+                        </button>
+
+                        <button
+                            mat-raised-button
+                            color="accent"
+                            (click)="cancelMergeExpenses()"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="row center">
                 <div class="table-container mat-elevation-z8 mytable2">
@@ -307,7 +335,25 @@
                                         row.categoryId == null
                                 }"
                             >
-                                <div style="display: flex">
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    "
+                                >
+                                    <mat-checkbox
+                                        *ngIf="isMergingExpenses"
+                                        [checked]="
+                                            isExpenseSelectedToMerge(row)
+                                        "
+                                        [disabled]="
+                                            !canSelectExpenseToMerge(row)
+                                        "
+                                        (click)="$event.stopPropagation()"
+                                        (change)="toggleExpenseToMerge(row)"
+                                    >
+                                    </mat-checkbox>
                                     {{ row.description }}
                                     <span *ngIf="row.parcels > 1">
                                         &nbsp;({{ row.parcelNumber }}/{{
@@ -544,6 +590,28 @@
                                             >content_copy</mat-icon
                                         >
                                         <span>Clonar</span>
+                                    </button>
+                                    <button
+                                        [id]="
+                                            canSelectExpenseToMerge(row)
+                                                ? 'menu-expenses'
+                                                : ''
+                                        "
+                                        mat-menu-item
+                                        (click)="startMergeExpenses()"
+                                        [disabled]="
+                                            !canSelectExpenseToMerge(row)
+                                        "
+                                    >
+                                        <mat-icon
+                                            [id]="
+                                                canSelectExpenseToMerge(row)
+                                                    ? 'menu-icon-expenses'
+                                                    : ''
+                                            "
+                                            >merge</mat-icon
+                                        >
+                                        <span>Mesclar</span>
                                     </button>
                                     <button
                                         mat-menu-item

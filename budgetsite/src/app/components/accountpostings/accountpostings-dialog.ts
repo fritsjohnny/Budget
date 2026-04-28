@@ -57,6 +57,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   totalGrossBalance!: number;
   noRecalculate: boolean = false;
   isCalculating: boolean = true;
+  isApplyingSuggestedYield: boolean = false;
 
   iofDaysSub: any;
   accountApplications?: AccountsApplications[];
@@ -352,17 +353,29 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           suggestYield = await this.yieldService.suggestYield3(account!);
         }
         else if (this.accountPosting.algorithmType === '4') { // PicPay
-          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.totalYields!, this.accountPosting.iofElapsedDays!);
+          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.totalYields!);
         }
         else if (this.accountPosting.algorithmType === '5') { // PagBank
-          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.totalYields!, this.accountPosting.iofElapsedDays!);
+          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.totalYields!);
         }
 
-        this.accountPosting.grossAmount = suggestYield.grossYield;
-        this.accountPosting.amount = suggestYield.netYield;
-        this.accountPosting.totalIOF = suggestYield.iofTotal;
-        this.accountPosting.totalIR = suggestYield.irTotal;
+        this.isApplyingSuggestedYield = true;
 
+        try {
+          this.accountPosting.grossAmount = suggestYield.grossYield;
+          this.accountPosting.amount = suggestYield.netYield;
+          this.accountPosting.totalIOF = suggestYield.iofTotal;
+          this.accountPosting.totalIR = suggestYield.irTotal;
+
+          this.totalGrossBalance = suggestYield.totalGross;
+          this.totalBalance = suggestYield.totalNet;
+
+          this.cd.detectChanges();
+        } finally {
+          setTimeout(() => {
+            this.isApplyingSuggestedYield = false;
+          });
+        }
       } else if (this.accountPosting.type === 'C') {
         this.accountPosting.description = 'Troco';
       } else if (this.accountPosting.type === 'T') {
@@ -382,7 +395,6 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     } finally {
-      this.calcAmount();
       this.isCalculating = false;
     }
   }
@@ -457,88 +469,140 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     return account?.name ?? '';
   }
 
+  private round2(value: number): number {
+    return +(Number(value || 0).toFixed(2));
+  }
+
+  private canRecalculateYield(): boolean {
+    return this.accountPosting.type === 'Y' &&
+      !this.noRecalculate &&
+      !this.isCalculating &&
+      !this.isApplyingSuggestedYield;
+  }
+
+  private getOriginalAmount(): number {
+    return this.accountPosting.editing ? Number(this.accountPosting.originalAmount || 0) : 0;
+  }
+
+  private getOriginalGrossAmount(): number {
+    return this.accountPosting.editing ? Number(this.accountPosting.originalGrossAmount || 0) : 0;
+  }
+
+  private getBaseNetBalance(): number {
+    return Number(this.accountPosting.totalBalance || 0);
+  }
+
+  private getBaseGrossBalance(): number {
+    return Number(this.accountPosting.totalGrossBalance || 0);
+  }
+
+  private recalculateNetFromGross(): void {
+    const grossAmount = Number(this.accountPosting.grossAmount || 0);
+    const totalIOF = Number(this.accountPosting.totalIOF || 0);
+    const totalIR = Number(this.accountPosting.totalIR || 0);
+
+    this.accountPosting.amount = this.round2(grossAmount - totalIOF - totalIR);
+    this.totalBalance = this.round2(this.getBaseNetBalance() + this.accountPosting.amount - this.getOriginalAmount());
+  }
+
+  private recalculateBalancesFromAmounts(): void {
+    this.totalGrossBalance = this.round2(this.getBaseGrossBalance() + Number(this.accountPosting.grossAmount || 0) - this.getOriginalGrossAmount());
+    this.totalBalance = this.round2(this.getBaseNetBalance() + Number(this.accountPosting.amount || 0) - this.getOriginalAmount());
+  }
+
   // Valor
   onAmountChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
+    if (!this.canRecalculateYield()) return;
 
-    // Saldo Liquido
-    if (!event) {
-      this.totalBalance = this.accountPosting.totalBalance;
-    } else {
-      this.totalBalance =
-        +(this.accountPosting.totalBalance + this.accountPosting.amount - (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0)).toFixed(2);
+    this.isCalculating = true;
+
+    try {
+      this.totalBalance = this.round2(this.getBaseNetBalance() + Number(this.accountPosting.amount || 0) - this.getOriginalAmount());
+    } finally {
+      this.isCalculating = false;
     }
   }
 
   // Saldo Liquido
   onTotalBalanceChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
+    if (!this.canRecalculateYield()) return;
 
-    // Valor
-    if (this.accountPosting.algorithmType !== '4') {
-      this.isCalculating = true;
+    this.isCalculating = true;
 
-      try {
-        this.accountPosting.amount =
-          +(this.totalBalance - this.accountPosting.totalBalance + (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0)).toFixed(2);
-      } finally {
-        this.isCalculating = false;
-      }
-    } else {
-      this.calcAmount();
+    try {
+      this.accountPosting.amount = this.round2(this.totalBalance - this.getBaseNetBalance() + this.getOriginalAmount());
+    } finally {
+      this.isCalculating = false;
     }
   }
 
   // Valor Bruto
   onGrossAmountChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
+    if (!this.canRecalculateYield()) return;
 
-    // Saldo Bruto
-    if (!event) {
-      this.totalGrossBalance = this.accountPosting.totalGrossBalance;
-    } else {
-      this.totalGrossBalance =
-        +(this.accountPosting.totalGrossBalance + this.accountPosting.grossAmount! - (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0)).toFixed(2);
+    this.isCalculating = true;
+
+    try {
+      this.recalculateNetFromGross();
+      this.totalGrossBalance = this.round2(this.getBaseGrossBalance() + Number(this.accountPosting.grossAmount || 0) - this.getOriginalGrossAmount());
+    } finally {
+      this.isCalculating = false;
     }
   }
 
   // Saldo Bruto
   onTotalGrossBalanceChanged(event: any): void {
-    if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating) return;
+    if (!this.canRecalculateYield()) return;
 
-    // Valor Bruto
     this.isCalculating = true;
+
     try {
-      this.accountPosting.grossAmount =
-        +(this.totalGrossBalance - this.accountPosting.totalGrossBalance + (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0)).toFixed(2);
+      this.accountPosting.grossAmount = this.round2(this.totalGrossBalance - this.getBaseGrossBalance() + this.getOriginalGrossAmount());
+      this.recalculateNetFromGross();
     } finally {
       this.isCalculating = false;
     }
-
-    this.calcAmount();
   }
 
   onIofTotalChanged(): void {
-    this.calcAmount();
-  }
-
-  onIrTotalChanged(): void {
-    this.calcAmount();
-  }
-
-  calcAmount() {
-    if (this.accountPosting.type !== 'Y' || this.noRecalculate || this.isCalculating || this.accountPosting.algorithmType !== '4') return;
+    if (!this.canRecalculateYield()) return;
 
     this.isCalculating = true;
 
     try {
-      this.accountPosting.amount =
-        +(this.totalGrossBalance - this.accountPosting.totalBalance - this.accountPosting.totalIOF! - this.accountPosting.totalIR!).toFixed(2);
+      this.recalculateNetFromGross();
     } finally {
       this.isCalculating = false;
     }
   }
 
+  onIrTotalChanged(): void {
+    if (!this.canRecalculateYield()) return;
+
+    this.calcAmount();
+  }
+
+  calcAmount(): void {
+    if (!this.canRecalculateYield()) return;
+
+    this.isCalculating = true;
+
+    try {
+      const grossAmount = Number(this.accountPosting.grossAmount || 0);
+      const totalIOF = Number(this.accountPosting.totalIOF || 0);
+      const totalIR = Number(this.accountPosting.totalIR || 0);
+
+      this.accountPosting.amount = +(grossAmount - totalIOF - totalIR).toFixed(2);
+
+      this.totalGrossBalance =
+        +(this.accountPosting.totalGrossBalance + grossAmount - (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0)).toFixed(2);
+
+      this.totalBalance =
+        +(this.accountPosting.totalBalance + this.accountPosting.amount - (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0)).toFixed(2);
+    } finally {
+      this.isCalculating = false;
+    }
+  }
 
   setTitle() {
     return (

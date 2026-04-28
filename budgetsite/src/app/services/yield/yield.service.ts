@@ -553,7 +553,6 @@ export class YieldService {
   async suggestYield4(
     account: Accounts,
     launchDate: Date,
-    prevNetAccumulated: number,
     iofElapsedDays: number
   ): Promise<{
     totalGross: number;
@@ -681,8 +680,12 @@ export class YieldService {
     const calculated = calcNetAccumulated(totalYieldGrossNow, ref, grossEndNow);
 
     // 7) LÍQUIDO DO DIA = (líquido acumulado agora) - (líquido acumulado anterior vindo da tela)
-    const prev = round2(Number(prevNetAccumulated) || 0);
-    const netYieldDay = round2(calculated.netTotal - prev);
+    // const prev = round2(Number(prevNetAccumulated) || 0);
+    // const netYieldDay = round2(calculated.netTotal - prev);
+    const totalYieldGrossPrev = Math.max(0, round2(baseGross - principalTotal));
+    const prevCalculated = calcNetAccumulated(totalYieldGrossPrev, ref, baseGross);
+
+    const netYieldDay = round2(calculated.netTotal - prevCalculated.netTotal);
 
     // 8) Totais exibidos no modal
     // (mantém seu contrato atual: totalNet = baseNet + netYieldDay, etc.)

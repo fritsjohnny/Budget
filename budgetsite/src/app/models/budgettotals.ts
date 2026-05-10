@@ -7,4 +7,9 @@ export interface BudgetTotals {
 	myIncomesPerc: number
 	othersIncomes: number
 	othersIncomesPerc: number
+
+	myYields: number
+	myYieldsPerc: number
+	myIncomesWithoutYields: number
+	myIncomesWithoutYieldsPerc: number
 }

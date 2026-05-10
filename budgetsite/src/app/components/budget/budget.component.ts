@@ -1703,4 +1703,109 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+  getExpectedBalanceWithoutYields(): number {
+    return this.expectedBalance - (this.budgetTotals?.myYields || 0);
+  }
+
+  getExpectedBalanceYieldsPerc(): number {
+    const yields = this.budgetTotals?.myYields || 0;
+    const withoutYields = Math.abs(this.getExpectedBalanceWithoutYields());
+
+    if (withoutYields === 0) return 0;
+
+    return yields / withoutYields * 100;
+  }
+
+  getExpectedBalanceWithoutYieldsPerc(): number {
+    if (this.expectedBalance === 0) return 0;
+
+    return this.getExpectedBalanceWithoutYields() / this.expectedBalance * 100;
+  }
+
+  getExpectedBalanceCoveredByYieldsPerc(): number {
+    const yields = this.budgetTotals?.myYields || 0;
+    const withoutYields = Math.abs(this.getExpectedBalanceWithoutYields());
+
+    if (yields === 0) return 0;
+
+    return withoutYields / yields * 100;
+  }
+
+  getExpectedBalancePositiveFromYieldsPerc(): number {
+    const yields = this.budgetTotals?.myYields || 0;
+
+    if (yields === 0) return 0;
+
+    return this.expectedBalance / yields * 100;
+  }
+
+  openExpectedBalanceInfo(): void {
+    const withoutYields = this.getExpectedBalanceWithoutYields();
+    const yields = this.budgetTotals?.myYields || 0;
+    const expectedBalance = this.expectedBalance;
+
+    const withoutYieldsFormatted = this.formatCurrencyValue(withoutYields);
+    const yieldsFormatted = this.formatCurrencyValue(yields);
+    const expectedBalanceFormatted = this.formatCurrencyValue(expectedBalance);
+
+    let message = '';
+
+    if (withoutYields >= 0) {
+      const withoutYieldsPerc = this.getExpectedBalanceWithoutYieldsPerc().toFixed(2).replace('.', ',');
+      const yieldsPerc = this.getExpectedBalanceYieldsPerc().toFixed(2).replace('.', ',');
+
+      message =
+        'Saldo previsto final:\n' +
+        expectedBalanceFormatted + '\n\n' +
+        'Composição do saldo:\n' +
+        '• Sem rendimentos: ' + withoutYieldsFormatted + ' (' + withoutYieldsPerc + '%)\n' +
+        '• Rendimentos: ' + yieldsFormatted + ' (' + yieldsPerc + '%)\n\n' +
+        'Neste caso, o saldo já seria positivo mesmo sem considerar os rendimentos.';
+    } else if (expectedBalance < 0) {
+      const yieldsPerc = this.getExpectedBalanceYieldsPerc().toFixed(2).replace('.', ',');
+
+      message =
+        'Sem rendimentos:\n' +
+        withoutYieldsFormatted + '\n\n' +
+        'Rendimentos:\n' +
+        yieldsFormatted + '\n\n' +
+        'Impacto dos rendimentos:\n' +
+        '• Reduziram o déficit em ' + yieldsPerc + '%\n' +
+        '• Mesmo assim, o saldo continuou negativo\n\n' +
+        'Saldo previsto final:\n' +
+        expectedBalanceFormatted;
+    } else {
+      const coveredPerc = this.getExpectedBalanceCoveredByYieldsPerc().toFixed(2).replace('.', ',');
+      const positivePerc = this.getExpectedBalancePositiveFromYieldsPerc().toFixed(2).replace('.', ',');
+
+      message =
+        'Sem rendimentos:\n' +
+        withoutYieldsFormatted + '\n\n' +
+        'Rendimentos:\n' +
+        yieldsFormatted + '\n\n' +
+        'Uso dos rendimentos:\n' +
+        '• ' + coveredPerc + '% cobriu o déficit\n' +
+        '• ' + positivePerc + '% virou saldo positivo\n\n' +
+        'Saldo previsto final:\n' +
+        expectedBalanceFormatted;
+    }
+
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Cálculo do Saldo Previsto',
+        message: message,
+        confirmText: 'Entendi',
+        cancelText: ''
+      },
+    });
+  }
+
+  formatCurrencyValue(value: number): string {
+    return value.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
 }

@@ -588,8 +588,6 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         valor = this.round2(Number(this.saldoBruto || 0) - Number(this.accountPosting.totalIOF || 0) - Number(this.accountPosting.totalIR || 0));
       }
 
-      this.saldoLiquido = valor;
-
       this.accountPostingFormGroup.get('totalBalanceFormControl')?.setValue(valor, { emitEvent: false });
     } finally {
       this.isCalculating = false;

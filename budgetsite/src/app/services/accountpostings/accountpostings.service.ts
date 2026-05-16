@@ -78,4 +78,18 @@ export class AccountPostingsService {
       catchError(e => this.messenger.errorHandler(e))
     );
   }
+
+  getPreviousYield(accountId: number, reference: string): Observable<number> {
+    return this.http.get<number>(`${ApiUrls.accountspostings}/previousyield/${accountId}/${reference}`).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
+  getTotalPreviousYields(accountId: number, reference: string): Observable<number> {
+    return this.http.get<number>(`${ApiUrls.accountspostings}/totalpreviousyields/${accountId}/${reference}`).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
 }

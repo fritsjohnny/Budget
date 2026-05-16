@@ -40,4 +40,5 @@ export interface AccountsPostings {
   iofElapsedDate?: Date;
   relatedId?: number;
   toAccountId?: number;
+  totalPreviousYield?: number;
 }

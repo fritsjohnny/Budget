@@ -100,6 +100,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   accountPostingsPanelExpanded: boolean = false;
   accountApplicationsPanelExpanded: boolean = false;
 
+  lastYield: number = 0;
+  totalPreviousYield: number = 0;
+
   constructor(
     private accountPostingsService: AccountPostingsService,
     private accountApplicationsService: AccountApplicationsService,
@@ -191,11 +194,49 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     });
   }
 
+  getPreviousYield() {
+    if (!this.accountId || !this.reference) {
+      this.lastYield = 0;
+      this.refreshAccountsList(this.lastYield);
+      return;
+    }
+
+    this.accountPostingsService.getPreviousYield(this.accountId, this.reference).subscribe({
+      next: (previousYield) => {
+        this.lastYield = previousYield ?? 0;
+        this.refreshAccountsList(this.lastYield);
+      },
+      error: () => {
+        this.lastYield = 0;
+        this.refreshAccountsList(this.lastYield);
+      },
+    });
+  }
+
+  getTotalPreviousYield() {
+    if (!this.accountId || !this.reference) {
+      this.totalPreviousYield = 0;
+      return;
+    }
+
+    this.accountPostingsService.getTotalPreviousYields(this.accountId, this.reference).subscribe({
+      next: (totalLastYield) => {
+        this.totalPreviousYield = totalLastYield ?? 0;
+      },
+      error: () => {
+        this.totalPreviousYield = 0;
+      },
+    });
+  }
+
   refresh() {
     this.getLists();
 
     if (this.accountId) {
       this.hideProgress = false;
+
+      this.getPreviousYield();
+      this.getTotalPreviousYield();
 
       this.accountPostingsService
         .read(this.accountId!, this.reference!)
@@ -324,15 +365,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   getLastYield() {
-    // Filtra a data e verifica se existe um valor com tipo 'Y'
-    let lastYield =
-      this.dataSource.filteredData.filter((t) => t.type === 'Y').length > 0
-        ? this.dataSource.filteredData.filter((t) => t.type === 'Y')[0].amount
-        : 0;
+    this.refreshAccountsList(this.lastYield);
 
-    this.refreshAccountsList(lastYield);
-
-    return lastYield;
+    return this.lastYield;
   }
 
   refreshAccountsList(lastYield?: number, totalBalanceGross?: number) {
@@ -364,6 +399,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         totalGrossBalance: this.totalGrossBalance,
         totalYields: this.totalForYieldsDialog,
         lastYield: this.getLastYield(),
+        totalPreviousYield: this.totalPreviousYield,
         accountPostingsYields: this.accountpostings.filter(t => t.type === 'Y'),
       },
     });
@@ -442,6 +478,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         iofElapsedDays: accountPosting.iofElapsedDays,
         totalYields: this.totalForYieldsDialog,
         lastYield: this.getLastYield(),
+        totalLastYield: this.totalPreviousYield,
+        accountPostingsYields: this.accountpostings.filter(t => t.type === 'Y'),
         relatedId: accountPosting.relatedId,
         toAccountId: accountPosting.toAccountId,
       },

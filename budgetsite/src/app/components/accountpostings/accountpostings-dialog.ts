@@ -353,10 +353,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           suggestYield = await this.yieldService.suggestYield3(account!);
         }
         else if (this.accountPosting.algorithmType === '4') { // PicPay
-          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.totalYields!);
+          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.iofElapsedDays!, this.accountPosting.totalPreviousYield!);
         }
         else if (this.accountPosting.algorithmType === '5') { // PagBank
-          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.totalYields!);
+          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.iofElapsedDays!, this.accountPosting.totalPreviousYield!);
         }
 
         this.isApplyingSuggestedYield = true;

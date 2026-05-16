@@ -171,6 +171,7 @@
                 </div>
             </div>
 
+            <!-- VALOR BRUTO -->
             <div class="row">
                 <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                     <mat-form-field
@@ -187,11 +188,12 @@
                             [(ngModel)]="accountPosting.grossAmount"
                             placeholder="0"
                             autocomplete="off"
-                            (ngModelChange)="onGrossAmountChanged($event)"
+                            (ngModelChange)="onValorBrutoChanged($event)"
                         />
                     </mat-form-field>
                 </div>
 
+                <!-- VALOR -->
                 <div class="col-6">
                     <mat-form-field
                         appearance="fill"
@@ -207,7 +209,7 @@
                             [(ngModel)]="accountPosting.amount"
                             placeholder="0"
                             autocomplete="off"
-                            (ngModelChange)="onAmountChanged($event)"
+                            (ngModelChange)="onValorChanged($event)"
                         />
                         <mat-error
                             *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')"
@@ -219,6 +221,7 @@
             </div>
 
             <div class="row">
+                <!-- SALDO BRUTO -->
                 <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                     <mat-form-field
                         appearance="fill"
@@ -231,14 +234,15 @@
                             inputmode="numeric"
                             currencyMask
                             formControlName="totalGrossBalanceFormControl"
-                            [(ngModel)]="totalGrossBalance"
+                            [(ngModel)]="saldoBruto"
                             placeholder="0"
                             autocomplete="off"
-                            (ngModelChange)="onTotalGrossBalanceChanged($event)"
+                            (ngModelChange)="onSaldoBrutoChanged($event)"
                         />
                     </mat-form-field>
                 </div>
 
+                <!-- SALDO LÍQUIDO -->
                 <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                     <mat-form-field
                         appearance="fill"
@@ -251,16 +255,17 @@
                             inputmode="numeric"
                             currencyMask
                             formControlName="totalBalanceFormControl"
-                            [(ngModel)]="totalBalance"
+                            [(ngModel)]="saldoLiquido"
                             placeholder="0"
                             autocomplete="off"
-                            (ngModelChange)="onTotalBalanceChanged($event)"
+                            (ngModelChange)="onSaldoLiquidoChanged($event)"
                         />
                     </mat-form-field>
                 </div>
             </div>
 
             <div class="row">
+                <!-- DESCONTO DE IOF -->
                 <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                     <mat-form-field
                         appearance="fill"
@@ -276,11 +281,12 @@
                             [(ngModel)]="accountPosting.totalIOF"
                             placeholder="0"
                             autocomplete="off"
-                            (ngModelChange)="onIofTotalChanged()"
+                            (ngModelChange)="onTotalIOFChanged($event)"
                         />
                     </mat-form-field>
                 </div>
 
+                <!-- DESCONTO DE IR -->
                 <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                     <mat-form-field
                         appearance="fill"
@@ -296,7 +302,7 @@
                             [(ngModel)]="accountPosting.totalIR"
                             placeholder="0"
                             autocomplete="off"
-                            (ngModelChange)="onIrTotalChanged()"
+                            (ngModelChange)="onTotalIRChanged($event)"
                         />
                     </mat-form-field>
                 </div>

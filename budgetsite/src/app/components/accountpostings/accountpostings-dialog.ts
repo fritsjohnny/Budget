@@ -13,7 +13,7 @@ import {
   MAT_DIALOG_DATA,
   MatDialog,
 } from '@angular/material/dialog';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, interval, timeout } from 'rxjs';
 import { Messenger } from 'src/app/common/messenger';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountsPostings } from 'src/app/models/accountspostings.model';
@@ -31,7 +31,6 @@ import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepic
   styleUrls: ['accountpostings-dialog.scss'],
 })
 export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
-
   @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;
 
   accountPostingFormGroup = new FormGroup({
@@ -53,8 +52,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     toAccountIdFormControl: new FormControl(''),
   });
 
-  totalBalance!: number;
-  totalGrossBalance!: number;
+  saldoLiquido!: number;
+  saldoBruto!: number;
   noRecalculate: boolean = false;
   isCalculating: boolean = true;
   isApplyingSuggestedYield: boolean = false;
@@ -242,7 +241,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       if (!this.validateTransferMode(true)) return;
     }
 
-    this.accountPosting.totalGrossBalance = this.totalGrossBalance;
+    this.accountPosting.totalGrossBalance = this.saldoBruto;
 
     this.dialogRef.close(this.accountPosting);
   }
@@ -334,13 +333,13 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         account!.totalBalance = this.accountPosting.totalBalance;
         account!.totalBalanceGross = this.accountPosting.totalGrossBalance;
 
-        this.totalGrossBalance = this.accountPosting.totalGrossBalance;
-        this.totalBalance = this.accountPosting.totalBalance;
+        this.saldoBruto = this.accountPosting.totalGrossBalance;
+        this.saldoLiquido = this.accountPosting.totalBalance;
 
         if (firstLoad && this.accountPosting.editing) return;
 
         let suggestYield = {
-          grossYield: 0, netYield: 0, totalGross: 0, totalNet: 0, iofTotal: 0, irTotal: 0
+          grossYield: 0, netYield: 0, totalGross: 0, totalNet: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0
         };
 
         if (this.accountPosting.algorithmType === '1') { // Nubank
@@ -367,8 +366,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           this.accountPosting.totalIOF = suggestYield.iofTotal;
           this.accountPosting.totalIR = suggestYield.irTotal;
 
-          this.totalGrossBalance = suggestYield.totalGross;
-          this.totalBalance = suggestYield.totalNet;
+          this.saldoBruto = suggestYield.totalGross;
+          this.saldoLiquido = suggestYield.totalNet;
 
           this.cd.detectChanges();
         } finally {
@@ -496,114 +495,6 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     return Number(this.accountPosting.totalGrossBalance || 0);
   }
 
-  private recalculateNetFromGross(): void {
-    const grossAmount = Number(this.accountPosting.grossAmount || 0);
-    const totalIOF = Number(this.accountPosting.totalIOF || 0);
-    const totalIR = Number(this.accountPosting.totalIR || 0);
-
-    this.accountPosting.amount = this.round2(grossAmount - totalIOF - totalIR);
-    this.totalBalance = this.round2(this.getBaseNetBalance() + this.accountPosting.amount - this.getOriginalAmount());
-  }
-
-  private recalculateBalancesFromAmounts(): void {
-    this.totalGrossBalance = this.round2(this.getBaseGrossBalance() + Number(this.accountPosting.grossAmount || 0) - this.getOriginalGrossAmount());
-    this.totalBalance = this.round2(this.getBaseNetBalance() + Number(this.accountPosting.amount || 0) - this.getOriginalAmount());
-  }
-
-  // Valor
-  onAmountChanged(event: any): void {
-    if (!this.canRecalculateYield()) return;
-
-    this.isCalculating = true;
-
-    try {
-      this.totalBalance = this.round2(this.getBaseNetBalance() + Number(this.accountPosting.amount || 0) - this.getOriginalAmount());
-    } finally {
-      this.isCalculating = false;
-    }
-  }
-
-  // Saldo Liquido
-  onTotalBalanceChanged(event: any): void {
-    if (!this.canRecalculateYield()) return;
-
-    this.isCalculating = true;
-
-    try {
-      this.accountPosting.amount = this.round2(this.totalBalance - this.getBaseNetBalance() + this.getOriginalAmount());
-    } finally {
-      this.isCalculating = false;
-    }
-  }
-
-  // Valor Bruto
-  onGrossAmountChanged(event: any): void {
-    if (!this.canRecalculateYield()) return;
-
-    this.isCalculating = true;
-
-    try {
-      this.recalculateNetFromGross();
-      this.totalGrossBalance = this.round2(this.getBaseGrossBalance() + Number(this.accountPosting.grossAmount || 0) - this.getOriginalGrossAmount());
-    } finally {
-      this.isCalculating = false;
-    }
-  }
-
-  // Saldo Bruto
-  onTotalGrossBalanceChanged(event: any): void {
-    if (!this.canRecalculateYield()) return;
-
-    this.isCalculating = true;
-
-    try {
-      this.accountPosting.grossAmount = this.round2(this.totalGrossBalance - this.getBaseGrossBalance() + this.getOriginalGrossAmount());
-      this.recalculateNetFromGross();
-    } finally {
-      this.isCalculating = false;
-    }
-  }
-
-  onIofTotalChanged(): void {
-    if (!this.canRecalculateYield()) return;
-
-    this.isCalculating = true;
-
-    try {
-      this.recalculateNetFromGross();
-    } finally {
-      this.isCalculating = false;
-    }
-  }
-
-  onIrTotalChanged(): void {
-    if (!this.canRecalculateYield()) return;
-
-    this.calcAmount();
-  }
-
-  calcAmount(): void {
-    if (!this.canRecalculateYield()) return;
-
-    this.isCalculating = true;
-
-    try {
-      const grossAmount = Number(this.accountPosting.grossAmount || 0);
-      const totalIOF = Number(this.accountPosting.totalIOF || 0);
-      const totalIR = Number(this.accountPosting.totalIR || 0);
-
-      this.accountPosting.amount = +(grossAmount - totalIOF - totalIR).toFixed(2);
-
-      this.totalGrossBalance =
-        +(this.accountPosting.totalGrossBalance + grossAmount - (this.accountPosting.editing ? this.accountPosting.originalGrossAmount ?? 0 : 0)).toFixed(2);
-
-      this.totalBalance =
-        +(this.accountPosting.totalBalance + this.accountPosting.amount - (this.accountPosting.editing ? this.accountPosting.originalAmount ?? 0 : 0)).toFixed(2);
-    } finally {
-      this.isCalculating = false;
-    }
-  }
-
   setTitle() {
     return (
       'Lançamento - ' + (this.accountPosting.editing ? 'Editar' : 'Incluir')
@@ -618,5 +509,104 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.iofDaysSub) { this.iofDaysSub.unsubscribe(); }
+  }
+
+  onValorBrutoChanged($event: any) {
+    this.calculaSaldoBruto();
+    this.calculaSaldoLiquido();
+    this.calculaValor();
+  }
+
+  onSaldoBrutoChanged($event: any) {
+    this.calculaValorBruto();
+    this.calculaSaldoLiquido();
+    this.calculaValor();
+  }
+
+  onTotalIOFChanged($event: any) {
+    this.calculaSaldoLiquido();
+    this.calculaValor();
+  }
+
+  onTotalIRChanged($event: any) {
+    this.calculaSaldoLiquido();
+    this.calculaValor();
+  }
+
+  onValorChanged($event: any) {
+    this.calculaSaldoLiquido(true);
+  }
+
+  onSaldoLiquidoChanged($event: any) {
+    this.calculaValor();
+  }
+
+  calculaSaldoBruto(): void {
+    if (!this.canRecalculateYield()) return;
+
+    this.isCalculating = true;
+
+    try {
+      // this.accountPosting.totalGrossBalance é o saldo bruto total atual da conta
+      // this.accountPosting.grossAmount é o valor bruto do lançamento sendo editado
+      let valor = this.round2(Number(this.accountPosting.totalGrossBalance || 0) + Number(this.accountPosting.grossAmount || 0));
+
+      this.accountPostingFormGroup.get('totalGrossBalanceFormControl')?.setValue(valor, { emitEvent: false });
+    } finally {
+      this.isCalculating = false;
+    }
+  }
+
+  calculaValorBruto(): void {
+    if (!this.canRecalculateYield()) return;
+
+    this.isCalculating = true;
+
+    try {
+      // this.saldoBruto é o novo saldo bruto total da conta (após a mudança)
+      // this.accountPosting.totalGrossBalance é o saldo bruto total atual da conta
+      let valor = this.round2(this.saldoBruto - Number(this.accountPosting.totalGrossBalance || 0));
+
+      this.accountPostingFormGroup.get('grossAmountFormControl')?.setValue(valor, { emitEvent: false });
+    } finally {
+      this.isCalculating = false;
+    }
+  }
+
+  calculaSaldoLiquido(byValor: boolean = false): void {
+    if (!this.canRecalculateYield()) return;
+
+    this.isCalculating = true;
+
+    try {
+      let valor: number;
+
+      if (byValor) {
+        valor = this.round2(Number(this.accountPosting.totalBalance || 0) + Number(this.accountPosting.amount || 0));
+      }
+      else {
+        valor = this.round2(Number(this.saldoBruto || 0) - Number(this.accountPosting.totalIOF || 0) - Number(this.accountPosting.totalIR || 0));
+      }
+
+      this.saldoLiquido = valor;
+
+      this.accountPostingFormGroup.get('totalBalanceFormControl')?.setValue(valor, { emitEvent: false });
+    } finally {
+      this.isCalculating = false;
+    }
+  }
+
+  calculaValor(): void {
+    if (!this.canRecalculateYield()) return;
+
+    this.isCalculating = true;
+
+    try {
+      let valor = this.round2(Number(this.saldoLiquido || 0) - Number(this.accountPosting.totalBalance || 0));
+
+      this.accountPostingFormGroup.get('amountFormControl')?.setValue(valor, { emitEvent: false });
+    } finally {
+      this.isCalculating = false;
+    }
   }
 }

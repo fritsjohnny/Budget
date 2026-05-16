@@ -258,9 +258,10 @@ export class YieldService {
     netYield: number;
     iofTotal: number;
     irTotal: number;
+    totalAplicado: number;
   }> {
     if (!account || !account.yieldPercent)
-      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0 };
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
 
     const yieldPercent = Number(account.yieldPercent);
     const irPercent = Number(account.irPercent ?? 22.5);
@@ -280,6 +281,7 @@ export class YieldService {
         netYield: account.lastYield ?? 0,
         iofTotal: 0,
         irTotal: 0,
+        totalAplicado: account.totalBalanceGross ?? 0,
       };
     }
 
@@ -307,10 +309,11 @@ export class YieldService {
       applications = [];
     }
 
+    let principalTotal = 0;
+
     let iofWeighted = 0;
     if (applications && applications.length > 0) {
       const today = new Date(); today.setHours(0, 0, 0, 0);
-      let principalTotal = 0;
       let principalXRate = 0;
 
       for (const app of applications) {
@@ -327,6 +330,9 @@ export class YieldService {
       if (principalTotal > 0) {
         iofWeighted = principalXRate / principalTotal;
       }
+    }
+    else {
+      principalTotal = baseGrossC; // se não tiver aplicações, considera o saldo atual como "principal" para ponderar o IOF
     }
 
     // degraus em centavos (alinha com bancos)
@@ -346,6 +352,7 @@ export class YieldService {
       netYield: fromCents(netC),
       iofTotal: fromCents(iofC),
       irTotal: fromCents(irC),
+      totalAplicado: fromCents(principalTotal),
     };
   }
 
@@ -356,9 +363,10 @@ export class YieldService {
     netYield: number;
     iofTotal: number;
     irTotal: number;
+    totalAplicado: number;
   }> {
     if (!account || !account.yieldPercent)
-      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0 };
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
 
     const yieldPercent = Number(account.yieldPercent);    // ex.: 107, 108
     const irPercent = Number(account.irPercent ?? 22.5);
@@ -378,6 +386,7 @@ export class YieldService {
         netYield: account.lastYield ?? 0,
         iofTotal: 0,
         irTotal: 0,
+        totalAplicado: account.totalBalanceGross ?? 0,
       };
     }
 
@@ -398,9 +407,10 @@ export class YieldService {
 
     let iofWeighted = 0;
 
+    let principalTotal = 0;
+
     if (applications && applications.length > 0) {
       const today = new Date();
-      let principalTotal = 0;
       let principalXRate = 0;
 
       for (const app of applications) {
@@ -422,6 +432,9 @@ export class YieldService {
         // iofWeighted *= Math.min(1, (principalTotal / (Number(account.totalBalanceGross ?? account.totalBalance) || 1)));
       }
     }
+    else {
+      principalTotal = account.totalBalanceGross ?? account.totalBalance ?? 0; // se não tiver aplicações, considera o saldo atual como "principal" para ponderar o IOF
+    }
 
     // IOF do dia:
     const iofAmount = grossYield * iofWeighted;
@@ -440,6 +453,7 @@ export class YieldService {
       netYield: trunc2(netYield),
       iofTotal: trunc2(iofAmount),
       irTotal: trunc2(irBase * (irPercent / 100)),
+      totalAplicado: trunc2(principalTotal),
     };
   }
 
@@ -450,9 +464,10 @@ export class YieldService {
     netYield: number;
     iofTotal: number;
     irTotal: number;
+    totalAplicado: number;
   }> {
     if (!account || !account.yieldPercent) {
-      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0 };
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
     }
 
     const yieldPercent = Number(account.yieldPercent);      // ex.: 107
@@ -478,6 +493,7 @@ export class YieldService {
         netYield: account.lastYield ?? 0,
         iofTotal: 0,
         irTotal: 0,
+        totalAplicado: account.totalBalanceGross ?? 0,
       };
     }
 
@@ -498,13 +514,14 @@ export class YieldService {
       applications = await firstValueFrom(this.accountApplicationsService.readByAccount(account.id!));
     } catch { applications = []; }
 
+    let principalTotal = 0;   // soma total (apenas p/ telemetria se quiser)
     let iofWeightedEffective = 0;
+
     if (applications && applications.length > 0) {
       const today = new Date(); today.setHours(0, 0, 0, 0);
 
       let principalInWindow = 0;   // soma dos aportes dentro de D+29
       let principalXRate = 0;   // soma(aporte * taxaIOF(do dia))
-      let principalTotal = 0;   // soma total (apenas p/ telemetria se quiser)
 
       for (const app of applications) {
         const principal = Number(app.amountApplied) || 0;
@@ -528,6 +545,9 @@ export class YieldService {
         iofWeightedEffective = avgIofOnWindow * fractionOnIof;                           // IOF efetivo sobre o rendimento
       }
     }
+    else {
+      principalTotal = baseGrossDisplay; // se não tiver aplicações, considera o saldo atual como "principal" para ponderar o IOF
+    }
 
     // 6) Pipeline do LÍQUIDO em centavos (estável) — IR TRUNCADO
     const grossC = toCents(grossYieldRaw);                           // arredonda p/ exibir "Valor Bruto"
@@ -547,6 +567,7 @@ export class YieldService {
       netYield: fromCents(netC),
       iofTotal: fromCents(iofC),
       irTotal: fromCents(irC),
+      totalAplicado: round2(principalTotal),
     };
   }
 
@@ -562,9 +583,10 @@ export class YieldService {
     netYield: number;
     iofTotal: number;
     irTotal: number;
+    totalAplicado: number;
   }> {
     if (!account || !account.yieldPercent) {
-      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0 };
+      return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
     }
 
     const yieldPercent = Number(account.yieldPercent);
@@ -591,6 +613,7 @@ export class YieldService {
         netYield: account.lastYield ?? 0,
         iofTotal: 0,
         irTotal: 0,
+        totalAplicado: account.totalBalanceGross ?? 0,
       };
     }
 
@@ -685,16 +708,17 @@ export class YieldService {
 
     // 8) Totais exibidos no modal
     // (mantém seu contrato atual: totalNet = baseNet + netYieldDay, etc.)
-    const totalGross = round2(baseGross + grossYieldDay);
-    const totalNet = round2(baseNet + netYieldDay);
+    const saldoBruto = round2(baseGross + grossYieldDay);
+    const saldoLiquido = round2(baseNet + netYieldDay);
 
     return {
-      totalGross,
-      totalNet,
+      totalGross: saldoBruto,
+      totalNet: saldoLiquido,
       grossYield: grossYieldDay,
       netYield: netYieldDay,
       iofTotal: calculated.iofTotal,
-      irTotal: calculated.irTotal
+      irTotal: calculated.irTotal,
+      totalAplicado: principalTotal,
     };
   }
 }

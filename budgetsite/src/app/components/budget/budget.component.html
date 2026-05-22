@@ -113,7 +113,7 @@
 
                                 <span class="green">
                                     {{
-                                        getExpectedBalanceYieldsPerc()
+                                        getExpectedBalanceYieldsCompositionPerc()
                                             | number: "1.2-2"
                                     }}%
                                 </span>
@@ -124,7 +124,7 @@
                             <ng-container
                                 *ngIf="
                                     expectedBalance < 0;
-                                    else expectedBalanceCoveredByYields
+                                    else expectedBalanceCoveredOrZeroedByYields
                                 "
                             >
                                 <span class="expected-balance-grid">
@@ -154,7 +154,7 @@
 
                                     <span class="green expected-balance-nowrap">
                                         ↓{{
-                                            getExpectedBalanceYieldsPerc()
+                                            getExpectedBalanceDeficitReductionPerc()
                                                 | number: "1.2-2"
                                         }}%
                                     </span>
@@ -162,7 +162,7 @@
                             </ng-container>
                         </ng-template>
 
-                        <ng-template #expectedBalanceCoveredByYields>
+                        <ng-template #expectedBalanceCoveredOrZeroedByYields>
                             <span class="expected-balance-grid">
                                 <span class="negative">
                                     {{

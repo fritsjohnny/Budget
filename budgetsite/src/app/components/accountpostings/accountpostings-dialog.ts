@@ -58,6 +58,14 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   isCalculating: boolean = true;
   isApplyingSuggestedYield: boolean = false;
 
+  yieldBaseCaptured: boolean = false;
+  baseGrossAmount: number = 0;
+  baseAmount: number = 0;
+  baseSaldoBruto: number = 0;
+  baseSaldoLiquido: number = 0;
+  baseTotalIOF: number = 0;
+  baseTotalIR: number = 0;
+
   iofDaysSub: any;
   accountApplications?: AccountsApplications[];
 
@@ -336,7 +344,13 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         this.saldoBruto = this.accountPosting.totalGrossBalance;
         this.saldoLiquido = this.accountPosting.totalBalance;
 
-        if (firstLoad && this.accountPosting.editing) return;
+        this.saldoBruto = this.accountPosting.totalGrossBalance;
+        this.saldoLiquido = this.accountPosting.totalBalance;
+
+        if (firstLoad && this.accountPosting.editing) {
+          this.captureYieldBaseValues();
+          return;
+        }
 
         let suggestYield = {
           grossYield: 0, netYield: 0, totalGross: 0, totalNet: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0
@@ -368,6 +382,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
           this.saldoBruto = suggestYield.totalGross;
           this.saldoLiquido = suggestYield.totalNet;
+
+          this.captureYieldBaseValues();
 
           this.cd.detectChanges();
         } finally {
@@ -472,6 +488,38 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     return +(Number(value || 0).toFixed(2));
   }
 
+  private captureYieldBaseValues(): void {
+    this.baseGrossAmount = this.round2(Number(this.accountPosting.grossAmount || 0));
+    this.baseAmount = this.round2(Number(this.accountPosting.amount || 0));
+    this.baseSaldoBruto = this.round2(Number(this.saldoBruto || 0));
+    this.baseSaldoLiquido = this.round2(Number(this.saldoLiquido || 0));
+    this.baseTotalIOF = this.round2(Number(this.accountPosting.totalIOF || 0));
+    this.baseTotalIR = this.round2(Number(this.accountPosting.totalIR || 0));
+
+    this.yieldBaseCaptured = true;
+  }
+
+  private ensureYieldBaseValues(): void {
+    if (this.yieldBaseCaptured) return;
+
+    this.captureYieldBaseValues();
+  }
+
+  private setControlValue(controlName: string, value: number): void {
+    this.accountPostingFormGroup.get(controlName)?.setValue(value, { emitEvent: false });
+  }
+
+  private getGrossDelta(): number {
+    return this.round2(Number(this.saldoBruto || 0) - this.baseSaldoBruto);
+  }
+
+  private getTaxDelta(): number {
+    const iofDelta = this.round2(Number(this.accountPosting.totalIOF || 0) - this.baseTotalIOF);
+    const irDelta = this.round2(Number(this.accountPosting.totalIR || 0) - this.baseTotalIR);
+
+    return this.round2(iofDelta + irDelta);
+  }
+
   private canRecalculateYield(): boolean {
     return this.accountPosting.type === 'Y' &&
       !this.noRecalculate &&
@@ -543,15 +591,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   calculaSaldoBruto(): void {
     if (!this.canRecalculateYield()) return;
+    this.ensureYieldBaseValues();
 
     this.isCalculating = true;
 
     try {
-      // this.accountPosting.totalGrossBalance é o saldo bruto total atual da conta
-      // this.accountPosting.grossAmount é o valor bruto do lançamento sendo editado
-      let valor = this.round2(Number(this.accountPosting.totalGrossBalance || 0) + Number(this.accountPosting.grossAmount || 0));
+      const delta = this.round2(Number(this.accountPosting.grossAmount || 0) - this.baseGrossAmount);
+      const valor = this.round2(this.baseSaldoBruto + delta);
 
-      this.accountPostingFormGroup.get('totalGrossBalanceFormControl')?.setValue(valor, { emitEvent: false });
+      this.saldoBruto = valor;
+      this.setControlValue('totalGrossBalanceFormControl', valor);
     } finally {
       this.isCalculating = false;
     }
@@ -559,15 +608,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   calculaValorBruto(): void {
     if (!this.canRecalculateYield()) return;
+    this.ensureYieldBaseValues();
 
     this.isCalculating = true;
 
     try {
-      // this.saldoBruto é o novo saldo bruto total da conta (após a mudança)
-      // this.accountPosting.totalGrossBalance é o saldo bruto total atual da conta
-      let valor = this.round2(this.saldoBruto - Number(this.accountPosting.totalGrossBalance || 0));
+      const delta = this.round2(Number(this.saldoBruto || 0) - this.baseSaldoBruto);
+      const valor = this.round2(this.baseGrossAmount + delta);
 
-      this.accountPostingFormGroup.get('grossAmountFormControl')?.setValue(valor, { emitEvent: false });
+      this.accountPosting.grossAmount = valor;
+      this.setControlValue('grossAmountFormControl', valor);
     } finally {
       this.isCalculating = false;
     }
@@ -575,6 +625,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   calculaSaldoLiquido(byValor: boolean = false): void {
     if (!this.canRecalculateYield()) return;
+    this.ensureYieldBaseValues();
 
     this.isCalculating = true;
 
@@ -582,13 +633,15 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       let valor: number;
 
       if (byValor) {
-        valor = this.round2(Number(this.accountPosting.totalBalance || 0) + Number(this.accountPosting.amount || 0));
+        const delta = this.round2(Number(this.accountPosting.amount || 0) - this.baseAmount);
+        valor = this.round2(this.baseSaldoLiquido + delta);
       }
       else {
-        valor = this.round2(Number(this.saldoBruto || 0) - Number(this.accountPosting.totalIOF || 0) - Number(this.accountPosting.totalIR || 0));
+        valor = this.round2(this.baseSaldoLiquido + this.getGrossDelta() - this.getTaxDelta());
       }
 
-      this.accountPostingFormGroup.get('totalBalanceFormControl')?.setValue(valor, { emitEvent: false });
+      this.saldoLiquido = valor;
+      this.setControlValue('totalBalanceFormControl', valor);
     } finally {
       this.isCalculating = false;
     }
@@ -596,13 +649,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   calculaValor(): void {
     if (!this.canRecalculateYield()) return;
+    this.ensureYieldBaseValues();
 
     this.isCalculating = true;
 
     try {
-      let valor = this.round2(Number(this.saldoLiquido || 0) - Number(this.accountPosting.totalBalance || 0));
+      const delta = this.round2(Number(this.saldoLiquido || 0) - this.baseSaldoLiquido);
+      const valor = this.round2(this.baseAmount + delta);
 
-      this.accountPostingFormGroup.get('amountFormControl')?.setValue(valor, { emitEvent: false });
+      this.accountPosting.amount = valor;
+      this.setControlValue('amountFormControl', valor);
     } finally {
       this.isCalculating = false;
     }

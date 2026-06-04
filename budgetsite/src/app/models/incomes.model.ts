@@ -11,6 +11,9 @@ export interface Incomes {
   toReceive: number;
   received: number;
   remaining: number;
+  parcelNumber?: number;
+  parcels?: number;
+  totalToReceive?: number;
   note?: string;
   card?: Cards;
   cardId?: number;
@@ -24,6 +27,7 @@ export interface Incomes {
   accountsList?: Accounts[];
   peopleList?: People[];
   typesList?: [];
+  generateParcels?: boolean;
   repeatIncome?: boolean;
   monthsToRepeat?: number;
   repeatToNextMonths?: boolean;

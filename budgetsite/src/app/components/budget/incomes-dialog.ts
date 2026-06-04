@@ -28,16 +28,23 @@ export class IncomesDialog implements OnInit, AfterViewInit {
   cards?: Cards[];
   accounts?: Accounts[];
   types?: IncomesTypes[];
+  isScreenInit: boolean = true;
+  disableGenerateParcelsCheck: boolean = true;
+  disableRepeatIncomeCheck: boolean = false;
 
   incomesFormGroup = new FormGroup({
     descriptionFormControl: new FormControl('', Validators.required),
+    totalToReceiveFormControl: new FormControl('', Validators.required),
+    parcelsFormControl: new FormControl(''),
     toReceiveFormControl: new FormControl('', Validators.required),
+    parcelNumberFormControl: new FormControl(''),
     receivedFormControl: new FormControl(''),
     remainingFormControl: new FormControl(''),
     noteFormControl: new FormControl(''),
     cardIdFormControl: new FormControl(''),
     accountIdFormControl: new FormControl(''),
     typeFormControl: new FormControl(''),
+    generateParcelsFormControl: new FormControl(''),
     repeatIncomeFormControl: new FormControl(''),
     monthsToRepeatFormControl: new FormControl(''),
     repeatToNextMonthsFormControl: new FormControl(''),
@@ -57,11 +64,21 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     this.accounts = this.incomes.accountsList;
     this.types = this.incomes.typesList;
 
+    this.incomes.parcelNumber = this.incomes.parcelNumber ?? 1;
+    this.incomes.parcels = this.incomes.parcels ?? 1;
+    this.incomes.totalToReceive = this.incomes.totalToReceive ?? this.incomes.toReceive ?? 0;
     this.incomes.monthsToRepeat = 12;
+
+    this.disableGenerateParcelsCheck =
+      this.incomes.parcels == undefined ||
+      this.incomes.parcels == null ||
+      this.incomes.parcels === 1;
   }
 
   ngAfterViewInit(): void {
     this.cd.detectChanges();
+
+    this.isScreenInit = false;
   }
 
   cancel(): void {
@@ -106,6 +123,58 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     this.incomes.remaining = +(
       this.incomes.toReceive - (this.incomes.received ?? 0)
     ).toFixed(2);
+  }
+
+  calculateToReceive(): void {
+    if (this.isScreenInit) return;
+
+    const totalToReceive = this.incomes.totalToReceive ?? this.incomes.toReceive ?? 0;
+    const parcels = this.incomes.parcels ?? 1;
+
+    this.incomes.toReceive = +(totalToReceive / parcels).toFixed(2);
+
+    this.calculateRemaining();
+  }
+
+  onParcelsChanged(event: any): void {
+    this.disableGenerateParcelsCheck =
+      event.target.value == '' || this.incomes.parcels! <= 1;
+
+    if (this.disableGenerateParcelsCheck) {
+      this.incomes.generateParcels = false;
+    } else {
+      this.incomes.generateParcels = true;
+    }
+
+    if (event.target.value == '') {
+      this.incomes.parcels = 1;
+    }
+
+    this.calculateToReceive();
+  }
+
+  onGenerateParcelsChanged(event: any): void {
+    if (this.incomes.generateParcels) {
+      this.disableRepeatIncomeCheck = true;
+      this.incomes.repeatIncome = false;
+      this.incomes.repeatToNextMonths = false;
+      this.incomesFormGroup.get('monthsToRepeatFormControl')!.disable();
+    } else {
+      this.disableRepeatIncomeCheck = false;
+      this.incomesFormGroup.get('monthsToRepeatFormControl')!.enable();
+    }
+  }
+
+  onRepeatIncomeChanged(event: any): void {
+    if (this.incomes.repeatIncome) {
+      this.disableGenerateParcelsCheck = true;
+      this.incomes.generateParcels = false;
+      this.incomes.repeatToNextMonths = false;
+    } else {
+      if (this.incomes.parcels! > 1) {
+        this.disableGenerateParcelsCheck = false;
+      }
+    }
   }
 
   setTitle() {

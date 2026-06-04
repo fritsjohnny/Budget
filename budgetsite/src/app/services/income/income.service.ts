@@ -13,12 +13,12 @@ export class IncomeService {
   constructor(private http: HttpClient, private messenger: Messenger) { }
 
   create(income: Incomes): Observable<Incomes> {
+    const endpoint = income.generateParcels ? '/allparcels' : income.repeatIncome ? '/repeat' : '';
+    const query = income.repeatIncome ? `?qtyMonths=${income.monthsToRepeat ?? 0}` : '';
+
     return this.http
       .post<Incomes>(
-        `${ApiUrls.incomes}${income.repeatIncome
-          ? `/repeat?qtyMonths=${income.monthsToRepeat}`
-          : ''
-        }`,
+        `${ApiUrls.incomes}${endpoint}${query}`,
         income
       )
       .pipe(
@@ -67,11 +67,12 @@ export class IncomeService {
       params.push(`repeatToNextMonths=${income.repeatToNextMonths ?? false}`);
     }
 
+    const endpoint = income.generateParcels ? '/allparcels' : income.repeatIncome ? '/repeat' : '';
     const query = params.length ? `?${params.join('&')}` : '';
 
     return this.http
       .put<Incomes>(
-        `${ApiUrls.incomes}${income.repeatIncome ? '/repeat' : ''}/${income.id}${query}`,
+        `${ApiUrls.incomes}${endpoint}/${income.id}${query}`,
         income
       )
       .pipe(

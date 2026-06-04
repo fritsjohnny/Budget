@@ -922,6 +922,11 @@
                             <th mat-header-cell *matHeaderCellDef>Descrição</th>
                             <td mat-cell *matCellDef="let row">
                                 {{ row.description }}
+                                <span *ngIf="row.parcels > 1">
+                                    &nbsp;({{ row.parcelNumber }}/{{
+                                        row.parcels
+                                    }})
+                                </span>
                             </td>
                             <td mat-footer-cell *matFooterCellDef>Total</td>
                         </ng-container>
@@ -1546,6 +1551,17 @@
                                                 >
                                                     <div style="display: flex">
                                                         {{ row.description }}
+                                                        <span
+                                                            *ngIf="
+                                                                row.parcels > 1
+                                                            "
+                                                        >
+                                                            &nbsp;({{
+                                                                row.parcelNumber
+                                                            }}/{{
+                                                                row.parcels
+                                                            }})
+                                                        </span>
                                                     </div>
                                                 </td>
                                                 <td

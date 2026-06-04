@@ -60,6 +60,53 @@
                         floatLabel="always"
                         style="width: 100% !important"
                     >
+                        <mat-label>Total da Receita</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="totalToReceiveFormControl"
+                            [(ngModel)]="incomes.totalToReceive"
+                            placeholder="0"
+                            (ngModelChange)="calculateToReceive()"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="incomesFormGroup.get('totalToReceiveFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Total de Parcelas</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            inputmode="numeric"
+                            formControlName="parcelsFormControl"
+                            [(ngModel)]="incomes.parcels"
+                            min="1"
+                            (change)="onParcelsChanged($event)"
+                            onfocus="this.select()"
+                        />
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row center">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
                         <mat-label>A receber</mat-label>
                         <input
                             matInput
@@ -79,6 +126,27 @@
                     </mat-form-field>
                 </div>
 
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Nº. Parcela</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            inputmode="numeric"
+                            formControlName="parcelNumberFormControl"
+                            [(ngModel)]="incomes.parcelNumber"
+                            min="1"
+                            onfocus="this.select()"
+                        />
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row center">
                 <div class="col-6">
                     <mat-form-field
                         appearance="fill"
@@ -127,9 +195,21 @@
 
             <p>
                 <mat-checkbox
+                    [(ngModel)]="incomes.generateParcels"
+                    formControlName="generateParcelsFormControl"
+                    [disabled]="disableGenerateParcelsCheck || incomes.repeatToNextMonths! || incomes.repeatIncome!"
+                    (change)="onGenerateParcelsChanged($event)"
+                >
+                    Gerar as demais parcelas
+                </mat-checkbox>
+            </p>
+
+            <p>
+                <mat-checkbox
                     [(ngModel)]="incomes.repeatIncome"
                     formControlName="repeatIncomeFormControl"
-                    [disabled]="incomes.repeatToNextMonths!"
+                    [disabled]="disableRepeatIncomeCheck || incomes.repeatToNextMonths! || incomes.generateParcels!"
+                    (change)="onRepeatIncomeChanged($event)"
                 >
                     Repetir para os próximos
                     <span>
@@ -151,7 +231,7 @@
                 <mat-checkbox
                     [(ngModel)]="incomes.repeatToNextMonths"
                     formControlName="repeatToNextMonthsFormControl"
-                    [disabled]="incomes.repeatIncome!"
+                    [disabled]="incomes.repeatIncome! || incomes.generateParcels!"
                 >
                     Repetir edição para os próximos meses
                 </mat-checkbox>

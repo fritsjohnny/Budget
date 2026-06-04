@@ -832,6 +832,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         accountsList: this.accountsList,
         peopleList: this.peopleList,
         typesList: this.typesList,
+        parcels: 1,
+        parcelNumber: 1,
+        totalToReceive: 0,
         adding: true,
       },
     });
@@ -847,6 +850,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             //this.incomes.push(incomes); não funcionou assim como nas outras funções, acredito que seja por causa do Expension Panel (mat-expansion-panel)
 
             incomes.remaining = incomes.toReceive - incomes.received;
+            incomes.totalToReceive = incomes.totalToReceive ?? incomes.toReceive;
+            incomes.parcels = incomes.parcels ?? 1;
+            incomes.parcelNumber = incomes.parcelNumber ?? 1;
 
             this.incomes = [...this.incomes, incomes]; // somente funcionou assim
             this.incomesNoFilter = [...this.incomesNoFilter, incomes];
@@ -924,6 +930,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         toReceive: income.toReceive,
         received: income.received,
         remaining: income.remaining,
+        parcelNumber: income.parcelNumber,
+        parcels: income.parcels,
+        totalToReceive: income.totalToReceive,
         note: income.note,
         type: income.type,
         peopleId: income.peopleId,
@@ -967,6 +976,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                   t.toReceive = result.toReceive;
                   t.received = result.received;
                   t.remaining = result.remaining;
+                  t.parcelNumber = result.parcelNumber;
+                  t.parcels = result.parcels;
+                  t.totalToReceive = result.totalToReceive;
                   t.note = result.note;
                   t.cardId = result.cardId;
                   t.accountId = result.accountId;
@@ -1266,10 +1278,15 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   incomeClone(row: Incomes): void {
     const clone = {
       ...row,
+
       // campos que NÃO podem ser reaproveitados
       id: undefined,
-      repeatIncome: false
+      relatedId: undefined,
+      generateParcels: false,
+      repeatIncome: false,
+      repeatToNextMonths: false
     };
+
     this.incomeService.create(clone).subscribe({
       next: (incomes) => {
         incomes.remaining = incomes.toReceive - incomes.received;
@@ -1349,17 +1366,20 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         cardPostingsPeople.incomes.forEach((i) => {
           const strAmount = i.toReceive
             .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
-            .replace('R$ ', '')
+            .replace(/^R\$\s?/, '')
             .padStart(8, ' ');
 
-          message += `${strAmount} ${i.description}\n`;
+          const strParcels =
+            i.parcels! > 1 ? ` (${i.parcelNumber}/${i.parcels})` : '';
+
+          message += `${strAmount} ${i.description}${strParcels}\n`;
         });
 
         const tax = noFee ? 0 : 3;
         if (!noFee) {
           const strTax = tax
             .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
-            .replace('R$ ', '')
+            .replace(/^R\$\s?/, '')
             .padStart(8, ' ');
           message += `${strTax} Tarifa de Serviços\n`;
         }
@@ -1370,7 +1390,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
               '-' +
               cpp.received
                 .toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
-                .replace('R$ ', '')
+                .replace(/^R\$\s?/, '')
             ).padStart(8, ' ') + ' (Valor pago)\n'
             : '';
 

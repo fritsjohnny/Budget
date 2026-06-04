@@ -231,7 +231,7 @@
                 <mat-checkbox
                     [(ngModel)]="incomes.repeatToNextMonths"
                     formControlName="repeatToNextMonthsFormControl"
-                    [disabled]="incomes.repeatIncome! || incomes.generateParcels!"
+                    [disabled]="incomes.repeatIncome! || incomes.generateParcels! || incomes.parcels! > 1"
                 >
                     Repetir edição para os próximos meses
                 </mat-checkbox>

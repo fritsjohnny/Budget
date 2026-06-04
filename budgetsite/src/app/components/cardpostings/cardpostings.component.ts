@@ -543,6 +543,7 @@ export class CardPostingsComponent implements OnInit {
         relatedId: cardPosting.relatedId,
         dueDate: cardPosting.dueDate,
         isPaid: cardPosting.isPaid,
+        expenseId: cardPosting.expenseId,
       },
     });
 

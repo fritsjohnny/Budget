@@ -1,493 +1,512 @@
 <div class="">
-  <form [formGroup]="expensesFormGroup">
-    <div class="cancel">
-      <button
-        class="default-button"
-        mat-mini-fab
-        matTooltip="Cancelar"
-        color="accent"
-        aria-label="Cancelar"
-        (click)="cancel()"
-      >
-        <mat-icon class="default-icon">close</mat-icon>
-      </button>
-    </div>
-
-    <h2 mat-dialog-title>{{setTitle()}}</h2>
-    <div mat-dialog-content>
-      <div class="row" *ngIf="expenses.paid == 0">
-        <div class="col">
-          <app-datepickerreference
-            [(reference)]="expenses.reference"
-          ></app-datepickerreference>
-        </div>
-      </div>
-
-      <div class="row">
-        <mat-form-field appearance="fill">
-          <mat-label>Descrição</mat-label>
-          <input
-            *ngIf="!expenses.adding"
-            type="text"
-            id="descriptionFormControl"
-            required
-            matInput
-            formControlName="descriptionFormControl"
-            [(ngModel)]="expenses.description"
-          />
-          <input
-            *ngIf="expenses.adding"
-            type="text"
-            id="descriptionFormControl"
-            required
-            matInput
-            formControlName="descriptionFormControl"
-            [(ngModel)]="expenses.description"
-            (blur)="onDescriptionChange()"
-            cdkFocusInitial
-          />
-          <mat-error
-            *ngIf="expensesFormGroup.get('descriptionFormControl')?.hasError('required')"
-          >
-            Campo <strong>obrigatório</strong>.
-          </mat-error>
-        </mat-form-field>
-      </div>
-
-      <div class="row center">
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Total da Despesa</mat-label>
-            <input
-              matInput
-              inputmode="numeric"
-              currencyMask
-              formControlName="totalToPayFormControl"
-              [(ngModel)]="expenses.totalToPay"
-              placeholder="0"
-              (ngModelChange)="calculateToPay()"
-              autocomplete="off"
-            />
-            <mat-error
-              *ngIf="expensesFormGroup.get('totalToPayFormControl')?.hasError('required')"
+    <form [formGroup]="expensesFormGroup">
+        <div class="cancel">
+            <button
+                class="default-button"
+                mat-mini-fab
+                matTooltip="Cancelar"
+                color="accent"
+                aria-label="Cancelar"
+                (click)="cancel()"
             >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
+                <mat-icon class="default-icon">close</mat-icon>
+            </button>
         </div>
 
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Total de Parcelas</mat-label>
-            <input
-              matInput
-              type="number"
-              inputmode="numeric"
-              formControlName="parcelsFormControl"
-              [(ngModel)]="expenses.parcels"
-              min="1"
-              (change)="onParcelsChanged($event)"
-              onfocus="this.select()"
-            />
-            <mat-error
-              *ngIf="expensesFormGroup.get('parcelsFormControl')?.hasError('min') && !expensesFormGroup.get('parcelsFormControl')?.hasError('required')"
-            >
-              Valor mínimo é <strong>1</strong>.
-            </mat-error>
-            <mat-error
-              *ngIf="expensesFormGroup.get('parcelsFormControl')?.hasError('required')"
-            >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
+        <h2 mat-dialog-title>{{setTitle()}}</h2>
+        <div mat-dialog-content>
+            <div class="row" *ngIf="expenses.paid == 0">
+                <div class="col">
+                    <app-datepickerreference
+                        [(reference)]="expenses.reference"
+                    ></app-datepickerreference>
+                </div>
+            </div>
+
+            <div class="row">
+                <mat-form-field appearance="fill">
+                    <mat-label>Descrição</mat-label>
+                    <input
+                        *ngIf="!expenses.adding"
+                        type="text"
+                        id="descriptionFormControl"
+                        required
+                        matInput
+                        formControlName="descriptionFormControl"
+                        [(ngModel)]="expenses.description"
+                    />
+                    <input
+                        *ngIf="expenses.adding"
+                        type="text"
+                        id="descriptionFormControl"
+                        required
+                        matInput
+                        formControlName="descriptionFormControl"
+                        [(ngModel)]="expenses.description"
+                        (blur)="onDescriptionChange()"
+                        cdkFocusInitial
+                    />
+                    <mat-error
+                        *ngIf="expensesFormGroup.get('descriptionFormControl')?.hasError('required')"
+                    >
+                        Campo <strong>obrigatório</strong>.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="row center">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Total da Despesa</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="totalToPayFormControl"
+                            [(ngModel)]="expenses.totalToPay"
+                            placeholder="0"
+                            (ngModelChange)="calculateToPay()"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('totalToPayFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Total de Parcelas</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            inputmode="numeric"
+                            formControlName="parcelsFormControl"
+                            [(ngModel)]="expenses.parcels"
+                            min="1"
+                            (change)="onParcelsChanged($event)"
+                            onfocus="this.select()"
+                        />
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('parcelsFormControl')?.hasError('min') && !expensesFormGroup.get('parcelsFormControl')?.hasError('required')"
+                        >
+                            Valor mínimo é <strong>1</strong>.
+                        </mat-error>
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('parcelsFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row center">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>A pagar</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="toPayFormControl"
+                            [(ngModel)]="expenses.toPay"
+                            placeholder="0"
+                            (change)="calculateRemaining()"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('toPayFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Nº. Parcela</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            inputmode="numeric"
+                            formControlName="parcelNumberFormControl"
+                            [(ngModel)]="expenses.parcelNumber"
+                            min="1"
+                            (change)="onParcelNumberChanged($event)"
+                            onfocus="this.select()"
+                        />
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('parcelNumberFormControl')?.hasError('min') && !expensesFormGroup.get('parcelNumberFormControl')?.hasError('required')"
+                        >
+                            Valor mínimo é <strong>1</strong>.
+                        </mat-error>
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('parcelNumberFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row center">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Pago</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="paidFormControl"
+                            [(ngModel)]="expenses.paid"
+                            placeholder="0"
+                            (change)="calculateRemaining()"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('paidFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Restante</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="remainingFormControl"
+                            readonly
+                            [(ngModel)]="expenses.remaining"
+                            placeholder="0"
+                            autocomplete="off"
+                        />
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row center">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Valor Previsto</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="expectedValueFormControl"
+                            [(ngModel)]="expenses.expectedValue"
+                            placeholder="0"
+                            autocomplete="off"
+                        />
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row center">
+                <div class="col-7">
+                    <mat-form-field
+                        appearance="fill"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Vencimento</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="picker"
+                            formControlName="dueDateFormControl"
+                            [(ngModel)]="expenses.dueDate"
+                        />
+                        <mat-datepicker-toggle
+                            matSuffix
+                            [for]="picker"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #picker></mat-datepicker>
+                    </mat-form-field>
+                </div>
+
+                <div class="col-5">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Dia Fixo Vencimento</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            inputmode="numeric"
+                            formControlName="dueDayFormControl"
+                            [(ngModel)]="expenses.dueDay"
+                            min="1"
+                            max="31"
+                            onfocus="this.select()"
+                        />
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('dueDayFormControl')?.hasError('min') && !expensesFormGroup.get('dueDayFormControl')?.hasError('required')"
+                        >
+                            Valor mínimo é <strong>1</strong>.
+                        </mat-error>
+                        <mat-error
+                            *ngIf="expensesFormGroup.get('dueDayFormControl')?.hasError('max')"
+                        >
+                            Valor máximo é <strong>31</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <p>
+                <mat-checkbox
+                    [(ngModel)]="expenses.fixed"
+                    formControlName="fixedFormControl"
+                >
+                    Despesa Fixa
+                </mat-checkbox>
+            </p>
+
+            <p>
+                <mat-checkbox
+                    [(ngModel)]="expenses.scheduled"
+                    formControlName="scheduledFormControl"
+                >
+                    Pagamento agendado
+                </mat-checkbox>
+            </p>
+
+            <p>
+                <mat-checkbox
+                    [(ngModel)]="expenses.generateParcels"
+                    formControlName="generateParcelsFormControl"
+                    [disabled]="disableGenerateParcelsCheck || expenses.repeatToNextMonths! || expenses.repeatParcels!"
+                    (change)="onGenerateParcelsChanged($event)"
+                >
+                    Gerar as demais parcelas
+                </mat-checkbox>
+            </p>
+
+            <p>
+                <mat-checkbox
+                    [(ngModel)]="expenses.repeatParcels"
+                    formControlName="repeatParcelsFormControl"
+                    [disabled]="disableRepeatParcelsCheck || expenses.repeatToNextMonths! || expenses.generateParcels!"
+                    (change)="onRepeatParcelsChanged($event)"
+                >
+                    Repetir para os próximos
+                    <span>
+                        <input
+                            type="number"
+                            inputmode="numeric"
+                            style="width: 40px !important"
+                            onfocus="this.select()"
+                            min="1"
+                            formControlName="monthsToRepeatFormControl"
+                            [(ngModel)]="expenses.monthsToRepeat"
+                        />
+                    </span>
+                    meses
+                </mat-checkbox>
+            </p>
+
+            <p *ngIf="expenses.editing">
+                <mat-checkbox
+                    [(ngModel)]="expenses.repeatToNextMonths"
+                    formControlName="repeatToNextMonthsFormControl"
+                    [disabled]="expenses.repeatParcels! || expenses.generateParcels!"
+                >
+                    Repetir edição para os próximos meses
+                </mat-checkbox>
+            </p>
+
+            <div class="row">
+                <div class="col-10">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Categoria</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="expenses.categoryId"
+                            formControlName="categoryIdFormControl"
+                        >
+                            <mat-option>-- Nenhuma --</mat-option>
+                            <mat-option
+                                *ngFor="let c of expenses.categoriesList"
+                                [value]="c.id"
+                                >{{ c.name }}</mat-option
+                            >
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="col-2 center">
+                    <span
+                        class="material-icons add-list-item"
+                        matTooltip="Adicionar Categoria"
+                        (click)="addCategory()"
+                    >
+                        playlist_add
+                    </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-10">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Pessoa</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="expenses.peopleId"
+                            formControlName="peopleFormControl"
+                        >
+                            <mat-option>-- Nenhuma --</mat-option>
+                            <mat-option
+                                *ngFor="let p of expenses.peopleList"
+                                [value]="p.id"
+                                >{{ p.name }}</mat-option
+                            >
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="col-2 center">
+                    <span
+                        class="material-icons add-list-item"
+                        matTooltip="Adicionar Pessoa"
+                        (click)="addPeople()"
+                    >
+                        playlist_add
+                    </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Cartão</mat-label>
+                    <mat-select
+                        mat-input
+                        [(ngModel)]="expenses.cardId"
+                        formControlName="cardIdFormControl"
+                        (selectionChange)="setCard()"
+                    >
+                        <mat-option>-- Nenhum --</mat-option>
+                        <mat-option *ngFor="let c of cards" [value]="c.id"
+                            >{{ c.name }}</mat-option
+                        >
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <div class="row">
+                <mat-form-field appearance="fill">
+                    <mat-label>Comentário</mat-label>
+                    <textarea
+                        matInput
+                        rows="7"
+                        [(ngModel)]="expenses.note"
+                        formControlName="noteFormControl"
+                    ></textarea>
+                </mat-form-field>
+            </div>
+
+            <div class="row center">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>ID</mat-label>
+                        <input matInput [value]="expenses.id" readonly />
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Related ID</mat-label>
+                        <input
+                            matInput
+                            [value]="expenses.relatedId ?? ''"
+                            readonly
+                        />
+                    </mat-form-field>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div class="row center">
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>A pagar</mat-label>
-            <input
-              matInput
-              inputmode="numeric"
-              currencyMask
-              formControlName="toPayFormControl"
-              [(ngModel)]="expenses.toPay"
-              placeholder="0"
-              (change)="calculateRemaining()"
-              autocomplete="off"
-            />
-            <mat-error
-              *ngIf="expensesFormGroup.get('toPayFormControl')?.hasError('required')"
-            >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
+        <div class="row">
+            <div class="col">
+                <div mat-dialog-actions>
+                    <button
+                        [disabled]="!expensesFormGroup.valid"
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Salvar"
+                        matTooltipPosition="right"
+                        class="bg-primary"
+                        aria-label="Salvar"
+                        [mat-dialog-close]="expenses"
+                        (click)="save()"
+                    >
+                        <mat-icon class="default-icon">save</mat-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="col" *ngIf="expenses.editing">
+                <div mat-dialog-actions>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Excluir"
+                        matTooltipPosition="left"
+                        color="warn"
+                        aria-label="Excluir"
+                        (click)="delete()"
+                    >
+                        <mat-icon class="default-icon">delete</mat-icon>
+                    </button>
+                </div>
+            </div>
         </div>
-
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Nº. Parcela</mat-label>
-            <input
-              matInput
-              type="number"
-              inputmode="numeric"
-              formControlName="parcelNumberFormControl"
-              [(ngModel)]="expenses.parcelNumber"
-              min="1"
-              (change)="onParcelNumberChanged($event)"
-              onfocus="this.select()"
-            />
-            <mat-error
-              *ngIf="expensesFormGroup.get('parcelNumberFormControl')?.hasError('min') && !expensesFormGroup.get('parcelNumberFormControl')?.hasError('required')"
-            >
-              Valor mínimo é <strong>1</strong>.
-            </mat-error>
-            <mat-error
-              *ngIf="expensesFormGroup.get('parcelNumberFormControl')?.hasError('required')"
-            >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <div class="row center">
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Pago</mat-label>
-            <input
-              matInput
-              inputmode="numeric"
-              currencyMask
-              formControlName="paidFormControl"
-              [(ngModel)]="expenses.paid"
-              placeholder="0"
-              (change)="calculateRemaining()"
-              autocomplete="off"
-            />
-            <mat-error
-              *ngIf="expensesFormGroup.get('paidFormControl')?.hasError('required')"
-            >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Restante</mat-label>
-            <input
-              matInput
-              inputmode="numeric"
-              currencyMask
-              formControlName="remainingFormControl"
-              readonly
-              [(ngModel)]="expenses.remaining"
-              placeholder="0"
-              autocomplete="off"
-            />
-          </mat-form-field>
-        </div>
-      </div>
-
-      <div class="row center">
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Valor Previsto</mat-label>
-            <input
-              matInput
-              inputmode="numeric"
-              currencyMask
-              formControlName="expectedValueFormControl"
-              [(ngModel)]="expenses.expectedValue"
-              placeholder="0"
-              autocomplete="off"
-            />
-          </mat-form-field>
-        </div>
-      </div>
-
-      <div class="row center">
-        <div class="col-7">
-          <mat-form-field appearance="fill" style="width: 100% !important">
-            <mat-label>Vencimento</mat-label>
-            <input
-              matInput
-              [matDatepicker]="picker"
-              formControlName="dueDateFormControl"
-              [(ngModel)]="expenses.dueDate"
-            />
-            <mat-datepicker-toggle
-              matSuffix
-              [for]="picker"
-            ></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-        </div>
-
-        <div class="col-5">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Dia Fixo Vencimento</mat-label>
-            <input
-              matInput
-              type="number"
-              inputmode="numeric"
-              formControlName="dueDayFormControl"
-              [(ngModel)]="expenses.dueDay"
-              min="1"
-              max="31"
-              onfocus="this.select()"
-            />
-            <mat-error
-              *ngIf="expensesFormGroup.get('dueDayFormControl')?.hasError('min') && !expensesFormGroup.get('dueDayFormControl')?.hasError('required')"
-            >
-              Valor mínimo é <strong>1</strong>.
-            </mat-error>
-            <mat-error
-              *ngIf="expensesFormGroup.get('dueDayFormControl')?.hasError('max')"
-            >
-              Valor máximo é <strong>31</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <p>
-        <mat-checkbox
-          [(ngModel)]="expenses.fixed"
-          formControlName="fixedFormControl"
-        >
-          Despesa Fixa
-        </mat-checkbox>
-      </p>
-
-      <p>
-        <mat-checkbox
-          [(ngModel)]="expenses.scheduled"
-          formControlName="scheduledFormControl"
-        >
-          Pagamento agendado
-        </mat-checkbox>
-      </p>
-
-      <p>
-        <mat-checkbox
-          [(ngModel)]="expenses.generateParcels"
-          formControlName="generateParcelsFormControl"
-          [disabled]="disableGenerateParcelsCheck"
-          (change)="onGenerateParcelsChanged($event)"
-        >
-          Gerar as demais parcelas
-        </mat-checkbox>
-      </p>
-
-      <p>
-        <mat-checkbox
-          [(ngModel)]="expenses.repeatParcels"
-          formControlName="repeatParcelsFormControl"
-          [disabled]="disableRepeatParcelsCheck"
-          (change)="onRepeatParcelsChanged($event)"
-        >
-          Repetir para os próximos
-          <span>
-            <input
-              type="number"
-              inputmode="numeric"
-              style="width: 40px !important"
-              onfocus="this.select()"
-              min="1"
-              formControlName="monthsToRepeatFormControl"
-              [(ngModel)]="expenses.monthsToRepeat"
-            />
-          </span>
-          meses
-        </mat-checkbox>
-      </p>
-
-      <div class="row">
-        <div class="col-10">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100%"
-          >
-            <mat-label>Categoria</mat-label>
-            <mat-select
-              mat-input
-              [(ngModel)]="expenses.categoryId"
-              formControlName="categoryIdFormControl"
-            >
-              <mat-option>-- Nenhuma --</mat-option>
-              <mat-option
-                *ngFor="let c of expenses.categoriesList"
-                [value]="c.id"
-                >{{ c.name }}</mat-option
-              >
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-2 center">
-          <span
-            class="material-icons add-list-item"
-            matTooltip="Adicionar Categoria"
-            (click)="addCategory()"
-          >
-            playlist_add
-          </span>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-10">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100%"
-          >
-            <mat-label>Pessoa</mat-label>
-            <mat-select
-              mat-input
-              [(ngModel)]="expenses.peopleId"
-              formControlName="peopleFormControl"
-            >
-              <mat-option>-- Nenhuma --</mat-option>
-              <mat-option *ngFor="let p of expenses.peopleList" [value]="p.id"
-                >{{ p.name }}</mat-option
-              >
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-2 center">
-          <span
-            class="material-icons add-list-item"
-            matTooltip="Adicionar Pessoa"
-            (click)="addPeople()"
-          >
-            playlist_add
-          </span>
-        </div>
-      </div>
-
-      <div class="row">
-        <mat-form-field appearance="fill" floatLabel="always">
-          <mat-label>Cartão</mat-label>
-          <mat-select
-            mat-input
-            [(ngModel)]="expenses.cardId"
-            formControlName="cardIdFormControl"
-            (selectionChange)="setCard()"
-          >
-            <mat-option>-- Nenhum --</mat-option>
-            <mat-option *ngFor="let c of cards" [value]="c.id"
-              >{{ c.name }}</mat-option
-            >
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <div class="row">
-        <mat-form-field appearance="fill">
-          <mat-label>Comentário</mat-label>
-          <textarea
-            matInput
-            rows="7"
-            [(ngModel)]="expenses.note"
-            formControlName="noteFormControl"
-          ></textarea>
-        </mat-form-field>
-      </div>
-
-      <div class="row center">
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>ID</mat-label>
-            <input matInput [value]="expenses.id" readonly />
-          </mat-form-field>
-        </div>
-
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Related ID</mat-label>
-            <input matInput [value]="expenses.relatedId ?? ''" readonly />
-          </mat-form-field>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <div mat-dialog-actions>
-          <button
-            [disabled]="!expensesFormGroup.valid"
-            class="default-button"
-            mat-mini-fab
-            matTooltip="Salvar"
-            matTooltipPosition="right"
-            class="bg-primary"
-            aria-label="Salvar"
-            [mat-dialog-close]="expenses"
-            (click)="save()"
-          >
-            <mat-icon class="default-icon">save</mat-icon>
-          </button>
-        </div>
-      </div>
-      <div class="col" *ngIf="expenses.editing">
-        <div mat-dialog-actions>
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="Excluir"
-            matTooltipPosition="left"
-            color="warn"
-            aria-label="Excluir"
-            (click)="delete()"
-          >
-            <mat-icon class="default-icon">delete</mat-icon>
-          </button>
-        </div>
-      </div>
-    </div>
-  </form>
+    </form>
 </div>

@@ -27,6 +27,7 @@ export interface Expenses {
   generateParcels?: boolean;
   repeatParcels?: boolean;
   monthsToRepeat?: number;
+  repeatToNextMonths?: boolean;
   card?: Cards;
   cardsList?: Cards[];
   categoriesList?: Categories[];

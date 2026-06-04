@@ -53,6 +53,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     repeatParcelsFormControl: new FormControl(''),
     monthsToRepeatFormControl: new FormControl(''),
     scheduledFormControl: new FormControl(''),
+    repeatToNextMonthsFormControl: new FormControl(''),
     fixedFormControl: new FormControl(''),
     peopleFormControl: new FormControl(''),
     dueDayFormControl: new FormControl(''),

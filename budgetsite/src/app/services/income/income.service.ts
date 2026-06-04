@@ -39,7 +39,7 @@ export class IncomeService {
   }
 
   readById(id?: number): Observable<Incomes> {
-    const url = `${ApiUrls.expenses}/${id}`;
+    const url = `${ApiUrls.incomes}/${id}`;
 
     return this.http.get<Incomes>(url).pipe(
       map((obj) => obj),
@@ -57,10 +57,21 @@ export class IncomeService {
   }
 
   update(income: Incomes): Observable<Incomes> {
+    const params: string[] = [];
+
+    if (income.repeatIncome) {
+      params.push(`qtyMonths=${income.monthsToRepeat ?? 0}`);
+    }
+
+    if (income.repeatToNextMonths) {
+      params.push(`repeatToNextMonths=${income.repeatToNextMonths ?? false}`);
+    }
+
+    const query = params.length ? `?${params.join('&')}` : '';
+
     return this.http
       .put<Incomes>(
-        `${ApiUrls.incomes}${income.repeatIncome ? '/repeat' : ''}/${income.id
-        }${income.repeatIncome ? `?qtyMonths=${income.monthsToRepeat}` : ''}`,
+        `${ApiUrls.incomes}${income.repeatIncome ? '/repeat' : ''}/${income.id}${query}`,
         income
       )
       .pipe(

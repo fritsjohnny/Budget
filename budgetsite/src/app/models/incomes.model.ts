@@ -26,5 +26,6 @@ export interface Incomes {
   typesList?: [];
   repeatIncome?: boolean;
   monthsToRepeat?: number;
+  repeatToNextMonths?: boolean;
   relatedId?: number;
 }

@@ -97,14 +97,23 @@ export class ExpenseService {
   }
 
   update(expense: Expenses): Observable<Expenses> {
+    const hasParcelOperation = expense.generateParcels || expense.repeatParcels;
+    const params: string[] = [];
+
+    if (hasParcelOperation) {
+      params.push(`repeat=${expense.repeatParcels ?? false}`);
+      params.push(`qtyMonths=${expense.monthsToRepeat ?? 0}`);
+    }
+
+    if (expense.repeatToNextMonths) {
+      params.push(`repeatToNextMonths=${expense.repeatToNextMonths ?? false}`);
+    }
+
+    const query = params.length ? `?${params.join('&')}` : '';
+
     return this.http
       .put<Expenses>(
-        `${ApiUrls.expenses}${expense.generateParcels || expense.repeatParcels ? '/allparcels' : ''
-        }/${expense.id}${expense.generateParcels || expense.repeatParcels
-          ? `?repeat=${expense.repeatParcels ?? false}&qtyMonths=${expense.monthsToRepeat ?? 0
-          }`
-          : ''
-        }`,
+        `${ApiUrls.expenses}${hasParcelOperation ? '/allparcels' : ''}/${expense.id}${query}`,
         expense
       )
       .pipe(

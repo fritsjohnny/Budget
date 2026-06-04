@@ -684,6 +684,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         fixed: expense.fixed,
         dueDay: expense.dueDay,
         expectedValue: expense.expectedValue,
+        relatedId: expense.relatedId,
       },
     });
 
@@ -706,7 +707,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                   t.position = result.position;
                   t.description = result.description;
                   t.toPay = result.toPay;
-                  t.totalToPay = result.toPay;
+                  t.totalToPay = result.totalToPay;
                   t.paid = result.paid;
                   t.remaining = result.remaining;
                   t.note = result.note;
@@ -722,6 +723,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                   t.fixed = result.fixed;
                   t.dueDay = result.dueDay;
                   t.expectedValue = result.expectedValue;
+                  t.relatedId = result.relatedId;
                 });
 
               this.expenses = [
@@ -925,6 +927,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         note: income.note,
         type: income.type,
         peopleId: income.peopleId,
+        relatedId: income.relatedId,
         editing: this.editing,
         deleting: false,
         cardsList: this.cardsList,
@@ -969,6 +972,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                   t.accountId = result.accountId;
                   t.type = result.type;
                   t.peopleId = result.peopleId;
+                  t.relatedId = result.relatedId;
                 });
 
               this.incomes = [

@@ -1,0 +1,185 @@
+<div class="container default-margin-bottom">
+    <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
+        <mat-expansion-panel
+            class="mat-panel-annual-savings"
+            [hideToggle]="false"
+            [(expanded)]="annualSavingsPanelExpanded"
+            (closed)="annualSavingsPanelClosed()"
+            (opened)="annualSavingsPanelOpened()"
+        >
+            <mat-expansion-panel-header>
+                <span class="material-icons center"> calendar_month </span>
+                <span class="center">{{ year }}</span>
+                <div class="center month-name2">Economia anual</div>
+            </mat-expansion-panel-header>
+
+            <div class="row d-flex annual-filter-row">
+                <div class="col-6 mb-2">
+                    <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                        <mat-label>Ano</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            inputmode="numeric"
+                            [(ngModel)]="year"
+                            (change)="yearChanged()"
+                        />
+                    </mat-form-field>
+                </div>
+
+                <div class="col-6 mb-2 annual-filter-actions">
+                    <button mat-icon-button (click)="setPreviousYear()" matTooltip="Ano anterior">
+                        <mat-icon>arrow_back_ios</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="setNextYear()" matTooltip="Próximo ano">
+                        <mat-icon>arrow_forward_ios</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="setCurrentYear()" matTooltip="Ano atual">
+                        <mat-icon>calendar_today</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row annual-checkbox-row">
+                <div class="col-12 annual-checkbox-title">
+                    <span>Economia anual</span>
+                </div>
+                <div class="col-12">
+                    <mat-checkbox [(ngModel)]="includeCurrentMonth" (change)="filtersChanged()">
+                        Incluir mês atual
+                    </mat-checkbox>
+                </div>
+                <div class="col-12">
+                    <mat-checkbox [(ngModel)]="includeNextMonths" (change)="filtersChanged()">
+                        Incluir próximos meses
+                    </mat-checkbox>
+                </div>
+            </div>
+
+            <div class="row annual-checkbox-row annual-checkbox-row-last">
+                <div class="col-12 annual-checkbox-title">
+                    <span>Consolidado</span>
+                </div>
+                <div class="col-12">
+                    <mat-checkbox [(ngModel)]="includeCurrentYear" (change)="filtersChanged()">
+                        Incluir ano atual
+                    </mat-checkbox>
+                </div>
+                <div class="col-12">
+                    <mat-checkbox [(ngModel)]="includeNextYears" (change)="filtersChanged()">
+                        Incluir próximos anos
+                    </mat-checkbox>
+                </div>
+            </div>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+    <!-- SPINNER -->
+    <div class="row center" style="margin-top: 10px">
+        <div class="row justify-content-center">
+            <mat-spinner color="accent" *ngIf="showProgress"></mat-spinner>
+        </div>
+    </div>
+
+    <!-- BOTÃO ATUALIZAR -->
+    <div class="row center" *ngIf="!showProgress">
+        <div class="col refresh">
+            <button
+                class="default-button"
+                mat-mini-fab
+                matTooltip="atualizar"
+                matTooltipPosition="left"
+                color="warn"
+                aria-label="Atualizar"
+                (click)="refresh()"
+            >
+                <mat-icon class="default-icon">autorenew</mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- ECONOMIA ANUAL -->
+    <div class="row center" *ngIf="!showProgress && report">
+        <div class="table-container mat-elevation-z8 mytable2 annual-table-container">
+            <div class="annual-table-title">
+                <span><b>Economia {{ report.year }}</b></span>
+            </div>
+
+            <table class="annual-table">
+                <thead>
+                    <tr>
+                        <th>Mês</th>
+                        <th>Total</th>
+                        <th>Média</th>
+                        <th>Saldo Geral</th>
+                        <th>Saldo Geral (Real)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="annual-total-row">
+                        <td><b>Total</b></td>
+                        <td [ngClass]="getValueClass(report.total)"><b>{{ formatCurrency(report.total) }}</b></td>
+                        <td [ngClass]="getValueClass(report.average)"><b>{{ formatCurrency(report.average) }}</b></td>
+                        <td [ngClass]="getValueClass(report.generalBalance)"><b>{{ formatCurrency(report.generalBalance) }}</b></td>
+                        <td [ngClass]="getValueClass(report.realGeneralBalance)"><b>{{ formatCurrency(report.realGeneralBalance) }}</b></td>
+                    </tr>
+
+                    <tr *ngFor="let row of report.monthRows; trackBy: trackMonth">
+                        <td>{{ row.monthName }}</td>
+                        <td [ngClass]="getValueClass(row.total)">{{ formatCurrency(row.total) }}</td>
+                        <td
+                            *ngIf="row.showQuarterAverage"
+                            class="annual-average-cell"
+                            [attr.rowspan]="row.quarterRowSpan"
+                            [ngClass]="getValueClass(row.quarterAverage)"
+                        >
+                            {{ formatCurrency(row.quarterAverage) }}
+                        </td>
+                        <td [ngClass]="getValueClass(row.generalBalance)">{{ formatCurrency(row.generalBalance) }}</td>
+                        <td [ngClass]="getValueClass(row.realGeneralBalance)">{{ formatCurrency(row.realGeneralBalance) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CONSOLIDADO -->
+    <div class="row center annual-section-space" *ngIf="!showProgress && consolidated && consolidated.length">
+        <div class="table-container mat-elevation-z8 mytable2 annual-table-container">
+            <div class="annual-table-title">
+                <span><b>Consolidado</b></span>
+            </div>
+
+            <table class="annual-table consolidated-table">
+                <thead>
+                    <tr>
+                        <th>Ano</th>
+                        <th>Fluxo Real</th>
+                        <th>Meses</th>
+                        <th>Média Real Mensal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        *ngFor="let row of consolidated; trackBy: trackConsolidated"
+                        [class.annual-total-row]="row.isTotal"
+                    >
+                        <td><b *ngIf="row.isTotal">{{ row.label }}</b><ng-container *ngIf="!row.isTotal">{{ row.label }}</ng-container></td>
+                        <td [ngClass]="getValueClass(row.total)"><b *ngIf="row.isTotal">{{ formatCurrency(row.total) }}</b><ng-container *ngIf="!row.isTotal">{{ formatCurrency(row.total) }}</ng-container></td>
+                        <td><b *ngIf="row.isTotal">{{ row.months }}</b><ng-container *ngIf="!row.isTotal">{{ row.months }}</ng-container></td>
+                        <td [ngClass]="getValueClass(row.average)"><b *ngIf="row.isTotal">{{ formatCurrency(row.average) }}</b><ng-container *ngIf="!row.isTotal">{{ formatCurrency(row.average) }}</ng-container></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row center annual-info" *ngIf="!showProgress && lastUpdated">
+        <div class="annual-info-content">
+            <mat-icon>info</mat-icon>
+            <span>
+                A média considera apenas meses incluídos pelos filtros e com dados. Última atualização: {{ lastUpdated | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+        </div>
+    </div>
+</div>

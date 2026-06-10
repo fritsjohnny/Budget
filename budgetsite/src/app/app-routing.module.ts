@@ -12,6 +12,7 @@ import { AuthenticatedUserGuard } from './services/guards/authenticated-user.gua
 import { UserComponent } from './components/user/user.component';
 import { UserRegisterViewComponent } from './views/userregister-view/userregister-view.component';
 import { ReportViewComponent } from './views/report-view/report-view.component';
+import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
 
 const routes: Routes = [
   {
@@ -57,6 +58,10 @@ const routes: Routes = [
       {
         path: 'reports',
         component: ReportViewComponent,
+      },
+      {
+        path: 'annual-savings',
+        component: AnnualSavingsViewComponent,
       },
     ],
   },

@@ -14,6 +14,7 @@ export class CustomReuseStrategy implements RouteReuseStrategy {
     'accounts',
     'cards',
     'reports',
+    'annual-savings',
   ];
 
   // Verifica se a rota deve ser desconectada (armazenada)

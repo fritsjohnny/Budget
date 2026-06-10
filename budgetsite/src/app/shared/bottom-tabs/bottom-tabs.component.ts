@@ -15,6 +15,7 @@ export class BottomTabsComponent implements OnInit {
     { path: '/accounts', label: 'Contas', icon: 'account_balance' },
     { path: '/cards', label: 'Cartões', icon: 'credit_card' },
     { path: '/reports', label: 'Relatórios', icon: 'pie_chart' },
+    { path: '/annual-savings', label: 'Economia', icon: 'savings' },
   ];
 
   isMobile = false;

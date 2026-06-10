@@ -23,5 +23,6 @@ export class ApiUrls {
   public static budgetTotals             = ApiUrls.baseUrl + 'budget/totals?';
   public static categories               = ApiUrls.baseUrl + 'categories';
   public static users                    = ApiUrls.baseUrl + 'users';
+  public static annualSavings            = ApiUrls.baseUrl + 'annualsavings';
   public static health                   = ApiUrls.baseUrl + 'health';
 }

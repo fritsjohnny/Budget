@@ -1,0 +1,169 @@
+.mat-panel-annual-savings {
+    margin-top: 10px !important;
+    padding-bottom: -50px !important;
+}
+
+.annual-filter-row {
+    align-items: center;
+}
+
+.annual-filter-actions {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.annual-filter-actions mat-icon {
+    font-size: 38px;
+    height: 38px;
+    width: 38px;
+}
+
+.annual-checkbox-row {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(128, 128, 128, 0.35);
+}
+
+.annual-checkbox-row-last {
+    padding-bottom: 4px;
+}
+
+.annual-checkbox-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.annual-checkbox-row mat-checkbox {
+    display: block;
+    margin: 2px 0;
+}
+
+.table-container {
+    width: 100%;
+    overflow: auto;
+    padding-bottom: 5px;
+    border-radius: var(--border-radius);
+}
+
+.annual-table-container {
+    margin-top: 10px;
+}
+
+.annual-section-space {
+    margin-top: 18px;
+}
+
+.annual-table-title {
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.05em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.annual-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.annual-table th,
+.annual-table td {
+    padding: 12px 10px;
+    border-right: 1px solid rgba(128, 128, 128, 0.35);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+    white-space: nowrap;
+}
+
+.annual-table th {
+    height: 45px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.annual-table td {
+    text-align: right;
+}
+
+.annual-table th:first-child,
+.annual-table td:first-child {
+    width: 1%;
+    min-width: 44px;
+    text-align: left;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.annual-table th:nth-child(2),
+.annual-table td:nth-child(2) {
+    width: 1%;
+    min-width: 105px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.annual-table th:last-child,
+.annual-table td:last-child {
+    border-right: none;
+}
+
+.annual-total-row {
+    font-weight: 600;
+}
+
+.annual-average-cell {
+    vertical-align: middle;
+    text-align: center !important;
+    font-weight: 600;
+}
+
+.consolidated-table {
+    width: max-content;
+    min-width: 100%;
+}
+
+.consolidated-table th,
+.consolidated-table td {
+    width: 1%;
+}
+
+.annual-info {
+    margin-top: 18px;
+}
+
+.annual-info-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--border-radius);
+    font-size: 0.9em;
+}
+
+.annual-info-content mat-icon {
+    color: #42a5f5;
+}
+
+.negative {
+    white-space: nowrap;
+}
+
+.positive {
+    white-space: nowrap;
+}
+
+:host {
+    display: block;
+    padding-bottom: 56px;
+}
+
+::ng-deep
+    .mat-panel-annual-savings
+    mat-expansion-panel-header
+    span.mat-content {
+    justify-content: center;
+}

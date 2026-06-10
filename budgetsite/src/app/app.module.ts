@@ -94,6 +94,8 @@ import { DragReadyFeedbackDirective } from './directives/drag-ready-feedback.dir
 import { YieldsComponent } from './components/yields/yields.component';
 import { ExpensesByDueDateReportComponent } from './components/reports/expenses-by-due-date-report/expenses-by-due-date-report.component';
 import { GenerateCardReceiptDialog } from './components/accountpostings/generate-cardreceipt-dialog';
+import { AnnualSavingsComponent } from './components/annual-savings/annual-savings.component';
+import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
 
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
@@ -153,6 +155,8 @@ registerLocaleData(localePt);
     ExpensesByCategoryReportComponent,
     ExpensesByDueDateReportComponent,
     GenerateCardReceiptDialog,
+    AnnualSavingsComponent,
+    AnnualSavingsViewComponent,
   ],
   imports: [
     BrowserModule,

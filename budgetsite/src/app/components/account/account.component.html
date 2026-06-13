@@ -34,7 +34,7 @@
                 ></mat-progress-bar>
                 <div
                     cdkDropList
-                    [cdkDropListData]="accountsNotDisabled!"
+                    [cdkDropListData]="accountsVisible!"
                     (cdkDropListDropped)="drop($event)"
                     style="display: flex; flex-wrap: wrap"
                 >
@@ -42,7 +42,7 @@
                         class="account-button"
                         [class.has-parens]="account?.hasParens"
                         mat-button
-                        *ngFor="let account of accountsNotDisabled"
+                        *ngFor="let account of accountsVisible"
                         [ngStyle]="{
                             backgroundColor: account.background,
                             color: account.color

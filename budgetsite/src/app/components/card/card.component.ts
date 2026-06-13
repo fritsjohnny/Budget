@@ -15,6 +15,7 @@ import { delay, retryWhen, tap } from 'rxjs';
 export class CardComponent implements OnInit, AfterViewInit {
 
   cards?: Cards[];
+  cardsVisible?: Cards[];
   totalBalance?: number;
   previousBalance?: number;
   totalYields?: number;
@@ -44,51 +45,71 @@ export class CardComponent implements OnInit, AfterViewInit {
   }
 
   refresh() {
+    if (!this.reference) {
+      return;
+    }
+
     this.hideProgress = false;
 
-    this.cardService.read().pipe(
+    // Lista completa continua sendo usada no dialog de manutenção
+    this.cardService.read().subscribe({
+      next: (cards) => {
+        this.cards = cards ?? [];
+      },
+      error: () => {
+        this.cards = [];
+      },
+    });
+
+    // Lista visível no topo: ativos + desativados com movimento na referência
+    this.cardService.readAvailable(this.reference).pipe(
       retryWhen(errors =>
         errors.pipe(
-          tap((err) => console.warn('🔁 Erro ao carregar cartões. Tentando novamente em 10 segundos...', err)),
+          tap((err) => console.warn('🔁 Erro ao carregar cartões disponíveis. Tentando novamente em 10 segundos...', err)),
           delay(10000)
         )
       )
     ).subscribe({
       next: (cards) => {
-
-        let allCard: Cards = {
+        const allCard: Cards = {
           id: 0,
           name: 'Todos',
           color: '#000000',
           background: '#FFFFFF',
           disabled: false,
-        }
-        
-        cards.unshift(allCard);
-        
-        this.cards = cards;
+        };
 
-        this.cards.forEach(card => {
-          if (card.id === this.cardId) {
-            this.setCard(card);
-          }
-        });
+        this.cardsVisible = [allCard, ...(cards ?? [])];
+
+        const selectedCard =
+          this.cardsVisible.find((card) => card.id === this.cardId) ??
+          this.cardsVisible[0];
+
+        if (selectedCard) {
+          this.setCard(selectedCard);
+        }
 
         this.hideProgress = true;
       },
       error: (err) => {
         console.error('Erro irrecuperável ao carregar cartões:', err);
-        this.cards = [];
+        this.cardsVisible = [];
         this.hideProgress = true;
-      }
+      },
     });
   }
 
   setReference(reference: string) {
+    const changed = this.reference !== reference;
 
     this.reference = reference;
 
-    this.referenceHead = this.reference.substr(4, 2) + "/" + this.reference.substr(0, 4);
+    this.referenceHead =
+      this.reference.substr(4, 2) + '/' + this.reference.substr(0, 4);
+
+    if (changed) {
+      this.refresh();
+    }
   }
 
   setCard(card: Cards) {

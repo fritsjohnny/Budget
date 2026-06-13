@@ -15,7 +15,7 @@ import { delay, retryWhen, take, tap } from 'rxjs';
 })
 export class AccountComponent implements OnInit {
   accounts?: Accounts[];
-  accountsNotDisabled?: Accounts[];
+  accountsVisible?: Accounts[];
   accountId?: number;
   reference?: string;
   referenceHead?: string;
@@ -41,49 +41,65 @@ export class AccountComponent implements OnInit {
   }
 
   refresh() {
+    if (!this.reference) {
+      return;
+    }
+
     this.hideProgress = false;
 
-    this.accountService.read().pipe(
+    // Lista completa continua sendo usada no dialog de manutenção
+    this.accountService.read().subscribe({
+      next: (accounts) => {
+        this.accounts = accounts ?? [];
+      },
+      error: () => {
+        this.accounts = [];
+      },
+    });
+
+    // Lista visível no topo: ativas + desativadas com movimento na referência
+    this.accountService.readAvailable(this.reference).pipe(
       retryWhen(errors =>
         errors.pipe(
-          tap((err) => console.warn('🔁 Erro ao carregar contas. Tentando novamente em 10 segundos...', err)),
-          delay(10000) // 10 segundos entre tentativas infinitas
+          tap((err) => console.warn('🔁 Erro ao carregar contas disponíveis. Tentando novamente em 10 segundos...', err)),
+          delay(10000)
         )
       )
     ).subscribe({
       next: (accounts) => {
-        this.accounts = accounts;
-
-        this.accounts.forEach((account) => {
-          if (account.id === this.accountId) {
-            this.setAccount(account);
-          }
-        });
-
-        this.accountsNotDisabled = accounts?.filter(
-          (account) => account.disabled == null || account.disabled === false
+        this.accountsVisible = (accounts ?? []).sort(
+          (a, b) => (a.position ?? 9999) - (b.position ?? 9999)
         );
 
-        if (this.accountsNotDisabled?.length > 0) {
-          this.accountsNotDisabled.sort((a, b) => a.position! - b.position!);
+        const selectedAccount =
+          this.accountsVisible.find((account) => account.id === this.accountId) ??
+          this.accountsVisible[0];
+
+        if (selectedAccount) {
+          this.setAccount(selectedAccount);
         }
 
         this.hideProgress = true;
       },
       error: (err) => {
-        // ⚠️ isso só será chamado se a stream for encerrada por erro fora do retryWhen
         console.error('Erro irrecuperável:', err);
-        this.accounts = [];
+        this.accountsVisible = [];
         this.hideProgress = true;
       },
     });
   }
 
   setReference(reference: string) {
+    const changed = this.reference !== reference;
+
     this.reference = reference;
 
     this.referenceHead =
       this.reference.substr(4, 2) + '/' + this.reference.substr(0, 4);
+
+    if (changed) {
+      this.refresh();
+    }
   }
 
   setAccount(account: Accounts) {
@@ -126,7 +142,7 @@ export class AccountComponent implements OnInit {
   // }
 
   drop(event: CdkDragDrop<any[]>) {
-    // moveItemInArray(this.accountsNotDisabled!, event.previousIndex, event.currentIndex);
+    // moveItemInArray(this.accountsAvailable!, event.previousIndex, event.currentIndex);
 
     // if (event.previousContainer === event.container) {
     moveItemInArray(

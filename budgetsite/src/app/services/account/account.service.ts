@@ -38,6 +38,13 @@ export class AccountService {
     );
   }
 
+  readAvailable(reference: string | undefined): Observable<Accounts[]> {
+    return this.http.get<Accounts[]>(`${ApiUrls.accounts}/available?reference=${reference ?? ''}`).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
   update(account: Accounts): Observable<Accounts> {
     return this.http.put<Accounts>(`${ApiUrls.accounts}/${account.id}`, account).pipe(
       map(obj => obj),

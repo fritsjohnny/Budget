@@ -21,6 +21,18 @@ export class AnnualSavingsComponent implements OnInit {
   includeCurrentYear: boolean = true;
   includeNextYears: boolean = false;
 
+  annualGoal: number = 0;
+  annualGoalTarget: number = 0;
+  annualGoalRemaining: number = 0;
+  annualGoalMonthlyAverage12Months: number = 0;
+  annualGoalRemainingMonths: number = 0;
+  annualGoalRemainingMonthsAverage: number = 0;
+
+  previousYearForecastBalance: number = 0;
+  previousYearRealBalance: number = 0;
+  currentYearForecastBalance: number = 0;
+  currentYearRealBalance: number = 0;
+
   constructor(private annualSavingsService: AnnualSavingsService) { }
 
   ngOnInit(): void {
@@ -32,6 +44,7 @@ export class AnnualSavingsComponent implements OnInit {
 
     this.annualSavingsPanelExpanded = localStorage.getItem('annualSavingsPanelExpanded') === 'true';
 
+    this.loadAnnualGoal();
     this.refresh();
   }
 
@@ -41,21 +54,96 @@ export class AnnualSavingsComponent implements OnInit {
     }
 
     localStorage.setItem('annualSavingsYear', this.year.toString());
+    this.loadAnnualGoal();
 
     this.showProgress = true;
 
     forkJoin({
       report: this.annualSavingsService.getByYear(this.year, this.includeCurrentMonth, this.includeNextMonths),
-      consolidated: this.annualSavingsService.getConsolidated(this.includeCurrentYear, this.includeNextYears, this.includeCurrentMonth, this.includeNextMonths)
+      consolidated: this.annualSavingsService.getConsolidated(this.includeCurrentYear, this.includeNextYears, this.includeCurrentMonth, this.includeNextMonths),
+      previousYearEndReport: this.annualSavingsService.getByYear(this.year - 1, true, true),
+      currentYearEndReport: this.annualSavingsService.getByYear(this.year, this.includeCurrentMonth, false)
     })
       .pipe(finalize(() => this.showProgress = false))
       .subscribe({
-        next: ({ report, consolidated }) => {
+        next: ({ report, consolidated, previousYearEndReport, currentYearEndReport }) => {
           this.report = report;
           this.consolidated = consolidated;
+          this.setAnnualBalanceSummary(previousYearEndReport, currentYearEndReport);
           this.lastUpdated = new Date();
+          this.calculateAnnualGoal();
         }
       });
+  }
+
+  annualGoalChanged() {
+    this.annualGoal = this.normalizeNumber(this.annualGoal);
+    localStorage.setItem(this.getAnnualGoalStorageKey(), this.annualGoal.toString());
+    this.calculateAnnualGoal();
+  }
+
+  private loadAnnualGoal() {
+    const storedGoal = localStorage.getItem(this.getAnnualGoalStorageKey());
+    this.annualGoal = storedGoal ? this.normalizeNumber(Number(storedGoal)) : 0;
+    this.calculateAnnualGoal();
+  }
+
+  private setAnnualBalanceSummary(previousYearEndReport: AnnualSavingsReport, currentYearEndReport: AnnualSavingsReport) {
+    this.previousYearForecastBalance = this.normalizeNumber(previousYearEndReport?.generalBalance);
+    this.previousYearRealBalance = this.normalizeNumber(previousYearEndReport?.realGeneralBalance);
+    this.currentYearForecastBalance = this.normalizeNumber(currentYearEndReport?.generalBalance);
+    this.currentYearRealBalance = this.normalizeNumber(currentYearEndReport?.realGeneralBalance);
+  }
+
+  getPreviousYearEndDateLabel(): string {
+    return `31/12/${this.year - 1}`;
+  }
+
+  getCurrentYearEndDateLabel(): string {
+    return `31/12/${this.year}`;
+  }
+
+  private calculateAnnualGoal() {
+    const previousRealGeneralBalance = this.getPreviousRealGeneralBalance();
+    const currentRealGeneralBalance = this.normalizeNumber(this.report?.realGeneralBalance);
+
+    this.annualGoalTarget = this.annualGoal - previousRealGeneralBalance;
+
+    this.annualGoalRemaining = this.annualGoal - currentRealGeneralBalance > 0
+      ? this.annualGoal - currentRealGeneralBalance
+      : 0;
+
+    this.annualGoalMonthlyAverage12Months = this.annualGoalTarget / 12;
+    this.annualGoalRemainingMonths = this.getAnnualGoalRemainingMonths();
+
+    this.annualGoalRemainingMonthsAverage = this.annualGoalRemainingMonths > 0
+      ? this.annualGoalRemaining / this.annualGoalRemainingMonths
+      : 0;
+  }
+
+  private getPreviousRealGeneralBalance(): number {
+    if (!this.report) {
+      return 0;
+    }
+
+    return this.normalizeNumber(this.report.generalBalance) - this.normalizeNumber(this.report.total);
+  }
+
+  private getAnnualGoalRemainingMonths(): number {
+    const elapsedMonths = this.report?.monthRows
+      ?.filter(row => row.total !== null && row.total !== undefined)
+      .length ?? 0;
+
+    return Math.max(12 - elapsedMonths, 0);
+  }
+
+  private getAnnualGoalStorageKey(): string {
+    return `annualSavingsGoal_${this.year}`;
+  }
+
+  private normalizeNumber(value: number | null | undefined): number {
+    const numberValue = Number(value);
+    return isNaN(numberValue) ? 0 : numberValue;
   }
 
   setPreviousYear() {

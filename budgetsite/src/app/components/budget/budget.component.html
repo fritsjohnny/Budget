@@ -15,26 +15,43 @@
                 [budgetId]="1"
             >
             </app-datepicker>
-            <div class="row" style="margin-top: 10px">
-                <mat-checkbox
-                    [(ngModel)]="justMyValues"
-                    (ngModelChange)="onCheckboxJustMyValuesChange()"
-                    >Apenas meus valores</mat-checkbox
+            <!-- Botão com ícone de engrenagem para exibir/ocultar as opções -->
+            <div class="row">
+                <button
+                    mat-icon-button
+                    (click)="showOptions = !showOptions"
+                    [matTooltip]="
+                        showOptions ? 'Ocultar opções' : 'Mostrar opções'
+                    "
                 >
+                    <mat-icon>{{
+                        showOptions ? "expand_less" : "settings"
+                    }}</mat-icon>
+                </button>
             </div>
-            <div class="row" style="margin-top: 10px">
-                <mat-checkbox
-                    [(ngModel)]="justToPay"
-                    (ngModelChange)="onCheckboxJustToPayChange()"
-                    >Apenas despesas a pagar</mat-checkbox
-                >
-            </div>
-            <div class="row" style="margin-top: 10px">
-                <mat-checkbox
-                    [(ngModel)]="justToReceive"
-                    (ngModelChange)="onCheckboxJustToReceiveChange()"
-                    >Apenas receitas a receber</mat-checkbox
-                >
+            <!-- Opções de checkbox exibidas condicionalmente -->
+            <div *ngIf="showOptions">
+                <div class="row" style="margin-top: 10px">
+                    <mat-checkbox
+                        [(ngModel)]="justMyValues"
+                        (ngModelChange)="onCheckboxJustMyValuesChange()"
+                        >Apenas meus valores</mat-checkbox
+                    >
+                </div>
+                <div class="row" style="margin-top: 10px">
+                    <mat-checkbox
+                        [(ngModel)]="justToPay"
+                        (ngModelChange)="onCheckboxJustToPayChange()"
+                        >Apenas despesas a pagar</mat-checkbox
+                    >
+                </div>
+                <div class="row" style="margin-top: 10px">
+                    <mat-checkbox
+                        [(ngModel)]="justToReceive"
+                        (ngModelChange)="onCheckboxJustToReceiveChange()"
+                        >Apenas receitas a receber</mat-checkbox
+                    >
+                </div>
             </div>
         </mat-expansion-panel>
     </mat-accordion>

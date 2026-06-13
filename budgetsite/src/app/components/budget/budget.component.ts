@@ -138,6 +138,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   incomesPanelExpanded: boolean = false;
   peoplePanelExpanded: boolean = false;
   categoryPanelExpanded: boolean = false;
+  showOptions = false;
   justMyValues: boolean = false;
   justToPay: boolean = false;
   justToReceive: boolean = false;

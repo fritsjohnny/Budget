@@ -15,7 +15,11 @@
 
             <div class="row d-flex annual-filter-row">
                 <div class="col-6 mb-2">
-                    <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
                         <mat-label>Ano</mat-label>
                         <input
                             matInput
@@ -28,13 +32,25 @@
                 </div>
 
                 <div class="col-6 mb-2 annual-filter-actions">
-                    <button mat-icon-button (click)="setPreviousYear()" matTooltip="Ano anterior">
+                    <button
+                        mat-icon-button
+                        (click)="setPreviousYear()"
+                        matTooltip="Ano anterior"
+                    >
                         <mat-icon>arrow_back_ios</mat-icon>
                     </button>
-                    <button mat-icon-button (click)="setNextYear()" matTooltip="Próximo ano">
+                    <button
+                        mat-icon-button
+                        (click)="setNextYear()"
+                        matTooltip="Próximo ano"
+                    >
                         <mat-icon>arrow_forward_ios</mat-icon>
                     </button>
-                    <button mat-icon-button (click)="setCurrentYear()" matTooltip="Ano atual">
+                    <button
+                        mat-icon-button
+                        (click)="setCurrentYear()"
+                        matTooltip="Ano atual"
+                    >
                         <mat-icon>calendar_today</mat-icon>
                     </button>
                 </div>
@@ -45,12 +61,18 @@
                     <span>Economia anual</span>
                 </div>
                 <div class="col-12">
-                    <mat-checkbox [(ngModel)]="includeCurrentMonth" (change)="filtersChanged()">
+                    <mat-checkbox
+                        [(ngModel)]="includeCurrentMonth"
+                        (change)="filtersChanged()"
+                    >
                         Incluir mês atual
                     </mat-checkbox>
                 </div>
                 <div class="col-12">
-                    <mat-checkbox [(ngModel)]="includeNextMonths" (change)="filtersChanged()">
+                    <mat-checkbox
+                        [(ngModel)]="includeNextMonths"
+                        (change)="filtersChanged()"
+                    >
                         Incluir próximos meses
                     </mat-checkbox>
                 </div>
@@ -61,12 +83,18 @@
                     <span>Consolidado</span>
                 </div>
                 <div class="col-12">
-                    <mat-checkbox [(ngModel)]="includeCurrentYear" (change)="filtersChanged()">
+                    <mat-checkbox
+                        [(ngModel)]="includeCurrentYear"
+                        (change)="filtersChanged()"
+                    >
                         Incluir ano atual
                     </mat-checkbox>
                 </div>
                 <div class="col-12">
-                    <mat-checkbox [(ngModel)]="includeNextYears" (change)="filtersChanged()">
+                    <mat-checkbox
+                        [(ngModel)]="includeNextYears"
+                        (change)="filtersChanged()"
+                    >
                         Incluir próximos anos
                     </mat-checkbox>
                 </div>
@@ -98,11 +126,63 @@
         </div>
     </div>
 
+    <!-- SALDOS ANUAIS -->
+    <div class="row center" *ngIf="!showProgress && report">
+        <div
+            class="table-container mat-elevation-z8 mytable2 annual-table-container"
+        >
+            <table class="annual-table annual-balance-table">
+                <thead>
+                    <tr>
+                        <th>Previsto(1)</th>
+                        <th>Real(2)</th>
+                        <th>Previsto(3)</th>
+                        <th>Real(4)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="annual-balance-date-row">
+                        <td>{{ getPreviousYearEndDateLabel() }}</td>
+                        <td>{{ getPreviousYearEndDateLabel() }}</td>
+                        <td>{{ getCurrentYearEndDateLabel() }}</td>
+                        <td>{{ getCurrentYearEndDateLabel() }}</td>
+                    </tr>
+                    <tr class="annual-total-row">
+                        <td
+                            [ngClass]="
+                                getValueClass(previousYearForecastBalance)
+                            "
+                        >
+                            {{ formatCurrency(previousYearForecastBalance) }}
+                        </td>
+                        <td [ngClass]="getValueClass(previousYearRealBalance)">
+                            {{ formatCurrency(previousYearRealBalance) }}
+                        </td>
+                        <td
+                            [ngClass]="
+                                getValueClass(currentYearForecastBalance)
+                            "
+                        >
+                            {{ formatCurrency(currentYearForecastBalance) }}
+                        </td>
+                        <td [ngClass]="getValueClass(currentYearRealBalance)">
+                            {{ formatCurrency(currentYearRealBalance) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- ECONOMIA ANUAL -->
     <div class="row center" *ngIf="!showProgress && report">
-        <div class="table-container mat-elevation-z8 mytable2 annual-table-container">
+        <div
+            class="table-container mat-elevation-z8 mytable2 annual-table-container"
+        >
             <div class="annual-table-title">
-                <span><b>Economia {{ report.year }}</b></span>
+                <span
+                    ><b>Economia {{ report.year }}</b></span
+                >
             </div>
 
             <table class="annual-table">
@@ -118,15 +198,34 @@
                 <tbody>
                     <tr class="annual-total-row">
                         <td><b>Total</b></td>
-                        <td [ngClass]="getValueClass(report.total)"><b>{{ formatCurrency(report.total) }}</b></td>
-                        <td [ngClass]="getValueClass(report.average)"><b>{{ formatCurrency(report.average) }}</b></td>
-                        <td [ngClass]="getValueClass(report.generalBalance)"><b>{{ formatCurrency(report.generalBalance) }}</b></td>
-                        <td [ngClass]="getValueClass(report.realGeneralBalance)"><b>{{ formatCurrency(report.realGeneralBalance) }}</b></td>
+                        <td [ngClass]="getValueClass(report.total)">
+                            <b>{{ formatCurrency(report.total) }}</b>
+                        </td>
+                        <td [ngClass]="getValueClass(report.average)">
+                            <b>{{ formatCurrency(report.average) }}</b>
+                        </td>
+                        <td [ngClass]="getValueClass(report.generalBalance)">
+                            <b>{{ formatCurrency(report.generalBalance) }}</b>
+                        </td>
+                        <td
+                            [ngClass]="getValueClass(report.realGeneralBalance)"
+                        >
+                            <b>{{
+                                formatCurrency(report.realGeneralBalance)
+                            }}</b>
+                        </td>
                     </tr>
 
-                    <tr *ngFor="let row of report.monthRows; trackBy: trackMonth">
+                    <tr
+                        *ngFor="
+                            let row of report.monthRows;
+                            trackBy: trackMonth
+                        "
+                    >
                         <td>{{ row.monthName }}</td>
-                        <td [ngClass]="getValueClass(row.total)">{{ formatCurrency(row.total) }}</td>
+                        <td [ngClass]="getValueClass(row.total)">
+                            {{ formatCurrency(row.total) }}
+                        </td>
                         <td
                             *ngIf="row.showQuarterAverage"
                             class="annual-average-cell"
@@ -135,8 +234,12 @@
                         >
                             {{ formatCurrency(row.quarterAverage) }}
                         </td>
-                        <td [ngClass]="getValueClass(row.generalBalance)">{{ formatCurrency(row.generalBalance) }}</td>
-                        <td [ngClass]="getValueClass(row.realGeneralBalance)">{{ formatCurrency(row.realGeneralBalance) }}</td>
+                        <td [ngClass]="getValueClass(row.generalBalance)">
+                            {{ formatCurrency(row.generalBalance) }}
+                        </td>
+                        <td [ngClass]="getValueClass(row.realGeneralBalance)">
+                            {{ formatCurrency(row.realGeneralBalance) }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -144,8 +247,13 @@
     </div>
 
     <!-- CONSOLIDADO -->
-    <div class="row center annual-section-space" *ngIf="!showProgress && consolidated && consolidated.length">
-        <div class="table-container mat-elevation-z8 mytable2 annual-table-container">
+    <div
+        class="row center annual-section-space"
+        *ngIf="!showProgress && consolidated && consolidated.length"
+    >
+        <div
+            class="table-container mat-elevation-z8 mytable2 annual-table-container"
+        >
             <div class="annual-table-title">
                 <span><b>Consolidado</b></span>
             </div>
@@ -161,13 +269,117 @@
                 </thead>
                 <tbody>
                     <tr
-                        *ngFor="let row of consolidated; trackBy: trackConsolidated"
+                        *ngFor="
+                            let row of consolidated;
+                            trackBy: trackConsolidated
+                        "
                         [class.annual-total-row]="row.isTotal"
                     >
-                        <td><b *ngIf="row.isTotal">{{ row.label }}</b><ng-container *ngIf="!row.isTotal">{{ row.label }}</ng-container></td>
-                        <td [ngClass]="getValueClass(row.total)"><b *ngIf="row.isTotal">{{ formatCurrency(row.total) }}</b><ng-container *ngIf="!row.isTotal">{{ formatCurrency(row.total) }}</ng-container></td>
-                        <td><b *ngIf="row.isTotal">{{ row.months }}</b><ng-container *ngIf="!row.isTotal">{{ row.months }}</ng-container></td>
-                        <td [ngClass]="getValueClass(row.average)"><b *ngIf="row.isTotal">{{ formatCurrency(row.average) }}</b><ng-container *ngIf="!row.isTotal">{{ formatCurrency(row.average) }}</ng-container></td>
+                        <td>
+                            <b *ngIf="row.isTotal">{{ row.label }}</b
+                            ><ng-container *ngIf="!row.isTotal">{{
+                                row.label
+                            }}</ng-container>
+                        </td>
+                        <td [ngClass]="getValueClass(row.total)">
+                            <b *ngIf="row.isTotal">{{
+                                formatCurrency(row.total)
+                            }}</b
+                            ><ng-container *ngIf="!row.isTotal">{{
+                                formatCurrency(row.total)
+                            }}</ng-container>
+                        </td>
+                        <td>
+                            <b *ngIf="row.isTotal">{{ row.months }}</b
+                            ><ng-container *ngIf="!row.isTotal">{{
+                                row.months
+                            }}</ng-container>
+                        </td>
+                        <td [ngClass]="getValueClass(row.average)">
+                            <b *ngIf="row.isTotal">{{
+                                formatCurrency(row.average)
+                            }}</b
+                            ><ng-container *ngIf="!row.isTotal">{{
+                                formatCurrency(row.average)
+                            }}</ng-container>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- METAS -->
+    <div
+        class="row center annual-section-space"
+        *ngIf="!showProgress && report"
+    >
+        <div
+            class="table-container mat-elevation-z8 mytable2 annual-table-container"
+        >
+            <div class="annual-table-title">
+                <span><b>Metas</b></span>
+            </div>
+
+            <div class="annual-goal-editor">
+                <mat-form-field
+                    appearance="fill"
+                    floatLabel="always"
+                    style="width: 100% !important"
+                >
+                    <mat-label>Meta {{ year }}</mat-label>
+                    <input
+                        matInput
+                        inputmode="numeric"
+                        currencyMask
+                        [(ngModel)]="annualGoal"
+                        (ngModelChange)="annualGoalChanged()"
+                        placeholder="0"
+                        autocomplete="off"
+                    />
+                </mat-form-field>
+            </div>
+
+            <!-- TABELA DE METAS -->
+            <table class="annual-table annual-goals-table">
+                <tbody>
+                    <tr>
+                        <td>Meta</td>
+                        <td>
+                            <b>{{ formatCurrency(annualGoal) }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Alvo</td>
+                        <td>
+                            <b>{{ formatCurrency(annualGoalTarget) }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Restante</td>
+                        <td>
+                            <b>{{ formatCurrency(annualGoalRemaining) }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Média Mensal 12 meses</td>
+                        <td>
+                            {{
+                                formatCurrency(annualGoalMonthlyAverage12Months)
+                            }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Meses Restantes</td>
+                        <td>{{ annualGoalRemainingMonths }}</td>
+                    </tr>
+                    <tr>
+                        <td>Média Mensal meses restante</td>
+                        <td>
+                            <b>{{
+                                formatCurrency(annualGoalRemainingMonthsAverage)
+                            }}</b>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -178,7 +390,9 @@
         <div class="annual-info-content">
             <mat-icon>info</mat-icon>
             <span>
-                A média considera apenas meses incluídos pelos filtros e com dados. Última atualização: {{ lastUpdated | date: 'dd/MM/yyyy HH:mm' }}
+                A média considera apenas meses incluídos pelos filtros e com
+                dados. Última atualização:
+                {{ lastUpdated | date: "dd/MM/yyyy HH:mm" }}
             </span>
         </div>
     </div>

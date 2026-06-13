@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { finalize, forkJoin } from 'rxjs';
 import { AnnualSavingsConsolidated, AnnualSavingsMonth, AnnualSavingsReport } from 'src/app/models/annual-savings.model';
 import { AnnualSavingsService } from 'src/app/services/annual-savings/annual-savings.service';
@@ -9,6 +10,8 @@ import { AnnualSavingsService } from 'src/app/services/annual-savings/annual-sav
   styleUrls: ['./annual-savings.component.scss']
 })
 export class AnnualSavingsComponent implements OnInit {
+
+  @ViewChild('annualGoalCalculationDialog') annualGoalCalculationDialog!: TemplateRef<any>;
 
   year: number = new Date().getFullYear();
   report!: AnnualSavingsReport;
@@ -33,7 +36,15 @@ export class AnnualSavingsComponent implements OnInit {
   currentYearForecastBalance: number = 0;
   currentYearRealBalance: number = 0;
 
-  constructor(private annualSavingsService: AnnualSavingsService) { }
+  goalCalculationTitle: string = '';
+  goalCalculationFormula: string = '';
+  goalCalculationItems: { label: string, value: string }[] = [];
+  goalCalculationResult: string = '';
+
+  constructor(
+    private annualSavingsService: AnnualSavingsService,
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
     const storedYear = localStorage.getItem('annualSavingsYear');
@@ -215,5 +226,92 @@ export class AnnualSavingsComponent implements OnInit {
 
   trackConsolidated(index: number, row: AnnualSavingsConsolidated): string {
     return row.label;
+  }
+
+  openAnnualGoalCalculation(field: string) {
+    this.setAnnualGoalCalculation(field);
+
+    this.dialog.open(this.annualGoalCalculationDialog, {
+      width: '95vw',
+      maxWidth: '430px',
+      autoFocus: false,
+      panelClass: 'annual-goal-dialog-panel'
+    });
+  }
+
+  private setAnnualGoalCalculation(field: string) {
+    this.goalCalculationItems = [];
+
+    switch (field) {
+      case 'meta':
+        this.goalCalculationTitle = 'Meta';
+        this.goalCalculationFormula = 'Valor informado manualmente e salvo no localStorage por ano.';
+        this.goalCalculationItems = [
+          { label: 'Ano', value: this.year.toString() },
+          { label: 'Chave localStorage', value: this.getAnnualGoalStorageKey() },
+          { label: 'Valor salvo', value: this.formatCurrency(this.annualGoal) }
+        ];
+        this.goalCalculationResult = this.formatCurrency(this.annualGoal);
+        break;
+
+      case 'target':
+        const previousRealGeneralBalance = this.getPreviousRealGeneralBalance();
+
+        this.goalCalculationTitle = 'Alvo';
+        this.goalCalculationFormula = 'Meta - Saldo Real anterior ao ano';
+        this.goalCalculationItems = [
+          { label: 'Meta', value: this.formatCurrency(this.annualGoal) },
+          { label: 'Saldo Real anterior ao ano', value: this.formatCurrency(previousRealGeneralBalance) }
+        ];
+        this.goalCalculationResult = this.formatCurrency(this.annualGoalTarget);
+        break;
+
+      case 'remaining':
+        const currentRealGeneralBalance = this.normalizeNumber(this.report?.realGeneralBalance);
+
+        this.goalCalculationTitle = 'Restante';
+        this.goalCalculationFormula = 'Meta - Saldo Real atual. Se o resultado for negativo, mostra 0.';
+        this.goalCalculationItems = [
+          { label: 'Meta', value: this.formatCurrency(this.annualGoal) },
+          { label: 'Saldo Real atual', value: this.formatCurrency(currentRealGeneralBalance) },
+          { label: 'Cálculo bruto', value: this.formatCurrency(this.annualGoal - currentRealGeneralBalance) }
+        ];
+        this.goalCalculationResult = this.formatCurrency(this.annualGoalRemaining);
+        break;
+
+      case 'monthlyAverage12Months':
+        this.goalCalculationTitle = 'Média Mensal 12 meses';
+        this.goalCalculationFormula = 'Alvo / 12';
+        this.goalCalculationItems = [
+          { label: 'Alvo', value: this.formatCurrency(this.annualGoalTarget) },
+          { label: 'Meses do ano', value: '12' }
+        ];
+        this.goalCalculationResult = this.formatCurrency(this.annualGoalMonthlyAverage12Months);
+        break;
+
+      case 'remainingMonths':
+        const elapsedMonths = this.report?.monthRows
+          ?.filter(row => row.total !== null && row.total !== undefined)
+          .length ?? 0;
+
+        this.goalCalculationTitle = 'Meses Restantes';
+        this.goalCalculationFormula = '12 - meses já considerados no relatório';
+        this.goalCalculationItems = [
+          { label: 'Meses do ano', value: '12' },
+          { label: 'Meses considerados', value: elapsedMonths.toString() }
+        ];
+        this.goalCalculationResult = this.annualGoalRemainingMonths.toString();
+        break;
+
+      case 'remainingMonthsAverage':
+        this.goalCalculationTitle = 'Média Mensal meses restante';
+        this.goalCalculationFormula = 'Restante / Meses Restantes. Se Meses Restantes for 0, mostra 0.';
+        this.goalCalculationItems = [
+          { label: 'Restante', value: this.formatCurrency(this.annualGoalRemaining) },
+          { label: 'Meses Restantes', value: this.annualGoalRemainingMonths.toString() }
+        ];
+        this.goalCalculationResult = this.formatCurrency(this.annualGoalRemainingMonthsAverage);
+        break;
+    }
   }
 }

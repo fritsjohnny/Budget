@@ -345,25 +345,41 @@
                 <tbody>
                     <tr>
                         <td>Meta</td>
-                        <td>
+                        <td
+                            class="annual-goal-value-cell"
+                            (click)="openAnnualGoalCalculation('meta')"
+                        >
                             <b>{{ formatCurrency(annualGoal) }}</b>
                         </td>
                     </tr>
                     <tr>
                         <td>Alvo</td>
-                        <td>
+                        <td
+                            class="annual-goal-value-cell"
+                            (click)="openAnnualGoalCalculation('target')"
+                        >
                             <b>{{ formatCurrency(annualGoalTarget) }}</b>
                         </td>
                     </tr>
                     <tr>
                         <td>Restante</td>
-                        <td>
+                        <td
+                            class="annual-goal-value-cell"
+                            (click)="openAnnualGoalCalculation('remaining')"
+                        >
                             <b>{{ formatCurrency(annualGoalRemaining) }}</b>
                         </td>
                     </tr>
                     <tr>
                         <td>Média Mensal 12 meses</td>
-                        <td>
+                        <td
+                            class="annual-goal-value-cell"
+                            (click)="
+                                openAnnualGoalCalculation(
+                                    'monthlyAverage12Months'
+                                )
+                            "
+                        >
                             {{
                                 formatCurrency(annualGoalMonthlyAverage12Months)
                             }}
@@ -371,11 +387,25 @@
                     </tr>
                     <tr>
                         <td>Meses Restantes</td>
-                        <td>{{ annualGoalRemainingMonths }}</td>
+                        <td
+                            class="annual-goal-value-cell"
+                            (click)="
+                                openAnnualGoalCalculation('remainingMonths')
+                            "
+                        >
+                            {{ annualGoalRemainingMonths }}
+                        </td>
                     </tr>
                     <tr>
                         <td>Média Mensal meses restante</td>
-                        <td>
+                        <td
+                            class="annual-goal-value-cell"
+                            (click)="
+                                openAnnualGoalCalculation(
+                                    'remainingMonthsAverage'
+                                )
+                            "
+                        >
                             <b>{{
                                 formatCurrency(annualGoalRemainingMonthsAverage)
                             }}</b>
@@ -396,4 +426,37 @@
             </span>
         </div>
     </div>
+
+    <ng-template #annualGoalCalculationDialog>
+        <div class="annual-goal-dialog">
+            <div class="annual-goal-dialog-title">
+                {{ goalCalculationTitle }}
+            </div>
+
+            <div class="annual-goal-dialog-content">
+                <div class="annual-goal-calculation-formula">
+                    {{ goalCalculationFormula }}
+                </div>
+
+                <div class="annual-goal-calculation-list">
+                    <div
+                        class="annual-goal-calculation-row"
+                        *ngFor="let item of goalCalculationItems"
+                    >
+                        <span>{{ item.label }}</span>
+                        <strong>{{ item.value }}</strong>
+                    </div>
+                </div>
+
+                <div class="annual-goal-calculation-result">
+                    <span>Resultado</span>
+                    <strong>{{ goalCalculationResult }}</strong>
+                </div>
+            </div>
+
+            <div class="annual-goal-dialog-actions">
+                <button mat-button mat-dialog-close>Fechar</button>
+            </div>
+        </div>
+    </ng-template>
 </div>

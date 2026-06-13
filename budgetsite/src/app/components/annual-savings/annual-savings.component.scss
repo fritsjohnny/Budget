@@ -229,3 +229,79 @@
 .annual-balance-table .annual-total-row td {
     font-size: 0.9em;
 }
+
+.annual-goal-value-cell {
+    cursor: pointer;
+}
+
+.annual-goal-value-cell:active {
+    opacity: 0.75;
+}
+
+::ng-deep .annual-goal-dialog-panel .mat-dialog-container {
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: var(--border-radius);
+}
+
+.annual-goal-dialog {
+    width: 100%;
+}
+
+.annual-goal-dialog-title {
+    padding: 18px 24px 10px 24px;
+    font-size: 1.15em;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.annual-goal-dialog-content {
+    padding: 0 24px 6px 24px;
+}
+
+.annual-goal-dialog-actions {
+    display: flex;
+    justify-content: center;
+    padding: 8px 16px 14px 16px;
+}
+
+.annual-goal-calculation-formula {
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.annual-goal-calculation-list {
+    border-top: 1px solid rgba(128, 128, 128, 0.35);
+}
+
+.annual-goal-calculation-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+}
+
+.annual-goal-calculation-row span {
+    opacity: 0.85;
+}
+
+.annual-goal-calculation-row strong {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.annual-goal-calculation-result {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    padding-top: 14px;
+    font-size: 1.05em;
+    font-weight: 700;
+}
+
+.annual-goal-calculation-result strong {
+    text-align: right;
+    white-space: nowrap;
+}

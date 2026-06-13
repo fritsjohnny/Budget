@@ -58,27 +58,10 @@
     <!-- SPINNER -->
     <div class="row center" style="margin-top: 10px">
         <div class="row justify-content-center">
-            <mat-spinner
-                color="accent"
-                *ngIf="
-                    !hideExpensesProgress ||
-                    !hideIncomesProgress ||
-                    !hidePeopleProgress ||
-                    !hideCategoriesProgress
-                "
-            >
-            </mat-spinner>
+            <mat-spinner color="accent" *ngIf="isBudgetLoading"></mat-spinner>
         </div>
     </div>
-    <div
-        class="row center"
-        *ngIf="
-            hideExpensesProgress &&
-            hideIncomesProgress &&
-            hidePeopleProgress &&
-            hideCategoriesProgress
-        "
-    >
+    <div class="row center" *ngIf="isBudgetLoaded">
         <div class="col"></div>
         <div class="col">
             <div class="row justify-content-center text-center">
@@ -254,12 +237,7 @@
         displayMode="default"
         [multi]="true"
         [hideToggle]="false"
-        *ngIf="
-            hideExpensesProgress ||
-            hideIncomesProgress ||
-            hidePeopleProgress ||
-            hideCategoriesProgress
-        "
+        *ngIf="isBudgetLoaded"
     >
         <mat-expansion-panel
             class="mat-panel-budget"
@@ -356,12 +334,7 @@
         displayMode="default"
         [multi]="true"
         [hideToggle]="false"
-        *ngIf="
-            hideExpensesProgress ||
-            hideIncomesProgress ||
-            hidePeopleProgress ||
-            hideCategoriesProgress
-        "
+        *ngIf="isBudgetLoaded"
     >
         <mat-expansion-panel
             class="mat-panel-budget"
@@ -863,12 +836,7 @@
         displayMode="default"
         [multi]="true"
         [hideToggle]="false"
-        *ngIf="
-            hideExpensesProgress ||
-            hideIncomesProgress ||
-            hidePeopleProgress ||
-            hideCategoriesProgress
-        "
+        *ngIf="isBudgetLoaded"
     >
         <mat-expansion-panel
             class="mat-panel-budget"
@@ -1097,12 +1065,7 @@
         displayMode="default"
         [multi]="true"
         [hideToggle]="false"
-        *ngIf="
-            hideExpensesProgress ||
-            hideIncomesProgress ||
-            hidePeopleProgress ||
-            hideCategoriesProgress
-        "
+        *ngIf="isBudgetLoaded && cardpostingspeople!.length > 0"
     >
         <mat-expansion-panel
             class="mat-panel-budget"
@@ -1994,12 +1957,7 @@
         displayMode="default"
         [multi]="true"
         [hideToggle]="false"
-        *ngIf="
-            hideExpensesProgress &&
-            hideIncomesProgress &&
-            hidePeopleProgress &&
-            hideCategoriesProgress
-        "
+        *ngIf="isBudgetLoaded"
     >
         <mat-expansion-panel
             class="mat-panel-budget"

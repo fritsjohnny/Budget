@@ -1,3 +1,4 @@
+import { finalize, forkJoin } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import {
   AfterViewInit,
@@ -72,6 +73,9 @@ import { ConfirmDialogComponent, ConfirmDialogData } from 'src/app/shared/confir
   ],
 })
 export class BudgetComponent implements OnInit, AfterViewInit {
+  isBudgetLoading = false;
+  isBudgetLoaded = false;
+
   reference?: string;
   referenceHead?: string;
 
@@ -129,10 +133,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   amountTotalCategory: number = 0;
   percTotalCategory: number = 0;
   monthName: string = '';
-  hideExpensesProgress: boolean = true;
-  hideIncomesProgress: boolean = true;
-  hidePeopleProgress: boolean = true;
-  hideCategoriesProgress: boolean = true;
   budgetPanelExpanded: boolean = false;
   expensesPanelExpanded: boolean = false;
   incomesPanelExpanded: boolean = false;
@@ -230,184 +230,165 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   onCheckboxJustToPayChange(): void {
+    if (!this.expensesNoFilter) return;
+
     if (this.justToPay) {
       this.expenses = this.expensesNoFilter.filter((e) => e.remaining > 0);
     } else {
       this.expenses = this.expensesNoFilter;
     }
 
-    this.getIncomesTotals();
     this.getExpensesTotals();
+    this.getIncomesTotals();
   }
 
   onCheckboxJustToReceiveChange(): void {
+    if (!this.incomesNoFilter) return;
+
     if (this.justToReceive) {
       this.incomes = this.incomesNoFilter.filter((e) => e.remaining > 0);
     } else {
       this.incomes = this.incomesNoFilter;
     }
+
+    this.getIncomesTotals();
   }
 
   refresh() {
-    this.hideExpensesProgress = false;
-    this.hideIncomesProgress = false;
-    this.hidePeopleProgress = false;
-    this.hideCategoriesProgress = false;
+    if (!this.reference) return;
+
+    this.isBudgetLoading = true;
+    this.isBudgetLoaded = false;
 
     this.showUpcomingExpenses = false;
     this.onlyPendingExpenses = false;
 
-    this.cardService.read().subscribe({
-      next: (cards) => {
-        this.cardsList = cards;
-      },
-      error: () => {
-        this.hideExpensesProgress = false;
-        this.hideIncomesProgress = false;
-        this.hidePeopleProgress = false;
-        this.hideCategoriesProgress = false;
-      },
-    });
+    const reference = this.reference;
 
-    this.categoryService.readWithExpenses(this.reference!).subscribe({
-      next: (categories) => {
-        this.categoriesList = categories.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
-      },
-      error: () => {
-        this.hideExpensesProgress = false;
-        this.hideIncomesProgress = false;
-        this.hidePeopleProgress = false;
-        this.hideCategoriesProgress = false;
-      },
-    });
+    forkJoin({
+      cards: this.cardService.read(),
+      categories: this.categoryService.readWithExpenses(reference),
+      people: this.peopleService.read(),
+      accounts: this.accountService.readNotDisabled(),
+      expenses: this.expenseService.read(reference, this.justMyValues),
+      incomes: this.incomeService.read(reference, this.justMyValues),
+      cardpostingspeople: this.cardPostingsService.readCardsPostingsPeople(0, reference),
+      budgetTotals: this.budget.getBudgetTotals(reference),
+      expensesByCategories: this.expenseService.readByCategories(reference, 0)
+    })
+      .pipe(
+        finalize(() => {
+          if (this.reference === reference) {
+            this.isBudgetLoading = false;
+          }
+        })
+      )
+      .subscribe({
+        next: ({
+          cards,
+          categories,
+          people,
+          accounts,
+          expenses,
+          incomes,
+          cardpostingspeople,
+          budgetTotals,
+          expensesByCategories
+        }) => {
+          if (this.reference !== reference) return;
 
-    this.peopleService.read().subscribe({
-      next: (people) => {
-        this.peopleList = people;
-      },
-      error: () => {
-        this.hideExpensesProgress = false;
-        this.hideIncomesProgress = false;
-        this.hidePeopleProgress = false;
-        this.hideCategoriesProgress = false;
-      },
-    });
+          this.cardsList = cards;
 
-    this.accountService.readNotDisabled().subscribe({
-      next: (accounts) => {
-        this.accountsList = accounts;
+          this.categoriesList = categories.sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
 
-        this.hideExpensesProgress = true;
-        this.hideIncomesProgress = true;
-        this.hidePeopleProgress = true;
-        this.hideCategoriesProgress = true;
-      },
-      error: () => {
-        this.hideExpensesProgress = true;
-        this.hideIncomesProgress = true;
-        this.hidePeopleProgress = true;
-        this.hideCategoriesProgress = true;
-      },
-    });
+          this.peopleList = people;
+          this.accountsList = accounts;
 
-    this.getData();
+          this.expenses = expenses;
+          this.expensesNoFilter = expenses;
 
-    this.budgetPanelExpanded =
-      localStorage.getItem('budgetPanelExpanded') === 'true';
-    this.expensesPanelExpanded =
-      localStorage.getItem('expensesPanelExpanded') === 'true';
-    this.incomesPanelExpanded =
-      localStorage.getItem('incomesPanelExpanded') === 'true';
-    this.peoplePanelExpanded =
-      localStorage.getItem('peoplePanelExpanded') === 'true';
-    this.categoryPanelExpanded =
-      localStorage.getItem('categoryPanelExpanded') === 'true';
+          if (this.justToPay) {
+            this.expenses = this.expensesNoFilter.filter((e) => e.remaining > 0);
+          }
+
+          this.incomes = incomes;
+          this.incomesNoFilter = incomes;
+
+          if (this.justToReceive) {
+            this.incomes = this.incomesNoFilter.filter((e) => e.remaining > 0);
+          }
+
+          this.cardpostingspeople = cardpostingspeople.filter(
+            (t) => t.person !== ''
+          );
+
+          this.dataSourcePeople = new MatTableDataSource(this.cardpostingspeople);
+          this.dataSourcePeople.sort = this.sortPeople;
+
+          this.budgetTotals = budgetTotals;
+
+          this.expensesByCategories = expensesByCategories;
+          this.dataSourceCategories = new MatTableDataSource(this.expensesByCategories);
+          this.dataSourceCategories.sort = this.sortCategories;
+
+          this.getExpensesTotals();
+          this.getIncomesTotals();
+          this.getTotalPeople();
+          this.getTotalByCategories();
+
+          this.checkExpensesWarnings();
+
+          this.loadPanelState();
+
+          this.isBudgetLoaded = true;
+        },
+        error: () => {
+          if (this.reference !== reference) return;
+
+          this.isBudgetLoaded = false;
+        }
+      });
   }
 
-  getData() {
-    if (this.reference) {
-      this.hideExpensesProgress = false;
-      this.hideIncomesProgress = false;
-      this.hidePeopleProgress = false;
-      this.hideCategoriesProgress = false;
+  private checkExpensesWarnings(): void {
+    if (this.justMyValues) return;
 
-      this.expenses = [];
-      this.expensesNoFilter = [];
-      this.incomes = [];
-      this.incomesNoFilter = [];
-      this.cardpostingspeople = [];
+    let overdue = false;
+    let duetoday = false;
 
-      this.getExpenses();
-      this.getIncomes();
-      this.getCardsPostingsPeople();
-      this.getBudgetTotals();
-      this.getExpensesByCategories();
+    this.expenses.forEach((expense) => {
+      if (expense.dueDate && expense.paid < expense.toPay) {
+        if (this.dueToday(expense)) {
+          duetoday = true;
+        } else if (this.overDue(expense)) {
+          overdue = true;
+        }
+      }
+    });
+
+    let message = '';
+
+    if (duetoday && overdue) {
+      message = 'Há lançamentos vencidos e vencendo hoje!';
+    } else if (duetoday) {
+      message = 'Há lançamentos vencendo hoje!';
+    } else if (overdue) {
+      message = 'Há lançamentos vencidos!';
+    }
+
+    if (message) {
+      this.messenger.message(message);
     }
   }
 
-  getExpenses() {
-    this.expenseService.read(this.reference!, this.justMyValues).subscribe({
-      next: (expenses) => {
-        this.expenses = expenses;
-        this.expensesNoFilter = expenses;
-
-        this.getExpensesTotals();
-
-        if (this.justToPay) this.onCheckboxJustToPayChange();
-
-        if (this.justMyValues) {
-          return;
-        }
-
-        let overdue = false; // se houver algum lançamento atrasado
-        let duetoday = false; // se houver algum lançamento vencendo hoje
-
-        this.expenses.forEach((expense) => {
-          if (expense.dueDate && expense.paid < expense.toPay) {
-            if (this.dueToday(expense)) {
-              duetoday = true;
-            } else if (this.overDue(expense)) {
-              overdue = true;
-            }
-          }
-        });
-
-        let message = '';
-        if (duetoday && overdue) {
-          message = 'Há lançamentos vencidos e vencendo hoje!';
-        } else if (duetoday) {
-          message = 'Há lançamentos vencendo hoje!';
-        } else if (overdue) {
-          message = 'Há lançamentos vencidos!';
-        }
-
-        if (message) {
-          this.messenger.message(message);
-          // this.notificar(message);
-        }
-      },
-      error: () => {
-        this.getExpensesTotals();
-      },
-    });
-  }
-
-  getIncomes() {
-    this.incomeService.read(this.reference!, this.justMyValues).subscribe({
-      next: (incomes) => {
-        this.incomes = incomes;
-        this.incomesNoFilter = incomes;
-
-        if (this.justToReceive) this.onCheckboxJustToReceiveChange();
-
-        this.getIncomesTotals();
-      },
-      error: () => {
-        this.getIncomesTotals();
-      },
-    });
+  private loadPanelState(): void {
+    this.budgetPanelExpanded = localStorage.getItem('budgetPanelExpanded') === 'true';
+    this.expensesPanelExpanded = localStorage.getItem('expensesPanelExpanded') === 'true';
+    this.incomesPanelExpanded = localStorage.getItem('incomesPanelExpanded') === 'true';
+    this.peoplePanelExpanded = localStorage.getItem('peoplePanelExpanded') === 'true';
+    this.categoryPanelExpanded = localStorage.getItem('categoryPanelExpanded') === 'true';
   }
 
   getBudgetTotals() {
@@ -435,10 +416,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           this.dataSourcePeople.sort = this.sortPeople;
 
           this.getTotalPeople();
-
-          this.hidePeopleProgress = true;
         },
-        error: () => (this.hidePeopleProgress = true),
+        error: () => { },
       });
   }
 
@@ -454,10 +433,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         this.dataSourceCategories.sort = this.sortCategories;
 
         this.getTotalByCategories();
-
-        this.hideCategoriesProgress = true;
       },
-      error: () => (this.hideCategoriesProgress = true),
+      error: () => { },
     });
   }
 
@@ -488,8 +465,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.expectedBalance =
       this.toReceiveTotalNoFilter - this.toPayTotalNoFilter;
-
-    this.hideIncomesProgress = true;
   }
 
   getExpensesTotals() {
@@ -515,8 +490,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.expectedBalance =
       this.toReceiveTotalNoFilter - this.toPayTotalNoFilter;
-
-    this.hideExpensesProgress = true;
   }
 
   getTotalPeople() {
@@ -603,8 +576,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.hideExpensesProgress = false;
-        this.hideCategoriesProgress = false;
 
         result.position = this.expenses.length + 1;
 
@@ -626,8 +597,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             this.refreshExpenses();
           },
           error: () => {
-            this.hideExpensesProgress = true;
-            this.hideCategoriesProgress = true;
           },
         });
       }
@@ -691,8 +660,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.hideExpensesProgress = false;
-        this.hideCategoriesProgress = false;
 
         if (result.deleting) {
           this.deleteExpense(result);
@@ -743,8 +710,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
               this.refreshExpenses();
             },
             error: () => {
-              this.hideExpensesProgress = true;
-              this.hideCategoriesProgress = true;
             },
           });
         }
@@ -763,8 +728,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         this.refreshExpenses();
       },
       error: () => {
-        this.hideExpensesProgress = true;
-        this.hideCategoriesProgress = true;
       },
     });
   }
@@ -842,7 +805,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.hideIncomesProgress = false;
 
         result.position = this.incomes.length + 1;
 
@@ -862,7 +824,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
             this.refreshIncomes();
           },
-          error: () => (this.hideIncomesProgress = true),
+          error: () => { },
         });
       }
     });
@@ -949,7 +911,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.hideIncomesProgress = false;
 
         if (result.deleting) {
           this.incomeService.delete(result.id).subscribe({
@@ -961,7 +922,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
               this.refreshIncomes();
             },
-            error: () => (this.hideIncomesProgress = true),
+            error: () => { },
           });
         } else {
           this.incomeService.update(result).subscribe({
@@ -1002,7 +963,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
               this.refreshIncomes();
             },
-            error: () => (this.hideIncomesProgress = true),
+            error: () => { },
           });
         }
       }
@@ -1066,7 +1027,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.hideExpensesProgress = false;
 
         result.amount = result.amount * (result.type === 'P' ? -1 : 1);
 
@@ -1089,10 +1049,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             } else if (result.type === 'R') {
               localStorage.setItem('accountIdReceiveIncome', result.accountId);
             }
-
-            this.hideExpensesProgress = true;
           },
-          error: () => (this.hideExpensesProgress = true),
+          error: () => { },
         });
       }
     });
@@ -1183,7 +1141,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.hideExpensesProgress = false;
 
         result.amount = result.amount * (result.type === 'P' ? -1 : 1);
 
@@ -1198,13 +1155,11 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             ).toFixed(2);
             income.remaining = +(income.toReceive - income.received).toFixed(2);
 
-            this.getIncomesTotals();
+            this.refreshIncomes();
 
             localStorage.setItem('accountIdReceiveIncome', result.accountId);
-
-            this.hideExpensesProgress = true;
           },
-          error: () => (this.hideExpensesProgress = true),
+          error: () => { },
         });
       }
     });
@@ -1269,10 +1224,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
         this.refreshExpenses();
       },
-      error: () => {
-        this.hideExpensesProgress = true;
-        this.hideCategoriesProgress = true;
-      },
+      error: () => { },
     });
   }
 
@@ -1297,7 +1249,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
         this.refreshIncomes();
       },
-      error: () => (this.hideIncomesProgress = true),
+      error: () => { },
     });
   }
 

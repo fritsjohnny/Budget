@@ -123,6 +123,17 @@ export class AnnualSavingsComponent implements OnInit {
     this.calculateAnnualGoal();
   }
 
+  clearAnnualMonthTotal(row: AnnualSavingsMonth) {
+    row.total = null;
+
+    delete this.annualSavingsMonthlySimulation[row.reference];
+    delete this.annualSavingsCurrentMonthSimulation[row.reference];
+
+    this.saveAnnualMonthlySimulation();
+    this.recalculateAnnualSavingsReport();
+    this.calculateAnnualGoal();
+  }
+
   canEditAnnualMonthTotal(row: AnnualSavingsMonth): boolean {
     return this.isCurrentReference(row.reference) || !this.hasAnnualMonthDatabaseValue(row);
   }

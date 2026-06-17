@@ -235,17 +235,32 @@
                                     else annualMonthTotalValue
                                 "
                             >
-                                <input
-                                    class="annual-total-input"
-                                    inputmode="numeric"
-                                    currencyMask
-                                    [(ngModel)]="row.total"
-                                    (ngModelChange)="
-                                        annualMonthTotalChanged(row)
-                                    "
-                                    placeholder="0"
-                                    autocomplete="off"
-                                />
+                                <div class="annual-total-input-wrapper">
+                                    <button
+                                        *ngIf="
+                                            row.total !== null &&
+                                            row.total !== undefined
+                                        "
+                                        type="button"
+                                        class="annual-total-clear-button"
+                                        matTooltip="Limpar valor"
+                                        (click)="clearAnnualMonthTotal(row)"
+                                    >
+                                        ×
+                                    </button>
+
+                                    <input
+                                        class="annual-total-input"
+                                        inputmode="numeric"
+                                        currencyMask
+                                        [(ngModel)]="row.total"
+                                        (ngModelChange)="
+                                            annualMonthTotalChanged(row)
+                                        "
+                                        placeholder="0"
+                                        autocomplete="off"
+                                    />
+                                </div>
                             </ng-container>
 
                             <ng-template #annualMonthTotalValue>

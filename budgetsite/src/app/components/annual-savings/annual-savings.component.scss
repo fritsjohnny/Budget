@@ -310,6 +310,13 @@
     padding: 6px 8px !important;
 }
 
+.annual-total-input-wrapper {
+    position: relative;
+    width: 105px;
+    max-width: 105px;
+    display: inline-block;
+}
+
 .annual-total-input {
     width: 105px;
     max-width: 105px;
@@ -319,8 +326,36 @@
     color: inherit;
     font: inherit;
     text-align: right;
+    padding-left: 16px;
 }
 
 .annual-total-input:focus {
     border-bottom: 1px solid rgba(128, 128, 128, 0.65);
+}
+
+.annual-total-clear-button {
+    position: absolute;
+    top: -7px;
+    left: -4px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+    z-index: 2;
+}
+
+.annual-total-clear-button:hover {
+    opacity: 1;
+}
+
+.annual-total-clear-button:active {
+    transform: scale(0.92);
 }

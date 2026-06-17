@@ -302,18 +302,6 @@
             <p></p>
             <div class="row text-center">
                 <div class="col-6">
-                    <span class="center">Rendimentos:</span>
-                    <span class="center">
-                        <b
-                            >{{
-                                budgetTotals?.myYields | currency: "" : ""
-                            }}&nbsp;</b
-                        >
-                        ({{ budgetTotals?.myYieldsPerc }}%)
-                    </span>
-                </div>
-
-                <div class="col-6">
                     <span class="center">Sem Rendimentos:</span>
                     <span class="center">
                         <b
@@ -323,6 +311,17 @@
                             }}&nbsp;</b
                         >
                         ({{ budgetTotals?.myIncomesWithoutYieldsPerc }}%)
+                    </span>
+                </div>
+                <div class="col-6">
+                    <span class="center">Rendimentos:</span>
+                    <span class="center">
+                        <b
+                            >{{
+                                budgetTotals?.myYields | currency: "" : ""
+                            }}&nbsp;</b
+                        >
+                        ({{ budgetTotals?.myYieldsPerc }}%)
                     </span>
                 </div>
             </div>

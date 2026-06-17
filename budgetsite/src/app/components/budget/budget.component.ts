@@ -34,7 +34,7 @@ import { Categories } from 'src/app/models/categories.model';
 import { CategoryService } from 'src/app/services/category/category.service';
 import { ExpensesByCategories } from 'src/app/models/expensesbycategories';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { MatSort, Sort } from '@angular/material/sort';
+import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { People } from 'src/app/models/people.model';
 import { PeopleService } from 'src/app/services/people/people.service';
@@ -192,8 +192,32 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     library.addIcons(faWhatsapp);
   }
 
-  @ViewChild('sortPeople') sortPeople!: MatSort;
-  @ViewChild('sortCategories') sortCategories!: MatSort;
+  private sortPeople?: MatSort;
+  private sortCategories?: MatSort;
+
+  @ViewChild('sortPeople')
+  set matSortPeople(sort: MatSort | undefined) {
+    this.sortPeople = sort;
+    this.bindPeopleSort();
+  }
+
+  @ViewChild('sortCategories')
+  set matSortCategories(sort: MatSort | undefined) {
+    this.sortCategories = sort;
+    this.bindCategoriesSort();
+  }
+
+  private bindPeopleSort(): void {
+    if (!this.sortPeople) return;
+
+    this.dataSourcePeople.sort = this.sortPeople;
+  }
+
+  private bindCategoriesSort(): void {
+    if (!this.sortCategories) return;
+
+    this.dataSourceCategories.sort = this.sortCategories;
+  }
 
   ngOnInit() {
   }
@@ -325,13 +349,13 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           );
 
           this.dataSourcePeople = new MatTableDataSource(this.cardpostingspeople);
-          this.dataSourcePeople.sort = this.sortPeople;
+          this.bindPeopleSort();
 
           this.budgetTotals = budgetTotals;
 
           this.expensesByCategories = expensesByCategories;
           this.dataSourceCategories = new MatTableDataSource(this.expensesByCategories);
-          this.dataSourceCategories.sort = this.sortCategories;
+          this.bindCategoriesSort();
 
           this.getExpensesTotals();
           this.getIncomesTotals();
@@ -413,7 +437,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             this.cardpostingspeople
           );
 
-          this.dataSourcePeople.sort = this.sortPeople;
+          this.bindPeopleSort();
 
           this.getTotalPeople();
         },
@@ -430,7 +454,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           this.expensesByCategories
         );
 
-        this.dataSourceCategories.sort = this.sortCategories;
+        this.bindCategoriesSort();
 
         this.getTotalByCategories();
       },

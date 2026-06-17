@@ -305,3 +305,22 @@
     text-align: right;
     white-space: nowrap;
 }
+
+.annual-total-simulation-cell {
+    padding: 6px 8px !important;
+}
+
+.annual-total-input {
+    width: 105px;
+    max-width: 105px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: right;
+}
+
+.annual-total-input:focus {
+    border-bottom: 1px solid rgba(128, 128, 128, 0.65);
+}

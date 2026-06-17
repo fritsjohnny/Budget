@@ -223,8 +223,34 @@
                         "
                     >
                         <td>{{ row.monthName }}</td>
-                        <td [ngClass]="getValueClass(row.total)">
-                            {{ formatCurrency(row.total) }}
+                        <td
+                            [ngClass]="getValueClass(row.total)"
+                            [class.annual-total-simulation-cell]="
+                                canEditAnnualMonthTotal(row)
+                            "
+                        >
+                            <ng-container
+                                *ngIf="
+                                    canEditAnnualMonthTotal(row);
+                                    else annualMonthTotalValue
+                                "
+                            >
+                                <input
+                                    class="annual-total-input"
+                                    inputmode="numeric"
+                                    currencyMask
+                                    [(ngModel)]="row.total"
+                                    (ngModelChange)="
+                                        annualMonthTotalChanged(row)
+                                    "
+                                    placeholder="0"
+                                    autocomplete="off"
+                                />
+                            </ng-container>
+
+                            <ng-template #annualMonthTotalValue>
+                                {{ formatCurrency(row.total) }}
+                            </ng-template>
                         </td>
                         <td
                             *ngIf="row.showQuarterAverage"

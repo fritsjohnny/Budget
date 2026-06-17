@@ -271,6 +271,193 @@
                         >
                     </div>
                 </div>
+                <div class="row center saldos-legend-container">
+                    <div class="col-12">
+                        <mat-accordion
+                            displayMode="default"
+                            [multi]="false"
+                            [hideToggle]="false"
+                        >
+                            <mat-expansion-panel
+                                class="saldos-legend-panel"
+                                [expanded]="saldosLegendExpanded"
+                                (opened)="saldosLegendOpened()"
+                                (closed)="saldosLegendClosed()"
+                            >
+                                <mat-expansion-panel-header>
+                                    <mat-panel-title>
+                                        <mat-icon class="saldos-legend-icon"
+                                            >info</mat-icon
+                                        >
+                                        Entenda os saldos
+                                    </mat-panel-title>
+                                </mat-expansion-panel-header>
+
+                                <div
+                                    class="saldos-legend"
+                                    *ngIf="saldosLegend as legend"
+                                >
+                                    <div class="saldos-legend-row">
+                                        <strong>Previsto:</strong>
+                                        <span>
+                                            saldo projetado considerando
+                                            lançamentos previstos e pendências
+                                            acumuladas. Neste mês:
+                                            <b>{{
+                                                legend.forecastBalance
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                        </span>
+                                    </div>
+
+                                    <div class="saldos-legend-row">
+                                        <strong>Disponível:</strong>
+                                        <span>
+                                            saldo disponível nas contas até a
+                                            referência atual. Neste mês:
+                                            <b>{{
+                                                legend.availableBalance
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                        </span>
+                                    </div>
+
+                                    <div class="saldos-legend-row">
+                                        <strong>Previsto (Real):</strong>
+                                        <span>
+                                            calcula o disponível somando o que
+                                            ainda falta receber no mês e
+                                            subtraindo o que ainda falta pagar.
+                                            Ex.:
+                                            <b>{{
+                                                legend.availableBalance
+                                                    | currency: "" : ""
+                                            }}</b>
+                                            +
+                                            <b>{{
+                                                legend.currentToReceive
+                                                    | currency: "" : ""
+                                            }}</b>
+                                            -
+                                            <b>{{
+                                                legend.currentToPay
+                                                    | currency: "" : ""
+                                            }}</b>
+                                            =
+                                            <b>{{
+                                                legend.realForecastBalance
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                        </span>
+                                    </div>
+
+                                    <div class="saldos-legend-row">
+                                        <strong>Receber:</strong>
+                                        <span>
+                                            valores pendentes de recebimento de
+                                            meses anteriores. Hoje:
+                                            <b>{{
+                                                legend.previousToReceive
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                        </span>
+                                    </div>
+
+                                    <div class="saldos-legend-row">
+                                        <strong>Pagar:</strong>
+                                        <span>
+                                            valores pendentes de pagamento de
+                                            meses anteriores. Na tela aparece
+                                            como saída. Hoje:
+                                            <b>{{
+                                                legend.previousToPayDisplay
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                        </span>
+                                    </div>
+
+                                    <div class="saldos-legend-row">
+                                        <strong>Poupado:</strong>
+                                        <span>
+                                            diferença entre o saldo atual e o
+                                            saldo do mês anterior ({{
+                                                legend.previousReferenceHead
+                                            }}).
+                                            <br />
+                                            Previsto:
+                                            <b>{{
+                                                legend.forecastBalance
+                                                    | currency: "" : ""
+                                            }}</b>
+                                            -
+                                            <b>{{
+                                                legend.previousForecastBalance
+                                                    | currency: "" : ""
+                                            }}</b>
+                                            =
+                                            <b>{{
+                                                legend.forecastSpared
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                            <br />
+                                            Disponível:
+                                            <b>{{
+                                                legend.availableBalance
+                                                    | currency: "" : ""
+                                            }}</b>
+                                            -
+                                            <b>{{
+                                                legend.previousAvailableBalance
+                                                    | currency: "" : ""
+                                            }}</b>
+                                            =
+                                            <b>{{
+                                                legend.availableSpared
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                        </span>
+                                    </div>
+
+                                    <div class="saldos-legend-row">
+                                        <strong>Sacado:</strong>
+                                        <span>
+                                            movimentações manuais do mês fora de
+                                            despesa, receita ou recebimento de
+                                            cartão. Hoje:
+                                            <b>{{
+                                                legend.drawnBalance
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                        </span>
+                                    </div>
+
+                                    <div class="saldos-legend-row">
+                                        <strong>Sem sacado:</strong>
+                                        <span>
+                                            quanto teria sido poupado sem
+                                            considerar o valor
+                                            sacado/movimentado manualmente.
+                                            Hoje:
+                                            <b>{{
+                                                legend.withoutDrawnBalance
+                                                    | currency: "" : ""
+                                            }}</b
+                                            >.
+                                        </span>
+                                    </div>
+                                </div>
+                            </mat-expansion-panel>
+                        </mat-accordion>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

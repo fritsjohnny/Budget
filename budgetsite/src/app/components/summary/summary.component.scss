@@ -117,3 +117,36 @@ tr.mat-footer-row {
 ::ng-deep .mytable2 .mat-column-saldoGroup {
     text-align: center !important;
 }
+
+.saldos-legend-container {
+    padding: 8px 10px 4px 10px;
+}
+
+.saldos-legend-panel {
+    box-shadow: none !important;
+    border-radius: var(--border-radius);
+}
+
+.saldos-legend-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    margin-right: 6px;
+}
+
+.saldos-legend {
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.saldos-legend-row {
+    margin-bottom: 7px;
+}
+
+.saldos-legend-row:last-child {
+    margin-bottom: 0;
+}
+
+.saldos-legend-row strong {
+    margin-right: 4px;
+}

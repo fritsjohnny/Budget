@@ -25,8 +25,8 @@ import { CardService } from 'src/app/services/card/card.service';
 import { Cards } from 'src/app/models/cards.model';
 import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
-import { CardPostingsDialog } from './cardpostings-dialog';
-import { CardReceiptsDialog } from './cardreceipts-dialog';
+import { CardPostingsDialog } from './cardpostings-dialog/cardpostings-dialog';
+import { CardReceiptsDialog } from './cardreceipts-dialog/cardreceipts-dialog';
 import { Messenger } from 'src/app/common/messenger';
 import { Expenses } from 'src/app/models/expenses.model';
 import {

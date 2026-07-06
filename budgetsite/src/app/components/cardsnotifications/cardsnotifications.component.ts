@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
+import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog/cardpostings-dialog';
 import moment from 'moment';
 import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
 import { People } from 'src/app/models/people.model';

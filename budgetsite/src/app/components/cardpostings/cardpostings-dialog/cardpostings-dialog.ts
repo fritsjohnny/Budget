@@ -17,8 +17,8 @@ import { CardsPostings } from 'src/app/models/cardspostings.model';
 import { CategoryService } from 'src/app/services/category/category.service';
 import { PeopleService } from 'src/app/services/people/people.service';
 import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepickerinput.component';
-import { CategoryComponent } from '../category/category.component';
-import { PeopleComponent } from '../people/people.component';
+import { CategoryComponent } from '../../category/category.component';
+import { PeopleComponent } from '../../people/people.component';
 import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
 import {
   ConfirmDialogComponent,
@@ -29,7 +29,7 @@ import { ExpenseService } from 'src/app/services/expense/expense.service';
 @Component({
   selector: 'cardpostings-dialog',
   templateUrl: 'cardpostings-dialog.html',
-  styleUrls: ['../cardpostings/cardpostings.component.scss'],
+  styleUrls: ['../../cardpostings/cardpostings.component.scss'],
 })
 export class CardPostingsDialog implements OnInit, AfterViewInit {
   @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;
@@ -134,7 +134,11 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   getLists() {
     this.peopleService.read().subscribe({
       next: (people) => {
-        this.cardPosting.peopleList = people;
+        this.cardPosting.peopleList = (people ?? []).sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+
+        this.setPeople();
       },
     });
 
@@ -143,6 +147,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
         this.cardPosting.categoriesList = categories.sort((a, b) =>
           a.name.localeCompare(b.name)
         );
+
+        this.suggestExpenseFromCategory();
       },
     });
 
@@ -150,6 +156,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       next: (expenses) => {
         this.cardPosting.expensesList = expenses.sort((a, b) =>
           a.description.localeCompare(b.description));
+
+        this.suggestExpenseFromCategory();
       },
     });
   }
@@ -292,17 +300,65 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   onDescriptionChange() {
     if (!this.cardPosting.description) return;
 
-    if (this.cardPosting.categoryId != null) return;
+    if (this.cardPosting.categoryId != null && this.cardPosting.peopleId != null) {
+      return;
+    }
 
     this.cardPostingsService
       .getCategoryByDescription(this.cardPosting.description)
       .subscribe({
-        next: (categoryId) => {
-          if (categoryId != null) {
-            this.cardPosting.categoryId = categoryId.categoryId;
-          }
+        next: (suggestion) => {
+          this.applyDescriptionSuggestion(suggestion);
         },
       });
+  }
+
+  private applyDescriptionSuggestion(suggestion: Partial<CardsPostings> | null | undefined): void {
+    if (!suggestion) {
+      return;
+    }
+
+    if (this.cardPosting.categoryId == null && suggestion.categoryId != null) {
+      this.cardPosting.categoryId = suggestion.categoryId;
+      this.cardPostingFormGroup.get('categoryIdFormControl')?.setValue(suggestion.categoryId, { emitEvent: false });
+    }
+
+    if (this.cardPosting.peopleId == null && suggestion.peopleId != null) {
+      this.cardPosting.peopleId = suggestion.peopleId;
+      this.cardPostingFormGroup.get('peopleFormControl')?.setValue(suggestion.peopleId, { emitEvent: false });
+      this.setPeople();
+    }
+
+    this.suggestExpenseFromCategory();
+  }
+
+  private normalizeSuggestionText(value?: string | null): string {
+    return (value ?? '').trim().toLocaleLowerCase('pt-BR');
+  }
+
+  private suggestExpenseFromCategory(force: boolean = false): void {
+    if (!force && this.cardPosting.expenseId != null) {
+      return;
+    }
+
+    const category = this.cardPosting.categoriesList?.find(c => c.id === this.cardPosting.categoryId);
+
+    if (!category?.hasExpense) {
+      return;
+    }
+
+    const categoryName = this.normalizeSuggestionText(category.name);
+
+    const expense = this.cardPosting.expensesList?.find(
+      e => this.normalizeSuggestionText(e.description) === categoryName && e.categoryId == null
+    );
+
+    if (!expense?.id) {
+      return;
+    }
+
+    this.cardPosting.expenseId = expense.id;
+    this.cardPostingFormGroup.get('expenseIdFormControl')?.setValue(expense.id, { emitEvent: false });
   }
 
   setPositiveOrNegative() {
@@ -311,16 +367,6 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   onCategorySelected() {
-    const category = this.cardPosting.categoriesList?.find(c => c.id === this.cardPosting.categoryId);
-
-    if (!category?.hasExpense) return;
-
-    const expense = this.cardPosting.expensesList?.find(
-      e => e.description.trim() === category.name.trim() && e.categoryId === null
-    );
-
-    if (expense) {
-      this.cardPosting.expenseId = expense.id;
-    }
+    this.suggestExpenseFromCategory(true);
   }
 }

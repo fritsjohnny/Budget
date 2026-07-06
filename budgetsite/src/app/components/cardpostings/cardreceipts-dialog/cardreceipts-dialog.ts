@@ -16,7 +16,7 @@ import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepic
 @Component({
   selector: 'cardreceipts-dialog',
   templateUrl: 'cardreceipts-dialog.html',
-  styleUrls: ['../budget/budget.component.scss'],
+  styleUrls: ['../../budget/budget.component.scss'],
 })
 export class CardReceiptsDialog implements OnInit, AfterViewInit {
   @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;

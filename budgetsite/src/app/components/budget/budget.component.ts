@@ -43,7 +43,7 @@ import moment from 'moment';
 import { ExpensesDialog } from './expenses-dialog';
 import { IncomesDialog } from './incomes-dialog';
 import { PaymentReceiveDialog } from './payment-receive-dialog';
-import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog';
+import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog/cardpostings-dialog';
 import { PeopleComponent } from '../people/people.component';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';

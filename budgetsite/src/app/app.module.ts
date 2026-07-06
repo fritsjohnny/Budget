@@ -49,7 +49,7 @@ import { AccountViewComponent } from './views/account-view/account-view.componen
 import { AccountComponent } from './components/account/account.component';
 import { AccountDialog } from './components/account/account-dialog';
 import { AccountPostingsComponent } from './components/accountpostings/accountpostings.component';
-import { AccountPostingsDialog } from './components/accountpostings/accountpostings-dialog';
+import { AccountPostingsDialog } from './components/accountpostings/accountpostings-dialog/accountpostings-dialog';
 import { CardViewComponent } from './views/card-view/card-view.component';
 import { CardComponent } from './components/card/card.component';
 import { CardDialog } from './components/card/card-dialog';
@@ -70,7 +70,7 @@ import { DatepickerreferenceComponent } from './shared/datepickerreference/datep
 import { PeopleComponent } from './components/people/people.component';
 import { ReportViewComponent } from './views/report-view/report-view.component';
 import { ReportComponent } from './components/report/report.component';
-import { AccountApplicationsDialog } from './components/accountpostings/accountapplications-dialog';
+import { AccountApplicationsDialog } from './components/accountpostings/accountapplications-dialog/accountapplications-dialog';
 
 import { MAT_COLOR_FORMATS, NgxMatColorPickerModule, NGX_MAT_COLOR_FORMATS } from '@angular-material-components/color-picker';
 import { AddvalueComponent } from './shared/addvalue/addvalue.component';
@@ -93,7 +93,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { DragReadyFeedbackDirective } from './directives/drag-ready-feedback.directive';
 import { YieldsComponent } from './components/yields/yields.component';
 import { ExpensesByDueDateReportComponent } from './components/reports/expenses-by-due-date-report/expenses-by-due-date-report.component';
-import { GenerateCardReceiptDialog } from './components/accountpostings/generate-cardreceipt-dialog';
+import { GenerateCardReceiptDialog } from './components/accountpostings/generate-cardreceipt-dialog/generate-cardreceipt-dialog';
 import { AnnualSavingsComponent } from './components/annual-savings/annual-savings.component';
 import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
 

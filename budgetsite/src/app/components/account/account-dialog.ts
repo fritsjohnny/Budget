@@ -3,7 +3,8 @@ import { Component, OnInit, AfterViewInit, ViewChild, Inject, ChangeDetectorRef 
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Accounts } from 'src/app/models/accounts.model';
-
+import { AccountYieldRange } from 'src/app/models/accountyieldrange.model';
+import { AccountYieldRangeService } from 'src/app/services/accountyieldrange/accountyieldrange.service';
 
 @Component({
   selector: 'account-dialog',
@@ -23,6 +24,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
   editing: boolean = false;
   deleting: boolean = false;
   hasParens = false;
+  yieldRanges: AccountYieldRange[] = [];
 
   accountFormGroup = new FormGroup({
     nameFormControl: new FormControl('', Validators.required),
@@ -41,7 +43,8 @@ export class AccountDialog implements OnInit, AfterViewInit {
   constructor(
     public dialogRef: MatDialogRef<AccountDialog>,
     @Inject(MAT_DIALOG_DATA) public accounts: Accounts[],
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private accountYieldRangeService: AccountYieldRangeService
   ) {
   }
 
@@ -75,6 +78,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
       irPercent: parseFloat(this.accountFormGroup.get('irPercentFormControl')?.value?.toString().replace(',', '.') ?? '0'),
       isTaxExempt: this.accountFormGroup.get('isTaxExemptFormControl')?.value,
       totalBalanceGross: parseFloat(this.accountFormGroup.get('totalBalanceGrossFormControl')?.value?.toString().replace(',', '.') ?? '0'),
+      yieldRanges: this.normalizeYieldRanges(),
       editing: this.id != undefined,
       deleting: false
     };
@@ -103,6 +107,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
     this.accountFormGroup.get('disabledFormControl')?.setValue(false);
     this.accountFormGroup.get('calcInGeneralFormControl')?.setValue(false);
 
+    this.yieldRanges = [];
     this.setBackgroundAndColor('#000000', '#ffffff');
   }
 
@@ -118,7 +123,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
     // pega todos os "(...)" e monta a 2ª linha
     const parensMatches = raw.match(/\([^)]*\)/g) || [];
     this.hasParens = parensMatches.length > 0;
-    
+
     const secondLine = parensMatches.join(' ').trim();
 
     // remove todos os "(...)" do texto principal (1ª linha)
@@ -150,6 +155,8 @@ export class AccountDialog implements OnInit, AfterViewInit {
       this.accountFormGroup.get('isTaxExemptFormControl')?.setValue(account.isTaxExempt);
       this.accountFormGroup.get('totalBalanceGrossFormControl')?.setValue(account.totalBalanceGross);
 
+      this.loadYieldRanges(account.id);
+
       this.setBackgroundAndColor(account.background!, account.color!);
     }
   }
@@ -164,6 +171,62 @@ export class AccountDialog implements OnInit, AfterViewInit {
 
     this.picker1._pickerInput.value = new Color(color1!.r, color1!.g, color1!.b);
     this.picker2._pickerInput.value = new Color(color2!.r, color2!.g, color2!.b);
+  }
+
+  addYieldRange(): void {
+    const lastRange = this.yieldRanges.length > 0
+      ? this.yieldRanges[this.yieldRanges.length - 1]
+      : undefined;
+
+    const startAmount = lastRange?.endAmount ?? 0;
+
+    this.yieldRanges = [
+      ...this.yieldRanges,
+      {
+        accountId: this.id ?? 0,
+        startAmount,
+        endAmount: null,
+        yieldPercent: 100,
+        position: this.yieldRanges.length + 1
+      }
+    ];
+  }
+
+  removeYieldRange(index: number): void {
+    this.yieldRanges.splice(index, 1);
+    this.yieldRanges = this.yieldRanges.map((range, idx) => ({ ...range, position: idx + 1 }));
+  }
+
+  private loadYieldRanges(accountId?: number): void {
+    if (!accountId) {
+      this.yieldRanges = [];
+      return;
+    }
+
+    this.accountYieldRangeService.readByAccount(accountId).subscribe({
+      next: (ranges) => {
+        this.yieldRanges = (ranges ?? []).sort((a, b) => a.position - b.position);
+      },
+      error: () => {
+        this.yieldRanges = [];
+      }
+    });
+  }
+
+  private normalizeYieldRanges(): AccountYieldRange[] {
+    return (this.yieldRanges ?? [])
+      .filter(range => Number(range.yieldPercent || 0) > 0)
+      .sort((a, b) => Number(a.startAmount || 0) - Number(b.startAmount || 0))
+      .map((range, index) => ({
+        id: range.id,
+        accountId: this.id ?? range.accountId ?? 0,
+        startAmount: Number(range.startAmount || 0),
+        endAmount: range.endAmount === undefined || range.endAmount === null || String(range.endAmount) === ''
+          ? null
+          : Number(range.endAmount),
+        yieldPercent: Number(range.yieldPercent || 0),
+        position: index + 1
+      }));
   }
 
   hexToRgb(hex: string) {

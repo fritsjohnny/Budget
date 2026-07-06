@@ -129,6 +129,99 @@
                 </mat-checkbox>
             </div>
 
+            <div class="row mb-3">
+                <div class="col-12 d-flex flex-column">
+                    <div>
+                        <h3 style="margin: 0">Faixas de rendimento</h3>
+                    </div>
+                    <div class="align-self-center mb-2">
+                        <button
+                            class="default-button"
+                            color="accent"
+                            mat-mini-fab
+                            matTooltip="Adicionar faixa"
+                            matTooltipPosition="above"
+                            aria-label="Adicionar faixa"
+                            (click)="addYieldRange()"
+                        >
+                            <mat-icon>post_add</mat-icon>
+                        </button>
+                    </div>
+                    <div
+                        class="row"
+                        *ngFor="let range of yieldRanges; let i = index"
+                    >
+                        <div class="col-4">
+                            <mat-form-field
+                                appearance="fill"
+                                floatLabel="always"
+                                style="width: 100% !important"
+                            >
+                                <mat-label>Valor inicial</mat-label>
+                                <input
+                                    matInput
+                                    inputmode="numeric"
+                                    currencyMask
+                                    [(ngModel)]="range.startAmount"
+                                    [ngModelOptions]="{standalone: true}"
+                                    placeholder="0"
+                                    autocomplete="off"
+                                />
+                            </mat-form-field>
+                        </div>
+
+                        <div class="col-4">
+                            <mat-form-field
+                                appearance="fill"
+                                floatLabel="always"
+                                style="width: 100% !important"
+                            >
+                                <mat-label>Valor final</mat-label>
+                                <input
+                                    matInput
+                                    inputmode="numeric"
+                                    currencyMask
+                                    [(ngModel)]="range.endAmount"
+                                    [ngModelOptions]="{standalone: true}"
+                                    placeholder="Sem limite"
+                                    autocomplete="off"
+                                />
+                            </mat-form-field>
+                        </div>
+
+                        <div class="col-3">
+                            <mat-form-field
+                                appearance="fill"
+                                floatLabel="always"
+                                style="width: 100% !important"
+                            >
+                                <mat-label>% CDI</mat-label>
+                                <input
+                                    matInput
+                                    inputmode="numeric"
+                                    [(ngModel)]="range.yieldPercent"
+                                    [ngModelOptions]="{standalone: true}"
+                                    placeholder="100"
+                                    autocomplete="off"
+                                />
+                            </mat-form-field>
+                        </div>
+
+                        <div class="col-1 align-self-center">
+                            <button
+                                type="button"
+                                mat-icon-button
+                                color="warn"
+                                matTooltip="Remover faixa"
+                                (click)="removeYieldRange(i)"
+                            >
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-6">
                     <mat-form-field

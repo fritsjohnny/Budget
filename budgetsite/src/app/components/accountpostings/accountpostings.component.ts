@@ -24,12 +24,12 @@ import { IncomeService } from 'src/app/services/income/income.service';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
 import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
-import { AccountPostingsDialog } from './accountpostings-dialog';
+import { AccountPostingsDialog } from './accountpostings-dialog/accountpostings-dialog';
 import { YieldsComponent } from '../yields/yields.component';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
-import { AccountApplicationsDialog } from './accountapplications-dialog';
-import { GenerateCardReceiptDialog } from './generate-cardreceipt-dialog';
+import { AccountApplicationsDialog } from './accountapplications-dialog/accountapplications-dialog';
+import { GenerateCardReceiptDialog } from './generate-cardreceipt-dialog/generate-cardreceipt-dialog';
 import { Messenger } from 'src/app/common/messenger';
 
 @Component({

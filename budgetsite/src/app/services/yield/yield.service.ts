@@ -4,7 +4,9 @@ import { Messenger } from 'src/app/common/messenger';
 import { Accounts } from 'src/app/models/accounts.model';
 import { AccountApplicationsService } from '../accountapplications/accountapplications.service';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
+import { AccountYieldRange } from 'src/app/models/accountyieldrange.model';
 import { firstValueFrom } from 'rxjs';
+import { AccountYieldRangeService } from '../accountyieldrange/accountyieldrange.service';
 
 @Injectable({ providedIn: 'root' })
 export class YieldService {
@@ -13,7 +15,8 @@ export class YieldService {
   constructor(
     private http: HttpClient,
     private messenger: Messenger,
-    private accountApplicationsService: AccountApplicationsService) { }
+    private accountApplicationsService: AccountApplicationsService,
+    private accountYieldRangeService: AccountYieldRangeService) { }
 
   async getCdiDiarioPercentOld(): Promise<number> {
     if (this.cdiCache) return Promise.resolve(this.cdiCache);
@@ -190,12 +193,47 @@ export class YieldService {
     return w === 0 || w === 6; // 0=Dom, 6=Sáb
   }
 
+  private getActiveApplications(
+    launchDate: Date,
+    applications: AccountsApplications[]
+  ): AccountsApplications[] {
+    if (!applications || applications.length === 0) {
+      return [];
+    }
+
+    const referenceDate = new Date(launchDate);
+    referenceDate.setHours(0, 0, 0, 0);
+
+    return applications.filter(app => {
+      const amountApplied = Number(app.amountApplied || 0);
+
+      if (amountApplied <= 0) {
+        return false;
+      }
+
+      if (!app.maturityDate) {
+        return true;
+      }
+
+      const maturityDate = new Date(app.maturityDate);
+      maturityDate.setHours(0, 0, 0, 0);
+
+      return maturityDate >= referenceDate;
+    });
+  }
+
+  private hasActiveApplications(launchDate: Date, applications: AccountsApplications[]): boolean {
+    return this.getActiveApplications(launchDate, applications).length > 0;
+  }
+
   private shouldGenerateGrossYieldForMercadoPago(
     launchDate: Date,
     applications: AccountsApplications[],
     previousBusinessDayHoliday: boolean
   ): boolean {
-    if (!applications || applications.length === 0) {
+    const hasActiveApplications = this.hasActiveApplications(launchDate, applications);
+
+    if (!hasActiveApplications) {
       return true;
     }
 
@@ -583,6 +621,56 @@ export class YieldService {
   //   };
   // }
 
+  private async getYieldRanges(accountId?: number): Promise<AccountYieldRange[]> {
+    if (!accountId) {
+      return [];
+    }
+
+    try {
+      const ranges = await firstValueFrom(this.accountYieldRangeService.readByAccount(accountId));
+
+      return (ranges ?? []).sort((a, b) => a.position - b.position);
+    } catch {
+      return [];
+    }
+  }
+
+  private calculateGrossYieldByRanges(
+    baseGross: number,
+    cdiDiario: number,
+    defaultYieldPercent: number,
+    ranges: AccountYieldRange[]
+  ): number {
+    const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
+
+    if (!ranges || ranges.length === 0) {
+      return round2(baseGross * cdiDiario * (defaultYieldPercent / 100));
+    }
+
+    let grossYield = 0;
+
+    for (const range of ranges) {
+      const startAmount = Number(range.startAmount || 0);
+      const endAmount = range.endAmount === null || range.endAmount === undefined
+        ? baseGross
+        : Number(range.endAmount);
+
+      if (baseGross <= startAmount) {
+        continue;
+      }
+
+      const amountInRange = Math.max(0, Math.min(baseGross, endAmount) - startAmount);
+
+      if (amountInRange <= 0) {
+        continue;
+      }
+
+      grossYield += amountInRange * cdiDiario * (Number(range.yieldPercent || 0) / 100);
+    }
+
+    return round2(grossYield);
+  }
+
   async suggestYield3(
     account: Accounts,
     launchDate: Date,
@@ -612,7 +700,6 @@ export class YieldService {
     const baseGross = round2(Number(account.totalBalanceGross ?? account.totalBalance) || 0);
     const baseNet = round2(Number(account.totalBalance ?? account.totalBalanceGross) || 0);
     const daysForIof = Math.max(0, Math.trunc(Number(iofElapsedDays || 0)));
-    const previousNetAccumulated = round2(Number(previousYield || 0));
 
     let applications: AccountsApplications[] = [];
 
@@ -622,10 +709,16 @@ export class YieldService {
       applications = [];
     }
 
+    const activeApplications = this.getActiveApplications(launchDate, applications);
+    const hasActiveApplications = activeApplications.length > 0;
+    const previousNetAccumulated = hasActiveApplications
+      ? round2(Number(previousYield || 0))
+      : 0;
+
     let principalTotal = 0;
 
-    if (applications && applications.length > 0) {
-      for (const app of applications) {
+    if (hasActiveApplications) {
+      for (const app of activeApplications) {
         const principal = Number(app.amountApplied) || 0;
 
         if (principal > 0) {
@@ -642,7 +735,7 @@ export class YieldService {
 
     const shouldGenerateGrossYield = this.shouldGenerateGrossYieldForMercadoPago(
       launchDate,
-      applications,
+      activeApplications,
       previousBusinessDayHoliday
     );
 
@@ -652,9 +745,14 @@ export class YieldService {
 
       if (cdiDiarioPercent !== null) {
         const cdiDiario = cdiDiarioPercent / 100;
-        const taxaAplicada = cdiDiario * (yieldPercent / 100);
+        const ranges = await this.getYieldRanges(account.id);
 
-        grossYieldDay = round2(baseGross * taxaAplicada);
+        grossYieldDay = this.calculateGrossYieldByRanges(
+          baseGross,
+          cdiDiario,
+          yieldPercent,
+          ranges
+        );
       }
     }
 
@@ -663,11 +761,11 @@ export class YieldService {
 
     let iofRateEffective = 0;
 
-    if (applications && applications.length > 0) {
+    if (hasActiveApplications) {
       let principalInWindow = 0;
       let principalXRate = 0;
 
-      for (const app of applications) {
+      for (const app of activeApplications) {
         const principal = Number(app.amountApplied) || 0;
 
         if (principal <= 0) {
@@ -686,7 +784,7 @@ export class YieldService {
         const avgIofOnWindow = round2(principalXRate / principalInWindow);
         const fractionOnIof = round2(Math.min(1, principalInWindow / (totalGross || 1)));
 
-        iofRateEffective = applications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
+        iofRateEffective = activeApplications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
       }
     }
 

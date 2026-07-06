@@ -1,3 +1,5 @@
+import { AccountYieldRange } from "./accountyieldrange.model";
+
 export interface Accounts {
   id?: number;
   userId: number;
@@ -17,10 +19,11 @@ export interface Accounts {
   editing?: boolean;
   deleting?: boolean;
   yieldPercent?: number;
-  yiedlIndex?: number;
+  yieldIndex?: number;
   irPercent?: number;
   isTaxExempt?: boolean;
   lastYield?: number;
   description?: string;
   hasParens?: boolean;
+  yieldRanges?: AccountYieldRange[];
 }

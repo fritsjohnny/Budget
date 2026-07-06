@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Accounts } from 'src/app/models/accounts.model';
 import { AccountService } from 'src/app/services/account/account.service';
+import { AccountYieldRangeService } from 'src/app/services/accountyieldrange/accountyieldrange.service';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AccountDialog } from './account-dialog';
 import { NotificationReader } from 'capacitor-notification-reader/src';
@@ -25,6 +26,7 @@ export class AccountComponent implements OnInit {
 
   constructor(
     private accountService: AccountService,
+    private accountYieldRangeService: AccountYieldRangeService,
     private cd: ChangeDetectorRef,
     public dialog: MatDialog,
     private messenger: Messenger
@@ -209,18 +211,23 @@ export class AccountComponent implements OnInit {
                 this.setAccount(result);
               }
 
-              this.ngOnInit();
+              this.accountYieldRangeService.replaceByAccount(result.id!, result.yieldRanges ?? []).subscribe({
+                next: () => this.ngOnInit(),
+                error: () => (this.hideProgress = true),
+              });
             },
             error: () => (this.hideProgress = true),
           });
         } else {
           this.accountService.create(result).subscribe({
             next: (account) => {
-              //this.accounts!.push(account);
-
-              this.setAccount(account);
-
-              this.ngOnInit();
+              this.accountYieldRangeService.replaceByAccount(account.id!, result.yieldRanges ?? []).subscribe({
+                next: () => {
+                  this.setAccount(account);
+                  this.ngOnInit();
+                },
+                error: () => (this.hideProgress = true),
+              });
             },
             error: () => (this.hideProgress = true),
           });

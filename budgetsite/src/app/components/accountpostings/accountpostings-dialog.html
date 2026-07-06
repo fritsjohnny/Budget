@@ -340,6 +340,21 @@
                     </button>
                 </div>
             </div>
+            <div
+                class="row"
+                *ngIf="accountPosting.type == 'Y' && accountPosting.algorithmType === '3'"
+            >
+                <div class="col-12">
+                    <mat-checkbox
+                        [(ngModel)]="previousBusinessDayHoliday"
+                        formControlName="previousBusinessDayHolidayFormControl"
+                        (change)="onPreviousBusinessDayHolidayChanged()"
+                        >Dia anterior foi feriado/sem rendimento
+                        bruto</mat-checkbox
+                    >
+                </div>
+            </div>
+
             <div class="row" *ngIf="accountPosting.type == 'Y'">
                 <div class="col-6">
                     <mat-checkbox

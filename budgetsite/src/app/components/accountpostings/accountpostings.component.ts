@@ -478,7 +478,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         iofElapsedDays: accountPosting.iofElapsedDays,
         totalYields: this.totalForYieldsDialog,
         lastYield: this.getLastYield(),
-        totalLastYield: this.totalPreviousYield,
+        totalPreviousYield: this.totalPreviousYield,
         accountPostingsYields: this.accountpostings.filter(t => t.type === 'Y'),
         relatedId: accountPosting.relatedId,
         toAccountId: accountPosting.toAccountId,

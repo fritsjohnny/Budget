@@ -113,41 +113,35 @@ export class YieldService {
     throw new Error('CDI diário indisponível para a data informada.');
   }
 
-  async suggestYieldOld(account: Accounts): Promise<{ grossAmount: number; netAmount: number }> {
-    if (!account || !account.yieldPercent)
-      return { grossAmount: 0, netAmount: 0 };
+  async getCdiDiarioPercentStrict(date: Date): Promise<number | null> {
+    const target = new Date(date);
+    target.setHours(0, 0, 0, 0);
 
-    const saldoBruto = Number(account.totalBalanceGross ?? account.totalBalance);
-    const yieldPercent = Number(account.yieldPercent);    // Ex: 108 (%)
-    const irPercent = Number(account.irPercent ?? 22.5);  // Ex: 17.5, 20, 22.5
-    const isTaxExempt = account.isTaxExempt ?? false;
+    const cacheKey = this.formatYMD(target);
 
-    let cdiDiarioPercent = 0;
-    try {
-      // Obtém CDI diário percentual (ex: 0.0551014%)
-      cdiDiarioPercent = await this.getCdiDiarioPercentOld();
-    } catch (error) {
-      this.messenger.errorHandler('Erro ao obter CDI diário. Usando valor do último rendimento.');
-      // Caso erro na obtenção do CDI, utiliza o último rendimento
-      return { grossAmount: account.lastYield ?? 0, netAmount: account.lastYield ?? 0 };
+    if (this.cdiCacheByDate.has(cacheKey)) {
+      return this.cdiCacheByDate.get(cacheKey)!;
     }
 
-    const cdiDiario = cdiDiarioPercent / 100;
+    const dayBR = this.formatBR(target);
+    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=${dayBR}&dataFinal=${dayBR}`;
 
-    // Calcula taxa efetiva aplicada
-    const taxaAplicada = cdiDiario * (yieldPercent / 100);
+    try {
+      const data = await this.http.get<any[]>(url).toPromise();
+      const valorStr = data?.[0]?.valor;
+      const valor = parseFloat(String(valorStr).replace(',', '.'));
 
-    const rendimentoBruto = saldoBruto * taxaAplicada;
-    const rendimentoLiquido = isTaxExempt
-      ? rendimentoBruto
-      : rendimentoBruto * (1 - irPercent / 100);
+      if (isNaN(valor)) {
+        return null;
+      }
 
-    let suggestYield = {
-      grossAmount: Math.trunc(rendimentoBruto * 100) / 100,
-      netAmount: Math.trunc(rendimentoLiquido * 100) / 100
-    };
+      this.cdiCacheByDate.set(cacheKey, valor);
+      this.cdiLastKnown = valor;
 
-    return suggestYield;
+      return valor;
+    } catch {
+      return null;
+    }
   }
 
   // IOF por dia corrido (1..29). 30+ => 0
@@ -194,6 +188,24 @@ export class YieldService {
   isWeekend(d: Date): boolean {
     const w = d.getDay();
     return w === 0 || w === 6; // 0=Dom, 6=Sáb
+  }
+
+  private shouldGenerateGrossYieldForMercadoPago(
+    launchDate: Date,
+    applications: AccountsApplications[],
+    previousBusinessDayHoliday: boolean
+  ): boolean {
+    if (!applications || applications.length === 0) {
+      return true;
+    }
+
+    if (previousBusinessDayHoliday) {
+      return false;
+    }
+
+    const previousDay = this.addDays(new Date(launchDate), -1);
+
+    return !this.isWeekend(previousDay);
   }
 
   nthPreviousBusinessDay(base: Date, n: number): Date {
@@ -457,7 +469,127 @@ export class YieldService {
     };
   }
 
-  async suggestYield3(account: Accounts): Promise<{
+  // async suggestYield3(account: Accounts): Promise<{
+  //   totalGross: number;
+  //   totalNet: number;
+  //   grossYield: number;
+  //   netYield: number;
+  //   iofTotal: number;
+  //   irTotal: number;
+  //   totalAplicado: number;
+  // }> {
+  //   if (!account || !account.yieldPercent) {
+  //     return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
+  //   }
+
+  //   const yieldPercent = Number(account.yieldPercent);      // ex.: 107
+  //   const irPercent = Number(account.irPercent ?? 22.5);
+  //   const isTaxExempt = account.isTaxExempt ?? false;
+
+  //   // helpers
+  //   const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
+  //   const toCents = (v: number) => Math.round(v * 100);
+  //   const fromCents = (c: number) => c / 100;
+
+  //   // 1) CDI do dia-alvo
+  //   let cdiDiarioPercent = 0;
+  //   try {
+  //     const targetDate = this.resolveCdiTargetDate(account); // p/ Mercado Pago deixe cdiRateLagDays=0 (D0) no cadastro
+  //     cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
+  //   } catch {
+  //     this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
+  //     return {
+  //       totalGross: account.totalBalanceGross ?? 0,
+  //       totalNet: account.totalBalance ?? 0,
+  //       grossYield: account.lastYield ?? 0,
+  //       netYield: account.lastYield ?? 0,
+  //       iofTotal: 0,
+  //       irTotal: 0,
+  //       totalAplicado: account.totalBalanceGross ?? 0,
+  //     };
+  //   }
+
+  //   // 2) Base (usar valor exibido para evitar drift)
+  //   const baseGrossDisplay = round2(Number(account.totalBalanceGross ?? account.totalBalance) || 0);
+  //   const baseNetDisplay = round2(Number(account.totalBalance ?? account.totalBalanceGross) || 0);
+
+  //   // 3) Taxa aplicada do dia
+  //   const cdiDiario = cdiDiarioPercent / 100;                 // ex.: 0.055% -> 0.00055
+  //   const taxaAplicada = cdiDiario * (yieldPercent / 100);       // ex.: 107% do CDI
+
+  //   // 4) Rendimento BRUTO "cru" (sem arredondar ainda)
+  //   const grossYieldRaw = baseGrossDisplay * taxaAplicada;
+
+  //   // 5) IOF regressivo ponderado APENAS pelos aportes dentro de D+29, escalonado pela fração do saldo sob IOF
+  //   let applications: AccountsApplications[] = [];
+  //   try {
+  //     applications = await firstValueFrom(this.accountApplicationsService.readByAccount(account.id!));
+  //   } catch { applications = []; }
+
+  //   let principalTotal = 0;   // soma total (apenas p/ telemetria se quiser)
+  //   let iofWeightedEffective = 0;
+
+  //   if (applications && applications.length > 0) {
+  //     const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  //     let principalInWindow = 0;   // soma dos aportes dentro de D+29
+  //     let principalXRate = 0;   // soma(aporte * taxaIOF(do dia))
+
+  //     for (const app of applications) {
+  //       const principal = Number(app.amountApplied) || 0;
+  //       if (principal <= 0) continue;
+
+  //       principalTotal += principal;
+
+  //       const d0 = new Date(app.dateApplied); d0.setHours(0, 0, 0, 0);
+  //       const days = Math.ceil((today.getTime() - d0.getTime()) / 86400000); // dias corridos
+  //       const rate = this.iofRateFromTable(days); // 1.00 (D0) ... 0.00 (>=D+30)
+
+  //       if (days <= 29) { // considera apenas dentro da janela de IOF
+  //         principalInWindow += principal;
+  //         principalXRate += principal * rate;
+  //       }
+  //     }
+
+  //     if (principalInWindow > 0) {
+  //       const avgIofOnWindow = principalXRate / principalInWindow;                       // média ponderada dos "recentes"
+  //       const fractionOnIof = Math.min(1, principalInWindow / (baseGrossDisplay || 1)); // fração do saldo sob IOF
+  //       iofWeightedEffective = avgIofOnWindow * fractionOnIof;                           // IOF efetivo sobre o rendimento
+  //     }
+  //   }
+  //   else {
+  //     principalTotal = baseGrossDisplay; // se não tiver aplicações, considera o saldo atual como "principal" para ponderar o IOF
+  //   }
+
+  //   // 6) Pipeline do LÍQUIDO em centavos (estável) — IR TRUNCADO
+  //   const grossC = toCents(grossYieldRaw);                           // arredonda p/ exibir "Valor Bruto"
+  //   const iofC = toCents(grossYieldRaw * iofWeightedEffective);    // IOF sobre o BRUTO CRU
+  //   const irBaseC = grossC - iofC;
+  //   const irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercent) / 100); // IR truncado (centavos)
+  //   const netC = grossC - iofC - irC;
+
+  //   // 7) Totais (Mercado Pago exibe líquido total; vamos calcular ambos)
+  //   const totalGross = round2(baseGrossDisplay + fromCents(grossC)); // bruto: saldo + rendimento arredondado
+  //   const totalNet = round2(baseNetDisplay + fromCents(netC));   // líquido: saldo + líquido do dia
+
+  //   return {
+  //     totalGross,
+  //     totalNet,
+  //     grossYield: fromCents(grossC),
+  //     netYield: fromCents(netC),
+  //     iofTotal: fromCents(iofC),
+  //     irTotal: fromCents(irC),
+  //     totalAplicado: round2(principalTotal),
+  //   };
+  // }
+
+  async suggestYield3(
+    account: Accounts,
+    launchDate: Date,
+    iofElapsedDays: number,
+    previousYield: number,
+    previousBusinessDayHoliday: boolean = false
+  ): Promise<{
     totalGross: number;
     totalNet: number;
     grossYield: number;
@@ -470,104 +602,108 @@ export class YieldService {
       return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
     }
 
-    const yieldPercent = Number(account.yieldPercent);      // ex.: 107
+    const yieldPercent = Number(account.yieldPercent);
     const irPercent = Number(account.irPercent ?? 22.5);
     const isTaxExempt = account.isTaxExempt ?? false;
 
-    // helpers
     const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
-    const toCents = (v: number) => Math.round(v * 100);
-    const fromCents = (c: number) => c / 100;
+    const trunc2 = (v: number) => Math.trunc(v * 100) / 100;
 
-    // 1) CDI do dia-alvo
-    let cdiDiarioPercent = 0;
-    try {
-      const targetDate = this.resolveCdiTargetDate(account); // p/ Mercado Pago deixe cdiRateLagDays=0 (D0) no cadastro
-      cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
-    } catch {
-      this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
-      return {
-        totalGross: account.totalBalanceGross ?? 0,
-        totalNet: account.totalBalance ?? 0,
-        grossYield: account.lastYield ?? 0,
-        netYield: account.lastYield ?? 0,
-        iofTotal: 0,
-        irTotal: 0,
-        totalAplicado: account.totalBalanceGross ?? 0,
-      };
-    }
+    const baseGross = round2(Number(account.totalBalanceGross ?? account.totalBalance) || 0);
+    const baseNet = round2(Number(account.totalBalance ?? account.totalBalanceGross) || 0);
+    const daysForIof = Math.max(0, Math.trunc(Number(iofElapsedDays || 0)));
+    const previousNetAccumulated = round2(Number(previousYield || 0));
 
-    // 2) Base (usar valor exibido para evitar drift)
-    const baseGrossDisplay = round2(Number(account.totalBalanceGross ?? account.totalBalance) || 0);
-    const baseNetDisplay = round2(Number(account.totalBalance ?? account.totalBalanceGross) || 0);
-
-    // 3) Taxa aplicada do dia
-    const cdiDiario = cdiDiarioPercent / 100;                 // ex.: 0.055% -> 0.00055
-    const taxaAplicada = cdiDiario * (yieldPercent / 100);       // ex.: 107% do CDI
-
-    // 4) Rendimento BRUTO "cru" (sem arredondar ainda)
-    const grossYieldRaw = baseGrossDisplay * taxaAplicada;
-
-    // 5) IOF regressivo ponderado APENAS pelos aportes dentro de D+29, escalonado pela fração do saldo sob IOF
     let applications: AccountsApplications[] = [];
+
     try {
       applications = await firstValueFrom(this.accountApplicationsService.readByAccount(account.id!));
-    } catch { applications = []; }
+    } catch {
+      applications = [];
+    }
 
-    let principalTotal = 0;   // soma total (apenas p/ telemetria se quiser)
-    let iofWeightedEffective = 0;
+    let principalTotal = 0;
 
     if (applications && applications.length > 0) {
-      const today = new Date(); today.setHours(0, 0, 0, 0);
+      for (const app of applications) {
+        const principal = Number(app.amountApplied) || 0;
 
-      let principalInWindow = 0;   // soma dos aportes dentro de D+29
-      let principalXRate = 0;   // soma(aporte * taxaIOF(do dia))
+        if (principal > 0) {
+          principalTotal += principal;
+        }
+      }
+    } else {
+      principalTotal = baseGross;
+    }
+
+    principalTotal = round2(principalTotal);
+
+    let grossYieldDay = 0;
+
+    const shouldGenerateGrossYield = this.shouldGenerateGrossYieldForMercadoPago(
+      launchDate,
+      applications,
+      previousBusinessDayHoliday
+    );
+
+    if (shouldGenerateGrossYield) {
+      const targetDate = this.resolveCdiTargetDate(account);
+      const cdiDiarioPercent = await this.getCdiDiarioPercentStrict(targetDate);
+
+      if (cdiDiarioPercent !== null) {
+        const cdiDiario = cdiDiarioPercent / 100;
+        const taxaAplicada = cdiDiario * (yieldPercent / 100);
+
+        grossYieldDay = round2(baseGross * taxaAplicada);
+      }
+    }
+
+    const totalGross = round2(baseGross + grossYieldDay);
+    const totalYieldGrossNow = Math.max(0, round2(totalGross - principalTotal));
+
+    let iofRateEffective = 0;
+
+    if (applications && applications.length > 0) {
+      let principalInWindow = 0;
+      let principalXRate = 0;
 
       for (const app of applications) {
         const principal = Number(app.amountApplied) || 0;
-        if (principal <= 0) continue;
 
-        principalTotal += principal;
+        if (principal <= 0) {
+          continue;
+        }
 
-        const d0 = new Date(app.dateApplied); d0.setHours(0, 0, 0, 0);
-        const days = Math.ceil((today.getTime() - d0.getTime()) / 86400000); // dias corridos
-        const rate = this.iofRateFromTable(days); // 1.00 (D0) ... 0.00 (>=D+30)
+        const rate = this.iofRateFromTable(daysForIof);
 
-        if (days <= 29) { // considera apenas dentro da janela de IOF
+        if (daysForIof <= 29) {
           principalInWindow += principal;
-          principalXRate += principal * rate;
+          principalXRate += round2(principal * rate);
         }
       }
 
       if (principalInWindow > 0) {
-        const avgIofOnWindow = principalXRate / principalInWindow;                       // média ponderada dos "recentes"
-        const fractionOnIof = Math.min(1, principalInWindow / (baseGrossDisplay || 1)); // fração do saldo sob IOF
-        iofWeightedEffective = avgIofOnWindow * fractionOnIof;                           // IOF efetivo sobre o rendimento
+        const avgIofOnWindow = round2(principalXRate / principalInWindow);
+        const fractionOnIof = round2(Math.min(1, principalInWindow / (totalGross || 1)));
+
+        iofRateEffective = applications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
       }
     }
-    else {
-      principalTotal = baseGrossDisplay; // se não tiver aplicações, considera o saldo atual como "principal" para ponderar o IOF
-    }
 
-    // 6) Pipeline do LÍQUIDO em centavos (estável) — IR TRUNCADO
-    const grossC = toCents(grossYieldRaw);                           // arredonda p/ exibir "Valor Bruto"
-    const iofC = toCents(grossYieldRaw * iofWeightedEffective);    // IOF sobre o BRUTO CRU
-    const irBaseC = grossC - iofC;
-    const irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercent) / 100); // IR truncado (centavos)
-    const netC = grossC - iofC - irC;
-
-    // 7) Totais (Mercado Pago exibe líquido total; vamos calcular ambos)
-    const totalGross = round2(baseGrossDisplay + fromCents(grossC)); // bruto: saldo + rendimento arredondado
-    const totalNet = round2(baseNetDisplay + fromCents(netC));   // líquido: saldo + líquido do dia
+    const iofTotal = round2(totalYieldGrossNow * iofRateEffective);
+    const irBase = round2(Math.max(0, totalYieldGrossNow - iofTotal));
+    const irTotal = isTaxExempt ? 0 : trunc2(irBase * (irPercent / 100));
+    const netAccumulatedNow = round2(totalYieldGrossNow - iofTotal - irTotal);
+    const netYieldDay = round2(netAccumulatedNow - previousNetAccumulated);
 
     return {
       totalGross,
-      totalNet,
-      grossYield: fromCents(grossC),
-      netYield: fromCents(netC),
-      iofTotal: fromCents(iofC),
-      irTotal: fromCents(irC),
-      totalAplicado: round2(principalTotal),
+      totalNet: round2(baseNet + netYieldDay),
+      grossYield: grossYieldDay,
+      netYield: netYieldDay,
+      iofTotal,
+      irTotal,
+      totalAplicado: principalTotal,
     };
   }
 
@@ -721,4 +857,6 @@ export class YieldService {
       totalAplicado: principalTotal,
     };
   }
+
+
 }

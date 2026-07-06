@@ -13,7 +13,7 @@ import {
   MAT_DIALOG_DATA,
   MatDialog,
 } from '@angular/material/dialog';
-import { firstValueFrom, interval, timeout } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { Messenger } from 'src/app/common/messenger';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountsPostings } from 'src/app/models/accountspostings.model';
@@ -44,6 +44,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     expenseIdFormControl: new FormControl(''),
     totalBalanceFormControl: new FormControl(''),
     totalGrossBalanceFormControl: new FormControl(''),
+    previousBusinessDayHolidayFormControl: new FormControl(false),
     noRecalculateFormControl: new FormControl(''),
     algorithmTypeFormControl: new FormControl(''),
     iofElapsedDaysFormControl: new FormControl(''),
@@ -55,6 +56,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   saldoLiquido!: number;
   saldoBruto!: number;
   noRecalculate: boolean = false;
+  previousBusinessDayHoliday: boolean = false;
   isCalculating: boolean = true;
   isApplyingSuggestedYield: boolean = false;
 
@@ -123,10 +125,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
       this.accountPosting.iofElapsedDays = days;
 
-      const accountId = this.accountPosting.accountId;
+      if (!this.accountPosting.editing) {
+        const accountId = this.accountPosting.accountId;
 
-      localStorage.setItem(this.getIofDaysKey(accountId), String(days));
-      localStorage.setItem(this.getIofDateKey(accountId), new Date().toISOString());
+        localStorage.setItem(this.getIofDaysKey(accountId), String(days));
+        localStorage.setItem(this.getIofDateKey(accountId), new Date().toISOString());
+      }
     });
 
     this.refreshTransferAccountsList();
@@ -153,7 +157,14 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
 
     const finish = (days: number): void => {
-      if (control) { control.setValue(this.toNonNegativeInt(days)); }
+      const normalizedDays = this.toNonNegativeInt(days);
+
+      this.accountPosting.iofElapsedDays = normalizedDays;
+
+      if (control) {
+        control.setValue(normalizedDays, { emitEvent: false });
+      }
+
       this.isCalculating = false;
       this.onTypeChange(true);
     };
@@ -288,6 +299,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.onTypeChange();
   }
 
+  onPreviousBusinessDayHolidayChanged(): void {
+    if (this.accountPosting.type === 'Y' && this.accountPosting.algorithmType === '3') {
+      this.onTypeChange();
+    }
+  }
+
   changeDays(delta: number): void {
     const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
     const value = Number(control?.value || 0);
@@ -363,7 +380,13 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           suggestYield = await this.yieldService.suggestYield2(account!);
         }
         else if (this.accountPosting.algorithmType === '3') { // Mercado Pago
-          suggestYield = await this.yieldService.suggestYield3(account!);
+          suggestYield = await this.yieldService.suggestYield3(
+            account!,
+            this.accountPosting.date,
+            this.accountPosting.iofElapsedDays!,
+            this.accountPosting.totalPreviousYield!,
+            this.previousBusinessDayHoliday
+          );
         }
         else if (this.accountPosting.algorithmType === '4') { // PicPay
           suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.iofElapsedDays!, this.accountPosting.totalPreviousYield!);
@@ -525,22 +548,6 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       !this.noRecalculate &&
       !this.isCalculating &&
       !this.isApplyingSuggestedYield;
-  }
-
-  private getOriginalAmount(): number {
-    return this.accountPosting.editing ? Number(this.accountPosting.originalAmount || 0) : 0;
-  }
-
-  private getOriginalGrossAmount(): number {
-    return this.accountPosting.editing ? Number(this.accountPosting.originalGrossAmount || 0) : 0;
-  }
-
-  private getBaseNetBalance(): number {
-    return Number(this.accountPosting.totalBalance || 0);
-  }
-
-  private getBaseGrossBalance(): number {
-    return Number(this.accountPosting.totalGrossBalance || 0);
   }
 
   setTitle() {

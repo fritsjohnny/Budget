@@ -20,7 +20,7 @@ export class AccountComponent implements OnInit {
   accountId?: number;
   reference?: string;
   referenceHead?: string;
-  account!: Accounts;
+  account: Accounts | undefined;
   hideProgress: boolean = false;
   buttonName: string = '';
 
@@ -160,6 +160,24 @@ export class AccountComponent implements OnInit {
     //     event.currentIndex,
     //   );
     // }
+  }
+
+  updateAccountFromChild(accountPatch: Partial<Accounts>): void {
+    if (!accountPatch?.id) {
+      return;
+    }
+
+    const applyPatch = (account: Accounts): Accounts =>
+      account.id === accountPatch.id
+        ? { ...account, ...accountPatch }
+        : account;
+
+    this.accounts = this.accounts?.map(applyPatch);
+    this.accountsVisible = this.accountsVisible?.map(applyPatch);
+
+    if (this.account?.id === accountPatch.id) {
+      this.account = { ...this.account, ...accountPatch };
+    }
   }
 
   accountDialog() {

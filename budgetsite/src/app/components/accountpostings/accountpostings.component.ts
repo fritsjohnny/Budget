@@ -41,8 +41,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   @Input() accountId?: number;
   @Input() reference?: string;
 
-  // two-way binding [(accountsList)]
-  @Output() accountsListChange = new EventEmitter<Accounts[]>();
+  @Output() accountUpdated = new EventEmitter<Partial<Accounts>>();
 
   private _accountsList: Accounts[] = [];
   @Input() set accountsList(value: Accounts[] | undefined) {
@@ -185,8 +184,6 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         this.accountsList = accounts;
 
         this.account = this.accountsList?.find((a) => a.id === this.accountId)!;
-
-        this.accountsListChange.emit(this.accountsList);
 
         this.hideProgress = true;
       },
@@ -374,12 +371,21 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     const account = this.accountsList?.find((a) => a.id === this.accountId);
 
     if (account) {
-      // Atualiza o valor de lastYield no accountsList
-      if (lastYield !== undefined)
+      if (lastYield !== undefined) {
         account.lastYield = lastYield;
+      }
 
-      // Emite a alteração para o componente pai
-      this.accountsListChange.emit(this.accountsList);
+      if (totalBalanceGross !== undefined) {
+        account.totalBalanceGross = totalBalanceGross;
+      }
+
+      this.accountsList = [...this.accountsList];
+
+      this.accountUpdated.emit({
+        id: account.id,
+        lastYield: account.lastYield,
+        totalBalanceGross: account.totalBalanceGross,
+      });
     }
   }
 

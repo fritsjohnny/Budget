@@ -19,7 +19,7 @@
                         color: account?.color
                     }"
                 >
-                    {{ getDescription(account) }}
+                    {{ getDescription(account!) }}
                 </button>
             </mat-expansion-panel-header>
             <app-datepicker
@@ -110,7 +110,8 @@
         <app-accountpostings
             [accountId]="accountId"
             [reference]="reference"
-            [(accountsList)]="accounts"
+            [accountsList]="accounts"
+            (accountUpdated)="updateAccountFromChild($any($event))"
         ></app-accountpostings>
     </div>
 </div>

@@ -48,13 +48,16 @@ export class AccountDialog implements OnInit, AfterViewInit {
   ) {
   }
 
+  ngOnInit(): void {
+    this.accounts = [...(this.accounts ?? [])].sort((a, b) =>
+      (a.name ?? '').localeCompare(b.name ?? '', 'pt-BR', { sensitivity: 'base' })
+    );
+  }
+
   ngAfterViewInit(): void {
 
     this.addAccount();
     this.cd.detectChanges();
-  }
-
-  ngOnInit(): void {
   }
 
   cancel(): void {

@@ -205,28 +205,21 @@ export class AccountComponent implements OnInit {
         } else if (result.editing) {
           this.accountService.update(result).subscribe({
             next: () => {
-              this.accounts!.filter((t) => t.id! === result.id!).map((t) => {
-                t.id = result.id;
-                t.userId = result.userId;
-                t.name = result.name;
-                t.color = result.color;
-                t.background = result.background;
-                t.disabled = result.disabled;
-                t.position = result.position;
-                t.appPackageName = result.appPackageName;
-                t.calcInGeneral = result.calcInGeneral;
-                t.irPercent = result.irPercent;
-                t.yieldPercent = result.yieldPercent;
-                t.isTaxExempt = result.isTaxExempt;
-                t.totalBalanceGross = result.totalBalanceGross;
-              });
+              const updateAccount = (account: Accounts): Accounts =>
+                account.id === result.id
+                  ? { ...account, ...result }
+                  : account;
 
-              this.accounts = [...this.accounts!]; // nova referência para disparar change detection
+              this.accounts = (this.accounts ?? []).map(updateAccount);
+              this.accountsVisible = (this.accountsVisible ?? []).map(updateAccount);
 
-              if (result.disabled && this.accounts!.length > 0) {
-                this.setAccount(this.accounts![0]);
+              const updatedAccount =
+                this.accounts.find((account) => account.id === result.id) ?? result;
+
+              if (result.disabled && this.accountsVisible.length > 0) {
+                this.setAccount(this.accountsVisible[0]);
               } else {
-                this.setAccount(result);
+                this.setAccount(updatedAccount);
               }
 
               this.accountYieldRangeService.replaceByAccount(result.id!, result.yieldRanges ?? []).subscribe({

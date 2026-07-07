@@ -146,14 +146,14 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   private rebindAccount(): void {
-    // pega SEMPRE a versão mais recente do item dentro da lista nova
     this.account =
       this._accountsList?.find(a => a.id === this.accountId) ?? null;
 
-    // se o componente usa OnPush / ou o update veio fora da zona
+    if (this.account?.totalBalanceGross !== undefined) {
+      this.totalGrossBalance = this.account.totalBalanceGross;
+    }
+
     this.cdr.markForCheck();
-    // em cenários teimosos (animações/overlays), pode forçar:
-    // setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   getLists() {

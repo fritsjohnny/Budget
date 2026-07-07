@@ -69,6 +69,20 @@
                     </mat-checkbox>
                 </div>
             </div>
+
+            <div class="row" *ngIf="selectedReportType == 3">
+                <div class="col mb-2">
+                    <mat-checkbox
+                        color="warn"
+                        [(ngModel)]="showCategoryChart"
+                        (ngModelChange)="showCategoryChartChanged($event)"
+                        [disabled]="!groupByCategory"
+                    >
+                        Exibir gráfico
+                    </mat-checkbox>
+                </div>
+            </div>
+
             <div class="row d-flex" *ngIf="selectedReportType != 4">
                 <div class="col mb-2">
                     <div>
@@ -184,6 +198,7 @@
                     [initialReference]="initialReference"
                     [finalReference]="finalReference"
                     [groupByCategory]="groupByCategory"
+                    [showChart]="showCategoryChart"
                 ></app-expenses-by-category-report>
             </div>
             <div class="col" *ngIf="reportType === 4 && showReport">

@@ -97,6 +97,8 @@ import { GenerateCardReceiptDialog } from './components/accountpostings/generate
 import { AnnualSavingsComponent } from './components/annual-savings/annual-savings.component';
 import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
 
+import { NgChartsModule } from 'ng2-charts';
+
 export const CustomCurrencyMaskConfig: CurrencyMaskConfig = {
   align: "right",
   allowNegative: true,
@@ -200,6 +202,7 @@ registerLocaleData(localePt);
     NgxMatColorPickerModule,
     CurrencyMaskModule,
     FontAwesomeModule,
+    NgChartsModule
   ],
   exports: [
     DragReadyFeedbackDirective

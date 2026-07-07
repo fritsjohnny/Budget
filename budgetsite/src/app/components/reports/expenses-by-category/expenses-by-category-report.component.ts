@@ -13,6 +13,7 @@ import { CardsPostings } from 'src/app/models/cardspostings.model';
 import { Expenses } from 'src/app/models/expenses.model';
 import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
+import { BaseChartDirective } from 'ng2-charts';
 
 @Component({
   selector: 'app-expenses-by-category-report',
@@ -24,8 +25,10 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
   @Input() initialReference: string | undefined;
   @Input() finalReference: string | undefined;
   @Input() groupByCategory: boolean = false;
+  @Input() showChart: boolean = false;
 
   @ViewChild('sortReport') sortReport!: MatSort;
+  @ViewChild(BaseChartDirective) categoryChart?: BaseChartDirective;
 
   showReportProgress = false;
   data!: any[];
@@ -33,6 +36,15 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
   readonly detailedDataColumns = ['index', 'date', 'description', 'value', 'reference', 'card'];
   readonly groupedDataColumns = ['index', 'category', 'value', 'reference'];
   displayedDataColumns = this.detailedDataColumns;
+
+  categoryChartType: any = 'bar';
+
+  categoryChartData: any = {
+    labels: [],
+    datasets: [],
+  };
+
+  categoryChartOptions: any = this.buildCategoryChartOptions(this.getChartColors());
 
   dataSourceReport = new MatTableDataSource(this.data);
 
@@ -112,6 +124,10 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
           });
 
           this.getDataTotals();
+
+          setTimeout(() => {
+            this.updateChartFromCurrentRows();
+          });
         },
         error: () => this.getDataTotals(),
       });
@@ -144,6 +160,8 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
     });
 
     this.dataSourceReport.data = sortedData;
+
+    this.updateChartFromCurrentRows();
   }
 
   private groupDataByCategory(data: any[]) {
@@ -176,5 +194,153 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
 
       return a.category.localeCompare(b.category);
     });
+  }
+
+  private updateChartFromCurrentRows() {
+    if (!this.groupByCategory || !this.showChart) return;
+
+    const rows = this.dataSourceReport.data ?? [];
+    const values = rows.map((row) => row.value ?? 0);
+    const colors = this.getChartColors();
+
+    this.categoryChartData = {
+      labels: rows.map((row) => this.getChartLabel(row, rows)),
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Valor',
+          data: values,
+          backgroundColor: values.map((value, index) =>
+            this.getBarColor(value, values[index - 1], index, colors)
+          ),
+          borderColor: values.map((value, index) =>
+            this.getBarColor(value, values[index - 1], index, colors)
+          ),
+          borderWidth: 1,
+          order: 2,
+        },
+        {
+          type: 'line',
+          label: 'Evolução',
+          data: values,
+          borderColor: colors.line,
+          backgroundColor: colors.lineBackground,
+          pointBackgroundColor: colors.point,
+          pointBorderColor: colors.pointBorder,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          tension: 0.25,
+          fill: false,
+          order: 1,
+        },
+      ],
+    };
+
+    this.categoryChartOptions = this.buildCategoryChartOptions(colors);
+
+    setTimeout(() => {
+      this.categoryChart?.update();
+    });
+  }
+
+  private getChartLabel(row: any, rows: any[]) {
+    const firstCategory = rows[0]?.category;
+    const hasMultipleCategories = rows.some((item) => item.category !== firstCategory);
+
+    return hasMultipleCategories ? `${row.reference} - ${row.category}` : row.reference;
+  }
+
+  private getBarColor(value: number, previousValue: number | undefined, index: number, colors: any) {
+    if (index === 0 || previousValue === undefined || value === previousValue) return colors.neutral;
+
+    return value > previousValue ? colors.up : colors.down;
+  }
+
+  private getChartColors() {
+    const isDarkTheme =
+      document.documentElement.classList.contains('dark-theme') ||
+      document.body.classList.contains('dark-theme');
+
+    return isDarkTheme
+      ? {
+        text: '#ffffff',
+        grid: 'rgba(255, 255, 255, 0.18)',
+        neutral: '#ffc107',
+        up: '#ff9088',
+        down: '#c8ffc8',
+        line: '#ff6197',
+        lineBackground: 'rgba(255, 97, 151, 0.15)',
+        point: '#ffc107',
+        pointBorder: '#ffffff',
+      }
+      : {
+        text: '#303030',
+        grid: 'rgba(0, 0, 0, 0.12)',
+        neutral: '#3f51b5',
+        up: '#f44336',
+        down: '#008000',
+        line: '#ff4081',
+        lineBackground: 'rgba(255, 64, 129, 0.15)',
+        point: '#ff4081',
+        pointBorder: '#ffffff',
+      };
+  }
+
+  private buildCategoryChartOptions(colors: any) {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: any) => {
+              const value = Number(context.raw ?? 0);
+
+              return `${context.dataset.label}: ${value.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              })}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: colors.text,
+            autoSkip: false,
+            maxRotation: 0,
+            minRotation: 0,
+            font: {
+              size: 11,
+            },
+          },
+          grid: {
+            color: colors.grid,
+          },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: colors.text,
+            font: {
+              size: 11,
+            },
+            callback: (value: any) =>
+              Number(value).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                maximumFractionDigits: 0,
+              }),
+          },
+          grid: {
+            color: colors.grid,
+          },
+        },
+      },
+    };
   }
 }

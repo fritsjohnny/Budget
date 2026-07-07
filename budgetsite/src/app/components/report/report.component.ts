@@ -30,6 +30,7 @@ export class ReportComponent implements OnInit {
   finalDateValue: Date | null = null;
 
   groupByCategory: boolean = false;
+  showCategoryChart: boolean = false;
 
   constructor(private categoryService: CategoryService) { }
 
@@ -61,6 +62,7 @@ export class ReportComponent implements OnInit {
     }
 
     this.groupByCategory = localStorage.getItem('report3GroupByCategory') === 'true';
+    this.showCategoryChart = localStorage.getItem('report3ShowCategoryChart') === 'true';
   }
 
   initialReferenceChanges(reference: string) {
@@ -123,5 +125,15 @@ export class ReportComponent implements OnInit {
   groupByCategoryChanged(groupByCategory: boolean) {
     this.groupByCategory = groupByCategory;
     localStorage.setItem('report3GroupByCategory', this.groupByCategory.toString());
+
+    if (!this.groupByCategory) {
+      this.showCategoryChart = false;
+      localStorage.setItem('report3ShowCategoryChart', 'false');
+    }
+  }
+
+  showCategoryChartChanged(showCategoryChart: boolean) {
+    this.showCategoryChart = showCategoryChart;
+    localStorage.setItem('report3ShowCategoryChart', this.showCategoryChart.toString());
   }
 }

@@ -6,8 +6,8 @@
             [dataSource]="dataSourceReport"
             multiTemplateDataRows
             matSort
-            matSortActive="value"
-            matSortDirection="desc"
+            matSortActive="reference"
+            matSortDirection="asc"
             (matSortChange)="announceSortChange($event)"
         >
             <!-- # Column -->
@@ -142,6 +142,30 @@
                 *matFooterRowDef="displayedDataColumns; sticky: false"
             ></tr>
         </table>
+    </div>
+</div>
+<div
+    class="row center chart-row"
+    *ngIf="groupByCategory && showChart && !showReportProgress"
+>
+    <div class="chart-container mat-elevation-z8">
+        <div class="chart-title">Evolução dos gastos</div>
+
+        <div class="chart-legend">
+            <span><i class="legend-neutral"></i>Inicial/igual</span>
+            <span><i class="legend-up"></i>Subiu</span>
+            <span><i class="legend-down"></i>Caiu</span>
+        </div>
+
+        <div class="chart-canvas">
+            <canvas
+                baseChart
+                [data]="categoryChartData"
+                [options]="categoryChartOptions"
+                [type]="categoryChartType"
+            >
+            </canvas>
+        </div>
     </div>
 </div>
 <!-- SPINNER -->

@@ -353,7 +353,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       if (this.accountPosting.type === 'Y') {
         this.accountPosting.description = 'Rendimento';
 
-        let account = this.accountPosting.accountsList?.find((a) => a.id === this.accountPosting.accountId);
+        const selectedAccount = this.accountPosting.accountsList?.find((a) => a.id === this.accountPosting.accountId);
+        const account = selectedAccount ? { ...selectedAccount } : undefined;
 
         account!.totalBalance = this.accountPosting.totalBalance;
         account!.totalBalanceGross = this.accountPosting.totalGrossBalance;

@@ -478,7 +478,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         incomesList: this.incomes,
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
-        totalGrossBalance: this.totalGrossBalance,
+        totalGrossBalance: accountPosting.totalGrossBalance ?? this.totalGrossBalance,
         totalIOF: accountPosting.totalIOF,
         totalIR: accountPosting.totalIR,
         iofElapsedDays: accountPosting.iofElapsedDays,
@@ -528,6 +528,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
                   t.description = result.description;
                   t.amount = result.amount;
                   t.grossAmount = result.grossAmount;
+                  t.totalGrossBalance = result.totalGrossBalance;
+                  t.totalIOF = result.totalIOF;
+                  t.totalIR = result.totalIR;
+                  t.iofElapsedDays = result.iofElapsedDays;
                   t.note = result.note;
                   t.type = result.type;
                 });

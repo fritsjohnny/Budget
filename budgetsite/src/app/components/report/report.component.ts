@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
+import { Cards } from 'src/app/models/cards.model';
 import { Categories } from 'src/app/models/categories.model';
+import { CardService } from 'src/app/services/card/card.service';
 import { CategoryService } from 'src/app/services/category/category.service';
 
 @Component({
@@ -22,6 +24,7 @@ export class ReportComponent implements OnInit {
     { id: 2, name: 'Despesas de Terceiros' },
     { id: 3, name: 'Despesas por Categoria' },
     { id: 4, name: 'Despesas por Data de Vencimento' },
+    { id: 5, name: 'Despesas por Cartão' },
   ];
   showReport: boolean = false;
   categories: Categories[] = [];
@@ -32,7 +35,18 @@ export class ReportComponent implements OnInit {
   groupByCategory: boolean = false;
   showCategoryChart: boolean = false;
 
-  constructor(private categoryService: CategoryService) { }
+  allCards: Cards[] = [];
+  cards: Cards[] = [];
+  cardId: number = 0;
+  showDisabledCards: boolean = false;
+  onlyMyCardExpenses: boolean = false;
+  groupByCard: boolean = false;
+  showCardChart: boolean = false;
+
+  constructor(
+    private categoryService: CategoryService,
+    private cardService: CardService
+  ) { }
 
   ngOnInit(): void {
     // this.reportPanelExpanded =
@@ -51,6 +65,12 @@ export class ReportComponent implements OnInit {
       );
     });
 
+    this.cardService.read().subscribe((cards) => {
+      this.allCards = cards.sort((a, b) => a.name.localeCompare(b.name));
+      this.cardId = parseInt(localStorage.getItem('lastSelectedCardReport') || '0');
+      this.refreshCards();
+    });
+
     const initialDateStr = localStorage.getItem('report4InitialDate');
     const finalDateStr = localStorage.getItem('report4FinalDate');
 
@@ -63,6 +83,11 @@ export class ReportComponent implements OnInit {
 
     this.groupByCategory = localStorage.getItem('report3GroupByCategory') === 'true';
     this.showCategoryChart = localStorage.getItem('report3ShowCategoryChart') === 'true';
+
+    this.showDisabledCards = localStorage.getItem('report5ShowDisabledCards') === 'true';
+    this.onlyMyCardExpenses = localStorage.getItem('report5OnlyMyCardExpenses') === 'true';
+    this.groupByCard = localStorage.getItem('report5GroupByCard') === 'true';
+    this.showCardChart = localStorage.getItem('report5ShowCardChart') === 'true';
   }
 
   initialReferenceChanges(reference: string) {
@@ -102,6 +127,11 @@ export class ReportComponent implements OnInit {
     );
   }
 
+  cardChanges(event: MatSelectChange) {
+    this.cardId = event.value ?? 0;
+    localStorage.setItem('lastSelectedCardReport', this.cardId.toString());
+  }
+
   generateReport() {
     this.reportPanelExpanded = false; // Collapse the panel
     this.showReport = false;
@@ -135,5 +165,40 @@ export class ReportComponent implements OnInit {
   showCategoryChartChanged(showCategoryChart: boolean) {
     this.showCategoryChart = showCategoryChart;
     localStorage.setItem('report3ShowCategoryChart', this.showCategoryChart.toString());
+  }
+
+  showDisabledCardsChanged(showDisabledCards: boolean) {
+    this.showDisabledCards = showDisabledCards;
+    localStorage.setItem('report5ShowDisabledCards', this.showDisabledCards.toString());
+    this.refreshCards();
+  }
+
+  onlyMyCardExpensesChanged(onlyMyCardExpenses: boolean) {
+    this.onlyMyCardExpenses = onlyMyCardExpenses;
+    localStorage.setItem('report5OnlyMyCardExpenses', this.onlyMyCardExpenses.toString());
+  }
+
+  groupByCardChanged(groupByCard: boolean) {
+    this.groupByCard = groupByCard;
+    localStorage.setItem('report5GroupByCard', this.groupByCard.toString());
+
+    if (!this.groupByCard) {
+      this.showCardChart = false;
+      localStorage.setItem('report5ShowCardChart', 'false');
+    }
+  }
+
+  showCardChartChanged(showCardChart: boolean) {
+    this.showCardChart = showCardChart;
+    localStorage.setItem('report5ShowCardChart', this.showCardChart.toString());
+  }
+
+  private refreshCards() {
+    this.cards = this.allCards.filter((card) => this.showDisabledCards || card.disabled !== true);
+
+    if (this.cardId !== 0 && !this.cards.some((card) => card.id === this.cardId)) {
+      this.cardId = 0;
+      localStorage.setItem('lastSelectedCardReport', '0');
+    }
   }
 }

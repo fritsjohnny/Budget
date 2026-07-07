@@ -35,6 +35,7 @@
                     </mat-form-field>
                 </div>
             </div>
+
             <div class="row" *ngIf="selectedReportType == 3">
                 <div class="col">
                     <mat-form-field
@@ -77,6 +78,80 @@
                         [(ngModel)]="showCategoryChart"
                         (ngModelChange)="showCategoryChartChanged($event)"
                         [disabled]="!groupByCategory"
+                    >
+                        Exibir gráfico
+                    </mat-checkbox>
+                </div>
+            </div>
+
+            <div class="row" *ngIf="selectedReportType == 5">
+                <div class="col">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Cartão</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="cardId"
+                            (selectionChange)="cardChanges($event)"
+                        >
+                            <mat-option [value]="0">-- Nenhum --</mat-option>
+                            <mat-option
+                                *ngFor="let c of cards"
+                                [value]="c.id"
+                                >{{ c.name }}
+                                <span *ngIf="c.disabled"> (desativado)</span>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row" *ngIf="selectedReportType == 5">
+                <div class="col mb-2">
+                    <mat-checkbox
+                        color="warn"
+                        [(ngModel)]="showDisabledCards"
+                        (ngModelChange)="showDisabledCardsChanged($event)"
+                    >
+                        Exibir cartões desativados
+                    </mat-checkbox>
+                </div>
+            </div>
+
+            <div class="row" *ngIf="selectedReportType == 5">
+                <div class="col mb-2">
+                    <mat-checkbox
+                        color="warn"
+                        [(ngModel)]="onlyMyCardExpenses"
+                        (ngModelChange)="onlyMyCardExpensesChanged($event)"
+                    >
+                        Apenas minhas despesas
+                    </mat-checkbox>
+                </div>
+            </div>
+
+            <div class="row" *ngIf="selectedReportType == 5">
+                <div class="col mb-2">
+                    <mat-checkbox
+                        color="warn"
+                        [(ngModel)]="groupByCard"
+                        (ngModelChange)="groupByCardChanged($event)"
+                    >
+                        Agrupar por cartão
+                    </mat-checkbox>
+                </div>
+            </div>
+
+            <div class="row" *ngIf="selectedReportType == 5">
+                <div class="col mb-2">
+                    <mat-checkbox
+                        color="warn"
+                        [(ngModel)]="showCardChart"
+                        (ngModelChange)="showCardChartChanged($event)"
+                        [disabled]="!groupByCard"
                     >
                         Exibir gráfico
                     </mat-checkbox>
@@ -207,6 +282,18 @@
                     [initialDate]="initialDateValue"
                     [finalDate]="finalDateValue"
                 ></app-expenses-by-due-date-report>
+            </div>
+            <div class="col" *ngIf="reportType === 5 && showReport">
+                <app-expenses-by-card-report
+                    class="col"
+                    [cardId]="cardId"
+                    [initialReference]="initialReference"
+                    [finalReference]="finalReference"
+                    [onlyMyExpenses]="onlyMyCardExpenses"
+                    [showDisabledCards]="showDisabledCards"
+                    [groupByCard]="groupByCard"
+                    [showChart]="showCardChart"
+                ></app-expenses-by-card-report>
             </div>
         </div>
     </div>

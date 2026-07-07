@@ -23,13 +23,16 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
   @Input() categoryId: number | undefined;
   @Input() initialReference: string | undefined;
   @Input() finalReference: string | undefined;
+  @Input() groupByCategory: boolean = false;
 
   @ViewChild('sortReport') sortReport!: MatSort;
 
   showReportProgress = false;
   data!: any[];
   total: number = 0;
-  displayedDataColumns = ['index', 'date', 'description', 'value', 'reference', 'card'];
+  readonly detailedDataColumns = ['index', 'date', 'description', 'value', 'reference', 'card'];
+  readonly groupedDataColumns = ['index', 'category', 'value', 'reference'];
+  displayedDataColumns = this.detailedDataColumns;
 
   dataSourceReport = new MatTableDataSource(this.data);
 
@@ -47,6 +50,7 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
 
   getExpensesAndCardsPostings() {
     this.showReportProgress = true;
+    this.displayedDataColumns = this.groupByCategory ? this.groupedDataColumns : this.detailedDataColumns;
 
     forkJoin({
       expenses: this.expenseService.readByReferences(
@@ -65,23 +69,27 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
       .pipe(finalize(() => (this.showReportProgress = false)))
       .subscribe({
         next: ({ expenses, cardPostings }) => {
-          this.data = [
+          const detailedData = [
             ...expenses,
             ...cardPostings,
           ].map((item: Expenses | CardsPostings) => ({
-
             date: (item as CardsPostings).date ?? undefined,
             reference: item.reference,
             description: item.description,
             value:
               (item as Expenses).toPay ?? (item as CardsPostings).amount ?? 0,
-            category: item.category ?? 0,
+            categoryId: item.categoryId ?? 0,
+            category: item.category || 'Sem categoria',
             card: (item as CardsPostings).card ?? undefined,
             peopleId: item.peopleId,
             parcels: item.parcels,
             parcelNumber: item.parcelNumber,
             people: (item as CardsPostings).people ?? undefined,
-          })).sort((a, b) => a.reference.localeCompare(b.reference));
+          }));
+
+          this.data = this.groupByCategory
+            ? this.groupDataByCategory(detailedData)
+            : detailedData.sort((a, b) => a.reference.localeCompare(b.reference));
 
           this.dataSourceReport = new MatTableDataSource(this.data);
 
@@ -93,7 +101,6 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
             if (this.sortReport) {
               this.dataSourceReport.sort = this.sortReport;
 
-              // Ouve as mudanças na ordenação
               this.sortReport.sortChange.subscribe(() => {
                 setTimeout(() => {
                   this.recalculateIndexes();
@@ -112,7 +119,7 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
 
   getDataTotals() {
     this.total = this.data
-      ? this.data.map((t) => t.value).reduce((acc, value) => acc + value, 0)
+      ? this.data.map((t) => t.value ?? 0).reduce((acc, value) => acc + value, 0)
       : 0;
   }
 
@@ -127,17 +134,47 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
   recalculateIndexes() {
     if (!this.dataSourceReport.sort || !this.sortReport) return;
 
-    // Aplica a ordenação correta
     const sortedData = this.dataSourceReport.sortData(
       this.dataSourceReport.filteredData.slice(),
       this.sortReport
     );
 
-    // Recalcula os índices corretamente após a ordenação
     sortedData.forEach((item, index) => {
       item.index = index + 1;
     });
 
-    this.dataSourceReport.data = sortedData; // Força a atualização da tabela
+    this.dataSourceReport.data = sortedData;
+  }
+
+  private groupDataByCategory(data: any[]) {
+    const groupedData = new Map<string, any>();
+
+    data.forEach((item) => {
+      const categoryId = item.categoryId ?? 0;
+      const category = item.category || 'Sem categoria';
+      const reference = item.reference;
+      const key = `${reference}|${categoryId}|${category}`;
+      const groupedItem = groupedData.get(key);
+
+      if (groupedItem) {
+        groupedItem.value += item.value ?? 0;
+        return;
+      }
+
+      groupedData.set(key, {
+        categoryId,
+        category,
+        reference,
+        value: item.value ?? 0,
+      });
+    });
+
+    return Array.from(groupedData.values()).sort((a, b) => {
+      const referenceCompare = a.reference.localeCompare(b.reference);
+
+      if (referenceCompare !== 0) return referenceCompare;
+
+      return a.category.localeCompare(b.category);
+    });
   }
 }

@@ -29,6 +29,8 @@ export class ReportComponent implements OnInit {
   initialDateValue: Date | null = null;
   finalDateValue: Date | null = null;
 
+  groupByCategory: boolean = false;
+
   constructor(private categoryService: CategoryService) { }
 
   ngOnInit(): void {
@@ -50,13 +52,15 @@ export class ReportComponent implements OnInit {
 
     const initialDateStr = localStorage.getItem('report4InitialDate');
     const finalDateStr = localStorage.getItem('report4FinalDate');
-    
+
     if (initialDateStr) {
       this.initialDateValue = new Date(initialDateStr);
     }
     if (finalDateStr) {
       this.finalDateValue = new Date(finalDateStr);
     }
+
+    this.groupByCategory = localStorage.getItem('report3GroupByCategory') === 'true';
   }
 
   initialReferenceChanges(reference: string) {
@@ -114,5 +118,10 @@ export class ReportComponent implements OnInit {
   finalDateChanged(date: Date) {
     this.finalDateValue = date;
     localStorage.setItem('report4FinalDate', date.toISOString());
+  }
+
+  groupByCategoryChanged(groupByCategory: boolean) {
+    this.groupByCategory = groupByCategory;
+    localStorage.setItem('report3GroupByCategory', this.groupByCategory.toString());
   }
 }

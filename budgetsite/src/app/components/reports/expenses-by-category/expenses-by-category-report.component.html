@@ -18,6 +18,23 @@
                 </td>
                 <td mat-footer-cell *matFooterCellDef>Total</td>
             </ng-container>
+            <!-- Categoria Column -->
+            <ng-container matColumnDef="category">
+                <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    arrowPosition="after"
+                    start="asc"
+                    sortActionDescription="Ordernar por Categoria"
+                >
+                    Categoria
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    {{ row.category }}
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
             <!-- Data Column -->
             <ng-container matColumnDef="date">
                 <th

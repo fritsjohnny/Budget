@@ -284,11 +284,33 @@ export class CardPostingsComponent implements OnInit {
     }
 
     // 7. atualiza datasource e tamanho
-    this.dataSource = new MatTableDataSource(filtered);
-    this.cardPostingsLength = filtered.length;
+    this.setCardPostingsDataSource(filtered);
 
     // 8. recalcula totais / % / ciclo etc.
     this.getTotalAmount();
+  }
+
+  private compareCardPostingsByDate(first: CardsPostings, second: CardsPostings): number {
+    const firstDate = first.date ? new Date(first.date).getTime() : 0;
+    const secondDate = second.date ? new Date(second.date).getTime() : 0;
+    const dateComparison = secondDate - firstDate;
+
+    if (dateComparison !== 0) {
+      return dateComparison;
+    }
+
+    const firstPosition = Number(first.position ?? 0);
+    const secondPosition = Number(second.position ?? 0);
+
+    return secondPosition - firstPosition;
+  }
+
+  private setCardPostingsDataSource(postings: CardsPostings[]): void {
+    const currentTextFilter = this.dataSource?.filter ?? '';
+
+    this.dataSource = new MatTableDataSource(postings);
+    this.dataSource.filter = currentTextFilter;
+    this.cardPostingsLength = this.dataSource.filteredData.length;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -329,7 +351,7 @@ export class CardPostingsComponent implements OnInit {
   }
 
   getTotalAmount(): void {
-    const source = this.dataSource?.data ?? this.cardpostings ?? [];
+    const source = this.dataSource?.filteredData ?? this.cardpostings ?? [];
 
     this.total = source
       .map((t) => t.amount)
@@ -393,21 +415,13 @@ export class CardPostingsComponent implements OnInit {
       .map(t => t.amount)
       .reduce((acc, value) => acc + value, 0) ?? 0;
 
-    this.cardPostingsLength = this.dataSource.data.length;
+    this.cardPostingsLength = source.length;
 
     this.percInTheCycleTotal =
       (this.total ? (this.inTheCycleTotal / this.total) * 100 : 0).toFixed(2) + '%';
 
     this.percOutTheCycleTotal =
       (this.total ? (this.outTheCycleTotal / this.total) * 100 : 0).toFixed(2) + '%';
-  }
-
-  getFilteredTotalAmount() {
-    this.total = this.dataSource.filteredData
-      ? Array(this.dataSource.filteredData)[0]
-        .map((t) => t.amount)
-        .reduce((acc, value) => acc + value, 0)
-      : 0;
   }
 
   getTotalPeople() {
@@ -467,8 +481,6 @@ export class CardPostingsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        //this.hideProgress = false;
-
         Date.prototype.toJSON = function () {
           return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
         };
@@ -492,10 +504,7 @@ export class CardPostingsComponent implements OnInit {
             this.getTotalAmount();
             this.getCardsPostingsPeople();
             this.getExpensesByCategories();
-
-            //this.hideProgress = true;
           },
-          //error: () => this.hideProgress = true
         });
       }
     });
@@ -551,16 +560,12 @@ export class CardPostingsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        //this.hideProgress = false;
 
         if (result.deleting) {
           this.cardPostingsService.delete(result).subscribe({
             next: () => {
               this.afterDelete(result);
-
-              //this.hideProgress = true;
             },
-            //error: () => this.hideProgress = true
           });
         } else {
           this.cardPostingsService.update(result).subscribe({
@@ -604,10 +609,7 @@ export class CardPostingsComponent implements OnInit {
 
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
-
-              //this.hideProgress = true;
             },
-            //error: () => this.hideProgress = true
           });
         }
       }
@@ -771,36 +773,43 @@ export class CardPostingsComponent implements OnInit {
     this.cardPostingsService.updatePositions(this.cardpostings).subscribe();
   }
 
-  sort() {
+  sort(): void {
     if (!this.validateConditions()) return;
 
-    this.cardpostings = this.cardpostings.sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0; // Converte a.date para timestamp
-      const dateB = b.date ? new Date(b.date).getTime() : 0; // Converte b.date para timestamp
+    this.reorderCardPostingsByDate(this.cardId);
+  }
 
-      const positionA = a.position ? Number(a.position) : 0; // Converte a.position para número
-      const positionB = b.position ? Number(b.position) : 0; // Converte b.position para número
+  private reorderCardPostingsByDate(cardIdToPersist?: number): void {
+    this.cardpostings = [...(this.cardpostings ?? [])]
+      .sort((first, second) => this.compareCardPostingsByDate(first, second));
 
-      const dateComparison = dateB - dateA; // Ordena por data primeiro (decrescente)
+    const targetCardId = cardIdToPersist && cardIdToPersist > 0
+      ? cardIdToPersist
+      : undefined;
 
-      if (dateComparison !== 0) {
-        return dateComparison; // Se as datas forem diferentes, retorna a comparação por data
-      }
+    if (!targetCardId) {
+      this.setDataByFilters();
+      return;
+    }
 
-      return positionB - positionA; // Se as datas forem iguais, ordena por posição (decrescente)
+    const postingsToPersist = this.cardpostings
+      .filter(posting => posting.cardId === targetCardId)
+      .sort((first, second) => this.compareCardPostingsByDate(first, second));
+
+    const postingCount = postingsToPersist.length;
+
+    postingsToPersist.forEach((posting, index) => {
+      posting.position = postingCount - (index + 1);
     });
 
-    this.cardPostingsLength = this.cardpostings.length;
+    this.cardpostings = [...this.cardpostings]
+      .sort((first, second) => this.compareCardPostingsByDate(first, second));
 
-    this.dataSource = new MatTableDataSource(this.cardpostings);
+    this.setDataByFilters();
 
-    let length = this.cardpostings.length;
+    if (postingsToPersist.length === 0) return;
 
-    this.cardpostings.forEach((cardposting, index) => {
-      cardposting.position = length - (index + 1);
-    });
-
-    this.cardPostingsService.updatePositions(this.cardpostings).subscribe();
+    this.cardPostingsService.updatePositions(postingsToPersist).subscribe();
   }
 
   openFilter() {
@@ -813,12 +822,12 @@ export class CardPostingsComponent implements OnInit {
     }
   }
 
-  applyFilter(event: Event) {
+  applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
 
     this.dataSource.filter = filterValue.trim().toLowerCase();
 
-    this.getFilteredTotalAmount();
+    this.getTotalAmount();
   }
 
   dueToday(posting: CardsPostings): boolean {
@@ -913,44 +922,35 @@ export class CardPostingsComponent implements OnInit {
     });
   }
 
-  onCardPostingCreated(posting: CardsPostings) {
-    this.cardpostings.unshift(posting);
-    this.sort();
+  onCardPostingCreated(posting: CardsPostings): void {
+    const currentPostings = (this.cardpostings ?? [])
+      .filter(current => current.id !== posting.id);
 
-    this.getTotalAmount();
+    const postingBelongsToCurrentView = posting.reference === this.reference &&
+      (this.cardId === 0 || posting.cardId === this.cardId);
+
+    this.cardpostings = postingBelongsToCurrentView
+      ? [posting, ...currentPostings]
+      : currentPostings;
+
+    if (postingBelongsToCurrentView) {
+      this.reorderCardPostingsByDate(posting.cardId);
+    }
+    else {
+      this.setDataByFilters();
+    }
 
     this.getCardsPostingsPeople();
     this.getExpensesByCategories();
+    this.checkDueAlerts();
   }
-
-  private lastClickTime = 0;
-  private clickTimer: any;
-  private delay = 0;
 
   handleClickCardPosting(row: CardsPostings, event: MouseEvent): void {
     this.editOrDelete(row, event);
-
-    // const now = new Date().getTime();
-    // const timeSinceLast = now - this.lastClickTime;
-
-    // this.lastClickTime = now;
-
-    // if (timeSinceLast < this.delay) {
-    //   return;
-    // }
-
-    // this.clickTimer = setTimeout(() => {
-    //   const since = new Date().getTime() - this.lastClickTime;
-
-    //   if (since >= this.delay) {
-    //     this.editOrDelete(row, event);
-    //   }
-    // }, this.delay);
   }
 
   handleDoubleClickCardPosting(row: CardsPostings, event: MouseEvent): void {
     console.log('Double click detected on card posting:', row);
-    // clearTimeout(this.clickTimer);
     this.update(row);
   }
 

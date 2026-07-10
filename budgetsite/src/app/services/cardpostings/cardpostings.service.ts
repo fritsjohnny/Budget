@@ -148,6 +148,21 @@ export class CardPostingsService {
       );
   }
 
+  createFromNotification(cardPosting: CardsPostings): Observable<CardsPostings> {
+    cardPosting.others = cardPosting.peopleId ? true : false;
+
+    const useParcels = cardPosting.generateParcels || cardPosting.repeatParcels;
+
+    const url = useParcels
+      ? `${ApiUrls.cardspostings}/FromNotification/AllParcels?repeat=${cardPosting.repeatParcels ?? false}&qtyMonths=${cardPosting.monthsToRepeat ?? 0}`
+      : `${ApiUrls.cardspostings}/FromNotification`;
+
+    return this.http.post<CardsPostings>(url, cardPosting).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
   getCategoryByDescription(description: string): Observable<any> {
     return this.http
       .get<any>(`${ApiUrls.cardspostings}/ByDescription`, { params: { description } })

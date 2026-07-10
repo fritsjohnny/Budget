@@ -48,6 +48,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     repeatIncomeFormControl: new FormControl(''),
     monthsToRepeatFormControl: new FormControl(''),
     repeatToNextMonthsFormControl: new FormControl(''),
+    preserveFutureValuesFormControl: new FormControl(''),
     peopleFormControl: new FormControl(''),
     receiptDateFormControl: new FormControl(''),
   });
@@ -69,6 +70,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     this.incomes.parcels = this.incomes.parcels ?? 1;
     this.incomes.totalToReceive = this.incomes.totalToReceive ?? this.incomes.toReceive ?? 0;
     this.incomes.monthsToRepeat = 12;
+    this.incomes.preserveFutureValues = false;
 
     this.disableGenerateParcelsCheck =
       this.incomes.parcels == undefined ||
@@ -141,11 +143,9 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     this.disableGenerateParcelsCheck =
       event.target.value == '' || this.incomes.parcels! <= 1;
 
-    if (this.disableGenerateParcelsCheck) {
-      this.incomes.generateParcels = false;
-    } else {
-      this.incomes.generateParcels = true;
-    }
+    this.incomes.generateParcels = !this.disableGenerateParcelsCheck;
+
+    this.onGenerateParcelsChanged(null);
 
     if (event.target.value == '') {
       this.incomes.parcels = 1;
@@ -159,6 +159,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
       this.disableRepeatIncomeCheck = true;
       this.incomes.repeatIncome = false;
       this.incomes.repeatToNextMonths = false;
+      this.incomes.preserveFutureValues = false;
       this.incomesFormGroup.get('monthsToRepeatFormControl')!.disable();
     } else {
       this.disableRepeatIncomeCheck = false;
@@ -171,10 +172,17 @@ export class IncomesDialog implements OnInit, AfterViewInit {
       this.disableGenerateParcelsCheck = true;
       this.incomes.generateParcels = false;
       this.incomes.repeatToNextMonths = false;
+      this.incomes.preserveFutureValues = false;
     } else {
       if (this.incomes.parcels! > 1) {
         this.disableGenerateParcelsCheck = false;
       }
+    }
+  }
+
+  onRepeatToNextMonthsChanged(): void {
+    if (!this.incomes.repeatToNextMonths) {
+      this.incomes.preserveFutureValues = false;
     }
   }
 

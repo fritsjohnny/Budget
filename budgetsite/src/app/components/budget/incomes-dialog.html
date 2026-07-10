@@ -253,9 +253,20 @@
                 <mat-checkbox
                     [(ngModel)]="incomes.repeatToNextMonths"
                     formControlName="repeatToNextMonthsFormControl"
-                    [disabled]="incomes.repeatIncome! || incomes.generateParcels! || incomes.parcels! > 1"
+                    [disabled]="incomes.repeatIncome! || incomes.generateParcels!"
+                    (change)="onRepeatToNextMonthsChanged()"
                 >
                     Repetir edição para os próximos meses
+                </mat-checkbox>
+            </p>
+
+            <p *ngIf="incomes.editing">
+                <mat-checkbox
+                    [(ngModel)]="incomes.preserveFutureValues"
+                    formControlName="preserveFutureValuesFormControl"
+                    [disabled]="!incomes.repeatToNextMonths"
+                >
+                    Não alterar os valores dos próximos meses
                 </mat-checkbox>
             </p>
 

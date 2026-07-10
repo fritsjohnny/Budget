@@ -65,6 +65,7 @@ export class IncomeService {
 
     if (income.repeatToNextMonths) {
       params.push(`repeatToNextMonths=${income.repeatToNextMonths ?? false}`);
+      params.push(`preserveFutureValues=${income.preserveFutureValues ?? false}`);
     }
 
     const endpoint = income.generateParcels ? '/allparcels' : income.repeatIncome ? '/repeat' : '';

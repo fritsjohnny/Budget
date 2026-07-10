@@ -268,7 +268,7 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
           return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
         };
 
-        this.cardPostingsService.create(result).subscribe({
+        this.cardPostingsService.createFromNotification(result).subscribe({
           next: (cardposting) => {
             this.removeNotification(notification);
 

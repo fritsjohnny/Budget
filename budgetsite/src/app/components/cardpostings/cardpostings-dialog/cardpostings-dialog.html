@@ -272,14 +272,22 @@
         </mat-checkbox>
       </p>
 
-      <p>
+      <p class="d-flex flex-column">
         <mat-checkbox
           [(ngModel)]="cardPosting.generateParcels"
           formControlName="generateParcelsFormControl"
-          [disabled]="disableCheck || cardPosting.repeatToNextMonths! || cardPosting.repeatParcels!"
+          [disabled]="
+            hasExistingParcelSequence ||
+            disableCheck ||
+            cardPosting.repeatToNextMonths! ||
+            cardPosting.repeatParcels!
+          "
         >
           Gerar as demais parcelas
         </mat-checkbox>
+        <small *ngIf="hasExistingParcelSequence" class="text-warning">
+          As demais parcelas desta sequência já foram geradas.
+        </small>
       </p>
 
       <p>

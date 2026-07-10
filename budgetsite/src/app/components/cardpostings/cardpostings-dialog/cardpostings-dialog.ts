@@ -40,6 +40,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
 
   disableGenerateParcelsCheck: boolean = true;
   disableRepeatParcelsCheck: boolean = false;
+  hasExistingParcelSequence: boolean = false;
 
   cardPostingFormGroup = new FormGroup({
     cardIdFormControl: new FormControl('', Validators.required),
@@ -78,15 +79,23 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
+    const originalParcels =
+      this.cardPosting.parcels ?? 1;
+
+    this.hasExistingParcelSequence =
+      this.cardPosting.editing === true &&
+      originalParcels > 1;
+
     this.disableCheck =
-      this.cardPosting.parcels == undefined ||
-      this.cardPosting.parcels == null ||
-      this.cardPosting.parcels === 1;
+      this.hasExistingParcelSequence ||
+      originalParcels <= 1;
 
     this.disableGenerateParcelsCheck =
-      this.cardPosting.parcels == undefined ||
-      this.cardPosting.parcels == null ||
-      this.cardPosting.parcels === 1;
+      this.disableCheck;
+
+    if (this.hasExistingParcelSequence) {
+      this.cardPosting.generateParcels = false;
+    }
 
     this.cardPosting.monthsToRepeat = 12;
 
@@ -171,6 +180,10 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   save(): void {
+    if (this.hasExistingParcelSequence) {
+      this.cardPosting.generateParcels = false;
+    }
+
     if (this.cardPosting.payWithCard) {
       localStorage.setItem('lastCardUsed', this.cardPosting.cardId.toString());
     }
@@ -210,9 +223,18 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     this.calculateAmount();
   }
 
-  private atualizarParcelamento(parcels: number | string): void {
+  private atualizarParcelamento(
+    parcels: number | string
+  ): void {
     const val = +parcels;
-    this.disableCheck = parcels === '' || val <= 1;
+
+    this.disableCheck =
+      this.hasExistingParcelSequence ||
+      parcels === '' ||
+      val <= 1;
+
+    this.disableGenerateParcelsCheck =
+      this.disableCheck;
 
     if (this.disableCheck) {
       this.cardPosting.generateParcels = false;
@@ -289,11 +311,19 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
 
   onRepeatParcelsChanged(event: any): void {
     if (this.cardPosting.repeatParcels) {
+      this.disableCheck = true;
       this.disableGenerateParcelsCheck = true;
     } else {
-      if (this.cardPosting.parcels! > 1) {
-        this.disableGenerateParcelsCheck = false;
-      }
+      const shouldDisable =
+        this.hasExistingParcelSequence ||
+        this.cardPosting.parcels! <= 1;
+
+      this.disableCheck = shouldDisable;
+      this.disableGenerateParcelsCheck = shouldDisable;
+    }
+
+    if (this.hasExistingParcelSequence) {
+      this.cardPosting.generateParcels = false;
     }
   }
 

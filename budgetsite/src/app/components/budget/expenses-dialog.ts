@@ -36,6 +36,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
 
   disableGenerateParcelsCheck: boolean = true;
   disableRepeatParcelsCheck: boolean = false;
+  hasExistingParcelSequence: boolean = false;
 
   expensesFormGroup = new FormGroup({
     descriptionFormControl: new FormControl('', Validators.required),
@@ -74,13 +75,25 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.cards = this.expenses.cardsList;
 
-    this.expenses.parcelNumber = this.expenses.parcelNumber ?? 1;
-    this.expenses.parcels = this.expenses.parcels ?? 1;
+    const originalParcels = this.expenses.parcels ?? 1;
+
+    this.hasExistingParcelSequence =
+      this.expenses.editing === true &&
+      originalParcels > 1;
+
+    this.expenses.parcelNumber =
+      this.expenses.parcelNumber ?? 1;
+
+    this.expenses.parcels =
+      this.expenses.parcels ?? 1;
 
     this.disableGenerateParcelsCheck =
-      this.expenses.parcels == undefined ||
-      this.expenses.parcels == null ||
-      this.expenses.parcels === 1;
+      this.hasExistingParcelSequence ||
+      this.expenses.parcels <= 1;
+
+    if (this.hasExistingParcelSequence) {
+      this.expenses.generateParcels = false;
+    }
 
     this.expenses.monthsToRepeat = 12;
   }
@@ -96,6 +109,10 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   }
 
   save(): void {
+    if (this.hasExistingParcelSequence) {
+      this.expenses.generateParcels = false;
+    }
+
     this.dialogRef.close(this.expenses);
   }
 
@@ -147,8 +164,13 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   }
 
   onParcelsChanged(event: any): void {
+    if (event.target.value == '') {
+      this.expenses.parcels = 1;
+    }
+
     this.disableGenerateParcelsCheck =
-      event.target.value == '' || this.expenses.parcels! <= 1;
+      this.hasExistingParcelSequence ||
+      this.expenses.parcels! <= 1;
 
     if (this.disableGenerateParcelsCheck) {
       this.expenses.generateParcels = false;
@@ -156,20 +178,27 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
       this.expenses.generateParcels = true;
     }
 
-    if (event.target.value == '') {
-      this.expenses.parcels = 1;
-    }
-
     this.calculateToPay();
   }
 
   onGenerateParcelsChanged(event: any): void {
+    if (this.hasExistingParcelSequence) {
+      this.expenses.generateParcels = false;
+      return;
+    }
+
     if (this.expenses.generateParcels) {
       this.disableRepeatParcelsCheck = true;
-      this.expensesFormGroup.get('monthsToRepeatFormControl')!.disable();
+
+      this.expensesFormGroup
+        .get('monthsToRepeatFormControl')!
+        .disable();
     } else {
       this.disableRepeatParcelsCheck = false;
-      this.expensesFormGroup.get('monthsToRepeatFormControl')!.enable();
+
+      this.expensesFormGroup
+        .get('monthsToRepeatFormControl')!
+        .enable();
     }
   }
 
@@ -177,9 +206,13 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     if (this.expenses.repeatParcels) {
       this.disableGenerateParcelsCheck = true;
     } else {
-      if (this.expenses.parcels! > 1) {
-        this.disableGenerateParcelsCheck = false;
-      }
+      this.disableGenerateParcelsCheck =
+        this.hasExistingParcelSequence ||
+        this.expenses.parcels! <= 1;
+    }
+
+    if (this.hasExistingParcelSequence) {
+      this.expenses.generateParcels = false;
     }
   }
 

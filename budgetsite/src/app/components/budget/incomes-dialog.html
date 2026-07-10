@@ -100,6 +100,26 @@
                 </div>
             </div>
 
+            <div class="row">
+                <mat-form-field
+                    appearance="fill"
+                    style="width: 100% !important"
+                >
+                    <mat-label>Data de Recebimento</mat-label>
+                    <input
+                        matInput
+                        [matDatepicker]="receiptDatePicker"
+                        formControlName="receiptDateFormControl"
+                        [(ngModel)]="incomes.receiptDate"
+                    />
+                    <mat-datepicker-toggle
+                        matSuffix
+                        [for]="receiptDatePicker"
+                    ></mat-datepicker-toggle>
+                    <mat-datepicker #receiptDatePicker></mat-datepicker>
+                </mat-form-field>
+            </div>
+
             <div class="row center">
                 <div class="col-6">
                     <mat-form-field

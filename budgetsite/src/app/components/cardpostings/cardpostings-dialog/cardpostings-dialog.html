@@ -1,459 +1,474 @@
 <div class="">
-  <form [formGroup]="cardPostingFormGroup">
-    <div class="cancel">
-      <button
-        class="default-button"
-        mat-mini-fab
-        matTooltip="Cancelar"
-        color="accent"
-        aria-label="Cancelar"
-        (click)="cancel()"
-      >
-        <mat-icon class="default-icon">close</mat-icon>
-      </button>
-    </div>
-
-    <h2 mat-dialog-title>{{setTitle()}}</h2>
-    <div mat-dialog-content>
-      <div class="row">
-        <div class="col">
-          <app-datepickerreference
-            [(reference)]="cardPosting.reference"
-          ></app-datepickerreference>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100%"
-          >
-            <mat-label>Cartão</mat-label>
-            <mat-select
-              mat-input
-              [(ngModel)]="cardPosting.cardId"
-              formControlName="cardIdFormControl"
+    <form [formGroup]="cardPostingFormGroup">
+        <div class="cancel">
+            <button
+                class="default-button"
+                mat-mini-fab
+                matTooltip="Cancelar"
+                color="accent"
+                aria-label="Cancelar"
+                (click)="cancel()"
             >
-              <mat-option *ngFor="let c of cardPosting.cardsList" [value]="c.id"
-                >{{ c.name }}</mat-option
-              >
-            </mat-select>
-          </mat-form-field>
+                <mat-icon class="default-icon">close</mat-icon>
+            </button>
         </div>
-        <div class="col-6">
-          <app-datepickerinput
-            #datepickerinput
-            [currentDate]="cardPosting.date"
-            (currentDateChanged)="currentDateChanged($event)"
-          >
-          </app-datepickerinput>
-        </div>
-      </div>
 
-      <div class="row">
-        <mat-form-field appearance="fill">
-          <mat-label>Descrição</mat-label>
-          <input
-            #descriptionInput
-            type="text"
-            id="descriptionFormControl"
-            required
-            matInput
-            formControlName="descriptionFormControl"
-            [(ngModel)]="cardPosting.description"
-            (blur)="onDescriptionChange()"
-          />
-          <mat-error
-            *ngIf="cardPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
-          >
-            Campo <strong>obrigatório</strong>.
-          </mat-error>
-        </mat-form-field>
-      </div>
+        <h2 mat-dialog-title>{{setTitle()}}</h2>
+        <div mat-dialog-content>
+            <div class="row">
+                <div class="col">
+                    <app-datepickerreference
+                        [(reference)]="cardPosting.reference"
+                    ></app-datepickerreference>
+                </div>
+            </div>
 
-      <div class="row">
-        <div class="col-10">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100%"
-          >
-            <mat-label>Categoria</mat-label>
-            <mat-select
-              mat-input
-              [(ngModel)]="cardPosting.categoryId"
-              formControlName="categoryIdFormControl"
-              (ngModelChange)="onCategorySelected()"
-            >
-              <mat-option>-- Nenhuma --</mat-option>
-              <mat-option
-                *ngFor="let c of cardPosting.categoriesList"
-                [value]="c.id"
-                >{{ c.name }}</mat-option
-              >
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-2 center">
-          <span
-            class="material-icons add-list-item"
-            matTooltip="Adicionar Categoria"
-            (click)="addCategory()"
-          >
-            playlist_add
-          </span>
-        </div>
-      </div>
+            <div class="row">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Cartão</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="cardPosting.cardId"
+                            formControlName="cardIdFormControl"
+                        >
+                            <mat-option
+                                *ngFor="let c of cardPosting.cardsList"
+                                [value]="c.id"
+                                >{{ c.name }}</mat-option
+                            >
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="col-6">
+                    <app-datepickerinput
+                        #datepickerinput
+                        [currentDate]="cardPosting.date"
+                        (currentDateChanged)="currentDateChanged($event)"
+                    >
+                    </app-datepickerinput>
+                </div>
+            </div>
 
-      <div class="row">
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Valor Total</mat-label>
-            <input
-              matInput
-              inputmode="numeric"
-              currencyMask
-              formControlName="totalAmountFormControl"
-              [(ngModel)]="cardPosting.totalAmount"
-              placeholder="0"
-              (ngModelChange)="calculateAmount()"
-              autocomplete="off"
-            />
-            <mat-error
-              *ngIf="cardPostingFormGroup.get('totalAmountFormControl')?.hasError('required')"
-            >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Total de Parcelas</mat-label>
-            <input
-              matInput
-              type="number"
-              inputmode="numeric"
-              formControlName="parcelsFormControl"
-              [(ngModel)]="cardPosting.parcels"
-              min="1"
-              (change)="onParcelsChanged($event)"
-              onfocus="this.select()"
-            />
-            <mat-error
-              *ngIf="cardPostingFormGroup.get('parcelsFormControl')?.hasError('min') && !cardPostingFormGroup.get('parcelsFormControl')?.hasError('required')"
-            >
-              Valor mínimo é <strong>1</strong>.
-            </mat-error>
-            <mat-error
-              *ngIf="cardPostingFormGroup.get('parcelsFormControl')?.hasError('required')"
-            >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
+            <div class="row">
+                <mat-form-field appearance="fill">
+                    <mat-label>Descrição</mat-label>
+                    <input
+                        #descriptionInput
+                        type="text"
+                        id="descriptionFormControl"
+                        required
+                        matInput
+                        formControlName="descriptionFormControl"
+                        [(ngModel)]="cardPosting.description"
+                        (blur)="onDescriptionChange()"
+                    />
+                    <mat-error
+                        *ngIf="cardPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
+                    >
+                        Campo <strong>obrigatório</strong>.
+                    </mat-error>
+                </mat-form-field>
+            </div>
 
-      <div class="row">
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Valor Parcela</mat-label>
-            <input
-              matInput
-              inputmode="numeric"
-              currencyMask
-              formControlName="amountFormControl"
-              [(ngModel)]="cardPosting.amount"
-              placeholder="0"
-              autocomplete="off"
-            />
-            <mat-error
-              *ngIf="cardPostingFormGroup.get('amountFormControl')?.hasError('required')"
-            >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Nº. Parcela</mat-label>
-            <input
-              matInput
-              type="number"
-              inputmode="numeric"
-              formControlName="parcelNumberFormControl"
-              [(ngModel)]="cardPosting.parcelNumber"
-              min="1"
-              (change)="onParcelNumberChanged($event)"
-              onfocus="this.select()"
-            />
-            <mat-error
-              *ngIf="cardPostingFormGroup.get('parcelNumberFormControl')?.hasError('min') && !cardPostingFormGroup.get('parcelNumberFormControl')?.hasError('required')"
-            >
-              Valor mínimo é <strong>1</strong>.
-            </mat-error>
-            <mat-error
-              *ngIf="cardPostingFormGroup.get('parcelNumberFormControl')?.hasError('required')"
-            >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </div>
+            <div class="row">
+                <div class="col-10">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Categoria</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="cardPosting.categoryId"
+                            formControlName="categoryIdFormControl"
+                            (ngModelChange)="onCategorySelected()"
+                        >
+                            <mat-option>-- Nenhuma --</mat-option>
+                            <mat-option
+                                *ngFor="let c of cardPosting.categoriesList"
+                                [value]="c.id"
+                                >{{ c.name }}</mat-option
+                            >
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="col-2 center">
+                    <span
+                        class="material-icons add-list-item"
+                        matTooltip="Adicionar Categoria"
+                        (click)="addCategory()"
+                    >
+                        playlist_add
+                    </span>
+                </div>
+            </div>
 
-      <div class="row center">
-        <div
-          class="col-6"
-          style="display: flex; justify-content: center; margin-top: -30px"
-        >
-          <button
-            class="default-button button-pn"
-            mat-mini-fab
-            matTooltip="+/-"
-            color="warn"
-            aria-label="+/-"
-            (click)="setPositiveOrNegative()"
-          >
-            +/-
-          </button>
-        </div>
-        <div class="col-6">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100% !important"
-          >
-            <mat-label>Vencimento</mat-label>
-            <input
-              matInput
-              [matDatepicker]="picker"
-              formControlName="dueDateFormControl"
-              [(ngModel)]="cardPosting.dueDate"
-            />
-            <mat-datepicker-toggle
-              matSuffix
-              [for]="picker"
-            ></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-        </div>
-      </div>
+            <div class="row">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Valor Total</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="totalAmountFormControl"
+                            [(ngModel)]="cardPosting.totalAmount"
+                            placeholder="0"
+                            (ngModelChange)="calculateAmount()"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="cardPostingFormGroup.get('totalAmountFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Total de Parcelas</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            inputmode="numeric"
+                            formControlName="parcelsFormControl"
+                            [(ngModel)]="cardPosting.parcels"
+                            min="1"
+                            (change)="onParcelsChanged($event)"
+                            onfocus="this.select()"
+                        />
+                        <mat-error
+                            *ngIf="cardPostingFormGroup.get('parcelsFormControl')?.hasError('min') && !cardPostingFormGroup.get('parcelsFormControl')?.hasError('required')"
+                        >
+                            Valor mínimo é <strong>1</strong>.
+                        </mat-error>
+                        <mat-error
+                            *ngIf="cardPostingFormGroup.get('parcelsFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
 
-      <p class="d-flex justify-content-between align-items-center">
-        <mat-checkbox
-          [(ngModel)]="cardPosting.fixed"
-          formControlName="fixedFormControl"
-        >
-          Despesa Fixa
-        </mat-checkbox>
+            <div class="row">
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Valor Parcela</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="amountFormControl"
+                            [(ngModel)]="cardPosting.amount"
+                            placeholder="0"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="cardPostingFormGroup.get('amountFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Nº. Parcela</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            inputmode="numeric"
+                            formControlName="parcelNumberFormControl"
+                            [(ngModel)]="cardPosting.parcelNumber"
+                            min="1"
+                            (change)="onParcelNumberChanged($event)"
+                            onfocus="this.select()"
+                        />
+                        <mat-error
+                            *ngIf="cardPostingFormGroup.get('parcelNumberFormControl')?.hasError('min') && !cardPostingFormGroup.get('parcelNumberFormControl')?.hasError('required')"
+                        >
+                            Valor mínimo é <strong>1</strong>.
+                        </mat-error>
+                        <mat-error
+                            *ngIf="cardPostingFormGroup.get('parcelNumberFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
 
-        <mat-checkbox
-          [(ngModel)]="cardPosting.isPaid"
-          formControlName="isPaidFormControl"
-        >
-          Pago
-        </mat-checkbox>
-      </p>
+            <div class="row center">
+                <div
+                    class="col-6"
+                    style="
+                        display: flex;
+                        justify-content: center;
+                        margin-top: -30px;
+                    "
+                >
+                    <button
+                        class="default-button button-pn"
+                        mat-mini-fab
+                        matTooltip="+/-"
+                        color="warn"
+                        aria-label="+/-"
+                        (click)="setPositiveOrNegative()"
+                    >
+                        +/-
+                    </button>
+                </div>
+                <div class="col-6">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Vencimento</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="picker"
+                            formControlName="dueDateFormControl"
+                            [(ngModel)]="cardPosting.dueDate"
+                        />
+                        <mat-datepicker-toggle
+                            matSuffix
+                            [for]="picker"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #picker></mat-datepicker>
+                    </mat-form-field>
+                </div>
+            </div>
 
-      <p class="d-flex flex-column">
-        <mat-checkbox
-          [(ngModel)]="cardPosting.generateParcels"
-          formControlName="generateParcelsFormControl"
-          [disabled]="
+            <p class="d-flex justify-content-between align-items-center">
+                <mat-checkbox
+                    [(ngModel)]="cardPosting.fixed"
+                    formControlName="fixedFormControl"
+                >
+                    Despesa Fixa
+                </mat-checkbox>
+
+                <mat-checkbox
+                    [(ngModel)]="cardPosting.isPaid"
+                    formControlName="isPaidFormControl"
+                >
+                    Pago
+                </mat-checkbox>
+            </p>
+
+            <p>
+                <mat-checkbox
+                    [(ngModel)]="cardPosting.provisioned"
+                    formControlName="provisionedFormControl"
+                >
+                    Provisionado
+                </mat-checkbox>
+            </p>
+
+            <p class="d-flex flex-column">
+                <mat-checkbox
+                    [(ngModel)]="cardPosting.generateParcels"
+                    formControlName="generateParcelsFormControl"
+                    [disabled]="
             hasExistingParcelSequence ||
             disableCheck ||
             cardPosting.repeatToNextMonths! ||
             cardPosting.repeatParcels!
           "
-        >
-          Gerar as demais parcelas
-        </mat-checkbox>
-        <small *ngIf="hasExistingParcelSequence" class="text-warning">
-          As demais parcelas desta sequência já foram geradas.
-        </small>
-      </p>
+                >
+                    Gerar as demais parcelas
+                </mat-checkbox>
+                <small *ngIf="hasExistingParcelSequence" class="text-warning">
+                    As demais parcelas desta sequência já foram geradas.
+                </small>
+            </p>
 
-      <p>
-        <mat-checkbox
-          [(ngModel)]="cardPosting.repeatParcels"
-          formControlName="repeatParcelsFormControl"
-          [disabled]="disableRepeatParcelsCheck || cardPosting.repeatToNextMonths! || cardPosting.generateParcels!"
-          (change)="onRepeatParcelsChanged($event)"
-        >
-          Repetir para os próximos
-          <span>
-            <input
-              type="number"
-              inputmode="numeric"
-              style="width: 40px !important"
-              onfocus="this.select()"
-              min="1"
-              formControlName="monthsToRepeatFormControl"
-              [(ngModel)]="cardPosting.monthsToRepeat"
-            />
-          </span>
-          meses
-        </mat-checkbox>
-      </p>
+            <p>
+                <mat-checkbox
+                    [(ngModel)]="cardPosting.repeatParcels"
+                    formControlName="repeatParcelsFormControl"
+                    [disabled]="disableRepeatParcelsCheck || cardPosting.repeatToNextMonths! || cardPosting.generateParcels!"
+                    (change)="onRepeatParcelsChanged($event)"
+                >
+                    Repetir para os próximos
+                    <span>
+                        <input
+                            type="number"
+                            inputmode="numeric"
+                            style="width: 40px !important"
+                            onfocus="this.select()"
+                            min="1"
+                            formControlName="monthsToRepeatFormControl"
+                            [(ngModel)]="cardPosting.monthsToRepeat"
+                        />
+                    </span>
+                    meses
+                </mat-checkbox>
+            </p>
 
-      <p *ngIf="cardPosting.editing">
-        <mat-checkbox
-          [(ngModel)]="cardPosting.repeatToNextMonths"
-          formControlName="repeatToNextMonthsFormControl"
-          [disabled]="cardPosting.repeatParcels! || cardPosting.generateParcels!"
-        >
-          Repetir edição para os próximos meses
-        </mat-checkbox>
-      </p>
+            <p *ngIf="cardPosting.editing">
+                <mat-checkbox
+                    [(ngModel)]="cardPosting.repeatToNextMonths"
+                    formControlName="repeatToNextMonthsFormControl"
+                    [disabled]="cardPosting.repeatParcels! || cardPosting.generateParcels!"
+                >
+                    Repetir edição para os próximos meses
+                </mat-checkbox>
+            </p>
 
-      <div class="row">
-        <div class="col-10">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 100%"
-          >
-            <mat-label>Pessoa</mat-label>
-            <mat-select
-              mat-input
-              [(ngModel)]="cardPosting.peopleId"
-              formControlName="peopleFormControl"
-              (selectionChange)="setPeople()"
-            >
-              <mat-option>-- Nenhuma --</mat-option>
-              <mat-option
-                *ngFor="let p of cardPosting.peopleList"
-                [value]="p.id"
-                >{{ p.name }}</mat-option
-              >
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-2 center">
-          <span
-            class="material-icons add-list-item"
-            matTooltip="Adicionar Pessoa"
-            (click)="addPeople()"
-          >
-            playlist_add
-          </span>
-        </div>
-      </div>
+            <div class="row">
+                <div class="col-10">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Pessoa</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="cardPosting.peopleId"
+                            formControlName="peopleFormControl"
+                            (selectionChange)="setPeople()"
+                        >
+                            <mat-option>-- Nenhuma --</mat-option>
+                            <mat-option
+                                *ngFor="let p of cardPosting.peopleList"
+                                [value]="p.id"
+                                >{{ p.name }}</mat-option
+                            >
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="col-2 center">
+                    <span
+                        class="material-icons add-list-item"
+                        matTooltip="Adicionar Pessoa"
+                        (click)="addPeople()"
+                    >
+                        playlist_add
+                    </span>
+                </div>
+            </div>
 
-      <div class="row">
-        <mat-form-field appearance="fill" floatLabel="always">
-          <mat-label>Despesa</mat-label>
-          <mat-select
-            mat-input
-            [(ngModel)]="cardPosting.expenseId"
-            formControlName="expenseIdFormControl"
-          >
-            <mat-option>-- Nenhuma --</mat-option>
-            <mat-option
-              *ngFor="let i of cardPosting.expensesList"
-              [value]="i.id"
-              >{{ i.description }}</mat-option
-            >
-          </mat-select>
-        </mat-form-field>
-      </div>
+            <div class="row">
+                <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Despesa</mat-label>
+                    <mat-select
+                        mat-input
+                        [(ngModel)]="cardPosting.expenseId"
+                        formControlName="expenseIdFormControl"
+                    >
+                        <mat-option>-- Nenhuma --</mat-option>
+                        <mat-option
+                            *ngFor="let i of cardPosting.expensesList"
+                            [value]="i.id"
+                            >{{ i.description }}</mat-option
+                        >
+                    </mat-select>
+                </mat-form-field>
+            </div>
 
-      <div class="row">
-        <mat-form-field appearance="fill">
-          <mat-label>Comentário</mat-label>
-          <textarea
-            matInput
-            rows="7"
-            [(ngModel)]="cardPosting.note"
-            formControlName="noteFormControl"
-          ></textarea>
-        </mat-form-field>
-      </div>
+            <div class="row">
+                <mat-form-field appearance="fill">
+                    <mat-label>Comentário</mat-label>
+                    <textarea
+                        matInput
+                        rows="7"
+                        [(ngModel)]="cardPosting.note"
+                        formControlName="noteFormControl"
+                    ></textarea>
+                </mat-form-field>
+            </div>
 
-      <div class="row">
-        <div class="col-6">
-          <mat-form-field
-            floatLabel="always"
-            style="width: 100% !important"
-            appearance="fill"
-          >
-            <mat-label>ID</mat-label>
-            <input
-              type="text"
-              matInput
-              formControlName="idFormControl"
-              [(ngModel)]="cardPosting.id"
-              [readonly]="true"
-            />
-          </mat-form-field>
+            <div class="row">
+                <div class="col-6">
+                    <mat-form-field
+                        floatLabel="always"
+                        style="width: 100% !important"
+                        appearance="fill"
+                    >
+                        <mat-label>ID</mat-label>
+                        <input
+                            type="text"
+                            matInput
+                            formControlName="idFormControl"
+                            [(ngModel)]="cardPosting.id"
+                            [readonly]="true"
+                        />
+                    </mat-form-field>
+                </div>
+                <div class="col-6">
+                    <mat-form-field
+                        floatLabel="always"
+                        style="width: 100% !important"
+                        appearance="fill"
+                    >
+                        <mat-label>ID Relacionado</mat-label>
+                        <input
+                            type="text"
+                            matInput
+                            formControlName="relatedIdFormControl"
+                            [(ngModel)]="cardPosting.relatedId"
+                        />
+                    </mat-form-field>
+                </div>
+            </div>
         </div>
-        <div class="col-6">
-          <mat-form-field
-            floatLabel="always"
-            style="width: 100% !important"
-            appearance="fill"
-          >
-            <mat-label>ID Relacionado</mat-label>
-            <input
-              type="text"
-              matInput
-              formControlName="relatedIdFormControl"
-              [(ngModel)]="cardPosting.relatedId"
-            />
-          </mat-form-field>
+        <div class="row">
+            <div class="col">
+                <div mat-dialog-actions>
+                    <button
+                        [disabled]="!cardPostingFormGroup.valid"
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Salvar"
+                        matTooltipPosition="right"
+                        class="bg-primary"
+                        aria-label="Salvar"
+                        [mat-dialog-close]="cardPosting"
+                        (click)="save()"
+                    >
+                        <mat-icon class="default-icon">save</mat-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="col" *ngIf="cardPosting.editing">
+                <div mat-dialog-actions>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Excluir"
+                        matTooltipPosition="left"
+                        color="warn"
+                        aria-label="Excluir"
+                        (click)="delete()"
+                    >
+                        <mat-icon class="default-icon">delete</mat-icon>
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <div mat-dialog-actions>
-          <button
-            [disabled]="!cardPostingFormGroup.valid"
-            class="default-button"
-            mat-mini-fab
-            matTooltip="Salvar"
-            matTooltipPosition="right"
-            class="bg-primary"
-            aria-label="Salvar"
-            [mat-dialog-close]="cardPosting"
-            (click)="save()"
-          >
-            <mat-icon class="default-icon">save</mat-icon>
-          </button>
-        </div>
-      </div>
-      <div class="col" *ngIf="cardPosting.editing">
-        <div mat-dialog-actions>
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="Excluir"
-            matTooltipPosition="left"
-            color="warn"
-            aria-label="Excluir"
-            (click)="delete()"
-          >
-            <mat-icon class="default-icon">delete</mat-icon>
-          </button>
-        </div>
-      </div>
-    </div>
-  </form>
+    </form>
 </div>

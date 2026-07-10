@@ -1,208 +1,211 @@
 <div class="">
-  <form [formGroup]="accountPostingFormGroup">
-    <div class="cancel">
-      <button
-        class="default-button"
-        mat-mini-fab
-        matTooltip="Cancelar"
-        color="accent"
-        aria-label="Cancelar"
-        (click)="cancel()"
-      >
-        <mat-icon class="default-icon">close</mat-icon>
-      </button>
-    </div>
-
-    <h2 mat-dialog-title>{{setTitle()}}</h2>
-    <div mat-dialog-content>
-      <div class="row">
-        <div class="col">
-          <app-datepickerinput
-            #datepickerinput
-            [currentDate]="accountPosting.date"
-            (currentDateChanged)="currentDateChanged($event)"
-          >
-          </app-datepickerinput>
-        </div>
-      </div>
-
-      <div class="row">
-        <mat-form-field appearance="fill">
-          <mat-label>Descrição</mat-label>
-          <input
-            type="text"
-            id="descriptionFormControl"
-            required
-            matInput
-            formControlName="descriptionFormControl"
-            [(ngModel)]="accountPosting.description"
-            [readonly]="accountPosting.type == 'Y'"
-          />
-          <mat-error
-            *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
-          >
-            Campo <strong>obrigatório</strong>.
-          </mat-error>
-        </mat-form-field>
-      </div>
-
-      <div class="row">
-        <div style="width: 140px !important">
-          <mat-form-field
-            appearance="fill"
-            floatLabel="always"
-            style="width: 120px !important"
-          >
-            <mat-label>Valor</mat-label>
-            <input
-              id="amount"
-              matInput
-              inputmode="numeric"
-              currencyMask
-              formControlName="amountFormControl"
-              [(ngModel)]="accountPosting.amount"
-              placeholder="0"
-              autocomplete="off"
-            />
-            <mat-error
-              *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')"
+    <form [formGroup]="accountPostingFormGroup">
+        <div class="cancel">
+            <button
+                class="default-button"
+                mat-mini-fab
+                matTooltip="Cancelar"
+                color="accent"
+                aria-label="Cancelar"
+                (click)="cancel()"
             >
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
+                <mat-icon class="default-icon">close</mat-icon>
+            </button>
         </div>
-        <div class="col btn-valor-total">
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="Valor Total"
-            matTooltipPosition="right"
-            color="warn"
-            aria-label="Valor Total"
-            (click)="setTotalAmount()"
-          >
-            <mat-icon class="default-icon">done_all</mat-icon>
-          </button>
-        </div>
-      </div>
 
-      <div class="row">
-        <div class="col" style="display: flex; justify-content: space-between">
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="+1"
-            color="primary"
-            aria-label="+1"
-            (click)="setSuggestedAmount(1)"
-          >
-            +1
-          </button>
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="+3"
-            color="primary"
-            aria-label="+3"
-            (click)="setSuggestedAmount(3)"
-          >
-            +3
-          </button>
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="+5"
-            color="primary"
-            aria-label="+5"
-            (click)="setSuggestedAmount(5)"
-          >
-            +5
-          </button>
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="+10"
-            color="primary"
-            aria-label="+10"
-            (click)="setSuggestedAmount(10)"
-          >
-            +10
-          </button>
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="+50"
-            color="primary"
-            aria-label="+50"
-            (click)="setSuggestedAmount(50)"
-          >
-            +50
-          </button>
-          <button
-            class="default-button"
-            mat-mini-fab
-            matTooltip="+100"
-            color="primary"
-            aria-label="+100"
-            (click)="setSuggestedAmount(100)"
-          >
-            +100
-          </button>
-        </div>
-      </div>
+        <h2 mat-dialog-title>{{setTitle()}}</h2>
+        <div mat-dialog-content>
+            <div class="row">
+                <div class="col">
+                    <app-datepickerinput
+                        #datepickerinput
+                        [currentDate]="accountPosting.date"
+                        (currentDateChanged)="currentDateChanged($event)"
+                    >
+                    </app-datepickerinput>
+                </div>
+            </div>
 
-      <div class="row">
-        <mat-form-field appearance="fill" floatLabel="always">
-          <mat-label>Conta</mat-label>
-          <mat-select
-            mat-input
-            [(ngModel)]="accountPosting.accountId"
-            formControlName="accountFormControl"
-          >
-            <mat-option>-- Nenhuma --</mat-option>
-            <mat-option
-              *ngFor="let account of accountsList"
-              [value]="account.id"
-              >{{ account.name }}</mat-option
-            >
-          </mat-select>
-          <mat-error
-            *ngIf="accountPostingFormGroup.get('accountFormControl')?.hasError('required')"
-          >
-            Campo <strong>obrigatório</strong>.
-          </mat-error>
-        </mat-form-field>
-      </div>
+            <div class="row">
+                <mat-form-field appearance="fill">
+                    <mat-label>Descrição</mat-label>
+                    <input
+                        type="text"
+                        id="descriptionFormControl"
+                        required
+                        matInput
+                        formControlName="descriptionFormControl"
+                        [(ngModel)]="accountPosting.description"
+                        [readonly]="accountPosting.type == 'Y'"
+                    />
+                    <mat-error
+                        *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
+                    >
+                        Campo <strong>obrigatório</strong>.
+                    </mat-error>
+                </mat-form-field>
+            </div>
 
-      <div class="row">
-        <mat-form-field appearance="fill">
-          <mat-label>Comentário</mat-label>
-          <textarea
-            matInput
-            [(ngModel)]="accountPosting.note"
-            formControlName="noteFormControl"
-          ></textarea>
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <div mat-dialog-actions>
-          <button
-            [disabled]="!accountPostingFormGroup.valid"
-            class="default-button"
-            mat-mini-fab
-            matTooltip="Salvar"
-            matTooltipPosition="right"
-            class="bg-primary"
-            aria-label="Salvar"
-            [mat-dialog-close]="accountPosting"
-            (click)="save()"
-          >
-            <mat-icon class="default-icon">save</mat-icon>
-          </button>
+            <div class="row">
+                <div style="width: 140px !important">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 120px !important"
+                    >
+                        <mat-label>Valor</mat-label>
+                        <input
+                            id="amount"
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="amountFormControl"
+                            [(ngModel)]="accountPosting.amount"
+                            placeholder="0"
+                            autocomplete="off"
+                        />
+                        <mat-error
+                            *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')"
+                        >
+                            Campo <strong>obrigatório</strong>.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div class="col btn-valor-total">
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Valor Total"
+                        matTooltipPosition="right"
+                        color="warn"
+                        aria-label="Valor Total"
+                        (click)="setTotalAmount()"
+                    >
+                        <mat-icon class="default-icon">done_all</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div
+                    class="col"
+                    style="display: flex; justify-content: space-between"
+                >
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="+1"
+                        color="primary"
+                        aria-label="+1"
+                        (click)="setSuggestedAmount(1)"
+                    >
+                        +1
+                    </button>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="+3"
+                        color="primary"
+                        aria-label="+3"
+                        (click)="setSuggestedAmount(3)"
+                    >
+                        +3
+                    </button>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="+5"
+                        color="primary"
+                        aria-label="+5"
+                        (click)="setSuggestedAmount(5)"
+                    >
+                        +5
+                    </button>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="+10"
+                        color="primary"
+                        aria-label="+10"
+                        (click)="setSuggestedAmount(10)"
+                    >
+                        +10
+                    </button>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="+50"
+                        color="primary"
+                        aria-label="+50"
+                        (click)="setSuggestedAmount(50)"
+                    >
+                        +50
+                    </button>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="+100"
+                        color="primary"
+                        aria-label="+100"
+                        (click)="setSuggestedAmount(100)"
+                    >
+                        +100
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Conta</mat-label>
+                    <mat-select
+                        mat-input
+                        [(ngModel)]="accountPosting.accountId"
+                        formControlName="accountFormControl"
+                    >
+                        <mat-option>-- Nenhuma --</mat-option>
+                        <mat-option
+                            *ngFor="let account of accountsList"
+                            [value]="account.id"
+                            >{{ account.name }}</mat-option
+                        >
+                    </mat-select>
+                    <mat-error
+                        *ngIf="accountPostingFormGroup.get('accountFormControl')?.hasError('required')"
+                    >
+                        Campo <strong>obrigatório</strong>.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="row">
+                <mat-form-field appearance="fill">
+                    <mat-label>Comentário</mat-label>
+                    <textarea
+                        matInput
+                        [(ngModel)]="accountPosting.note"
+                        formControlName="noteFormControl"
+                    ></textarea>
+                </mat-form-field>
+            </div>
         </div>
-      </div>
-    </div>
-  </form>
+        <div class="row">
+            <div class="col">
+                <div mat-dialog-actions>
+                    <button
+                        [disabled]="!accountPostingFormGroup.valid"
+                        class="default-button"
+                        mat-mini-fab
+                        matTooltip="Salvar"
+                        matTooltipPosition="right"
+                        class="bg-primary"
+                        aria-label="Salvar"
+                        [mat-dialog-close]="accountPosting"
+                        (click)="save()"
+                    >
+                        <mat-icon class="default-icon">save</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>

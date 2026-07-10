@@ -256,6 +256,7 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         editing: false,
         adding: true,
         note: notification.note,
+        provisioned: false,
       },
     });
 

@@ -14,6 +14,7 @@ export interface Incomes {
   parcelNumber?: number;
   parcels?: number;
   totalToReceive?: number;
+  receiptDate?: Date;
   note?: string;
   card?: Cards;
   cardId?: number;

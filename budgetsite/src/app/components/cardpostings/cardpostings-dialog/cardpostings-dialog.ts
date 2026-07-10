@@ -59,6 +59,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     repeatParcelsFormControl: new FormControl(''),
     monthsToRepeatFormControl: new FormControl(''),
     fixedFormControl: new FormControl(''),
+    provisionedFormControl: new FormControl(false),
     repeatToNextMonthsFormControl: new FormControl(''),
     idFormControl: new FormControl(''),
     relatedIdFormControl: new FormControl(''),
@@ -79,6 +80,9 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
+    this.cardPosting.provisioned =
+      this.cardPosting.provisioned ?? false;
+
     const originalParcels =
       this.cardPosting.parcels ?? 1;
 

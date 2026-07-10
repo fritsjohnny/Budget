@@ -461,6 +461,7 @@ export class CardPostingsComponent implements OnInit {
         expensesList: this.expenses,
         editing: this.editing,
         adding: true,
+        provisioned: false,
       },
     });
 
@@ -543,6 +544,7 @@ export class CardPostingsComponent implements OnInit {
         relatedId: cardPosting.relatedId,
         dueDate: cardPosting.dueDate,
         isPaid: cardPosting.isPaid,
+        provisioned: cardPosting.provisioned ?? false,
         expenseId: cardPosting.expenseId,
       },
     });
@@ -584,6 +586,7 @@ export class CardPostingsComponent implements OnInit {
                   t.relatedId = result.relatedId;
                   t.dueDate = result.dueDate;
                   t.isPaid = result.isPaid;
+                  t.provisioned = result.provisioned ?? false;
                 });
 
               this.cardpostings = [

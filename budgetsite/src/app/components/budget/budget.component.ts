@@ -823,6 +823,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         parcels: 1,
         parcelNumber: 1,
         totalToReceive: 0,
+        receiptDate: undefined,
         adding: true,
       },
     });
@@ -930,6 +931,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         accountsList: this.accountsList,
         typesList: this.typesList,
         peopleList: this.peopleList,
+        receiptDate: income.receiptDate,
       },
     });
 
@@ -971,6 +973,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
                   t.type = result.type;
                   t.peopleId = result.peopleId;
                   t.relatedId = result.relatedId;
+                  t.receiptDate = result.receiptDate;
                 });
 
               this.incomes = [
@@ -1101,6 +1104,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         editing: false,
         adding: true,
         payWithCard: true,
+        provisioned: false,
         dueDate: expense.dueDate,
         isPaid: true,
       },

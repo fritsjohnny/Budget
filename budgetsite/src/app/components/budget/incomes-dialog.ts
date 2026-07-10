@@ -49,6 +49,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     monthsToRepeatFormControl: new FormControl(''),
     repeatToNextMonthsFormControl: new FormControl(''),
     peopleFormControl: new FormControl(''),
+    receiptDateFormControl: new FormControl(''),
   });
 
   constructor(

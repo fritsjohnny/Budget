@@ -518,10 +518,20 @@
                                     </mat-checkbox> -->
                                     {{ row.description }}
                                     <span *ngIf="row.parcels > 1">
-                                        &nbsp;({{ row.parcelNumber }}/{{
-                                            row.parcels
-                                        }})
+                                            &nbsp;({{ row.parcelNumber }}/{{ row.parcels }})
                                     </span>
+                                        <div
+                                            class="small-text"
+                                            *ngIf="row.receiptDate"
+                                        >
+                                            <span>
+                                                <i class="green">
+                                                    Receb.:&nbsp;{{
+                                                        row.receiptDate | date: "dd/MM"
+                                                    }}
+                                                </i>
+                                            </span>
+                                        </div>
                                     <span
                                         *ngIf="row.scheduled"
                                         class="material-icons scheduled"
@@ -1540,6 +1550,18 @@
                                                             }}/{{
                                                                 row.parcels
                                                             }})
+                                                        </span>
+                                                    </div>
+                                                    <div
+                                                        class="small-text"
+                                                        *ngIf="row.receiptDate"
+                                                    >
+                                                        <span>
+                                                            <i class="green">
+                                                                Receb.:&nbsp;{{
+                                                                    row.receiptDate | date: "dd/MM"
+                                                                }}
+                                                            </i>
                                                         </span>
                                                     </div>
                                                 </td>

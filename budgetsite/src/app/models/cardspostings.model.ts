@@ -33,6 +33,7 @@ export interface CardsPostings {
   monthsToRepeat?: number;
   payWithCard?: boolean;
   fixed?: boolean;
+  provisioned?: boolean;
   relatedId?: number;
   repeatToNextMonths?: boolean;
   dueDate?: Date;

@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiUrls } from 'src/app/common/api-urls'
+import { ApiUrls } from 'src/app/common/api-urls';
 import { Accounts } from 'src/app/models/accounts.model';
 import { catchError, map } from 'rxjs/operators';
 import { Messenger } from 'src/app/common/messenger';
 import { AccountsSummary } from 'src/app/models/accountssummary';
 import { AccountsSummaryTotals } from 'src/app/models/accountssummarytotals';
+import { AccountForecastBalanceReport } from 'src/app/models/account-forecast-balance-report.model';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,6 @@ export class AccountService {
   }
 
   read(): Observable<Accounts[]> {
-
     return this.http.get<Accounts[]>(ApiUrls.accounts).pipe(
       map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))
@@ -31,7 +31,6 @@ export class AccountService {
   }
 
   readNotDisabled(): Observable<Accounts[]> {
-
     return this.http.get<Accounts[]>(ApiUrls.accounts).pipe(
       map(obj => obj.filter(x => x.disabled === false).sort((a, b) => a.name.localeCompare(b.name))),
       catchError(e => this.messenger.errorHandler(e))
@@ -80,8 +79,25 @@ export class AccountService {
     );
   }
 
-  updatePositions(accounts: Accounts[]): Observable<Accounts> {
+  getForecastBalanceReport(
+    accountId: number,
+    initialDate: string,
+    finalDate: string
+  ): Observable<AccountForecastBalanceReport> {
+    const params = new HttpParams()
+      .set('accountId', accountId.toString())
+      .set('initialDate', initialDate)
+      .set('finalDate', finalDate);
 
+    return this.http
+      .get<AccountForecastBalanceReport>(`${ApiUrls.accounts}/forecastbalancereport`, { params })
+      .pipe(
+        map(obj => obj),
+        catchError(e => this.messenger.errorHandler(e))
+      );
+  }
+
+  updatePositions(accounts: Accounts[]): Observable<Accounts> {
     return this.http.put<any>(`${ApiUrls.accounts}/setpositions`, accounts).pipe(
       map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))

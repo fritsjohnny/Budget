@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
+import { Accounts } from 'src/app/models/accounts.model';
 import { Cards } from 'src/app/models/cards.model';
 import { Categories } from 'src/app/models/categories.model';
+import { AccountService } from 'src/app/services/account/account.service';
 import { CardService } from 'src/app/services/card/card.service';
 import { CategoryService } from 'src/app/services/category/category.service';
 
@@ -10,7 +12,6 @@ import { CategoryService } from 'src/app/services/category/category.service';
   templateUrl: './report.component.html',
   styleUrls: ['./report.component.scss'],
 })
-
 export class ReportComponent implements OnInit {
   initialReference: string | undefined;
   finalReference: string | undefined;
@@ -25,6 +26,7 @@ export class ReportComponent implements OnInit {
     { id: 3, name: 'Despesas por Categoria' },
     { id: 4, name: 'Despesas por Data de Vencimento' },
     { id: 5, name: 'Despesas por Cartão' },
+    { id: 6, name: 'Saldo Previsto em Conta' },
   ];
   showReport: boolean = false;
   categories: Categories[] = [];
@@ -43,20 +45,22 @@ export class ReportComponent implements OnInit {
   groupByCard: boolean = false;
   showCardChart: boolean = false;
 
+  forecastAccounts: Accounts[] = [];
+  forecastAccountId: number = 0;
+  forecastInitialDateValue: Date | null = null;
+  forecastFinalDateValue: Date | null = null;
+
   constructor(
     private categoryService: CategoryService,
-    private cardService: CardService
+    private cardService: CardService,
+    private accountService: AccountService
   ) { }
 
   ngOnInit(): void {
-    // this.reportPanelExpanded =
-    //   localStorage.getItem('reportPanelExpanded') === 'true';
-
     this.selectedReportType = parseInt(
       localStorage.getItem('lastSelectedReport')!
     );
 
-    // Load categories
     this.categoryService.read().subscribe((categories) => {
       this.categories = categories.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -71,14 +75,49 @@ export class ReportComponent implements OnInit {
       this.refreshCards();
     });
 
+    this.accountService.read().subscribe((accounts) => {
+      this.forecastAccounts = accounts.sort((a, b) => {
+        const positionComparison = (a.position ?? Number.MAX_SAFE_INTEGER) -
+          (b.position ?? Number.MAX_SAFE_INTEGER);
+
+        return positionComparison !== 0
+          ? positionComparison
+          : a.name.localeCompare(b.name);
+      });
+
+      this.forecastAccountId = parseInt(
+        localStorage.getItem('lastSelectedForecastAccountReport') || '0'
+      );
+
+      if (
+        this.forecastAccountId !== 0 &&
+        !this.forecastAccounts.some(account => account.id === this.forecastAccountId)
+      ) {
+        this.forecastAccountId = 0;
+        localStorage.setItem('lastSelectedForecastAccountReport', '0');
+      }
+    });
+
     const initialDateStr = localStorage.getItem('report4InitialDate');
     const finalDateStr = localStorage.getItem('report4FinalDate');
 
     if (initialDateStr) {
       this.initialDateValue = new Date(initialDateStr);
     }
+
     if (finalDateStr) {
       this.finalDateValue = new Date(finalDateStr);
+    }
+
+    const forecastInitialDateStr = localStorage.getItem('report6InitialDate');
+    const forecastFinalDateStr = localStorage.getItem('report6FinalDate');
+
+    if (forecastInitialDateStr) {
+      this.forecastInitialDateValue = new Date(forecastInitialDateStr);
+    }
+
+    if (forecastFinalDateStr) {
+      this.forecastFinalDateValue = new Date(forecastFinalDateStr);
     }
 
     this.groupByCategory = localStorage.getItem('report3GroupByCategory') === 'true';
@@ -90,16 +129,28 @@ export class ReportComponent implements OnInit {
     this.showCardChart = localStorage.getItem('report5ShowCardChart') === 'true';
   }
 
+  get forecastReportInvalid(): boolean {
+    if (this.selectedReportType !== 6) {
+      return false;
+    }
+
+    if (
+      !this.forecastAccountId ||
+      !this.forecastInitialDateValue ||
+      !this.forecastFinalDateValue
+    ) {
+      return true;
+    }
+
+    return this.forecastInitialDateValue > this.forecastFinalDateValue;
+  }
+
   initialReferenceChanges(reference: string) {
     this.initialReference = reference;
-
-    // this.referenceHead = this.reference.substr(4, 2) + "/" + this.reference.substr(0, 4);
   }
 
   finalReferenceChanges(reference: string) {
     this.finalReference = reference;
-
-    // this.referenceHead = this.reference.substr(4, 2) + "/" + this.reference.substr(0, 4);
   }
 
   reportPanelClosed() {
@@ -132,24 +183,46 @@ export class ReportComponent implements OnInit {
     localStorage.setItem('lastSelectedCardReport', this.cardId.toString());
   }
 
+  forecastAccountChanges(event: MatSelectChange) {
+    this.forecastAccountId = event.value ?? 0;
+    localStorage.setItem(
+      'lastSelectedForecastAccountReport',
+      this.forecastAccountId.toString()
+    );
+  }
+
   generateReport() {
-    this.reportPanelExpanded = false; // Collapse the panel
+    if (this.forecastReportInvalid) {
+      return;
+    }
+
+    this.reportPanelExpanded = false;
     this.showReport = false;
 
     setTimeout(() => {
       this.reportType = this.selectedReportType;
-      this.showReport = true; // Força a re-renderização
+      this.showReport = true;
     });
   }
 
-  initialDateChanged(date: Date) {
+  initialDateChanged(date: Date | null) {
     this.initialDateValue = date;
-    localStorage.setItem('report4InitialDate', date.toISOString());
+    this.persistDate('report4InitialDate', date);
   }
 
-  finalDateChanged(date: Date) {
+  finalDateChanged(date: Date | null) {
     this.finalDateValue = date;
-    localStorage.setItem('report4FinalDate', date.toISOString());
+    this.persistDate('report4FinalDate', date);
+  }
+
+  forecastInitialDateChanged(date: Date | null) {
+    this.forecastInitialDateValue = date;
+    this.persistDate('report6InitialDate', date);
+  }
+
+  forecastFinalDateChanged(date: Date | null) {
+    this.forecastFinalDateValue = date;
+    this.persistDate('report6FinalDate', date);
   }
 
   groupByCategoryChanged(groupByCategory: boolean) {
@@ -200,5 +273,14 @@ export class ReportComponent implements OnInit {
       this.cardId = 0;
       localStorage.setItem('lastSelectedCardReport', '0');
     }
+  }
+
+  private persistDate(key: string, date: Date | null): void {
+    if (!date) {
+      localStorage.removeItem(key);
+      return;
+    }
+
+    localStorage.setItem(key, new Date(date as any).toISOString());
   }
 }

@@ -8,10 +8,9 @@
             (opened)="reportPanelOpened()"
         >
             <mat-expansion-panel-header>
-                <!-- <span class="material-icons center"> calendar_month </span>
-        <span class="center">{{ referenceHead }}</span> -->
                 <div class="row center month-name2">Parâmetros</div>
             </mat-expansion-panel-header>
+
             <div class="row">
                 <div class="col">
                     <mat-form-field
@@ -29,8 +28,9 @@
                             <mat-option
                                 *ngFor="let r of reports"
                                 [value]="r.id"
-                                >{{ r.name }}</mat-option
                             >
+                                {{ r.name }}
+                            </mat-option>
                         </mat-select>
                     </mat-form-field>
                 </div>
@@ -53,12 +53,14 @@
                             <mat-option
                                 *ngFor="let c of categories"
                                 [value]="c.id"
-                                >{{ c.name }}</mat-option
                             >
+                                {{ c.name }}
+                            </mat-option>
                         </mat-select>
                     </mat-form-field>
                 </div>
             </div>
+
             <div class="row" *ngIf="selectedReportType == 3">
                 <div class="col mb-2">
                     <mat-checkbox
@@ -101,7 +103,8 @@
                             <mat-option
                                 *ngFor="let c of cards"
                                 [value]="c.id"
-                                >{{ c.name }}
+                            >
+                                {{ c.name }}
                                 <span *ngIf="c.disabled"> (desativado)</span>
                             </mat-option>
                         </mat-select>
@@ -158,10 +161,39 @@
                 </div>
             </div>
 
-            <div class="row d-flex" *ngIf="selectedReportType != 4">
+            <div class="row" *ngIf="selectedReportType === 6">
+                <div class="col">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Conta</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="forecastAccountId"
+                            (selectionChange)="forecastAccountChanges($event)"
+                        >
+                            <mat-option [value]="0">-- Selecione --</mat-option>
+                            <mat-option
+                                *ngFor="let account of forecastAccounts"
+                                [value]="account.id"
+                            >
+                                {{ account.name }}
+                                <span *ngIf="account.disabled"> (desativada)</span>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div
+                class="row d-flex"
+                *ngIf="selectedReportType !== 4 && selectedReportType !== 6"
+            >
                 <div class="col mb-2">
                     <div>
-                        <label for="">Referência Inicial</label>
+                        <label>Referência Inicial</label>
                     </div>
                     <div>
                         <app-datepicker
@@ -175,7 +207,7 @@
                 </div>
                 <div class="col mb-2">
                     <div>
-                        <label for="" class="">Referência Final</label>
+                        <label>Referência Final</label>
                     </div>
                     <app-datepicker
                         [showMonthName]="false"
@@ -229,15 +261,59 @@
                     </mat-form-field>
                 </div>
             </div>
+
+            <div class="row d-flex" *ngIf="selectedReportType === 6">
+                <div class="col mb-2">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Data inicial</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="forecastPickerStart"
+                            [(ngModel)]="forecastInitialDateValue"
+                            (dateInput)="forecastInitialDateChanged($event.value)"
+                        />
+                        <mat-datepicker-toggle
+                            matSuffix
+                            [for]="forecastPickerStart"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #forecastPickerStart></mat-datepicker>
+                    </mat-form-field>
+                </div>
+                <div class="col mb-2">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Data final</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="forecastPickerEnd"
+                            [(ngModel)]="forecastFinalDateValue"
+                            (dateInput)="forecastFinalDateChanged($event.value)"
+                        />
+                        <mat-datepicker-toggle
+                            matSuffix
+                            [for]="forecastPickerEnd"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #forecastPickerEnd></mat-datepicker>
+                    </mat-form-field>
+                </div>
+            </div>
         </mat-expansion-panel>
     </mat-accordion>
+
     <div class="row mt-3">
         <div class="col d-flex justify-content-center">
             <button
                 mat-mini-fab
                 color="warn"
                 (click)="generateReport()"
-                [disabled]="!selectedReportType"
+                [disabled]="!selectedReportType || forecastReportInvalid"
                 class="mat-elevation-z4"
                 matTooltip="Gerar Relatório"
                 matTooltipPosition="below"
@@ -247,7 +323,6 @@
         </div>
     </div>
 
-    <!-- Relatório - Exibição Condicional -->
     <div class="row mt-3 report-container">
         <div class="col d-flex">
             <div class="col" *ngIf="reportType === 1 && showReport">
@@ -257,6 +332,7 @@
                     [finalReference]="finalReference"
                 ></app-fixed-expenses-report>
             </div>
+
             <div class="col" *ngIf="reportType === 2 && showReport">
                 <app-third-party-expenses-report
                     class="col"
@@ -266,6 +342,7 @@
                 >
                 </app-third-party-expenses-report>
             </div>
+
             <div class="col" *ngIf="reportType === 3 && showReport">
                 <app-expenses-by-category-report
                     class="col"
@@ -276,6 +353,7 @@
                     [showChart]="showCategoryChart"
                 ></app-expenses-by-category-report>
             </div>
+
             <div class="col" *ngIf="reportType === 4 && showReport">
                 <app-expenses-by-due-date-report
                     class="col"
@@ -283,6 +361,7 @@
                     [finalDate]="finalDateValue"
                 ></app-expenses-by-due-date-report>
             </div>
+
             <div class="col" *ngIf="reportType === 5 && showReport">
                 <app-expenses-by-card-report
                     class="col"
@@ -294,6 +373,15 @@
                     [groupByCard]="groupByCard"
                     [showChart]="showCardChart"
                 ></app-expenses-by-card-report>
+            </div>
+
+            <div class="col" *ngIf="reportType === 6 && showReport">
+                <app-account-forecast-balance-report
+                    class="col"
+                    [accountId]="forecastAccountId"
+                    [initialDate]="forecastInitialDateValue"
+                    [finalDate]="forecastFinalDateValue"
+                ></app-account-forecast-balance-report>
             </div>
         </div>
     </div>

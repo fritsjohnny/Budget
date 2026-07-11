@@ -518,9 +518,11 @@
                                     </mat-checkbox> -->
                                     {{ row.description }}
                                     <span *ngIf="row.parcels > 1">
-                                            &nbsp;({{ row.parcelNumber }}/{{ row.parcels }})
+                                        &nbsp;({{ row.parcelNumber }}/{{
+                                            row.parcels
+                                        }})
                                     </span>
-                                    
+
                                     <span
                                         *ngIf="row.scheduled"
                                         class="material-icons scheduled"
@@ -905,13 +907,41 @@
                             <th mat-header-cell *matHeaderCellDef>Descrição</th>
                             <td mat-cell *matCellDef="let row">
                                 {{ row.description }}
+
                                 <span *ngIf="row.parcels > 1">
-                                    &nbsp;({{ row.parcelNumber }}/{{ row.parcels }})
+                                    &nbsp;({{ row.parcelNumber }}/{{
+                                        row.parcels
+                                    }})
                                 </span>
+
+                                <div
+                                    class="small-text"
+                                    *ngIf="row.type"
+                                    [ngSwitch]="row.type"
+                                >
+                                    <span *ngSwitchCase="'R'">
+                                        <i class="primary">Recebimento</i>
+                                    </span>
+
+                                    <span *ngSwitchCase="'C'">
+                                        <i class="warn">Troco</i>
+                                    </span>
+
+                                    <span *ngSwitchCase="'Y'">
+                                        <i class="green">Rendimento</i>
+                                    </span>
+
+                                    <span *ngSwitchDefault>
+                                        <i>{{ row.type }}</i>
+                                    </span>
+                                </div>
+
                                 <div class="small-text" *ngIf="row.receiptDate">
                                     <span>
                                         <i class="green">
-                                            Receb.:&nbsp;{{ row.receiptDate | date: "dd/MM" }}
+                                            Receb.:&nbsp;{{
+                                                row.receiptDate | date: "dd/MM"
+                                            }}
                                         </i>
                                     </span>
                                 </div>
@@ -1546,7 +1576,6 @@
                                                             }})
                                                         </span>
                                                     </div>
-                                                
                                                 </td>
                                                 <td
                                                     mat-footer-cell

@@ -952,39 +952,24 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           });
         } else {
           this.incomeService.update(result).subscribe({
-            next: () => {
-              this.incomes
-                .filter((t) => t.id === result.id)
-                .map((t) => {
-                  t.id = result.id;
-                  t.userId = result.userId;
-                  t.reference = result.reference;
-                  t.position = result.position;
-                  t.description = result.description;
-                  t.toReceive = result.toReceive;
-                  t.received = result.received;
-                  t.remaining = result.remaining;
-                  t.parcelNumber = result.parcelNumber;
-                  t.parcels = result.parcels;
-                  t.totalToReceive = result.totalToReceive;
-                  t.note = result.note;
-                  t.cardId = result.cardId;
-                  t.accountId = result.accountId;
-                  t.type = result.type;
-                  t.peopleId = result.peopleId;
-                  t.relatedId = result.relatedId;
-                  t.receiptDate = result.receiptDate;
-                });
+            next: (updatedIncome) => {
+              const currentIncome = this.incomesNoFilter.find(
+                (i) => i.id === updatedIncome.id
+              );
 
-              this.incomes = [
-                ...this.incomes.filter((i) => i.reference === this.reference),
-              ];
+              if (currentIncome) {
+                Object.assign(currentIncome, updatedIncome);
+              }
 
               this.incomesNoFilter = [
                 ...this.incomesNoFilter.filter(
                   (i) => i.reference === this.reference
                 ),
               ];
+
+              this.incomes = this.justToReceive
+                ? this.incomesNoFilter.filter((i) => i.remaining > 0)
+                : [...this.incomesNoFilter];
 
               this.peopleList = result.peopleList;
 

@@ -460,6 +460,18 @@
                                         >
                                         <span>Editar</span>
                                     </button>
+
+                                    <button
+                                        mat-menu-item
+                                        [id]="'menu-incomes'"
+                                        (click)="clone(row)"
+                                    >
+                                        <mat-icon [id]="'menu-icon-incomes'">
+                                            content_copy
+                                        </mat-icon>
+                                        <span>Clonar</span>
+                                    </button>
+
                                     <button
                                         mat-menu-item
                                         [id]="'menu-expenses'"
@@ -471,6 +483,7 @@
                                         >
                                         <span>Excluir</span>
                                     </button>
+
                                     <button
                                         mat-menu-item
                                         (click)="convertToExpense(row)"

@@ -510,6 +510,76 @@ export class CardPostingsComponent implements OnInit {
     });
   }
 
+  clone(cardPosting: CardsPostings): void {
+    this.editing = false;
+
+    const dialogRef = this.dialog.open(CardPostingsDialog, {
+      width: '100%',
+      maxWidth: '100%',
+      data: {
+        id: undefined,
+        cardId: cardPosting.cardId,
+        date: cardPosting.date,
+        reference: cardPosting.reference,
+        position: undefined,
+        description: cardPosting.description,
+        peopleId: cardPosting.peopleId,
+        parcelNumber: cardPosting.parcelNumber ?? 1,
+        parcels: cardPosting.parcels ?? 1,
+        amount: cardPosting.amount,
+        totalAmount: cardPosting.totalAmount ?? cardPosting.amount,
+        others: cardPosting.others,
+        note: cardPosting.note,
+        people: cardPosting.people,
+        categoryId: cardPosting.categoryId,
+        peopleList: this.peopleList,
+        categoriesList: this.categoriesList,
+        cardsList: this.cardsList,
+        expensesList: this.expenses,
+        editing: false,
+        adding: true,
+        deleting: false,
+        cloning: true,
+        fixed: cardPosting.fixed,
+        relatedId: undefined,
+        dueDate: cardPosting.dueDate,
+        isPaid: cardPosting.isPaid,
+        provisioned: cardPosting.provisioned ?? false,
+        expenseId: cardPosting.expenseId,
+        generateParcels: false,
+        repeatParcels: false,
+        repeatToNextMonths: false,
+        monthsToRepeat: 12,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: CardsPostings | undefined) => {
+      if (!result) return;
+
+      result.id = undefined;
+      result.position = undefined;
+      result.relatedId = undefined;
+      result.editing = false;
+      result.adding = true;
+      result.deleting = false;
+      result.cloning = false;
+      result.repeatToNextMonths = false;
+
+      Date.prototype.toJSON = function () {
+        return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
+      };
+
+      this.cardPostingsService.create(result).subscribe({
+        next: (createdPosting) => {
+          this.categoriesList = result.categoriesList;
+          this.peopleList = result.peopleList;
+
+          this.onCardPostingCreated(createdPosting);
+        },
+      });
+    });
+  }
+
   editOrDelete(cardPosting: CardsPostings, event: any) {
     if (event != null && event.target.textContent === 'more_vert') {
       return;

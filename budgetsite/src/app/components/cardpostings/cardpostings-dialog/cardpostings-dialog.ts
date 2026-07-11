@@ -80,24 +80,23 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    this.cardPosting.provisioned =
-      this.cardPosting.provisioned ?? false;
+    this.cardPosting.provisioned = this.cardPosting.provisioned ?? false;
 
-    const originalParcels =
-      this.cardPosting.parcels ?? 1;
+    const originalParcels = this.cardPosting.parcels ?? 1;
+    const isCloning = this.cardPosting.cloning === true;
 
     this.hasExistingParcelSequence =
       this.cardPosting.editing === true &&
       originalParcels > 1;
 
     this.disableCheck =
+      isCloning ||
       this.hasExistingParcelSequence ||
       originalParcels <= 1;
 
-    this.disableGenerateParcelsCheck =
-      this.disableCheck;
+    this.disableGenerateParcelsCheck = this.disableCheck;
 
-    if (this.hasExistingParcelSequence) {
+    if (isCloning || this.hasExistingParcelSequence) {
       this.cardPosting.generateParcels = false;
     }
 
@@ -133,13 +132,12 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       }, 500);
     }
 
-    if (!this.cardPosting.editing) {
+    if (!this.cardPosting.editing && !this.cardPosting.cloning) {
       if (this.cardPosting.parcels! > 1) {
         this.atualizarParcelamento(this.cardPosting.parcels!);
         this.calculateAmount();
       }
-    }
-    else {
+    } else {
       this.cardPosting.generateParcels = false;
     }
   }

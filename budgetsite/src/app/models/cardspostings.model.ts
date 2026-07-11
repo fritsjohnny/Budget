@@ -42,4 +42,5 @@ export interface CardsPostings {
   duetoday?: boolean;
   expenseId?: number;
   expensesList?: Expenses[];
+  cloning?: boolean;
 }

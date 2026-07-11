@@ -71,6 +71,59 @@
                     <b>{{ expectedBalance | currency: "" : "" }}</b>
                 </span>
 
+                <div class="expected-balance-income-perc">
+                    <ng-container
+                        *ngIf="
+                            getExpectedBalanceWithoutYieldsIncomePerc() !==
+                                null;
+                            else expectedBalanceWithoutYieldsIncomePercUnavailable
+                        "
+                    >
+                        <span
+                            [ngClass]="
+                                getExpectedBalanceWithoutYieldsIncomePerc()! < 0
+                                    ? 'negative'
+                                    : 'primary'
+                            "
+                        >
+                            {{
+                                getExpectedBalanceWithoutYieldsIncomePerc()
+                                    | number: "1.2-2"
+                            }}%
+                        </span>
+                    </ng-container>
+
+                    <ng-template
+                        #expectedBalanceWithoutYieldsIncomePercUnavailable
+                    >
+                        <span>—</span>
+                    </ng-template>
+
+                    <span class="expected-balance-separator">|</span>
+
+                    <ng-container
+                        *ngIf="
+                            getExpectedBalanceIncomePerc() !== null;
+                            else expectedBalanceIncomePercUnavailable
+                        "
+                    >
+                        <span
+                            [ngClass]="
+                                expectedBalance < 0 ? 'negative' : 'green'
+                            "
+                        >
+                            {{
+                                getExpectedBalanceIncomePerc()
+                                    | number: "1.2-2"
+                            }}%
+                        </span>
+                    </ng-container>
+
+                    <ng-template #expectedBalanceIncomePercUnavailable>
+                        <span>—</span>
+                    </ng-template>
+                </div>
+
                 <div class="expected-balance-detail-wrapper">
                     <span class="expected-balance-info-spacer"></span>
 
@@ -127,7 +180,7 @@
                                     else expectedBalanceCoveredOrZeroedByYields
                                 "
                             >
-                                <span class="expected-balance-grid">
+                                <span class="expected-balance-grid expected-balance-grid-deficit">
                                     <span class="negative">
                                         {{
                                             getExpectedBalanceWithoutYields()
@@ -183,19 +236,16 @@
                                 </span>
 
                                 <span class="negative">
-                                    cobriu
                                     {{
                                         getExpectedBalanceCoveredByYieldsPerc()
                                             | number: "1.2-2"
                                     }}%
                                 </span>
-
                                 <span class="expected-balance-separator"
                                     >|</span
                                 >
 
                                 <span class="green">
-                                    saldo
                                     {{
                                         getExpectedBalancePositiveFromYieldsPerc()
                                             | number: "1.2-2"

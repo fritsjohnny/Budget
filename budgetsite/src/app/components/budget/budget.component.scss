@@ -168,16 +168,20 @@ tr.height-detail-row {
 
 .expected-balance-grid {
     display: grid;
-    grid-template-columns: auto auto auto;
-    column-gap: 4px;
+    grid-template-columns: 44px 5px 44px;
+    column-gap: 2px;
     row-gap: 0;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    min-width: auto;
 }
 
 .expected-balance-grid span {
     white-space: nowrap;
+}
+
+.expected-balance-grid-deficit {
+    grid-template-columns: 52px 5px 52px;
 }
 
 .expected-balance-nowrap {
@@ -197,6 +201,8 @@ tr.height-detail-row {
     line-height: 18px;
     padding: 0;
     margin: 0;
+    align-self: start;
+    transform: translateY(-2px);
 }
 
 .expected-balance-info-button mat-icon {
@@ -204,4 +210,17 @@ tr.height-detail-row {
     width: 14px;
     height: 14px;
     line-height: 14px;
+}
+
+.expected-balance-income-perc {
+    display: grid;
+    grid-template-columns: 44px 5px 44px;
+    column-gap: 2px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 1px;
+    font-size: 11px;
+    line-height: 13px;
+    text-align: center;
 }

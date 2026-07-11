@@ -1740,75 +1740,145 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   openExpectedBalanceInfo(): void {
     const withoutYields = this.getExpectedBalanceWithoutYields();
-    const yields = this.budgetTotals?.myYields || 0;
+    const yields = this.budgetTotals?.myYields ?? 0;
     const expectedBalance = this.expectedBalance;
+
+    const incomePerc = this.getExpectedBalanceIncomePerc();
+    const withoutYieldsIncomePerc = this.getExpectedBalanceWithoutYieldsIncomePerc();
 
     const withoutYieldsFormatted = this.formatCurrencyValue(withoutYields);
     const yieldsFormatted = this.formatCurrencyValue(yields);
     const expectedBalanceFormatted = this.formatCurrencyValue(expectedBalance);
 
-    let message = '';
+    const incomePercFormatted =
+      incomePerc === null
+        ? 'Não calculado'
+        : incomePerc.toFixed(2).replace('.', ',') + '%';
+
+    const withoutYieldsIncomePercFormatted =
+      withoutYieldsIncomePerc === null
+        ? 'Não calculado'
+        : withoutYieldsIncomePerc.toFixed(2).replace('.', ',') + '%';
+
+    let compositionMessage = '';
 
     if (withoutYields >= 0 && expectedBalance > 0) {
-      const withoutYieldsPerc = this.getExpectedBalanceWithoutYieldsPerc().toFixed(2).replace('.', ',');
-      const yieldsPerc = this.getExpectedBalanceYieldsCompositionPerc().toFixed(2).replace('.', ',');
+      const withoutYieldsPerc = this
+        .getExpectedBalanceWithoutYieldsPerc()
+        .toFixed(2)
+        .replace('.', ',');
 
-      message =
-        'Saldo previsto final\n' +
-        expectedBalanceFormatted + '\n\n' +
+      const yieldsPerc = this
+        .getExpectedBalanceYieldsCompositionPerc()
+        .toFixed(2)
+        .replace('.', ',');
+
+      compositionMessage =
         'Composição do saldo\n' +
-        'Sem rendimentos: ' + withoutYieldsFormatted + ' (' + withoutYieldsPerc + '%)\n' +
-        'Rendimentos: ' + yieldsFormatted + ' (' + yieldsPerc + '%)\n\n' +
-        'Resumo\n' +
-        'Os percentuais mostram quanto cada parte representa do saldo previsto final.';
+        'Sem rendimentos: ' +
+        withoutYieldsFormatted +
+        ' (' +
+        withoutYieldsPerc +
+        '% do saldo final)\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        ' (' +
+        yieldsPerc +
+        '% do saldo final)\n\n' +
+        'Linha inferior da tela\n' +
+        withoutYieldsPerc +
+        '%: parte do saldo formada sem rendimentos.\n' +
+        yieldsPerc +
+        '%: parte do saldo formada pelos rendimentos.';
     } else if (withoutYields >= 0 && expectedBalance === 0) {
-      message =
-        'Saldo previsto final\n' +
-        expectedBalanceFormatted + '\n\n' +
+      compositionMessage =
         'Composição do saldo\n' +
-        'Sem rendimentos: ' + withoutYieldsFormatted + '\n' +
-        'Rendimentos: ' + yieldsFormatted + '\n\n' +
-        'Resumo\n' +
-        'Não houve saldo previsto nem rendimentos para compor o resultado do mês.';
+        'Sem rendimentos: ' +
+        withoutYieldsFormatted +
+        '\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        '\n\n' +
+        'Resultado\n' +
+        'O saldo previsto final ficou zerado.';
     } else if (expectedBalance < 0) {
-      const reductionPerc = this.getExpectedBalanceDeficitReductionPerc().toFixed(2).replace('.', ',');
+      const reductionPerc = this
+        .getExpectedBalanceDeficitReductionPerc()
+        .toFixed(2)
+        .replace('.', ',');
 
-      message =
-        'Saldo sem rendimentos\n' +
-        withoutYieldsFormatted + '\n\n' +
-        'Rendimentos\n' +
-        yieldsFormatted + '\n\n' +
-        'Impacto\n' +
-        'Os rendimentos reduziram o déficit original em ' + reductionPerc + '%.\n' +
-        'Mesmo assim, o saldo final continuou negativo.\n\n' +
-        'Saldo previsto final\n' +
-        expectedBalanceFormatted;
+      compositionMessage =
+        'Composição do déficit\n' +
+        'Saldo sem rendimentos: ' +
+        withoutYieldsFormatted +
+        '\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        '\n\n' +
+        'Impacto dos rendimentos\n' +
+        'Os rendimentos reduziram o déficit original em ' +
+        reductionPerc +
+        '%, mas o saldo final permaneceu negativo.\n\n' +
+        'Linha inferior da tela\n' +
+        '100%: déficit original sem rendimentos.\n' +
+        '↓' +
+        reductionPerc +
+        '%: redução do déficit causada pelos rendimentos.';
     } else if (expectedBalance === 0) {
-      message =
-        'Saldo sem rendimentos\n' +
-        withoutYieldsFormatted + '\n\n' +
-        'Rendimentos\n' +
-        yieldsFormatted + '\n\n' +
-        'Impacto\n' +
-        'Os rendimentos cobriram exatamente 100% do déficit original.\n' +
-        'O saldo final ficou zerado.\n\n' +
-        'Saldo previsto final\n' +
-        expectedBalanceFormatted;
+      compositionMessage =
+        'Composição do saldo\n' +
+        'Saldo sem rendimentos: ' +
+        withoutYieldsFormatted +
+        '\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        '\n\n' +
+        'Impacto dos rendimentos\n' +
+        'Os rendimentos cobriram exatamente todo o déficit original.\n\n' +
+        'Linha inferior da tela\n' +
+        'O percentual esquerdo, 100%, indica que todo o rendimento foi necessário para zerar o déficit. ' +
+        'O percentual direito fica em 0%, pois não restou saldo positivo.';
     } else {
-      const coveredPerc = this.getExpectedBalanceCoveredByYieldsPerc().toFixed(2).replace('.', ',');
-      const positivePerc = this.getExpectedBalancePositiveFromYieldsPerc().toFixed(2).replace('.', ',');
+      const coveredPerc = this
+        .getExpectedBalanceCoveredByYieldsPerc()
+        .toFixed(2)
+        .replace('.', ',');
 
-      message =
-        'Saldo sem rendimentos\n' +
-        withoutYieldsFormatted + '\n\n' +
-        'Rendimentos\n' +
-        yieldsFormatted + '\n\n' +
+      const positivePerc = this
+        .getExpectedBalancePositiveFromYieldsPerc()
+        .toFixed(2)
+        .replace('.', ',');
+
+      compositionMessage =
+        'Composição do saldo\n' +
+        'Saldo sem rendimentos: ' +
+        withoutYieldsFormatted +
+        '\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        '\n\n' +
         'Uso dos rendimentos\n' +
-        coveredPerc + '% cobriu o déficit original.\n' +
-        positivePerc + '% permaneceu como saldo positivo.\n\n' +
-        'Saldo previsto final\n' +
-        expectedBalanceFormatted;
+        coveredPerc +
+        '% dos rendimentos cobriu o déficit original.\n' +
+        positivePerc +
+        '% permaneceu como saldo positivo.\n\n' +
+        'Linha inferior da tela\n' +
+        coveredPerc +
+        '%: parte dos rendimentos usada para eliminar o déficit.\n' +
+        positivePerc +
+        '%: parte dos rendimentos que permaneceu no saldo final.';
     }
+
+    const message =
+      'Saldo previsto final\n' +
+      expectedBalanceFormatted +
+      '\n\n' +
+      'Percentuais principais\n' +
+      withoutYieldsIncomePercFormatted +
+      ': economia ou déficit em relação às minhas receitas, desconsiderando os rendimentos.\n' +
+      incomePercFormatted +
+      ': saldo previsto total, incluindo rendimentos, em relação às minhas receitas totais.\n\n' +
+      compositionMessage;
 
     this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
@@ -1826,5 +1896,30 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  }
+
+  getExpectedBalanceIncomePerc(): number | null {
+    const myIncomes = Math.abs(this.budgetTotals?.myIncomes ?? 0);
+
+    if (myIncomes === 0) return null;
+
+    return this.expectedBalance / myIncomes * 100;
+  }
+
+  getExpectedBalanceWithoutYieldsIncomePerc(): number | null {
+    const incomesWithoutYields =
+      this.budgetTotals?.myIncomesWithoutYields ?? 0;
+
+    const myExpenses =
+      this.budgetTotals?.myExpenses ?? 0;
+
+    if (incomesWithoutYields === 0) return null;
+
+    const balanceWithoutYields =
+      incomesWithoutYields - myExpenses;
+
+    return balanceWithoutYields /
+      Math.abs(incomesWithoutYields) *
+      100;
   }
 }

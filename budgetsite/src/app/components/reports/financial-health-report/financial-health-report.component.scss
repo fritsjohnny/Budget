@@ -1201,3 +1201,102 @@
         gap: 7px;
     }
 }
+
+/*
+ * Exceção estritamente limitada às quatro tabelas analíticas solicitadas.
+ * A largura ampliada fica contida no próprio bloco, evitando que a página
+ * inteira ganhe rolagem horizontal ou perca o layout mobile compacto.
+ */
+@media (max-width: 700px) {
+    .table-scroll.mobile-horizontal-table {
+        display: block;
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-radius: 8px;
+        box-sizing: border-box;
+        contain: inline-size;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table {
+        display: table;
+        width: max-content;
+        max-width: none;
+        min-width: 900px;
+        border-collapse: collapse;
+        table-layout: auto;
+        font-size: 12px;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table thead {
+        display: table-header-group;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table tbody {
+        display: table-row-group;
+        width: auto;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table tr {
+        display: table-row;
+        width: auto;
+        overflow: visible;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table tbody tr:hover {
+        background: rgba(127, 127, 127, 0.05);
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table th,
+    .table-scroll.mobile-horizontal-table > .health-table td,
+    .table-scroll.mobile-horizontal-table > .health-table td.mobile-primary-cell {
+        display: table-cell;
+        width: auto;
+        min-height: 0;
+        padding: 10px 11px;
+        border-bottom: 1px solid rgba(127, 127, 127, 0.13);
+        font-size: inherit;
+        text-align: right !important;
+        white-space: nowrap;
+        overflow-wrap: normal;
+        background: transparent;
+        box-sizing: border-box;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table th:first-child,
+    .table-scroll.mobile-horizontal-table > .health-table td:first-child,
+    .table-scroll.mobile-horizontal-table > .health-table th:nth-child(2),
+    .table-scroll.mobile-horizontal-table > .health-table td:nth-child(2),
+    .table-scroll.mobile-horizontal-table > .health-table td.mobile-primary-cell {
+        text-align: left !important;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table td::before,
+    .table-scroll.mobile-horizontal-table > .health-table td.mobile-primary-cell::before {
+        display: none;
+        content: none;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table td.mobile-hide {
+        display: table-cell;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table .status-badge {
+        margin-left: 5px;
+        white-space: nowrap;
+    }
+
+    .table-scroll.mobile-horizontal-table > .health-table .outlier-row {
+        background: rgba(237, 108, 2, 0.07) !important;
+        border: 0 !important;
+    }
+}

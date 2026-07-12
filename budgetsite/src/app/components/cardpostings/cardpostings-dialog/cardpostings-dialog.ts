@@ -61,6 +61,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     fixedFormControl: new FormControl(''),
     provisionedFormControl: new FormControl(false),
     repeatToNextMonthsFormControl: new FormControl(''),
+    preserveFutureValuesFormControl: new FormControl(''),
     idFormControl: new FormControl(''),
     relatedIdFormControl: new FormControl(''),
     dueDateFormControl: new FormControl(''),
@@ -101,6 +102,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     }
 
     this.cardPosting.monthsToRepeat = 12;
+    this.cardPosting.repeatToNextMonths = false;
+    this.cardPosting.preserveFutureValues = false;
 
     this.getLists();
   }
@@ -249,6 +252,31 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     }
   }
 
+  onGenerateParcelsChanged(): void {
+    if (this.hasExistingParcelSequence) {
+      this.cardPosting.generateParcels = false;
+      return;
+    }
+
+    if (this.cardPosting.generateParcels) {
+      this.disableRepeatParcelsCheck = true;
+
+      this.cardPosting.repeatParcels = false;
+      this.cardPosting.repeatToNextMonths = false;
+      this.cardPosting.preserveFutureValues = false;
+
+      this.cardPostingFormGroup
+        .get('monthsToRepeatFormControl')!
+        .disable();
+    } else {
+      this.disableRepeatParcelsCheck = false;
+
+      this.cardPostingFormGroup
+        .get('monthsToRepeatFormControl')!
+        .enable();
+    }
+  }
+
   onParcelNumberChanged(event: any): void {
     if (event.target.value == '') {
       this.cardPosting.parcelNumber = 1;
@@ -315,17 +343,28 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     if (this.cardPosting.repeatParcels) {
       this.disableCheck = true;
       this.disableGenerateParcelsCheck = true;
+
+      this.cardPosting.generateParcels = false;
+      this.cardPosting.repeatToNextMonths = false;
+      this.cardPosting.preserveFutureValues = false;
     } else {
       const shouldDisable =
         this.hasExistingParcelSequence ||
         this.cardPosting.parcels! <= 1;
 
       this.disableCheck = shouldDisable;
-      this.disableGenerateParcelsCheck = shouldDisable;
+      this.disableGenerateParcelsCheck =
+        shouldDisable;
     }
 
     if (this.hasExistingParcelSequence) {
       this.cardPosting.generateParcels = false;
+    }
+  }
+
+  onRepeatToNextMonthsChanged(): void {
+    if (!this.cardPosting.repeatToNextMonths) {
+      this.cardPosting.preserveFutureValues = false;
     }
   }
 

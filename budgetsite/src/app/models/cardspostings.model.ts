@@ -36,6 +36,7 @@ export interface CardsPostings {
   provisioned?: boolean;
   relatedId?: number;
   repeatToNextMonths?: boolean;
+  preserveFutureValues?: boolean;
   dueDate?: Date;
   isPaid?: boolean;
   overdue?: boolean;

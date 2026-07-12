@@ -107,24 +107,54 @@ export class CardPostingsService {
   }
 
   update(cardPosting: CardsPostings): Observable<CardsPostings> {
-    cardPosting.others = cardPosting.peopleId ? true : false;
+    cardPosting.others = cardPosting.peopleId
+      ? true
+      : false;
 
-    let url = `${ApiUrls.cardspostings}${cardPosting.generateParcels || cardPosting.repeatParcels
+    const hasParcelOperation =
+      cardPosting.generateParcels ||
+      cardPosting.repeatParcels;
+
+    const params: string[] = [];
+
+    if (hasParcelOperation) {
+      params.push(
+        `repeat=${cardPosting.repeatParcels ?? false}`
+      );
+
+      params.push(
+        `qtyMonths=${cardPosting.monthsToRepeat ?? 0}`
+      );
+    } else if (cardPosting.repeatToNextMonths) {
+      params.push(
+        `repeatToNextMonths=${cardPosting.repeatToNextMonths ?? false}`
+      );
+
+      params.push(
+        `preserveFutureValues=${cardPosting.preserveFutureValues ?? false}`
+      );
+    }
+
+    const query =
+      params.length > 0
+        ? `?${params.join('&')}`
+        : '';
+
+    const route = hasParcelOperation
       ? '/allparcels'
-      : ''
-      }/${cardPosting.id}${cardPosting.generateParcels || cardPosting.repeatParcels
-        ? `?repeat=${cardPosting.repeatParcels ?? false}&qtyMonths=${cardPosting.monthsToRepeat ?? 0}`
-        : ''
-      }${cardPosting.repeatToNextMonths
-        ? `${cardPosting.generateParcels || cardPosting.repeatParcels ? '&' : '?'
-        }repeatToNextMonths=${cardPosting.repeatToNextMonths ?? false}`
-        : ''
-      }`;
+      : '';
 
-    return this.http.put<CardsPostings>(url, cardPosting).pipe(
-      map((obj) => obj),
-      catchError((e) => this.messenger.errorHandler(e))
-    );
+    return this.http
+      .put<CardsPostings>(
+        `${ApiUrls.cardspostings}${route}/${cardPosting.id}${query}`,
+        cardPosting
+      )
+      .pipe(
+        map((obj) => obj),
+        catchError((e) =>
+          this.messenger.errorHandler(e)
+        )
+      );
   }
 
 

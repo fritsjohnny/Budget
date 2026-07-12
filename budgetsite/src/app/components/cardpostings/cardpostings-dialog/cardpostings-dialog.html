@@ -292,15 +292,19 @@
                     [(ngModel)]="cardPosting.generateParcels"
                     formControlName="generateParcelsFormControl"
                     [disabled]="
-            hasExistingParcelSequence ||
-            disableCheck ||
-            cardPosting.repeatToNextMonths! ||
-            cardPosting.repeatParcels!
-          "
+                        hasExistingParcelSequence ||
+                        disableCheck ||
+                        cardPosting.repeatToNextMonths! ||
+                        cardPosting.repeatParcels!
+                    "
+                    (change)="onGenerateParcelsChanged()"
                 >
                     Gerar as demais parcelas
                 </mat-checkbox>
-                <small *ngIf="hasExistingParcelSequence" class="text-warning">
+                <small
+                    *ngIf="hasExistingParcelSequence"
+                    class="text-warning"
+                >
                     As demais parcelas desta sequência já foram geradas.
                 </small>
             </p>
@@ -309,7 +313,11 @@
                 <mat-checkbox
                     [(ngModel)]="cardPosting.repeatParcels"
                     formControlName="repeatParcelsFormControl"
-                    [disabled]="disableRepeatParcelsCheck || cardPosting.repeatToNextMonths! || cardPosting.generateParcels!"
+                    [disabled]="
+                        disableRepeatParcelsCheck ||
+                        cardPosting.repeatToNextMonths! ||
+                        cardPosting.generateParcels!
+                    "
                     (change)="onRepeatParcelsChanged($event)"
                 >
                     Repetir para os próximos
@@ -332,9 +340,23 @@
                 <mat-checkbox
                     [(ngModel)]="cardPosting.repeatToNextMonths"
                     formControlName="repeatToNextMonthsFormControl"
-                    [disabled]="cardPosting.repeatParcels! || cardPosting.generateParcels!"
+                    [disabled]="
+                        cardPosting.repeatParcels! ||
+                        cardPosting.generateParcels!
+                    "
+                    (change)="onRepeatToNextMonthsChanged()"
                 >
                     Repetir edição para os próximos meses
+                </mat-checkbox>
+            </p>
+
+            <p *ngIf="cardPosting.editing">
+                <mat-checkbox
+                    [(ngModel)]="cardPosting.preserveFutureValues"
+                    formControlName="preserveFutureValuesFormControl"
+                    [disabled]="!cardPosting.repeatToNextMonths"
+                >
+                    Não alterar os valores dos próximos meses
                 </mat-checkbox>
             </p>
 

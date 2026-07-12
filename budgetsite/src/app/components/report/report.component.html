@@ -187,7 +187,7 @@
                 </div>
             </div>
 
-            <div class="row" *ngIf="selectedReportType === 7">
+            <div class="row financial-health-filter-row" *ngIf="selectedReportType === 7">
                 <div class="col">
                     <mat-form-field
                         appearance="fill"
@@ -233,7 +233,7 @@
                 </div>
             </div>
 
-            <div class="row" *ngIf="selectedReportType === 7">
+            <div class="row financial-health-actions-row" *ngIf="selectedReportType === 7">
                 <div class="col mb-2">
                     <button
                         mat-stroked-button
@@ -247,7 +247,7 @@
                 </div>
             </div>
 
-            <div class="row" *ngIf="selectedReportType === 7">
+            <div class="row financial-health-options-row" *ngIf="selectedReportType === 7">
                 <div class="col mb-2">
                     <mat-checkbox
                         color="warn"
@@ -257,7 +257,7 @@
                         Incluir o mês atual na análise histórica
                     </mat-checkbox>
 
-                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px">
+                    <div class="financial-health-option-help">
                         Desmarcado, o mês atual é ignorado por ainda estar incompleto.
                         A projeção futura e as parcelas continuam sendo analisadas.
                     </div>
@@ -266,6 +266,7 @@
 
             <div
                 class="row d-flex"
+                [class.financial-health-date-row]="selectedReportType === 7"
                 *ngIf="selectedReportType !== 4 && selectedReportType !== 6"
             >
                 <div class="col mb-2">
@@ -402,7 +403,10 @@
         </div>
     </div>
 
-    <div class="row mt-3 report-container">
+    <div
+        class="row mt-3 report-container"
+        [class.financial-health-report-container]="reportType === 7"
+    >
         <div class="col d-flex">
             <div class="col" *ngIf="reportType === 1 && showReport">
                 <app-fixed-expenses-report

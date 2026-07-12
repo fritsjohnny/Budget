@@ -15,3 +15,62 @@
 .report-container {
     overflow: scroll !important;
 }
+
+/* Ajustes de encaixe exclusivos do relatório de Saúde Financeira. */
+.financial-health-report-container {
+    overflow: visible !important;
+}
+
+.financial-health-report-container,
+.financial-health-report-container > .col,
+.financial-health-report-container app-financial-health-report {
+    width: 100%;
+    min-width: 0;
+}
+
+.financial-health-option-help {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.4;
+    opacity: 0.7;
+}
+
+@media (max-width: 700px) {
+    .financial-health-filter-row,
+    .financial-health-date-row {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    .financial-health-filter-row > .col,
+    .financial-health-date-row > .col {
+        width: 100%;
+        max-width: none;
+        flex: none;
+    }
+
+    .financial-health-actions-row button {
+        width: 100%;
+    }
+
+    .financial-health-options-row mat-checkbox {
+        display: block;
+        line-height: 1.35;
+    }
+
+    .financial-health-option-help {
+        font-size: 10px;
+    }
+
+    .financial-health-report-container {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .financial-health-report-container > .col,
+    .financial-health-report-container > .col > .col {
+        padding-right: 0;
+        padding-left: 0;
+    }
+}

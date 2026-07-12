@@ -352,7 +352,7 @@
         </div>
 
         <div class="table-scroll mat-elevation-z2">
-            <table class="health-table">
+            <table class="health-table monthly-health-table">
                 <thead>
                     <tr>
                         <th>Referência</th>
@@ -373,29 +373,29 @@
                         *ngFor="let month of currentReport.monthlyEvolution; trackBy: trackMonthly"
                         [class.outlier-row]="month.isOutlier"
                     >
-                        <td>
+                        <td class="mobile-primary-cell" data-label="Referência">
                             <strong>{{ month.label }}</strong>
                             <span class="status-badge warning-badge" *ngIf="month.isOutlier">
                                 atípico
                             </span>
                         </td>
-                        <td>{{ formatCurrency(month.income) }}</td>
-                        <td>{{ formatCurrency(month.expenses) }}</td>
-                        <td>{{ formatCurrency(month.yields) }}</td>
-                        <td [ngClass]="getValueClass(month.surplus)">
+                        <td data-label="Receitas">{{ formatCurrency(month.income) }}</td>
+                        <td data-label="Despesas">{{ formatCurrency(month.expenses) }}</td>
+                        <td data-label="Rendimentos">{{ formatCurrency(month.yields) }}</td>
+                        <td data-label="Resultado" [ngClass]="getValueClass(month.surplus)">
                             {{ formatCurrency(month.surplus) }}
                         </td>
-                        <td [ngClass]="getValueClass(month.surplusWithoutYields)">
+                        <td data-label="Sem rendimentos" [ngClass]="getValueClass(month.surplusWithoutYields)">
                             {{ formatCurrency(month.surplusWithoutYields) }}
                         </td>
-                        <td [ngClass]="getValueClass(month.savingsRate)">
+                        <td data-label="Taxa" [ngClass]="getValueClass(month.savingsRate)">
                             {{ formatPercent(month.savingsRate) }}
                         </td>
-                        <td>{{ formatCurrency(month.fixedCommitments) }}</td>
-                        <td [ngClass]="getValueClass(month.netCashChange)">
+                        <td data-label="Fixos">{{ formatCurrency(month.fixedCommitments) }}</td>
+                        <td data-label="Caixa real" [ngClass]="getValueClass(month.netCashChange)">
                             {{ formatCurrency(month.netCashChange) }}
                         </td>
-                        <td [ngClass]="getValueClass(month.closingBalance)">
+                        <td data-label="Saldo" [ngClass]="getValueClass(month.closingBalance)">
                             {{ formatCurrency(month.closingBalance) }}
                         </td>
                     </tr>
@@ -466,7 +466,7 @@
         </div>
 
         <div class="table-scroll mat-elevation-z2">
-            <table class="health-table">
+            <table class="health-table accounts-health-table">
                 <thead>
                     <tr>
                         <th>Conta</th>
@@ -484,20 +484,20 @@
                     <tr
                         *ngFor="let account of currentReport.accounts; trackBy: trackAccount"
                     >
-                        <td><strong>{{ account.name }}</strong></td>
-                        <td>{{ account.institution }}</td>
-                        <td>{{ formatCurrency(account.balance) }}</td>
-                        <td>{{ formatCurrency(account.grossBalance) }}</td>
-                        <td>{{ formatCurrency(account.grossDifference) }}</td>
-                        <td>{{ formatPercent(account.share) }}</td>
-                        <td>
+                        <td class="mobile-primary-cell" data-label="Conta"><strong>{{ account.name }}</strong></td>
+                        <td data-label="Instituição">{{ account.institution }}</td>
+                        <td data-label="Saldo líquido">{{ formatCurrency(account.balance) }}</td>
+                        <td data-label="Saldo bruto">{{ formatCurrency(account.grossBalance) }}</td>
+                        <td data-label="Diferença">{{ formatCurrency(account.grossDifference) }}</td>
+                        <td data-label="Participação">{{ formatPercent(account.share) }}</td>
+                        <td data-label="Rendimento">
                             <ng-container *ngIf="account.yieldPercent !== null; else noYield">
                                 {{ formatPercent(account.yieldPercent) }}
                                 {{ account.yieldIndex }}
                             </ng-container>
                             <ng-template #noYield>-</ng-template>
                         </td>
-                        <td>{{ formatDate(account.maturityDate) }}</td>
+                        <td data-label="Vencimento">{{ formatDate(account.maturityDate) }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -531,7 +531,7 @@
         </div>
 
         <div class="table-scroll mat-elevation-z2">
-            <table class="health-table">
+            <table class="health-table categories-health-table">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -552,13 +552,13 @@
                             trackBy: trackCategory
                         "
                     >
-                        <td>{{ index + 1 }}</td>
-                        <td><strong>{{ category.name }}</strong></td>
-                        <td>{{ formatCurrency(category.amount) }}</td>
-                        <td>{{ formatCurrency(category.average) }}</td>
-                        <td>{{ formatPercent(category.share) }}</td>
-                        <td>{{ formatCurrency(category.previousAmount) }}</td>
-                        <td [ngClass]="getChangeClass(category.changePercent, true)">
+                        <td class="mobile-hide" data-label="#">{{ index + 1 }}</td>
+                        <td class="mobile-primary-cell" data-label="Categoria"><strong>{{ category.name }}</strong></td>
+                        <td data-label="Total">{{ formatCurrency(category.amount) }}</td>
+                        <td data-label="Média mensal">{{ formatCurrency(category.average) }}</td>
+                        <td data-label="Participação">{{ formatPercent(category.share) }}</td>
+                        <td data-label="Período anterior">{{ formatCurrency(category.previousAmount) }}</td>
+                        <td data-label="Variação" [ngClass]="getChangeClass(category.changePercent, true)">
                             {{ formatSignedPercent(category.changePercent) }}
                             <small class="cell-note">
                                 {{ formatCurrency(category.changeAmount) }}
@@ -613,7 +613,7 @@
         </div>
 
         <div class="table-scroll mat-elevation-z2">
-            <table class="health-table">
+            <table class="health-table future-health-table">
                 <thead>
                     <tr>
                         <th>Referência</th>
@@ -631,16 +631,16 @@
                     <tr
                         *ngFor="let month of currentReport.futureProjection; trackBy: trackFuture"
                     >
-                        <td><strong>{{ month.label }}</strong></td>
-                        <td>{{ formatCurrency(month.income) }}</td>
-                        <td>{{ formatCurrency(month.expenses) }}</td>
-                        <td [ngClass]="getValueClass(month.surplus)">
+                        <td class="mobile-primary-cell" data-label="Referência"><strong>{{ month.label }}</strong></td>
+                        <td data-label="Receitas">{{ formatCurrency(month.income) }}</td>
+                        <td data-label="Despesas">{{ formatCurrency(month.expenses) }}</td>
+                        <td data-label="Resultado" [ngClass]="getValueClass(month.surplus)">
                             {{ formatCurrency(month.surplus) }}
                         </td>
-                        <td>{{ formatCurrency(month.cardInstallments) }}</td>
-                        <td>{{ formatCurrency(month.directInstallments) }}</td>
-                        <td>{{ formatCurrency(month.totalInstallments) }}</td>
-                        <td>
+                        <td data-label="Parcelas em cartões">{{ formatCurrency(month.cardInstallments) }}</td>
+                        <td data-label="Parcelas diretas">{{ formatCurrency(month.directInstallments) }}</td>
+                        <td data-label="Total parcelado">{{ formatCurrency(month.totalInstallments) }}</td>
+                        <td data-label="Qualidade">
                             <span
                                 class="status-badge"
                                 [ngClass]="
@@ -739,7 +739,7 @@
                 class="table-scroll duplicate-table"
                 *ngIf="currentReport.dataQuality.potentialDuplicates.length > 0"
             >
-                <table class="health-table">
+                <table class="health-table duplicates-health-table">
                     <thead>
                         <tr>
                             <th>Origem</th>
@@ -759,13 +759,13 @@
                                 trackBy: trackDuplicate
                             "
                         >
-                            <td>{{ duplicate.source }}</td>
-                            <td>{{ formatReference(duplicate.reference) }}</td>
-                            <td>{{ duplicate.description }}</td>
-                            <td>{{ formatDate(duplicate.date) }}</td>
-                            <td>{{ formatCurrency(duplicate.amount) }}</td>
-                            <td>{{ duplicate.count }}</td>
-                            <td>{{ formatCurrency(duplicate.extraAmount) }}</td>
+                            <td data-label="Origem">{{ duplicate.source }}</td>
+                            <td data-label="Referência">{{ formatReference(duplicate.reference) }}</td>
+                            <td class="mobile-primary-cell" data-label="Descrição">{{ duplicate.description }}</td>
+                            <td data-label="Data">{{ formatDate(duplicate.date) }}</td>
+                            <td data-label="Valor">{{ formatCurrency(duplicate.amount) }}</td>
+                            <td data-label="Ocorrências">{{ duplicate.count }}</td>
+                            <td data-label="Excesso estimado">{{ formatCurrency(duplicate.extraAmount) }}</td>
                         </tr>
                     </tbody>
                 </table>

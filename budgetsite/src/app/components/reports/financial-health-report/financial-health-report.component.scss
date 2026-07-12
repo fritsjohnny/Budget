@@ -724,3 +724,480 @@
         text-align: left;
     }
 }
+
+/* Otimizações específicas para telas pequenas. Somente apresentação. */
+@media (max-width: 700px) {
+    :host {
+        overflow-x: hidden;
+        padding-bottom: 12px;
+    }
+
+    .spinner-container {
+        min-height: 180px;
+        padding: 20px 12px;
+        text-align: center;
+    }
+
+    .health-hero {
+        gap: 10px;
+        margin-bottom: 20px;
+        padding: 16px 12px;
+        border-radius: 10px;
+    }
+
+    .score-chart-shell {
+        width: 154px;
+        height: 96px;
+    }
+
+    .score-value {
+        bottom: 1px;
+    }
+
+    .score-value strong {
+        font-size: 36px;
+    }
+
+    .classification {
+        margin-top: 2px;
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+
+    .hero-content h2 {
+        font-size: 23px;
+    }
+
+    .hero-content p {
+        margin: 9px 0 13px;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .hero-meta {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+        width: 100%;
+        font-size: 11px;
+        text-align: left;
+    }
+
+    .hero-meta span {
+        justify-content: flex-start;
+        padding: 6px 8px;
+        border-radius: 6px;
+        background: rgba(127, 127, 127, 0.08);
+    }
+
+    .section-block {
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        margin-bottom: 10px;
+    }
+
+    .section-title h3 {
+        font-size: 18px;
+        line-height: 1.25;
+    }
+
+    .section-caption {
+        width: 100%;
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .insights-grid {
+        gap: 9px;
+    }
+
+    .insight-card {
+        grid-template-columns: 28px minmax(0, 1fr);
+        gap: 8px;
+        min-height: 0;
+        padding: 11px;
+        border-radius: 7px;
+    }
+
+    .insight-card mat-icon {
+        width: 22px;
+        height: 22px;
+        font-size: 22px;
+    }
+
+    .insight-card strong {
+        margin: 1px 0 4px;
+        font-size: 13px;
+    }
+
+    .insight-card p {
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .kpi-card {
+        min-height: 104px;
+        padding: 10px;
+        border-radius: 7px;
+    }
+
+    .kpi-card > span {
+        font-size: 10px;
+        line-height: 1.25;
+    }
+
+    .kpi-card > strong {
+        margin: 5px 0 3px;
+        font-size: 16px;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .kpi-card > small {
+        font-size: 9px;
+        line-height: 1.3;
+    }
+
+    .comparison-section,
+    .score-details {
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    .comparison-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .comparison-card {
+        min-width: 0;
+        padding: 9px;
+    }
+
+    .comparison-card span,
+    .comparison-card small {
+        font-size: 10px;
+        line-height: 1.3;
+    }
+
+    .comparison-card strong {
+        margin: 4px 0;
+        font-size: 15px;
+        overflow-wrap: anywhere;
+    }
+
+    .score-components {
+        gap: 13px;
+    }
+
+    .score-component-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 2px;
+        margin-bottom: 6px;
+    }
+
+    .score-component-header span {
+        white-space: normal;
+    }
+
+    .score-component small {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .chart-grid,
+    .chart-grid.two-columns {
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .chart-card {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .chart-card mat-card-title {
+        display: block;
+        font-size: 14px;
+        line-height: 1.3;
+    }
+
+    .chart-card mat-card-subtitle {
+        display: block;
+        margin-top: 3px;
+        font-size: 10px;
+        line-height: 1.35;
+    }
+
+    .chart-wrapper {
+        overflow: hidden;
+        margin-top: 7px;
+    }
+
+    .chart-wrapper canvas {
+        max-width: 100% !important;
+    }
+
+    .chart-large {
+        height: 260px;
+    }
+
+    .chart-doughnut {
+        height: 275px;
+    }
+
+    .chart-categories {
+        height: 340px;
+    }
+
+    .reserve-panel {
+        margin-bottom: 12px;
+        padding: 12px;
+    }
+
+    .reserve-header {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+    .reserve-header span {
+        font-size: 9px;
+        line-height: 1.25;
+    }
+
+    .reserve-header strong {
+        font-size: 12px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .reserve-panel p {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    /* As tabelas viram cartões verticais no celular. */
+    .table-scroll {
+        overflow: visible;
+        border-radius: 0;
+        box-shadow: none !important;
+    }
+
+    .health-table {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        font-size: 11px;
+    }
+
+    .health-table thead {
+        display: none;
+    }
+
+    .health-table tbody {
+        display: grid;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .health-table tr {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        overflow: hidden;
+        border: 1px solid rgba(127, 127, 127, 0.16);
+        border-radius: 8px;
+        background: rgba(127, 127, 127, 0.035);
+        box-sizing: border-box;
+    }
+
+    .health-table tbody tr:hover {
+        background: rgba(127, 127, 127, 0.035);
+    }
+
+    .health-table td {
+        display: grid;
+        grid-template-columns: minmax(105px, 0.9fr) minmax(0, 1.1fr);
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 34px;
+        padding: 7px 10px;
+        border-bottom: 1px solid rgba(127, 127, 127, 0.1);
+        text-align: right !important;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        box-sizing: border-box;
+    }
+
+    .health-table td::before {
+        content: attr(data-label);
+        min-width: 0;
+        color: inherit;
+        font-size: 9px;
+        font-weight: 600;
+        line-height: 1.25;
+        text-align: left;
+        text-transform: uppercase;
+        opacity: 0.62;
+    }
+
+    .health-table td:last-child {
+        border-bottom: 0;
+    }
+
+    .health-table td.mobile-primary-cell {
+        order: -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 42px;
+        padding: 9px 10px;
+        font-size: 13px;
+        text-align: left !important;
+        background: rgba(127, 127, 127, 0.07);
+    }
+
+    .health-table td.mobile-primary-cell::before {
+        display: none;
+    }
+
+    .health-table td.mobile-hide {
+        display: none;
+    }
+
+    .health-table .cell-note {
+        margin-top: 1px;
+        font-size: 9px;
+    }
+
+    .health-table .status-badge {
+        margin-left: 0;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .outlier-row {
+        background: rgba(237, 108, 2, 0.08) !important;
+        border-color: rgba(237, 108, 2, 0.24) !important;
+    }
+
+    .installment-category-list {
+        max-width: none;
+        margin-top: 12px;
+        padding: 11px;
+    }
+
+    .installment-category-list h4 {
+        font-size: 13px;
+    }
+
+    .installment-category-row {
+        gap: 7px;
+        padding: 6px 0;
+        font-size: 11px;
+    }
+
+    .quality-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .quality-grid > div {
+        min-height: 70px;
+        padding: 9px;
+    }
+
+    .quality-grid span {
+        font-size: 9px;
+        line-height: 1.3;
+    }
+
+    .quality-grid strong {
+        margin-top: 4px;
+        font-size: 16px;
+        overflow-wrap: anywhere;
+    }
+
+    .duplicate-table {
+        margin-top: 12px;
+    }
+
+    .legend-grid {
+        gap: 8px;
+    }
+
+    .legend-grid article {
+        padding: 10px;
+    }
+
+    .legend-grid strong {
+        font-size: 12px;
+    }
+
+    .legend-grid p {
+        font-size: 10px;
+        line-height: 1.45;
+    }
+
+    .details-panel {
+        margin-bottom: 9px;
+    }
+
+    ::ng-deep .details-panel .mat-expansion-panel-header {
+        min-height: 54px;
+        height: auto;
+        padding: 8px 14px;
+    }
+
+    ::ng-deep .details-panel .mat-expansion-panel-header-title {
+        font-size: 13px;
+    }
+
+    ::ng-deep .details-panel .mat-expansion-panel-header-description {
+        display: none;
+    }
+
+    ::ng-deep .details-panel .mat-expansion-panel-body {
+        padding: 0 12px 14px;
+    }
+
+    .empty-state {
+        padding: 20px 10px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .kpi-grid,
+    .comparison-grid,
+    .quality-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reserve-header {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reserve-header div {
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(127, 127, 127, 0.1);
+    }
+
+    .reserve-header div:last-child {
+        border-bottom: 0;
+    }
+
+    .health-table td {
+        grid-template-columns: minmax(92px, 0.85fr) minmax(0, 1.15fr);
+        gap: 7px;
+    }
+}

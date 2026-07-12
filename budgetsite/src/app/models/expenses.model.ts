@@ -28,6 +28,7 @@ export interface Expenses {
   repeatParcels?: boolean;
   monthsToRepeat?: number;
   repeatToNextMonths?: boolean;
+  preserveFutureValues?: boolean;
   card?: Cards;
   cardsList?: Cards[];
   categoriesList?: Categories[];

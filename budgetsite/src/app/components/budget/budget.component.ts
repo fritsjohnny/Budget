@@ -642,6 +642,39 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
+  repeatPreviousExpensesMonth(): void {
+    const dialogRef = this.dialog.open(
+      ConfirmDialogComponent,
+      {
+        width: '400px',
+        data: <ConfirmDialogData>{
+          title: 'Repetir mês anterior',
+          message:
+            'Essa ação irá apagar TODAS as despesas do mês atual e recriar com base no mês anterior. Deseja continuar?',
+          confirmText: 'Confirmar',
+          cancelText: 'Cancelar',
+        },
+      }
+    );
+
+    dialogRef
+      .afterClosed()
+      .subscribe((confirmed: boolean) => {
+        if (!confirmed) return;
+
+        this.expenseService
+          .repeatPreviousMonth(this.reference!)
+          .subscribe({
+            next: () => {
+              this.refresh();
+            },
+            error: (e) => {
+              this.messenger.errorHandler(e);
+            },
+          });
+      });
+  }
+
   editOrDeleteExpense(expense: Expenses, event: any): void {
     if (event.target.textContent! == 'more_vert') {
       return;

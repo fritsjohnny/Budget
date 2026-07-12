@@ -55,6 +55,8 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     monthsToRepeatFormControl: new FormControl(''),
     scheduledFormControl: new FormControl(''),
     repeatToNextMonthsFormControl: new FormControl(''),
+    preserveFutureValuesFormControl:
+      new FormControl(''),
     fixedFormControl: new FormControl(''),
     peopleFormControl: new FormControl(''),
     dueDayFormControl: new FormControl(''),
@@ -96,6 +98,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     }
 
     this.expenses.monthsToRepeat = 12;
+    this.expenses.preserveFutureValues = false;
   }
 
   ngAfterViewInit(): void {
@@ -190,6 +193,10 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     if (this.expenses.generateParcels) {
       this.disableRepeatParcelsCheck = true;
 
+      this.expenses.repeatParcels = false;
+      this.expenses.repeatToNextMonths = false;
+      this.expenses.preserveFutureValues = false;
+
       this.expensesFormGroup
         .get('monthsToRepeatFormControl')!
         .disable();
@@ -205,6 +212,10 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   onRepeatParcelsChanged(event: any): void {
     if (this.expenses.repeatParcels) {
       this.disableGenerateParcelsCheck = true;
+
+      this.expenses.generateParcels = false;
+      this.expenses.repeatToNextMonths = false;
+      this.expenses.preserveFutureValues = false;
     } else {
       this.disableGenerateParcelsCheck =
         this.hasExistingParcelSequence ||
@@ -213,6 +224,12 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
 
     if (this.hasExistingParcelSequence) {
       this.expenses.generateParcels = false;
+    }
+  }
+
+  onRepeatToNextMonthsChanged(): void {
+    if (!this.expenses.repeatToNextMonths) {
+      this.expenses.preserveFutureValues = false;
     }
   }
 

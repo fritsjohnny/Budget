@@ -352,9 +352,23 @@
                 <mat-checkbox
                     [(ngModel)]="expenses.repeatToNextMonths"
                     formControlName="repeatToNextMonthsFormControl"
-                    [disabled]="expenses.repeatParcels! || expenses.generateParcels!"
+                    [disabled]="
+                        expenses.repeatParcels! ||
+                        expenses.generateParcels!
+                    "
+                    (change)="onRepeatToNextMonthsChanged()"
                 >
                     Repetir edição para os próximos meses
+                </mat-checkbox>
+            </p>
+
+            <p *ngIf="expenses.editing">
+                <mat-checkbox
+                    [(ngModel)]="expenses.preserveFutureValues"
+                    formControlName="preserveFutureValuesFormControl"
+                    [disabled]="!expenses.repeatToNextMonths"
+                >
+                    Não alterar os valores dos próximos meses
                 </mat-checkbox>
             </p>
 

@@ -97,28 +97,51 @@ export class ExpenseService {
   }
 
   update(expense: Expenses): Observable<Expenses> {
-    const hasParcelOperation = expense.generateParcels || expense.repeatParcels;
+    const hasParcelOperation =
+      expense.generateParcels ||
+      expense.repeatParcels;
+
     const params: string[] = [];
 
     if (hasParcelOperation) {
-      params.push(`repeat=${expense.repeatParcels ?? false}`);
-      params.push(`qtyMonths=${expense.monthsToRepeat ?? 0}`);
+      params.push(
+        `repeat=${expense.repeatParcels ?? false}`
+      );
+
+      params.push(
+        `qtyMonths=${expense.monthsToRepeat ?? 0}`
+      );
     }
 
     if (expense.repeatToNextMonths) {
-      params.push(`repeatToNextMonths=${expense.repeatToNextMonths ?? false}`);
+      params.push(
+        `repeatToNextMonths=${expense.repeatToNextMonths ?? false}`
+      );
+
+      params.push(
+        `preserveFutureValues=${expense.preserveFutureValues ?? false}`
+      );
     }
 
-    const query = params.length ? `?${params.join('&')}` : '';
+    const query =
+      params.length > 0
+        ? `?${params.join('&')}`
+        : '';
 
     return this.http
       .put<Expenses>(
-        `${ApiUrls.expenses}${hasParcelOperation ? '/allparcels' : ''}/${expense.id}${query}`,
+        `${ApiUrls.expenses}${
+          hasParcelOperation
+            ? '/allparcels'
+            : ''
+        }/${expense.id}${query}`,
         expense
       )
       .pipe(
         map((obj) => obj),
-        catchError((e) => this.messenger.errorHandler(e))
+        catchError((e) =>
+          this.messenger.errorHandler(e)
+        )
       );
   }
 
@@ -176,5 +199,21 @@ export class ExpenseService {
     return this.http.get<ExpensesDueDateReportRow[]>(
       `${ApiUrls.expenses}/DueDateRange?initialDate=${initialDate}&finalDate=${finalDate}`
     );
+  }
+
+  repeatPreviousMonth(
+    reference: string
+  ): Observable<any> {
+    return this.http
+      .post<any>(
+        `${ApiUrls.expenses}/RepeatPreviousMonth?Reference=${reference}`,
+        null
+      )
+      .pipe(
+        map((obj) => obj),
+        catchError((e) =>
+          this.messenger.errorHandler(e)
+        )
+      );
   }
 }

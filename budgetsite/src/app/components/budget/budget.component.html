@@ -456,6 +456,16 @@
                             >
                             <span>Organizar igual mês anterior</span>
                         </button>
+                        <button
+                            id="menu-expenses"
+                            mat-menu-item
+                            (click)="repeatPreviousExpensesMonth()"
+                        >
+                            <mat-icon id="menu-icon-expenses">
+                                repeat
+                            </mat-icon>
+                            <span>Repetir mês anterior</span>
+                        </button>
                         <!-- Filtro de despesas vencendo -->
                         <div [id]="'menu-expenses'" mat-menu-item>
                             <mat-icon id="menu-icon-expenses">event</mat-icon>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { Accounts } from 'src/app/models/accounts.model';
 import { Cards } from 'src/app/models/cards.model';
@@ -6,13 +6,14 @@ import { Categories } from 'src/app/models/categories.model';
 import { AccountService } from 'src/app/services/account/account.service';
 import { CardService } from 'src/app/services/card/card.service';
 import { CategoryService } from 'src/app/services/category/category.service';
+import { DatepickerComponent } from 'src/app/shared/datepicker/datepicker.component';
 
 @Component({
   selector: 'app-report',
   templateUrl: './report.component.html',
   styleUrls: ['./report.component.scss'],
 })
-export class ReportComponent implements OnInit {
+export class ReportComponent implements OnInit, AfterViewInit {
   initialReference: string | undefined;
   finalReference: string | undefined;
   initialMonthName: string | undefined;
@@ -27,6 +28,7 @@ export class ReportComponent implements OnInit {
     { id: 4, name: 'Despesas por Data de Vencimento' },
     { id: 5, name: 'Despesas por Cartão' },
     { id: 6, name: 'Saldo Previsto em Conta' },
+    { id: 7, name: 'Saúde Financeira' },
   ];
   showReport: boolean = false;
   categories: Categories[] = [];
@@ -49,6 +51,15 @@ export class ReportComponent implements OnInit {
   forecastAccountId: number = 0;
   forecastInitialDateValue: Date | null = null;
   forecastFinalDateValue: Date | null = null;
+
+  financialHealthReserveTargetMonths: number = 9;
+  financialHealthFutureMonths: number = 12;
+  financialHealthIncludeCurrentMonth: boolean = false;
+  readonly financialHealthReserveTargetOptions = [3, 6, 9, 12, 18, 24];
+  readonly financialHealthFutureMonthOptions = [6, 12, 18, 24, 36];
+
+  @ViewChild('reportInitialDatepicker') reportInitialDatepicker!: DatepickerComponent;
+  @ViewChild('reportFinalDatepicker') reportFinalDatepicker!: DatepickerComponent;
 
   constructor(
     private categoryService: CategoryService,
@@ -127,6 +138,26 @@ export class ReportComponent implements OnInit {
     this.onlyMyCardExpenses = localStorage.getItem('report5OnlyMyCardExpenses') === 'true';
     this.groupByCard = localStorage.getItem('report5GroupByCard') === 'true';
     this.showCardChart = localStorage.getItem('report5ShowCardChart') === 'true';
+
+    this.financialHealthReserveTargetMonths = this.readStoredNumber(
+      'report7ReserveTargetMonths',
+      9,
+      this.financialHealthReserveTargetOptions
+    );
+
+    this.financialHealthFutureMonths = this.readStoredNumber(
+      'report7FutureMonths',
+      12,
+      this.financialHealthFutureMonthOptions
+    );
+
+    this.financialHealthIncludeCurrentMonth =
+      localStorage.getItem('report7IncludeCurrentMonth') === 'true';
+  }
+
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.ensureFinancialHealthDefaultPeriod());
   }
 
   get forecastReportInvalid(): boolean {
@@ -143,6 +174,39 @@ export class ReportComponent implements OnInit {
     }
 
     return this.forecastInitialDateValue > this.forecastFinalDateValue;
+  }
+
+  get financialHealthReportInvalid(): boolean {
+    if (this.selectedReportType !== 7) {
+      return false;
+    }
+
+    if (!this.initialReference || !this.finalReference) {
+      return true;
+    }
+
+    if (this.initialReference > this.finalReference) {
+      return true;
+    }
+
+    const currentDate = new Date();
+    const maximumHistoricalDate = this.financialHealthIncludeCurrentMonth
+      ? new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+      : new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+
+    if (this.initialReference > this.toReference(maximumHistoricalDate)) {
+      return true;
+    }
+
+    return !this.financialHealthReserveTargetOptions.includes(
+      this.financialHealthReserveTargetMonths
+    ) || !this.financialHealthFutureMonthOptions.includes(
+      this.financialHealthFutureMonths
+    );
+  }
+
+  get reportInvalid(): boolean {
+    return this.forecastReportInvalid || this.financialHealthReportInvalid;
   }
 
   initialReferenceChanges(reference: string) {
@@ -168,6 +232,8 @@ export class ReportComponent implements OnInit {
       this.selectedReportType!.toString()
     );
     this.reportType = undefined;
+
+    setTimeout(() => this.ensureFinancialHealthDefaultPeriod());
   }
 
   categoryChanges(event: MatSelectChange) {
@@ -191,8 +257,24 @@ export class ReportComponent implements OnInit {
     );
   }
 
+  financialHealthReserveTargetChanged(value: number) {
+    this.financialHealthReserveTargetMonths = value;
+    localStorage.setItem('report7ReserveTargetMonths', value.toString());
+  }
+
+  financialHealthFutureMonthsChanged(value: number) {
+    this.financialHealthFutureMonths = value;
+    localStorage.setItem('report7FutureMonths', value.toString());
+  }
+
+  financialHealthIncludeCurrentMonthChanged(value: boolean) {
+    this.financialHealthIncludeCurrentMonth = value;
+    localStorage.setItem('report7IncludeCurrentMonth', value.toString());
+    setTimeout(() => this.setFinancialHealthDefaultPeriod());
+  }
+
   generateReport() {
-    if (this.forecastReportInvalid) {
+    if (this.reportInvalid) {
       return;
     }
 
@@ -266,6 +348,44 @@ export class ReportComponent implements OnInit {
     localStorage.setItem('report5ShowCardChart', this.showCardChart.toString());
   }
 
+
+  setFinancialHealthDefaultPeriod(): void {
+    if (!this.reportInitialDatepicker || !this.reportFinalDatepicker) {
+      return;
+    }
+
+    this.reportFinalDatepicker.setCurrentMonth();
+
+    if (!this.financialHealthIncludeCurrentMonth) {
+      this.reportFinalDatepicker.setPreviousMonth();
+    }
+
+    this.reportInitialDatepicker.setCurrentMonth();
+
+    const monthsBack = this.financialHealthIncludeCurrentMonth ? 11 : 12;
+    const initialDate = this.reportInitialDatepicker.date.value
+      .clone()
+      .subtract(monthsBack, 'M');
+
+    this.reportInitialDatepicker.date.setValue(initialDate);
+    this.reportInitialDatepicker.setMonthName();
+  }
+
+  private ensureFinancialHealthDefaultPeriod(): void {
+    if (this.selectedReportType !== 7) {
+      return;
+    }
+
+    const currentReference = this.toReference(new Date());
+    const hasOnlyCurrentMonth =
+      this.initialReference === currentReference &&
+      this.finalReference === currentReference;
+
+    if (!this.initialReference || !this.finalReference || hasOnlyCurrentMonth) {
+      this.setFinancialHealthDefaultPeriod();
+    }
+  }
+
   private refreshCards() {
     this.cards = this.allCards.filter((card) => this.showDisabledCards || card.disabled !== true);
 
@@ -282,5 +402,24 @@ export class ReportComponent implements OnInit {
     }
 
     localStorage.setItem(key, new Date(date as any).toISOString());
+  }
+
+  private toReference(date: Date): string {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+
+    return `${year}${month}`;
+  }
+
+  private readStoredNumber(
+    key: string,
+    defaultValue: number,
+    allowedValues: number[]
+  ): number {
+    const storedValue = parseInt(localStorage.getItem(key) || '');
+
+    return allowedValues.includes(storedValue)
+      ? storedValue
+      : defaultValue;
   }
 }

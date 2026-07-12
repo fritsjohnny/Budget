@@ -25,5 +25,6 @@ export class ApiUrls {
   public static categories               = ApiUrls.baseUrl + 'categories';
   public static users                    = ApiUrls.baseUrl + 'users';
   public static annualSavings            = ApiUrls.baseUrl + 'annualsavings';
+  public static financialHealth          = ApiUrls.baseUrl + 'financialhealth';
   public static health                   = ApiUrls.baseUrl + 'health';
 }

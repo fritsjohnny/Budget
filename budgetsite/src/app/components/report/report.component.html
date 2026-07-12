@@ -187,6 +187,83 @@
                 </div>
             </div>
 
+            <div class="row" *ngIf="selectedReportType === 7">
+                <div class="col">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Meta de reserva</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="financialHealthReserveTargetMonths"
+                            (ngModelChange)="financialHealthReserveTargetChanged($event)"
+                        >
+                            <mat-option
+                                *ngFor="let months of financialHealthReserveTargetOptions"
+                                [value]="months"
+                            >
+                                {{ months }} meses de compromissos fixos
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div class="col">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100%"
+                    >
+                        <mat-label>Horizonte futuro</mat-label>
+                        <mat-select
+                            mat-input
+                            [(ngModel)]="financialHealthFutureMonths"
+                            (ngModelChange)="financialHealthFutureMonthsChanged($event)"
+                        >
+                            <mat-option
+                                *ngFor="let months of financialHealthFutureMonthOptions"
+                                [value]="months"
+                            >
+                                Próximos {{ months }} meses
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="row" *ngIf="selectedReportType === 7">
+                <div class="col mb-2">
+                    <button
+                        mat-stroked-button
+                        color="warn"
+                        type="button"
+                        (click)="setFinancialHealthDefaultPeriod()"
+                    >
+                        <mat-icon>date_range</mat-icon>
+                        Usar últimos 12 meses
+                    </button>
+                </div>
+            </div>
+
+            <div class="row" *ngIf="selectedReportType === 7">
+                <div class="col mb-2">
+                    <mat-checkbox
+                        color="warn"
+                        [(ngModel)]="financialHealthIncludeCurrentMonth"
+                        (ngModelChange)="financialHealthIncludeCurrentMonthChanged($event)"
+                    >
+                        Incluir o mês atual na análise histórica
+                    </mat-checkbox>
+
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px">
+                        Desmarcado, o mês atual é ignorado por ainda estar incompleto.
+                        A projeção futura e as parcelas continuam sendo analisadas.
+                    </div>
+                </div>
+            </div>
+
             <div
                 class="row d-flex"
                 *ngIf="selectedReportType !== 4 && selectedReportType !== 6"
@@ -197,6 +274,7 @@
                     </div>
                     <div>
                         <app-datepicker
+                            #reportInitialDatepicker
                             [showMonthName]="false"
                             (referenceChange)="initialReferenceChanges($event)"
                             (monthChange)="initialMonthName = $event"
@@ -210,6 +288,7 @@
                         <label>Referência Final</label>
                     </div>
                     <app-datepicker
+                        #reportFinalDatepicker
                         [showMonthName]="false"
                         (referenceChange)="finalReferenceChanges($event)"
                         (monthChange)="finalMonthName = $event"
@@ -313,7 +392,7 @@
                 mat-mini-fab
                 color="warn"
                 (click)="generateReport()"
-                [disabled]="!selectedReportType || forecastReportInvalid"
+                [disabled]="!selectedReportType || reportInvalid"
                 class="mat-elevation-z4"
                 matTooltip="Gerar Relatório"
                 matTooltipPosition="below"
@@ -382,6 +461,17 @@
                     [initialDate]="forecastInitialDateValue"
                     [finalDate]="forecastFinalDateValue"
                 ></app-account-forecast-balance-report>
+            </div>
+
+            <div class="col" *ngIf="reportType === 7 && showReport">
+                <app-financial-health-report
+                    class="col"
+                    [initialReference]="initialReference"
+                    [finalReference]="finalReference"
+                    [reserveTargetMonths]="financialHealthReserveTargetMonths"
+                    [futureMonths]="financialHealthFutureMonths"
+                    [includeCurrentMonth]="financialHealthIncludeCurrentMonth"
+                ></app-financial-health-report>
             </div>
         </div>
     </div>

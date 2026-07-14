@@ -192,6 +192,12 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     library.addIcons(faWhatsapp);
   }
 
+  private readonly portugueseCollator = new Intl.Collator('pt-BR', {
+    usage: 'sort',
+    sensitivity: 'base',
+    numeric: true,
+  });
+
   private sortPeople?: MatSort;
   private sortCategories?: MatSort;
 
@@ -210,11 +216,79 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   private bindPeopleSort(): void {
     if (!this.sortPeople) return;
 
+    this.dataSourcePeople.sortData = (
+      data: CardsPostingsDTO[],
+      sort: MatSort
+    ): CardsPostingsDTO[] => {
+      if (!sort.active || sort.direction === '') return data;
+
+      const direction = sort.direction === 'asc' ? 1 : -1;
+
+      return [...data].sort((a, b) => {
+        let comparison = 0;
+
+        switch (sort.active) {
+          case 'person':
+            comparison = this.portugueseCollator.compare(
+              a.person ?? '',
+              b.person ?? ''
+            );
+            break;
+
+          case 'toReceive':
+            comparison = (a.toReceive ?? 0) - (b.toReceive ?? 0);
+            break;
+
+          case 'received':
+            comparison = (a.received ?? 0) - (b.received ?? 0);
+            break;
+
+          case 'remaining':
+            comparison = (a.remaining ?? 0) - (b.remaining ?? 0);
+            break;
+        }
+
+        return comparison * direction;
+      });
+    };
+
     this.dataSourcePeople.sort = this.sortPeople;
   }
 
   private bindCategoriesSort(): void {
     if (!this.sortCategories) return;
+
+    this.dataSourceCategories.sortData = (
+      data: ExpensesByCategories[],
+      sort: MatSort
+    ): ExpensesByCategories[] => {
+      if (!sort.active || sort.direction === '') return data;
+
+      const direction = sort.direction === 'asc' ? 1 : -1;
+
+      return [...data].sort((a, b) => {
+        let comparison = 0;
+
+        switch (sort.active) {
+          case 'category':
+            comparison = this.portugueseCollator.compare(
+              a.category ?? '',
+              b.category ?? ''
+            );
+            break;
+
+          case 'amount':
+            comparison = (a.amount ?? 0) - (b.amount ?? 0);
+            break;
+
+          case 'perc':
+            comparison = (a.perc ?? 0) - (b.perc ?? 0);
+            break;
+        }
+
+        return comparison * direction;
+      });
+    };
 
     this.dataSourceCategories.sort = this.sortCategories;
   }
@@ -324,10 +398,13 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           this.cardsList = cards;
 
           this.categoriesList = categories.sort((a, b) =>
-            a.name.localeCompare(b.name)
+            this.portugueseCollator.compare(a.name ?? '', b.name ?? '')
           );
 
-          this.peopleList = people;
+          this.peopleList = people.sort((a, b) =>
+            this.portugueseCollator.compare(a.name ?? '', b.name ?? '')
+          );
+          
           this.accountsList = accounts;
 
           this.expenses = expenses;

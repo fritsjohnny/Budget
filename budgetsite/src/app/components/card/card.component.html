@@ -72,6 +72,9 @@
                     >
                         autorenew
                     </span>
+                    <span *ngIf="cardId && cardId > 0 && reference" class="material-icons add-card"
+                        matTooltip="Fechamento da fatura" [class.disabled]="validatingInvoiceClosing"
+                        (click)="openInvoiceClosing()">event_available</span>
                     <span
                         *ngIf="card?.appPackageName"
                         class="material-icons add-card"

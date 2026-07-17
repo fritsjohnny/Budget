@@ -48,6 +48,8 @@ import { PeopleComponent } from '../people/people.component';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
+import { CardsInvoiceClosing } from 'src/app/models/cardsinvoiceclosing.model';
+import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
 
 @Component({
   selector: 'app-budget',
@@ -73,6 +75,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from 'src/app/shared/confir
   ],
 })
 export class BudgetComponent implements OnInit, AfterViewInit {
+  validatingInvoiceClosing = false;
   isBudgetLoading = false;
   isBudgetLoaded = false;
 
@@ -183,6 +186,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     private categoryService: CategoryService,
     private accountService: AccountService,
     private messenger: Messenger,
+    private invoiceClosingService: CardsInvoiceClosingService,
     private clipboardService: ClipboardService,
     private accountPostingsService: AccountPostingsService,
     private budget: BudgetService,
@@ -1179,12 +1183,35 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   payWithCard(expense: Expenses) {
+    if (this.validatingInvoiceClosing || !this.reference) return;
+
+    const storedCardId = Number(localStorage.getItem('lastCardUsed'));
+    const selectedCard = storedCardId > 0
+      ? this.cardsList?.find(card => card.id === storedCardId)
+      : undefined;
+
+    if (!selectedCard) {
+      this.openPayWithCardDialog(expense);
+      return;
+    }
+
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(storedCardId, this.reference).pipe(
+      finalize(() => this.validatingInvoiceClosing = false)
+    ).subscribe({
+      next: invoiceClosing => this.openPayWithCardDialog(expense, storedCardId, invoiceClosing)
+    });
+  }
+
+  private openPayWithCardDialog(expense: Expenses, cardId?: number, invoiceClosing?: CardsInvoiceClosing): void {
     const dialogRef = this.dialog.open(CardPostingsDialog, {
       width: '100%',
       maxWidth: '100%',
       data: {
         reference: this.reference,
-        // cardId: this.cardId,
+        cardId,
+        invoiceClosing,
+        allowClosedInvoiceOperation: false,
         description: expense.categoryId ? expense.description : '',
         parcels: expense.parcels,
         parcelNumber: expense.parcelNumber,

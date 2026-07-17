@@ -77,3 +77,14 @@ tr.mat-footer-row {
     display: inline-block;
     width: 170px;
 }
+.invoice-fields-blocked {
+  pointer-events: none;
+}
+
+.invoice-fields-blocked .card-selection-enabled.invoice-context-enabled {
+  pointer-events: auto;
+}
+
+.invoice-fields-blocked .reference-selection-enabled {
+  pointer-events: auto;
+}

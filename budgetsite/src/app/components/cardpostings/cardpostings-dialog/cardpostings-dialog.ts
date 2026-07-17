@@ -25,6 +25,11 @@ import {
   ConfirmDialogData,
 } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
+import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
+import { Messenger } from 'src/app/common/messenger';
+import { formatReference } from 'src/app/common/reference';
+import { finalize } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'cardpostings-dialog',
@@ -67,7 +72,37 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     dueDateFormControl: new FormControl(''),
     isPaidFormControl: new FormControl(''),
     expenseIdFormControl: new FormControl(''),
+    allowClosedInvoiceOperationFormControl: new FormControl(false),
   });
+  validatingInvoiceClosing = false;
+  invoiceClosingLoaded = false;
+  invoiceClosingLoadFailed = false;
+  referenceListsLoading = false;
+  referenceListsLoaded = false;
+  referenceListsLoadFailed = false;
+  private invoiceClosingRequestId = 0;
+  private referenceListsRequestId = 0;
+  readonly formatReference = formatReference;
+
+  get requiresClosedInvoiceOverride(): boolean {
+    return this.cardPosting.sourceInvoiceClosing?.isClosed === true || this.cardPosting.invoiceClosing?.isClosed === true;
+  }
+  get invoiceOperationBlocked(): boolean {
+    return this.requiresClosedInvoiceOverride && this.cardPosting.allowClosedInvoiceOperation !== true;
+  }
+  get businessFieldsBlocked(): boolean {
+    return this.validatingInvoiceClosing || !this.invoiceClosingLoaded || this.invoiceClosingLoadFailed ||
+      this.referenceListsLoading || !this.referenceListsLoaded || this.referenceListsLoadFailed || this.invoiceOperationBlocked;
+  }
+  get canSave(): boolean {
+    return this.cardPostingFormGroup.valid && this.cardPosting.cardId > 0 &&
+      /^\d{6}$/.test(this.cardPosting.reference ?? '') && !this.validatingInvoiceClosing &&
+      this.invoiceClosingLoaded && !this.invoiceClosingLoadFailed && !this.referenceListsLoading &&
+      this.referenceListsLoaded && !this.referenceListsLoadFailed && !this.invoiceOperationBlocked;
+  }
+  get canChangeInvoiceContext(): boolean {
+    return !this.validatingInvoiceClosing && !this.referenceListsLoading;
+  }
 
   constructor(
     public dialog: MatDialog,
@@ -77,10 +112,16 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     private peopleService: PeopleService,
     private cardPostingsService: CardPostingsService,
     private expenseService: ExpenseService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private invoiceClosingService: CardsInvoiceClosingService,
+    private messenger: Messenger
   ) { }
 
   ngOnInit(): void {
+    this.cardPosting.allowClosedInvoiceOperation = false;
+    this.invoiceClosingLoaded = !!this.cardPosting.invoiceClosing &&
+      this.cardPosting.invoiceClosing.cardId === this.cardPosting.cardId &&
+      this.cardPosting.invoiceClosing.reference === this.cardPosting.reference;
     this.cardPosting.provisioned = this.cardPosting.provisioned ?? false;
 
     const originalParcels = this.cardPosting.parcels ?? 1;
@@ -106,6 +147,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     this.cardPosting.preserveFutureValues = false;
 
     this.getLists();
+    this.loadReferenceDependentLists(this.cardPosting.reference, false);
+    this.applyBusinessControlState();
   }
 
   ngAfterViewInit(): void {
@@ -113,19 +156,11 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       this.cardPosting.date = this.datepickerinput.date.value._d;
     }
 
-    if (this.cardPosting.payWithCard) {
-      const lastCardUsed = localStorage.getItem('lastCardUsed');
-
-      if (lastCardUsed) {
-        this.cardPosting.cardId = Number(lastCardUsed);
-      }
-    }
-
     this.cd.detectChanges();
 
     this.isScreenInit = false;
 
-    if (this.cardPosting.description) {
+    if (this.cardPosting.description && !this.businessFieldsBlocked) {
       this.onDescriptionChange();
     }
 
@@ -156,24 +191,6 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       },
     });
 
-    this.categoryService.readWithExpenses(this.cardPosting.reference!).subscribe({
-      next: (categories) => {
-        this.cardPosting.categoriesList = categories.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
-
-        this.suggestExpenseFromCategory();
-      },
-    });
-
-    this.expenseService.readComboList(this.cardPosting.reference!).subscribe({
-      next: (expenses) => {
-        this.cardPosting.expensesList = expenses.sort((a, b) =>
-          a.description.localeCompare(b.description));
-
-        this.suggestExpenseFromCategory();
-      },
-    });
   }
 
   cancel(): void {
@@ -185,6 +202,11 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   save(): void {
+    if (!this.canSave) {
+      this.messenger.errorHandler('Autorize a operação na fatura fechada para continuar.');
+      return;
+    }
+    this.cardPosting.allowClosedInvoiceOperation = this.cardPosting.allowClosedInvoiceOperation === true;
     if (this.hasExistingParcelSequence) {
       this.cardPosting.generateParcels = false;
     }
@@ -197,6 +219,10 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   delete(): void {
+    if (this.invoiceOperationBlocked) {
+      this.messenger.errorHandler('Autorize a exclusão na fatura fechada para continuar.');
+      return;
+    }
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: <ConfirmDialogData>{
@@ -214,6 +240,164 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
         this.dialogRef.close(this.cardPosting);
       }
     });
+  }
+
+  onClosedInvoiceAuthorizationChanged(): void {
+    this.cardPosting.allowClosedInvoiceOperation = this.cardPosting.allowClosedInvoiceOperation === true;
+    this.applyBusinessControlState();
+    if (!this.businessFieldsBlocked) {
+      const needsDescriptionSuggestion = !!this.cardPosting.description &&
+        (this.cardPosting.categoryId == null || this.cardPosting.peopleId == null);
+      if (needsDescriptionSuggestion) this.onDescriptionChange();
+      else this.suggestExpenseFromCategory();
+    }
+  }
+
+  onCardChanged(cardId: number): void {
+    this.loadInvoiceClosing(cardId, this.cardPosting.reference);
+  }
+
+  onReferenceChanged(reference: string): void {
+    if (!/^\d{6}$/.test(reference ?? '')) return;
+    if (reference === this.cardPosting.reference) return;
+    this.cardPosting.reference = reference;
+    this.loadInvoiceClosing(this.cardPosting.cardId, reference);
+    this.loadReferenceDependentLists(reference, true);
+  }
+
+  loadReferenceDependentLists(
+    reference: string,
+    clearReferenceDependentSelection: boolean
+  ): void {
+    if (!/^\d{6}$/.test(reference ?? '')) return;
+    const requestId = ++this.referenceListsRequestId;
+
+    const expenseIdToPreserve = clearReferenceDependentSelection
+      ? undefined
+      : this.cardPosting.expenseId;
+
+    if (clearReferenceDependentSelection) {
+      this.cardPosting.expenseId = undefined;
+      this.cardPostingFormGroup.get('expenseIdFormControl')?.reset(null, { emitEvent: false });
+    }
+    this.cardPosting.expensesList = [];
+    this.referenceListsLoading = true;
+    this.referenceListsLoaded = false;
+    this.referenceListsLoadFailed = false;
+    this.applyBusinessControlState();
+
+    forkJoin({
+      categories: this.categoryService.readWithExpenses(reference),
+      expenses: this.expenseService.readComboList(reference)
+    }).pipe(finalize(() => {
+      if (requestId !== this.referenceListsRequestId) return;
+      if (this.cardPosting.reference === reference) {
+        this.referenceListsLoading = false;
+        this.applyBusinessControlState();
+        if (!this.businessFieldsBlocked) this.suggestExpenseFromCategory();
+      }
+    })).subscribe({
+      next: ({ categories, expenses }) => {
+        if (requestId !== this.referenceListsRequestId) return;
+        if (this.cardPosting.reference !== reference) return;
+
+        this.cardPosting.categoriesList = (categories ?? []).sort((a, b) => a.name.localeCompare(b.name));
+        this.cardPosting.expensesList = (expenses ?? []).sort((a, b) => a.description.localeCompare(b.description));
+
+        const selectedExpenseExists = expenseIdToPreserve != null &&
+          this.cardPosting.expensesList.some(expense => expense.id === expenseIdToPreserve);
+
+        if (selectedExpenseExists) {
+          this.cardPosting.expenseId = expenseIdToPreserve;
+          this.cardPostingFormGroup.get('expenseIdFormControl')?.setValue(expenseIdToPreserve, { emitEvent: false });
+        } else if (!clearReferenceDependentSelection && expenseIdToPreserve != null) {
+          this.cardPosting.expenseId = undefined;
+          this.cardPostingFormGroup.get('expenseIdFormControl')?.reset(null, { emitEvent: false });
+        }
+
+        if (this.cardPosting.categoryId != null &&
+          !this.cardPosting.categoriesList.some(category => category.id === this.cardPosting.categoryId)) {
+          this.cardPosting.categoryId = undefined;
+          this.cardPostingFormGroup.get('categoryIdFormControl')?.reset(null, { emitEvent: false });
+        }
+
+        this.referenceListsLoaded = true;
+        this.referenceListsLoadFailed = false;
+      },
+      error: () => {
+        if (requestId !== this.referenceListsRequestId) return;
+        if (this.cardPosting.reference !== reference) return;
+        this.cardPosting.categoriesList = [];
+        this.cardPosting.expensesList = [];
+        this.referenceListsLoaded = false;
+        this.referenceListsLoadFailed = true;
+      }
+    });
+  }
+
+  loadInvoiceClosing(cardId: number, reference: string): void {
+    const requestId = ++this.invoiceClosingRequestId;
+
+    this.cardPosting.invoiceClosing = undefined;
+    this.cardPosting.allowClosedInvoiceOperation = false;
+    this.invoiceClosingLoaded = false;
+    this.invoiceClosingLoadFailed = false;
+
+    if (!cardId || cardId <= 0 || !/^\d{6}$/.test(reference ?? '')) {
+      this.applyBusinessControlState();
+      return;
+    }
+
+    this.validatingInvoiceClosing = true;
+    this.applyBusinessControlState();
+    this.invoiceClosingService.ensure(cardId, reference).pipe(
+      finalize(() => {
+        if (requestId !== this.invoiceClosingRequestId) return;
+        this.validatingInvoiceClosing = false;
+        this.applyBusinessControlState();
+        if (!this.businessFieldsBlocked) this.suggestExpenseFromCategory();
+      })
+    ).subscribe({
+      next: closing => {
+        if (requestId !== this.invoiceClosingRequestId) return;
+        if (this.cardPosting.cardId !== cardId || this.cardPosting.reference !== reference) return;
+        this.cardPosting.invoiceClosing = closing;
+        this.invoiceClosingLoaded = true;
+        this.invoiceClosingLoadFailed = false;
+      },
+      error: () => {
+        if (requestId !== this.invoiceClosingRequestId) return;
+        if (this.cardPosting.cardId !== cardId || this.cardPosting.reference !== reference) return;
+        this.invoiceClosingLoaded = false;
+        this.invoiceClosingLoadFailed = true;
+      }
+    });
+  }
+
+  private applyBusinessControlState(): void {
+    const override = this.cardPostingFormGroup.get('allowClosedInvoiceOperationFormControl');
+    if (this.businessFieldsBlocked) {
+      Object.keys(this.cardPostingFormGroup.controls).forEach(name => {
+        if (name !== 'allowClosedInvoiceOperationFormControl') this.cardPostingFormGroup.get(name)?.disable({ emitEvent: false });
+      });
+      if (this.canChangeInvoiceContext) this.cardPostingFormGroup.get('cardIdFormControl')?.enable({ emitEvent: false });
+      if (this.invoiceClosingLoaded && this.requiresClosedInvoiceOverride) override?.enable({ emitEvent: false });
+      else override?.disable({ emitEvent: false });
+      return;
+    }
+    Object.keys(this.cardPostingFormGroup.controls).forEach(name => this.cardPostingFormGroup.get(name)?.enable({ emitEvent: false }));
+    if (this.hasExistingParcelSequence || this.disableCheck) this.cardPostingFormGroup.get('generateParcelsFormControl')?.disable({ emitEvent: false });
+    if (this.cardPosting.generateParcels) this.cardPostingFormGroup.get('monthsToRepeatFormControl')?.disable({ emitEvent: false });
+    if (!this.cardPosting.repeatToNextMonths) this.cardPostingFormGroup.get('preserveFutureValuesFormControl')?.disable({ emitEvent: false });
+    override?.enable({ emitEvent: false });
+  }
+
+  closedInvoiceMessage(): string {
+    const closing = this.cardPosting.sourceInvoiceClosing?.isClosed ? this.cardPosting.sourceInvoiceClosing : this.cardPosting.invoiceClosing;
+    if (!closing) return '';
+    const cardName = closing.cardName || this.cardPosting.cardsList?.find(card => card.id === closing.cardId)?.name || 'selecionado';
+    const date = new Date(closing.closingDate).toLocaleDateString('pt-BR');
+    return `A fatura ${formatReference(closing.reference)} do cartão ${cardName} foi fechada em ${date}. Para continuar, marque a permissão abaixo.`;
   }
 
   setPeople(): void {
@@ -369,6 +553,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   onDescriptionChange() {
+    if (this.businessFieldsBlocked) return;
     if (!this.cardPosting.description) return;
 
     if (this.cardPosting.categoryId != null && this.cardPosting.peopleId != null) {
@@ -407,8 +592,9 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     return (value ?? '').trim().toLocaleLowerCase('pt-BR');
   }
 
-  private suggestExpenseFromCategory(force: boolean = false): void {
-    if (!force && this.cardPosting.expenseId != null) {
+  private suggestExpenseFromCategory(): void {
+    if (this.businessFieldsBlocked) return;
+    if (this.cardPosting.expenseId != null) {
       return;
     }
 
@@ -438,6 +624,6 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   onCategorySelected() {
-    this.suggestExpenseFromCategory(true);
+    this.suggestExpenseFromCategory();
   }
 }

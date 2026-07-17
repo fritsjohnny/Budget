@@ -6,6 +6,9 @@ import { CardDialog } from './card-dialog';
 import { NotificationReader } from 'capacitor-notification-reader/src';
 import { Messenger } from 'src/app/common/messenger';
 import { delay, retryWhen, tap } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
+import { CardsInvoiceClosingDialog } from './cards-invoice-closing-dialog/cards-invoice-closing-dialog';
 
 @Component({
   selector: 'app-card',
@@ -25,11 +28,13 @@ export class CardComponent implements OnInit, AfterViewInit {
   card!: Cards;
   hideProgress: boolean = false;
   buttonName: string = "";
+  validatingInvoiceClosing = false;
 
   constructor(private cardService: CardService,
     private cd: ChangeDetectorRef,
     public dialog: MatDialog,
-    private messenger: Messenger
+    private messenger: Messenger,
+    private invoiceClosingService: CardsInvoiceClosingService
   ) {
 
     this.cardId = Number(localStorage.getItem("cardId"));
@@ -226,5 +231,19 @@ export class CardComponent implements OnInit, AfterViewInit {
       this.messenger.errorHandler(err);
       console.error('Erro ao abrir o app do cartão:', err);
     }
+  }
+
+  openInvoiceClosing(): void {
+    if (!this.cardId || this.cardId <= 0 || !this.reference || !/^\d{6}$/.test(this.reference) || this.validatingInvoiceClosing) return;
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(this.cardId, this.reference).pipe(finalize(() => this.validatingInvoiceClosing = false)).subscribe({
+      next: closing => this.dialog.open(CardsInvoiceClosingDialog, {
+        width: '100%',
+        maxWidth: '100%',
+        maxHeight: '95vh',
+        autoFocus: false,
+        data: closing
+      })
+    });
   }
 }

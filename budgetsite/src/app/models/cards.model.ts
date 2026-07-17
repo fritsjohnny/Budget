@@ -1,5 +1,3 @@
-import { CardsInvoiceDate } from "./cardsinvoiceDate.model";
-
 export interface Cards {
   id?: number;
   userId?: number;
@@ -12,5 +10,4 @@ export interface Cards {
   appPackageName?: string;
   editing?: boolean,
   deleting?: boolean;
-  cardInvoiceDate?: CardsInvoiceDate;
 }

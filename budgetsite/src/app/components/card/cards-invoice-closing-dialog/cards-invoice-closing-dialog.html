@@ -1,0 +1,49 @@
+<div class="invoice-closing-dialog">
+  <div class="cancel">
+    <button class="default-button" mat-mini-fab matTooltip="Cancelar" color="accent"
+      aria-label="Cancelar" (click)="cancel()" [disabled]="saving">
+      <mat-icon class="default-icon">close</mat-icon>
+    </button>
+  </div>
+
+  <h2 mat-dialog-title>Fechamento da fatura</h2>
+
+  <div mat-dialog-content>
+    <div class="row">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Cartão</mat-label>
+        <input matInput [value]="closing.cardName || closing.cardId" readonly>
+      </mat-form-field>
+    </div>
+    <div class="row">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Referência</mat-label>
+        <input matInput [value]="formatReference(closing.reference)" readonly>
+      </mat-form-field>
+    </div>
+    <div class="row">
+      <app-datepickerinput class="full-width" [currentDate]="closing.closingDate"
+        label="Data de fechamento" (currentDateChanged)="dateChanged($event)">
+      </app-datepickerinput>
+    </div>
+    <p class="status">
+      <mat-icon>{{ closing.isClosed ? 'lock' : 'lock_open' }}</mat-icon>
+      {{ closing.isClosed ? 'Fatura fechada' : 'Fatura aberta' }}
+    </p>
+    <p class="estimated" *ngIf="closing.isEstimated">
+      Data sugerida automaticamente com base no dia de fechamento cadastrado no cartão.
+    </p>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div mat-dialog-actions>
+        <button class="default-button bg-primary" mat-mini-fab matTooltip="Salvar"
+          matTooltipPosition="right" aria-label="Salvar" (click)="save()"
+          [disabled]="saving || !closing.closingDate">
+          <mat-icon class="default-icon">save</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

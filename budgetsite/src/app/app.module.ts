@@ -99,6 +99,7 @@ import { FinancialHealthReportComponent } from './components/reports/financial-h
 import { GenerateCardReceiptDialog } from './components/accountpostings/generate-cardreceipt-dialog/generate-cardreceipt-dialog';
 import { AnnualSavingsComponent } from './components/annual-savings/annual-savings.component';
 import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
+import { CardsInvoiceClosingDialog } from './components/card/cards-invoice-closing-dialog/cards-invoice-closing-dialog';
 
 import { NgChartsModule } from 'ng2-charts';
 
@@ -165,6 +166,7 @@ registerLocaleData(localePt);
     GenerateCardReceiptDialog,
     AnnualSavingsComponent,
     AnnualSavingsViewComponent,
+    CardsInvoiceClosingDialog,
   ],
   imports: [
     BrowserModule,

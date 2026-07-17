@@ -29,6 +29,9 @@ import { CardPostingsDialog } from './cardpostings-dialog/cardpostings-dialog';
 import { CardReceiptsDialog } from './cardreceipts-dialog/cardreceipts-dialog';
 import { Messenger } from 'src/app/common/messenger';
 import { Expenses } from 'src/app/models/expenses.model';
+import { CardsInvoiceClosing } from 'src/app/models/cardsinvoiceclosing.model';
+import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
+import { finalize } from 'rxjs/operators';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -102,6 +105,7 @@ export class CardPostingsComponent implements OnInit {
   othersParcels: number | null = null;
   singleParcels: number | null = null;
   private cardPostingsReloadInProgress = false;
+  validatingInvoiceClosing = false;
 
   constructor(
     private cardPostingsService: CardPostingsService,
@@ -113,7 +117,8 @@ export class CardPostingsComponent implements OnInit {
     private cardService: CardService,
     public dialog: MatDialog,
     private cd: ChangeDetectorRef,
-    private messenger: Messenger
+    private messenger: Messenger,
+    private invoiceClosingService: CardsInvoiceClosingService
   ) { }
 
   ngOnInit(): void {
@@ -471,7 +476,19 @@ export class CardPostingsComponent implements OnInit {
       : 0;
   }
 
-  add() {
+  add(): void {
+    if (!this.cardId || this.cardId <= 0) {
+      this.messenger.errorHandler('Selecione um cartão específico para incluir um lançamento.');
+      return;
+    }
+    if (!this.reference || this.validatingInvoiceClosing) return;
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(this.cardId, this.reference).pipe(finalize(() => this.validatingInvoiceClosing = false)).subscribe({
+      next: closing => this.openAdd(closing)
+    });
+  }
+
+  private openAdd(invoiceClosing: CardsInvoiceClosing) {
     this.editing = false;
 
     const dialogRef = this.dialog.open(CardPostingsDialog, {
@@ -489,6 +506,8 @@ export class CardPostingsComponent implements OnInit {
         editing: this.editing,
         adding: true,
         provisioned: false,
+        invoiceClosing,
+        allowClosedInvoiceOperation: false,
       },
     });
 
@@ -511,6 +530,14 @@ export class CardPostingsComponent implements OnInit {
   }
 
   clone(cardPosting: CardsPostings): void {
+    if (this.validatingInvoiceClosing) return;
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(cardPosting.cardId, cardPosting.reference).pipe(finalize(() => this.validatingInvoiceClosing = false)).subscribe({
+      next: closing => this.openClone(cardPosting, closing)
+    });
+  }
+
+  private openClone(cardPosting: CardsPostings, invoiceClosing: CardsInvoiceClosing): void {
     this.editing = false;
 
     const dialogRef = this.dialog.open(CardPostingsDialog, {
@@ -550,6 +577,8 @@ export class CardPostingsComponent implements OnInit {
         repeatParcels: false,
         repeatToNextMonths: false,
         monthsToRepeat: 12,
+        invoiceClosing,
+        allowClosedInvoiceOperation: false,
       },
     });
 
@@ -590,6 +619,14 @@ export class CardPostingsComponent implements OnInit {
       return;
     }
 
+    if (this.validatingInvoiceClosing) return;
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(cardPosting.cardId, cardPosting.reference).pipe(finalize(() => this.validatingInvoiceClosing = false)).subscribe({
+      next: closing => this.openEdit(cardPosting, closing)
+    });
+  }
+
+  private openEdit(cardPosting: CardsPostings, sourceInvoiceClosing: CardsInvoiceClosing): void {
     this.editing = true;
 
     const dialogRef = this.dialog.open(CardPostingsDialog, {
@@ -625,6 +662,9 @@ export class CardPostingsComponent implements OnInit {
         isPaid: cardPosting.isPaid,
         provisioned: cardPosting.provisioned ?? false,
         expenseId: cardPosting.expenseId,
+        sourceInvoiceClosing,
+        invoiceClosing: sourceInvoiceClosing,
+        allowClosedInvoiceOperation: false,
       },
     });
 
@@ -663,6 +703,14 @@ export class CardPostingsComponent implements OnInit {
   }
 
   delete(cardPosting: CardsPostings) {
+    if (this.validatingInvoiceClosing) return;
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(cardPosting.cardId, cardPosting.reference).pipe(
+      finalize(() => this.validatingInvoiceClosing = false)
+    ).subscribe({ next: closing => this.confirmDelete(cardPosting, closing.isClosed) });
+  }
+
+  private confirmDelete(cardPosting: CardsPostings, isClosed: boolean): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: <ConfirmDialogData>{
@@ -670,12 +718,15 @@ export class CardPostingsComponent implements OnInit {
         message: 'Confirma a EXCLUSÃO da compra?',
         confirmText: 'Sim',
         cancelText: 'Cancelar',
+        requireAuthorization: isClosed,
+        authorizationText: 'Permitir exclusão em fatura fechada',
       },
     });
 
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (confirmed) {
-        this.cardPostingsService.delete(cardPosting).subscribe({
+        const allowClosedInvoiceOperation = isClosed && confirmed === true;
+        this.cardPostingsService.delete(cardPosting, allowClosedInvoiceOperation).subscribe({
           next: () => {
             this.messenger.message(
               'Lançamento de cartão removido com sucesso.'
@@ -910,6 +961,14 @@ export class CardPostingsComponent implements OnInit {
   }
 
   convertToExpense(posting: CardsPostings): void {
+    if (this.validatingInvoiceClosing) return;
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(posting.cardId, posting.reference).pipe(
+      finalize(() => this.validatingInvoiceClosing = false)
+    ).subscribe({ next: closing => this.confirmConvertToExpense(posting, closing.isClosed) });
+  }
+
+  private confirmConvertToExpense(posting: CardsPostings, isClosed: boolean): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: <ConfirmDialogData>{
@@ -917,41 +976,24 @@ export class CardPostingsComponent implements OnInit {
         message: 'Confirma a Transformação em Despesa?',
         confirmText: 'Sim',
         cancelText: 'Cancelar',
+        requireAuthorization: isClosed,
+        authorizationText: 'Permitir transformação em despesa de fatura fechada',
       },
     });
 
     dialogRef.afterClosed().subscribe((confirmed) => {
-      if (confirmed) {
-        const expense: Expenses = {
-          reference: this.reference!,
-          description: posting.description,
-          toPay: posting.amount,
-          totalToPay: posting.amount,
-          paid: 0,
-          remaining: 0,
-          dueDate: posting.dueDate,
-          categoryId: posting.categoryId,
-          peopleId: posting.peopleId,
-          parcelNumber: posting.parcelNumber,
-          parcels: posting.parcels,
-          note: posting.note,
-          fixed: posting.fixed,
-        };
+      if (!confirmed) return;
 
-        this.expenseService.create(expense).subscribe({
-          next: () => {
-            this.cardPostingsService.delete(posting).subscribe(() => {
-              this.messenger.message(
-                'Despesa criada e lançamento de cartão removido.'
-              );
-              this.afterDelete(posting);
-            });
-          },
-          error: () => {
-            this.messenger.message('Erro ao transformar em despesa.');
-          },
-        });
-      }
+      const allowClosedInvoiceOperation = isClosed && confirmed === true;
+      this.cardPostingsService.convertToExpense(
+        posting,
+        allowClosedInvoiceOperation
+      ).subscribe({
+        next: () => {
+          this.messenger.message('Despesa criada e lançamento de cartão removido.');
+          this.afterDelete(posting);
+        }
+      });
     });
   }
 

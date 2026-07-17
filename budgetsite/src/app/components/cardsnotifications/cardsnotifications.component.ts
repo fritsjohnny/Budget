@@ -13,6 +13,8 @@ import {
 } from 'capacitor-notification-reader/src';
 import { Preferences } from '@capacitor/preferences';
 import { Messenger } from 'src/app/common/messenger';
+import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
+import { finalize } from 'rxjs/operators';
 
 interface CardNotification extends CardsPostings {
   sourceAppPackageName?: string;
@@ -40,11 +42,13 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
   notifications = [] as CardNotification[];
 
   private intervalId?: any;
+  validatingInvoiceClosing = false;
 
   constructor(
     private dialog: MatDialog,
     private cardPostingsService: CardPostingsService,
-    private messenger: Messenger
+    private messenger: Messenger,
+    private invoiceClosingService: CardsInvoiceClosingService
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -311,6 +315,11 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (!this.reference || this.validatingInvoiceClosing) return;
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(this.cardId, this.reference).pipe(
+      finalize(() => this.validatingInvoiceClosing = false)
+    ).subscribe({ next: invoiceClosing => {
     const dialogRef = this.dialog.open(CardPostingsDialog, {
       width: '100%',
       maxWidth: '100%',
@@ -330,6 +339,8 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         adding: true,
         note: notification.note,
         provisioned: false,
+        invoiceClosing,
+        allowClosedInvoiceOperation: false,
       },
     });
 
@@ -355,6 +366,7 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         });
       }
     });
+    }});
   }
 
   async removeNotification(notification: CardNotification): Promise<void> {

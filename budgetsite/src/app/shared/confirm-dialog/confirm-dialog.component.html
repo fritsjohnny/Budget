@@ -25,6 +25,9 @@
                     <p class="confirm-dialog-message">{{ data.message }}</p>
                 </div>
             </div>
+            <mat-checkbox *ngIf="data.requireAuthorization" [(ngModel)]="authorized" name="authorized">
+                {{ data.authorizationText }}
+            </mat-checkbox>
         </div>
 
         <div class="row justify-content-center" style="gap: 20px">
@@ -40,6 +43,7 @@
             <button
                 mat-raised-button
                 color="warn"
+                [disabled]="data.requireAuthorization && !authorized"
                 (click)="onConfirm()"
                 style="width: 100px"
             >

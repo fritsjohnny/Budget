@@ -6,6 +6,8 @@ export interface ConfirmDialogData {
   message: string;
   confirmText?: string;
   cancelText?: string;
+  requireAuthorization?: boolean;
+  authorizationText?: string;
 }
 
 @Component({
@@ -14,13 +16,14 @@ export interface ConfirmDialogData {
   styleUrls: ['./confirm-dialog.component.scss'],
 })
 export class ConfirmDialogComponent {
+  authorized = false;
   constructor(
     public dialogRef: MatDialogRef<ConfirmDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData
   ) {}
 
   onConfirm(): void {
-    this.dialogRef.close(true);
+    this.dialogRef.close(this.data.requireAuthorization ? this.authorized : true);
   }
 
   onCancel(): void {

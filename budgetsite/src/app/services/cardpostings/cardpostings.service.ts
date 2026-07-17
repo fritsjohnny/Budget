@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiUrls } from 'src/app/common/api-urls';
 import { CardsPostings } from 'src/app/models/cardspostings.model';
 import { catchError, map } from 'rxjs/operators';
 import { Messenger } from 'src/app/common/messenger';
 import { CardsPostingsDTO } from 'src/app/models/cardspostingsdto.model';
+import { Expenses } from 'src/app/models/expenses.model';
 
 @Injectable({
   providedIn: 'root',
@@ -16,15 +17,11 @@ export class CardPostingsService {
   create(cardPosting: CardsPostings): Observable<CardsPostings> {
     cardPosting.others = cardPosting.peopleId ? true : false;
 
+    const parcels = cardPosting.generateParcels || cardPosting.repeatParcels;
+    let params = new HttpParams().set('allowClosedInvoiceOperation', String(cardPosting.allowClosedInvoiceOperation ?? false));
+    if (parcels) params = params.set('repeat', String(cardPosting.repeatParcels ?? false)).set('qtyMonths', String(cardPosting.monthsToRepeat ?? 0));
     return this.http
-      .post<CardsPostings>(
-        `${ApiUrls.cardspostings}${cardPosting.generateParcels || cardPosting.repeatParcels
-          ? `/allparcels?repeat=${cardPosting.repeatParcels ?? false
-          }&qtyMonths=${cardPosting.monthsToRepeat ?? 0}`
-          : ''
-        }`,
-        cardPosting
-      )
+      .post<CardsPostings>(`${ApiUrls.cardspostings}${parcels ? '/allparcels' : ''}`, cardPosting, { params })
       .pipe(
         map((obj) => obj),
         catchError((e) => this.messenger.errorHandler(e))
@@ -116,6 +113,7 @@ export class CardPostingsService {
       cardPosting.repeatParcels;
 
     const params: string[] = [];
+    params.push(`allowClosedInvoiceOperation=${cardPosting.allowClosedInvoiceOperation ?? false}`);
 
     if (hasParcelOperation) {
       params.push(
@@ -179,10 +177,15 @@ export class CardPostingsService {
       );
   }
 
-  delete(cardPosting: CardsPostings): Observable<CardsPostings> {
+  delete(cardPosting: CardsPostings, allowClosedInvoiceOperation?: boolean): Observable<CardsPostings> {
+    const params = new HttpParams().set(
+      'allowClosedInvoiceOperation',
+      String(allowClosedInvoiceOperation ?? cardPosting.allowClosedInvoiceOperation ?? false)
+    );
     return this.http
       .delete<CardsPostings>(
-        `${ApiUrls.cardspostings}/${cardPosting.id}`
+        `${ApiUrls.cardspostings}/${cardPosting.id}`,
+        { params }
       )
       .pipe(
         map((obj) => obj),
@@ -190,16 +193,35 @@ export class CardPostingsService {
       );
   }
 
+  convertToExpense(
+    cardPosting: CardsPostings,
+    allowClosedInvoiceOperation: boolean = false
+  ): Observable<Expenses> {
+    const params = new HttpParams().set(
+      'allowClosedInvoiceOperation',
+      String(allowClosedInvoiceOperation)
+    );
+
+    return this.http.post<Expenses>(
+      `${ApiUrls.cardspostings}/${cardPosting.id}/ConvertToExpense`,
+      null,
+      { params }
+    ).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
   createFromNotification(cardPosting: CardsPostings): Observable<CardsPostings> {
     cardPosting.others = cardPosting.peopleId ? true : false;
 
     const useParcels = cardPosting.generateParcels || cardPosting.repeatParcels;
 
-    const url = useParcels
-      ? `${ApiUrls.cardspostings}/FromNotification/AllParcels?repeat=${cardPosting.repeatParcels ?? false}&qtyMonths=${cardPosting.monthsToRepeat ?? 0}`
-      : `${ApiUrls.cardspostings}/FromNotification`;
+    let params = new HttpParams().set('allowClosedInvoiceOperation', String(cardPosting.allowClosedInvoiceOperation ?? false));
+    if (useParcels) params = params.set('repeat', String(cardPosting.repeatParcels ?? false)).set('qtyMonths', String(cardPosting.monthsToRepeat ?? 0));
+    const url = `${ApiUrls.cardspostings}/FromNotification${useParcels ? '/AllParcels' : ''}`;
 
-    return this.http.post<CardsPostings>(url, cardPosting).pipe(
+    return this.http.post<CardsPostings>(url, cardPosting, { params }).pipe(
       map((obj) => obj),
       catchError((e) => this.messenger.errorHandler(e))
     );

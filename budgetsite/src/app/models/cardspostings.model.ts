@@ -2,6 +2,7 @@ import { Cards } from './cards.model';
 import { Categories } from "./categories.model";
 import { Expenses } from './expenses.model';
 import { People } from "./people.model";
+import { CardsInvoiceClosing } from './cardsinvoiceclosing.model';
 
 export interface CardsPostings {
   id?: number;
@@ -44,4 +45,7 @@ export interface CardsPostings {
   expenseId?: number;
   expensesList?: Expenses[];
   cloning?: boolean;
+  allowClosedInvoiceOperation?: boolean;
+  invoiceClosing?: CardsInvoiceClosing;
+  sourceInvoiceClosing?: CardsInvoiceClosing;
 }

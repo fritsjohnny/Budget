@@ -12,6 +12,11 @@ import {
   NotificationReader,
 } from 'capacitor-notification-reader/src';
 import { Preferences } from '@capacitor/preferences';
+import { Messenger } from 'src/app/common/messenger';
+
+interface CardNotification extends CardsPostings {
+  sourceAppPackageName?: string;
+}
 
 @Component({
   selector: 'app-cards-notifications',
@@ -32,13 +37,14 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
 
   private readonly STORAGE_KEY = 'persisted_notifications';
 
-  notifications = [] as CardsPostings[];
+  notifications = [] as CardNotification[];
 
   private intervalId?: any;
 
   constructor(
     private dialog: MatDialog,
-    private cardPostingsService: CardPostingsService
+    private cardPostingsService: CardPostingsService,
+    private messenger: Messenger
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -104,12 +110,13 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
 
   private parseNotification(
     payload: NotificationPayload
-  ): CardsPostings | null {
+  ): CardNotification | null {
     console.log('[DEBUG] Notification payload recebido:', payload);
 
     const text = payload.text ?? '';
     const title = payload.title ?? '';
-    const pkg = payload.package?.toLowerCase() ?? '';
+    const pkg = payload.package?.trim().toLowerCase() ?? '';
+    const sourceAppPackageName = pkg || undefined;
 
     // C6 Bank
     if (
@@ -145,7 +152,13 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         // Substitui múltiplos espaços internos por único espaço
         description = description.replace(/\s{2,}/g, ' ').trim();
 
-        return { amount, date, description, note: text } as CardsPostings;
+        return {
+          amount,
+          date,
+          description,
+          note: text,
+          sourceAppPackageName
+        } as CardNotification;
       } catch {
         return null;
       }
@@ -175,8 +188,9 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
           date,
           description,
           note: text,
-          parcels
-        } as CardsPostings;
+          parcels,
+          sourceAppPackageName
+        } as CardNotification;
       } catch {
         return null;
       }
@@ -196,7 +210,13 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         const description = lojaMatch[1].trim();
         const date = new Date(); // Assume data atual
 
-        return { amount, date, description, note: text } as CardsPostings;
+        return {
+          amount,
+          date,
+          description,
+          note: text,
+          sourceAppPackageName
+        } as CardNotification;
       } catch {
         return null;
       }
@@ -226,7 +246,14 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         // Normaliza descrição (tira espaços múltiplos)
         const description = lojaMatch[1].replace(/\s{2,}/g, ' ').trim();
 
-        return { amount, date, description, note: text, parcels } as CardsPostings;
+        return {
+          amount,
+          date,
+          description,
+          note: text,
+          parcels,
+          sourceAppPackageName
+        } as CardNotification;
       } catch {
         return null;
       }
@@ -237,7 +264,53 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  convertToCardPosting(notification: CardsPostings): void {
+  convertToCardPosting(notification: CardNotification): void {
+    if (!this.cardId || this.cardId <= 0) {
+      this.messenger.errorHandler(
+        'Selecione um cartão específico para transformar a notificação em lançamento.'
+      );
+      return;
+    }
+
+    const selectedCard = this.cardsList?.find(card => card.id === this.cardId);
+
+    if (!selectedCard) {
+      this.messenger.errorHandler('O cartão selecionado não foi encontrado.');
+      return;
+    }
+
+    const sourceAppPackageName = notification.sourceAppPackageName
+      ?.trim()
+      .toLowerCase();
+
+    // Notificações antigas ou incompletas podem não ter um pacote confiável para comparar.
+    if (sourceAppPackageName) {
+      const selectedCardPackageName = selectedCard.appPackageName
+        ?.trim()
+        .toLowerCase();
+
+      if (!selectedCardPackageName) {
+        this.messenger.errorHandler(
+          `Configure o pacote do aplicativo no cadastro do cartão ${selectedCard.name}.`
+        );
+        return;
+      }
+
+      if (selectedCardPackageName !== sourceAppPackageName) {
+        const sourceCard = this.cardsList?.find(
+          card =>
+            card.appPackageName?.trim().toLowerCase() === sourceAppPackageName
+        );
+
+        this.messenger.errorHandler(
+          sourceCard
+            ? `Esta notificação pertence ao aplicativo configurado no cartão ${sourceCard.name}, mas o cartão selecionado é ${selectedCard.name}.`
+            : 'O aplicativo que gerou esta notificação não corresponde ao cartão selecionado.'
+        );
+        return;
+      }
+    }
+
     const dialogRef = this.dialog.open(CardPostingsDialog, {
       width: '100%',
       maxWidth: '100%',
@@ -284,7 +357,7 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  async removeNotification(notification: CardsPostings): Promise<void> {
+  async removeNotification(notification: CardNotification): Promise<void> {
     this.notifications = this.notifications.filter((n) => n !== notification);
     await this.saveNotificationsToStorage();
   }

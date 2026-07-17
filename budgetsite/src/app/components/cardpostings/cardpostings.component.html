@@ -206,9 +206,9 @@
                     <button
                         class="default-button"
                         mat-mini-fab
-                        matTooltip="Ordernar"
+                        matTooltip="Ordenar"
                         color="primary"
-                        aria-label="Ordernar"
+                        aria-label="Ordenar"
                         (click)="sort()"
                         [disabled]="cardId! <= 0"
                     >
@@ -277,6 +277,7 @@
                         mat-table
                         [dataSource]="dataSource"
                         cdkDropList
+                        [cdkDropListDisabled]="!cardId || cardId <= 0"
                         [cdkDropListData]="cardpostings"
                         (cdkDropListDropped)="drop($event)"
                     >
@@ -509,6 +510,7 @@
                             "
                             *matRowDef="let row; columns: displayedColumns"
                             cdkDrag
+                            [cdkDragDisabled]="!cardId || cardId <= 0"
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"

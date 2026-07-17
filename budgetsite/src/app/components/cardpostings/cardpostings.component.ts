@@ -101,6 +101,7 @@ export class CardPostingsComponent implements OnInit {
   endingParcels: number | null = null;
   othersParcels: number | null = null;
   singleParcels: number | null = null;
+  private cardPostingsReloadInProgress = false;
 
   constructor(
     private cardPostingsService: CardPostingsService,
@@ -137,9 +138,9 @@ export class CardPostingsComponent implements OnInit {
       next: (people) => {
         this.peopleList = people;
 
-        this.hideProgress = true;
+        this.finishAuxiliaryLoading();
       },
-      error: () => (this.hideProgress = true),
+      error: () => this.finishAuxiliaryLoading(),
     });
 
     this.categoryService.readWithExpenses(this.reference!).subscribe({
@@ -148,27 +149,27 @@ export class CardPostingsComponent implements OnInit {
           a.name.localeCompare(b.name)
         );
 
-        this.hideProgress = true;
+        this.finishAuxiliaryLoading();
       },
-      error: () => (this.hideProgress = true),
+      error: () => this.finishAuxiliaryLoading(),
     });
 
     this.cardService.read().subscribe({
       next: (cards) => {
         this.cardsList = cards.sort((a, b) => a.name.localeCompare(b.name));
 
-        this.hideProgress = true;
+        this.finishAuxiliaryLoading();
       },
-      error: () => (this.hideProgress = true),
+      error: () => this.finishAuxiliaryLoading(),
     });
 
     this.accountService.readNotDisabled().subscribe({
       next: (accounts) => {
         this.accountsList = accounts;
 
-        this.hideProgress = true;
+        this.finishAuxiliaryLoading();
       },
-      error: () => (this.hideProgress = true),
+      error: () => this.finishAuxiliaryLoading(),
     });
 
     this.expenseService.readComboList(this.reference!).subscribe({
@@ -176,10 +177,16 @@ export class CardPostingsComponent implements OnInit {
         this.expenses = expenses.sort((a, b) =>
           a.description.localeCompare(b.description));
 
-        this.hideProgress = true;
+        this.finishAuxiliaryLoading();
       },
-      error: () => (this.hideProgress = true),
+      error: () => this.finishAuxiliaryLoading(),
     });
+  }
+
+  private finishAuxiliaryLoading(): void {
+    if (!this.cardPostingsReloadInProgress) {
+      this.hideProgress = true;
+    }
   }
 
   refresh() {
@@ -193,26 +200,47 @@ export class CardPostingsComponent implements OnInit {
 
       this.hideProgress = false;
 
-      this.cardPostingsService.read(this.cardId!, this.reference!).subscribe({
-        next: (cardpostings) => {
-          this.cardpostings = cardpostings.sort(
-            (a, b) => b.position! - a.position!
-          );
-
-          this.setDataByFilters();
-
-          this.getTotalAmount();
-
-          this.checkDueAlerts();
-
-          this.hideProgress = true;
-        },
-        error: () => (this.hideProgress = true),
-      });
-
-      this.getCardsPostingsPeople();
-      this.getExpensesByCategories();
+      this.reloadCardPostings();
     }
+  }
+
+  // Recarrega apenas os lançamentos do cartão/referência atual, reaplica os
+  // filtros ativos e recalcula totais/agrupamentos relacionados. Usado após
+  // inclusões, clonagens e reordenação por data, já que o backend pode ter
+  // recalculado a posição de vários registros além do que foi criado/alterado.
+  private reloadCardPostings(): void {
+    if (!(this.cardId! >= 0) || !this.reference) {
+      this.cardPostingsReloadInProgress = false;
+      this.hideProgress = true;
+      return;
+    }
+
+    this.cardPostingsReloadInProgress = true;
+    this.hideProgress = false;
+
+    this.cardPostingsService.read(this.cardId!, this.reference!).subscribe({
+      next: (cardpostings) => {
+        this.cardpostings = cardpostings.sort(
+          (a, b) => b.position! - a.position!
+        );
+
+        this.setDataByFilters();
+
+        this.getTotalAmount();
+
+        this.checkDueAlerts();
+
+        this.getCardsPostingsPeople();
+        this.getExpensesByCategories();
+
+        this.cardPostingsReloadInProgress = false;
+        this.hideProgress = true;
+      },
+      error: () => {
+        this.cardPostingsReloadInProgress = false;
+        this.hideProgress = true;
+      },
+    });
   }
 
   setDataByFilters(): void {
@@ -290,21 +318,6 @@ export class CardPostingsComponent implements OnInit {
     this.getTotalAmount();
   }
 
-  private compareCardPostingsByDate(first: CardsPostings, second: CardsPostings): number {
-    const firstDate = first.date ? new Date(first.date).getTime() : 0;
-    const secondDate = second.date ? new Date(second.date).getTime() : 0;
-    const dateComparison = secondDate - firstDate;
-
-    if (dateComparison !== 0) {
-      return dateComparison;
-    }
-
-    const firstPosition = Number(first.position ?? 0);
-    const secondPosition = Number(second.position ?? 0);
-
-    return secondPosition - firstPosition;
-  }
-
   private setCardPostingsDataSource(postings: CardsPostings[]): void {
     const currentTextFilter = this.dataSource?.filter ?? '';
 
@@ -329,9 +342,9 @@ export class CardPostingsComponent implements OnInit {
 
           this.getTotalPeople();
 
-          this.hideProgress = true;
+          this.finishAuxiliaryLoading();
         },
-        error: () => (this.hideProgress = true),
+        error: () => this.finishAuxiliaryLoading(),
       });
   }
 
@@ -344,9 +357,9 @@ export class CardPostingsComponent implements OnInit {
 
           this.getTotalByCategories();
 
-          this.hideProgress = true;
+          this.finishAuxiliaryLoading();
         },
-        error: () => (this.hideProgress = true),
+        error: () => this.finishAuxiliaryLoading(),
       });
   }
 
@@ -487,23 +500,10 @@ export class CardPostingsComponent implements OnInit {
 
         this.cardPostingsService.create(result).subscribe({
           next: (cardpostings) => {
-            if (
-              cardpostings.reference === this.reference &&
-              cardpostings.cardId === this.cardId
-            ) {
-              this.cardpostings = [...this.cardpostings, cardpostings].sort(
-                (a, b) => b.position! - a.position!
-              );
-
-              this.setDataByFilters();
-            }
-
             this.categoriesList = result.categoriesList;
             this.peopleList = result.peopleList;
 
-            this.getTotalAmount();
-            this.getCardsPostingsPeople();
-            this.getExpensesByCategories();
+            this.onCardPostingCreated(cardpostings);
           },
         });
       }
@@ -640,45 +640,10 @@ export class CardPostingsComponent implements OnInit {
         } else {
           this.cardPostingsService.update(result).subscribe({
             next: () => {
-              this.cardpostings
-                .filter((t) => t.id === result.id)
-                .map((t) => {
-                  t.date = result.date;
-                  t.reference = result.reference;
-                  t.cardId = result.cardId;
-                  t.position = result.position;
-                  t.description = result.description;
-                  t.peopleId = result.peopleId;
-                  t.parcelNumber = result.parcelNumber;
-                  t.parcels = result.parcels;
-                  t.amount = result.amount;
-                  t.totalAmount = result.totalAmount;
-                  t.others = result.others;
-                  t.note = result.note;
-                  t.people = result.people;
-                  t.categoryId = result.categoryId;
-                  t.fixed = result.fixed;
-                  t.relatedId = result.relatedId;
-                  t.dueDate = result.dueDate;
-                  t.isPaid = result.isPaid;
-                  t.provisioned = result.provisioned ?? false;
-                });
-
-              this.cardpostings = [
-                ...this.cardpostings.filter(
-                  (cp) =>
-                    cp.reference === this.reference && cp.cardId === this.cardId
-                ),
-              ];
-
-              this.setDataByFilters();
-
-              this.getTotalAmount();
-              this.getExpensesByCategories();
-              this.checkDueAlerts();
-
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
+
+              this.reloadCardPostings();
             },
           });
         }
@@ -797,7 +762,18 @@ export class CardPostingsComponent implements OnInit {
     });
   }
 
-  validateConditions(): boolean {
+  // Validação exclusiva do drag-and-drop manual: com filtros que ocultem
+  // registros, o frontend não conhece a posição relativa dos itens ocultos,
+  // então a reordenação manual continua bloqueada.
+  validateDragAndDropConditions(): boolean {
+    if (!this.cardId || this.cardId <= 0) {
+      this.messenger.errorHandler(
+        'A reordenação manual não está disponível na visão de todos os cartões.'
+      );
+
+      return false;
+    }
+
     if (this.hideFuturePurchases) {
       this.messenger.errorHandler('Reordenação não é possível com filtro de compras futuras ativo.');
       return false;
@@ -818,11 +794,21 @@ export class CardPostingsComponent implements OnInit {
       return false;
     }
 
+    if (this.justFirstParcel || this.justOthersParcels || this.justSingleParcel) {
+      this.messenger.errorHandler('Reordenação não é possível com filtros de parcelas ativos.');
+      return false;
+    }
+
+    if (this.dataSource.filter) {
+      this.messenger.errorHandler('Reordenação não é possível com o filtro textual ativo.');
+      return false;
+    }
+
     return true;
   }
 
   drop(event: CdkDragDrop<any[]>) {
-    if (!this.validateConditions()) return;
+    if (!this.validateDragAndDropConditions()) return;
 
     const previousIndex = this.cardpostings.findIndex(
       (row) => row === event.item.data
@@ -843,43 +829,20 @@ export class CardPostingsComponent implements OnInit {
     this.cardPostingsService.updatePositions(this.cardpostings).subscribe();
   }
 
+  // Ordenação por data: delega ao backend, que conhece todos os registros do
+  // cartão/referência (inclusive os ocultos por filtros no frontend). Depois
+  // de concluído, recarrega os lançamentos e reaplica os filtros existentes.
   sort(): void {
-    if (!this.validateConditions()) return;
+    if (!this.cardId || this.cardId <= 0 || !this.reference) return;
 
-    this.reorderCardPostingsByDate(this.cardId);
-  }
+    this.hideProgress = false;
 
-  private reorderCardPostingsByDate(cardIdToPersist?: number): void {
-    this.cardpostings = [...(this.cardpostings ?? [])]
-      .sort((first, second) => this.compareCardPostingsByDate(first, second));
-
-    const targetCardId = cardIdToPersist && cardIdToPersist > 0
-      ? cardIdToPersist
-      : undefined;
-
-    if (!targetCardId) {
-      this.setDataByFilters();
-      return;
-    }
-
-    const postingsToPersist = this.cardpostings
-      .filter(posting => posting.cardId === targetCardId)
-      .sort((first, second) => this.compareCardPostingsByDate(first, second));
-
-    const postingCount = postingsToPersist.length;
-
-    postingsToPersist.forEach((posting, index) => {
-      posting.position = postingCount - (index + 1);
+    this.cardPostingsService.reorderByDate(this.cardId, this.reference).subscribe({
+      next: () => {
+        this.reloadCardPostings();
+      },
+      error: () => (this.hideProgress = true),
     });
-
-    this.cardpostings = [...this.cardpostings]
-      .sort((first, second) => this.compareCardPostingsByDate(first, second));
-
-    this.setDataByFilters();
-
-    if (postingsToPersist.length === 0) return;
-
-    this.cardPostingsService.updatePositions(postingsToPersist).subscribe();
   }
 
   openFilter() {
@@ -992,27 +955,12 @@ export class CardPostingsComponent implements OnInit {
     });
   }
 
-  onCardPostingCreated(posting: CardsPostings): void {
-    const currentPostings = (this.cardpostings ?? [])
-      .filter(current => current.id !== posting.id);
-
-    const postingBelongsToCurrentView = posting.reference === this.reference &&
-      (this.cardId === 0 || posting.cardId === this.cardId);
-
-    this.cardpostings = postingBelongsToCurrentView
-      ? [posting, ...currentPostings]
-      : currentPostings;
-
-    if (postingBelongsToCurrentView) {
-      this.reorderCardPostingsByDate(posting.cardId);
-    }
-    else {
-      this.setDataByFilters();
-    }
-
-    this.getCardsPostingsPeople();
-    this.getExpensesByCategories();
-    this.checkDueAlerts();
+  // Chamado após qualquer inclusão normal (simples, parcelada, repetida ou
+  // clonada). O backend pode ter recalculado a posição de vários registros
+  // além do que foi criado, então recarregamos os lançamentos ao invés de
+  // apenas acrescentar o objeto retornado ao array local.
+  onCardPostingCreated(_posting: CardsPostings): void {
+    this.reloadCardPostings();
   }
 
   handleClickCardPosting(row: CardsPostings, event: MouseEvent): void {

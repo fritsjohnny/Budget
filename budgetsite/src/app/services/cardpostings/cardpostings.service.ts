@@ -167,6 +167,18 @@ export class CardPostingsService {
       );
   }
 
+  reorderByDate(cardId: number, reference: string): Observable<void> {
+    return this.http
+      .put<void>(
+        `${ApiUrls.cardspostings}/ReorderByDate/${cardId}/${reference}`,
+        null
+      )
+      .pipe(
+        map((obj) => obj),
+        catchError((e) => this.messenger.errorHandler(e))
+      );
+  }
+
   delete(cardPosting: CardsPostings): Observable<CardsPostings> {
     return this.http
       .delete<CardsPostings>(

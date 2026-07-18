@@ -82,6 +82,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   referenceListsLoadFailed = false;
   private invoiceClosingRequestId = 0;
   private referenceListsRequestId = 0;
+  private descriptionSuggestionLoading = false;
   readonly formatReference = formatReference;
 
   get requiresClosedInvoiceOverride(): boolean {
@@ -160,9 +161,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
 
     this.isScreenInit = false;
 
-    if (this.cardPosting.description && !this.businessFieldsBlocked) {
-      this.onDescriptionChange();
-    }
+    this.applyAutomaticSuggestions();
 
     if (this.cardPosting.adding && !this.cardPosting.description) {
       setTimeout(() => {
@@ -245,12 +244,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   onClosedInvoiceAuthorizationChanged(): void {
     this.cardPosting.allowClosedInvoiceOperation = this.cardPosting.allowClosedInvoiceOperation === true;
     this.applyBusinessControlState();
-    if (!this.businessFieldsBlocked) {
-      const needsDescriptionSuggestion = !!this.cardPosting.description &&
-        (this.cardPosting.categoryId == null || this.cardPosting.peopleId == null);
-      if (needsDescriptionSuggestion) this.onDescriptionChange();
-      else this.suggestExpenseFromCategory();
-    }
+    this.applyAutomaticSuggestions();
   }
 
   onCardChanged(cardId: number): void {
@@ -294,7 +288,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       if (this.cardPosting.reference === reference) {
         this.referenceListsLoading = false;
         this.applyBusinessControlState();
-        if (!this.businessFieldsBlocked) this.suggestExpenseFromCategory();
+        this.applyAutomaticSuggestions();
       }
     })).subscribe({
       next: ({ categories, expenses }) => {
@@ -355,7 +349,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
         if (requestId !== this.invoiceClosingRequestId) return;
         this.validatingInvoiceClosing = false;
         this.applyBusinessControlState();
-        if (!this.businessFieldsBlocked) this.suggestExpenseFromCategory();
+        this.applyAutomaticSuggestions();
       })
     ).subscribe({
       next: closing => {
@@ -552,16 +546,25 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     }
   }
 
-  onDescriptionChange() {
+  onDescriptionChange(): void {
     if (this.businessFieldsBlocked) return;
     if (!this.cardPosting.description) return;
+    if (this.descriptionSuggestionLoading) return;
 
     if (this.cardPosting.categoryId != null && this.cardPosting.peopleId != null) {
+      this.suggestExpenseFromCategory();
       return;
     }
 
+    this.descriptionSuggestionLoading = true;
+
     this.cardPostingsService
       .getCategoryByDescription(this.cardPosting.description)
+      .pipe(
+        finalize(() => {
+          this.descriptionSuggestionLoading = false;
+        })
+      )
       .subscribe({
         next: (suggestion) => {
           this.applyDescriptionSuggestion(suggestion);
@@ -569,20 +572,35 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       });
   }
 
-  private applyDescriptionSuggestion(suggestion: Partial<CardsPostings> | null | undefined): void {
-    if (!suggestion) {
+  private applyAutomaticSuggestions(): void {
+    if (this.businessFieldsBlocked || !this.cardPosting.description) {
       return;
     }
 
-    if (this.cardPosting.categoryId == null && suggestion.categoryId != null) {
-      this.cardPosting.categoryId = suggestion.categoryId;
-      this.cardPostingFormGroup.get('categoryIdFormControl')?.setValue(suggestion.categoryId, { emitEvent: false });
+    const needsDescriptionSuggestion =
+      this.cardPosting.categoryId == null ||
+      this.cardPosting.peopleId == null;
+
+    if (needsDescriptionSuggestion) {
+      this.onDescriptionChange();
+      return;
     }
 
-    if (this.cardPosting.peopleId == null && suggestion.peopleId != null) {
-      this.cardPosting.peopleId = suggestion.peopleId;
-      this.cardPostingFormGroup.get('peopleFormControl')?.setValue(suggestion.peopleId, { emitEvent: false });
-      this.setPeople();
+    this.suggestExpenseFromCategory();
+  }
+
+  private applyDescriptionSuggestion(suggestion: Partial<CardsPostings> | null | undefined): void {
+    if (suggestion) {
+      if (this.cardPosting.categoryId == null && suggestion.categoryId != null) {
+        this.cardPosting.categoryId = suggestion.categoryId;
+        this.cardPostingFormGroup.get('categoryIdFormControl')?.setValue(suggestion.categoryId, { emitEvent: false });
+      }
+
+      if (this.cardPosting.peopleId == null && suggestion.peopleId != null) {
+        this.cardPosting.peopleId = suggestion.peopleId;
+        this.cardPostingFormGroup.get('peopleFormControl')?.setValue(suggestion.peopleId, { emitEvent: false });
+        this.setPeople();
+      }
     }
 
     this.suggestExpenseFromCategory();

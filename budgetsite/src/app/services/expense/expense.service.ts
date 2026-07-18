@@ -6,6 +6,7 @@ import { ApiUrls } from 'src/app/common/api-urls';
 import { catchError, map } from 'rxjs/operators';
 import { Messenger } from 'src/app/common/messenger';
 import { Expenses, ExpensesDueDateReportRow } from 'src/app/models/expenses.model';
+import { prepareApiDates } from 'src/app/utils/api-date.util';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +15,8 @@ export class ExpenseService {
   constructor(private http: HttpClient, private messenger: Messenger) { }
 
   create(expense: Expenses): Observable<Expenses> {
+    const payload = prepareApiDates(expense, ['dueDate']);
+
     return this.http
       .post<Expenses>(
         `${ApiUrls.expenses}${expense.generateParcels || expense.repeatParcels
@@ -21,7 +24,7 @@ export class ExpenseService {
           }`
           : ''
         }`,
-        expense
+        payload
       )
       .pipe(
         map((obj) => obj),
@@ -97,6 +100,7 @@ export class ExpenseService {
   }
 
   update(expense: Expenses): Observable<Expenses> {
+    const payload = prepareApiDates(expense, ['dueDate']);
     const hasParcelOperation =
       expense.generateParcels ||
       expense.repeatParcels;
@@ -135,7 +139,7 @@ export class ExpenseService {
             ? '/allparcels'
             : ''
         }/${expense.id}${query}`,
-        expense
+        payload
       )
       .pipe(
         map((obj) => obj),

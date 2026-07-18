@@ -235,7 +235,6 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   currentDateChanged(date: Date) {
-    debugger;
     date.setHours(0, 0, 0, 0);
     this.accountPosting.date.setHours(0, 0, 0, 0);
 

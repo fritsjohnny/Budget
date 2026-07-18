@@ -5,6 +5,7 @@ import { ApiUrls } from 'src/app/common/api-urls';
 import { catchError, map } from 'rxjs/operators';
 import { Messenger } from 'src/app/common/messenger';
 import { Incomes } from 'src/app/models/incomes.model';
+import { prepareApiDates } from 'src/app/utils/api-date.util';
 
 @Injectable({
   providedIn: 'root',
@@ -13,13 +14,14 @@ export class IncomeService {
   constructor(private http: HttpClient, private messenger: Messenger) { }
 
   create(income: Incomes): Observable<Incomes> {
+    const payload = prepareApiDates(income, ['receiptDate']);
     const endpoint = income.generateParcels ? '/allparcels' : income.repeatIncome ? '/repeat' : '';
     const query = income.repeatIncome ? `?qtyMonths=${income.monthsToRepeat ?? 0}` : '';
 
     return this.http
       .post<Incomes>(
         `${ApiUrls.incomes}${endpoint}${query}`,
-        income
+        payload
       )
       .pipe(
         map((obj) => obj),
@@ -57,6 +59,7 @@ export class IncomeService {
   }
 
   update(income: Incomes): Observable<Incomes> {
+    const payload = prepareApiDates(income, ['receiptDate']);
     const params: string[] = [];
 
     if (income.repeatIncome) {
@@ -74,7 +77,7 @@ export class IncomeService {
     return this.http
       .put<Incomes>(
         `${ApiUrls.incomes}${endpoint}/${income.id}${query}`,
-        income
+        payload
       )
       .pipe(
         map((obj) => obj),

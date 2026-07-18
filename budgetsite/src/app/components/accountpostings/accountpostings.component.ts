@@ -22,7 +22,6 @@ import { Incomes } from 'src/app/models/incomes.model';
 import { Expenses } from 'src/app/models/expenses.model';
 import { IncomeService } from 'src/app/services/income/income.service';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
-import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
 import { AccountPostingsDialog } from './accountpostings-dialog/accountpostings-dialog';
 import { YieldsComponent } from '../yields/yields.component';
@@ -31,6 +30,7 @@ import { AccountApplicationsService } from 'src/app/services/accountapplications
 import { AccountApplicationsDialog } from './accountapplications-dialog/accountapplications-dialog';
 import { GenerateCardReceiptDialog } from './generate-cardreceipt-dialog/generate-cardreceipt-dialog';
 import { Messenger } from 'src/app/common/messenger';
+import { prepareApiDates } from 'src/app/utils/api-date.util';
 
 @Component({
   selector: 'app-accountpostings',
@@ -290,6 +290,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           this.grandTotalYields = account.grandTotalYields;
           this.totalBalance = account.totalBalance;
           this.totalGrossBalance = account.totalBalanceGross;
+          this.refreshAccountsList(undefined, account.totalBalanceGross);
           this.previousBalance = account.previousBalance;
           this.totalYields = this.totalForYieldsDialog = account.totalYields;
 
@@ -368,6 +369,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   refreshAccountsList(lastYield?: number, totalBalanceGross?: number) {
+    if (!this.accountId) return;
+
+    const patch: Partial<Accounts> = { id: this.accountId };
+    if (lastYield !== undefined) patch.lastYield = lastYield;
+    if (totalBalanceGross !== undefined) patch.totalBalanceGross = totalBalanceGross;
+
     const account = this.accountsList?.find((a) => a.id === this.accountId);
 
     if (account) {
@@ -381,11 +388,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
       this.accountsList = [...this.accountsList];
 
-      this.accountUpdated.emit({
-        id: account.id,
-        lastYield: account.lastYield,
-        totalBalanceGross: account.totalBalanceGross,
-      });
+    }
+
+    if (lastYield !== undefined || totalBalanceGross !== undefined) {
+      this.accountUpdated.emit(patch);
     }
   }
 
@@ -418,11 +424,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
         result.position = this.accountpostings.length + 1;
 
-        Date.prototype.toJSON = function () {
-          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-        };
-
-        this.accountPostingsService.create(result).subscribe({
+        const payload = prepareApiDates(result, ['date', 'iofElapsedDate']);
+        this.accountPostingsService.create(payload).subscribe({
           next: (accountpostings) => {
             if (
               accountpostings.reference === this.reference &&
@@ -514,7 +517,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           result.amount =
             Math.abs(result.amount) * (result.type === 'P' ? -1 : 1);
 
-          this.accountPostingsService.update(result).subscribe({
+          const payload = prepareApiDates(result, ['date', 'iofElapsedDate']);
+          this.accountPostingsService.update(payload).subscribe({
             next: () => {
               this.accountpostings
                 .filter((t) => t.id === result.id)
@@ -571,11 +575,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        Date.prototype.toJSON = function () {
-          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-        };
-
-        this.accountApplicationsService.create(result).subscribe({
+        const payload = prepareApiDates(result, ['dateApplied', 'maturityDate']);
+        this.accountApplicationsService.create(payload).subscribe({
           next: (accountApplication) => {
             if (accountApplication.accountId === this.accountId
             ) {
@@ -619,7 +620,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
             // error: () => this.hideProgress = true
           });
         } else {
-          this.accountApplicationsService.update(result).subscribe({
+          const payload = prepareApiDates(result, ['dateApplied', 'maturityDate']);
+          this.accountApplicationsService.update(payload).subscribe({
             next: () => {
               this.accountApplications
                 .filter((t) => t.id === result.id)

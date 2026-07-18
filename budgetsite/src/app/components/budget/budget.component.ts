@@ -39,7 +39,6 @@ import { MatTableDataSource } from '@angular/material/table';
 import { People } from 'src/app/models/people.model';
 import { PeopleService } from 'src/app/services/people/people.service';
 import { AddvalueComponent } from 'src/app/shared/addvalue/addvalue.component';
-import moment from 'moment';
 import { ExpensesDialog } from './expenses-dialog';
 import { IncomesDialog } from './incomes-dialog';
 import { PaymentReceiveDialog } from './payment-receive-dialog';
@@ -50,6 +49,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
 import { CardsInvoiceClosing } from 'src/app/models/cardsinvoiceclosing.model';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
+import { prepareApiDates } from 'src/app/utils/api-date.util';
 
 @Component({
   selector: 'app-budget',
@@ -1156,11 +1156,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
         result.amount = result.amount * (result.type === 'P' ? -1 : 1);
 
-        Date.prototype.toJSON = function () {
-          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-        };
-
-        this.accountPostingsService.create(result).subscribe({
+        const payload = prepareApiDates(result, ['date', 'iofElapsedDate']);
+        this.accountPostingsService.create(payload).subscribe({
           next: () => {
             expense.paid = +(expense.paid + Math.abs(result.amount)).toFixed(2);
             expense.remaining = +(expense.toPay - expense.paid).toFixed(2);
@@ -1234,11 +1231,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        Date.prototype.toJSON = function () {
-          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-        };
-
-        this.cardPostingsService.create(result).subscribe({
+        const payload = prepareApiDates(result, ['date', 'dueDate']);
+        this.cardPostingsService.create(payload).subscribe({
           next: (cardpostings) => {
             if (cardpostings) {
               if (result.amount >= expense.toPay) {
@@ -1294,11 +1288,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
         result.amount = result.amount * (result.type === 'P' ? -1 : 1);
 
-        Date.prototype.toJSON = function () {
-          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-        };
-
-        this.accountPostingsService.create(result).subscribe({
+        const payload = prepareApiDates(result, ['date', 'iofElapsedDate']);
+        this.accountPostingsService.create(payload).subscribe({
           next: () => {
             income.received = +(
               income.received + Math.abs(result.amount)

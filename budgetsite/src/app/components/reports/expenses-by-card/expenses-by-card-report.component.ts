@@ -215,8 +215,10 @@ export class ExpensesByCardReportComponent implements OnInit, AfterViewInit {
     if (!this.groupByCard || !this.showChart) return;
 
     const currentRows = this.dataSourceReport.data ?? [];
-    const firstCard = currentRows[0]?.cardName;
-    const hasMultipleCards = currentRows.some((row) => row.cardName !== firstCard);
+    const cardIds = new Set(
+      currentRows.map((row) => row.cardId ?? 'card-without-id')
+    );
+    const hasMultipleCards = cardIds.size > 1;
     const rows = hasMultipleCards
       ? this.aggregateChartRowsByReference(currentRows)
       : currentRows;

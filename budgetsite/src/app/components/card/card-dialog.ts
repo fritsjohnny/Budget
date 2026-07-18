@@ -55,6 +55,12 @@ export class CardDialog implements OnInit, AfterViewInit {
   }
 
   save(): void {
+    const closingDay = this.normalizeOptionalDay(
+      this.cardFormGroup.get('closingDayFormControl')?.value
+    );
+    const dueDay = this.normalizeOptionalDay(
+      this.cardFormGroup.get('dueDayFormControl')?.value
+    );
 
     let card: Cards = {
       id: this.id,
@@ -63,8 +69,8 @@ export class CardDialog implements OnInit, AfterViewInit {
       background: '#' + this.picker1._pickerInput.value!.hex,
       color: '#' + this.picker2._pickerInput.value!.hex,
       disabled: this.cardFormGroup.get('disabledFormControl')?.value,
-      closingDay: this.cardFormGroup.get('closingDayFormControl')?.value,
-      dueDay: this.cardFormGroup.get('dueDayFormControl')?.value,
+      closingDay,
+      dueDay,
       appPackageName: this.cardFormGroup.get('appPackageNameFormControl')?.value,
       editing: this.id != undefined,
       deleting: false
@@ -87,14 +93,36 @@ export class CardDialog implements OnInit, AfterViewInit {
   }
 
   addCard() {
-
     this.id = undefined;
+    this.userId = undefined;
+    this.buttonName = '';
+    this.buttonText = 'Nome do Cartão';
+    this.editing = false;
+    this.deleting = false;
 
-    this.cardFormGroup.get('nameFormControl')?.setValue('');
-    this.cardFormGroup.get('disabledFormControl')?.setValue(false);
-    this.cardFormGroup.get('calcInGeneralFormControl')?.setValue(false);
+    this.cardFormGroup.reset({
+      nameFormControl: '',
+      backgroundFormControl: '#000000',
+      colorFormControl: '#ffffff',
+      disabledFormControl: false,
+      closingDayFormControl: null,
+      dueDayFormControl: null,
+      appPackageNameFormControl: '',
+    });
 
     this.setBackgroundAndColor('#000000', '#ffffff');
+  }
+
+  private normalizeOptionalDay(value: unknown): number | undefined {
+    if (value === null || value === undefined) return undefined;
+
+    if (typeof value === 'string' && value.trim() === '') return undefined;
+
+    const normalized = typeof value === 'number' ? value : Number(value);
+
+    return Number.isInteger(normalized) && normalized >= 1 && normalized <= 31
+      ? normalized
+      : undefined;
   }
 
   onNameChange(name: any) {

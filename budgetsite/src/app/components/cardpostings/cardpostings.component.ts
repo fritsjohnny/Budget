@@ -23,7 +23,6 @@ import { ExpenseService } from 'src/app/services/expense/expense.service';
 import { ExpensesByCategories } from 'src/app/models/expensesbycategories';
 import { CardService } from 'src/app/services/card/card.service';
 import { Cards } from 'src/app/models/cards.model';
-import moment from 'moment';
 import { MatTableDataSource } from '@angular/material/table';
 import { CardPostingsDialog } from './cardpostings-dialog/cardpostings-dialog';
 import { CardReceiptsDialog } from './cardreceipts-dialog/cardreceipts-dialog';
@@ -32,6 +31,7 @@ import { Expenses } from 'src/app/models/expenses.model';
 import { CardsInvoiceClosing } from 'src/app/models/cardsinvoiceclosing.model';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
 import { finalize } from 'rxjs/operators';
+import { prepareApiDates } from 'src/app/utils/api-date.util';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -513,11 +513,8 @@ export class CardPostingsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        Date.prototype.toJSON = function () {
-          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-        };
-
-        this.cardPostingsService.create(result).subscribe({
+        const payload = prepareApiDates(result, ['date', 'dueDate']);
+        this.cardPostingsService.create(payload).subscribe({
           next: (cardpostings) => {
             this.categoriesList = result.categoriesList;
             this.peopleList = result.peopleList;
@@ -594,11 +591,8 @@ export class CardPostingsComponent implements OnInit {
       result.cloning = false;
       result.repeatToNextMonths = false;
 
-      Date.prototype.toJSON = function () {
-        return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-      };
-
-      this.cardPostingsService.create(result).subscribe({
+      const payload = prepareApiDates(result, ['date', 'dueDate']);
+      this.cardPostingsService.create(payload).subscribe({
         next: (createdPosting) => {
           this.categoriesList = result.categoriesList;
           this.peopleList = result.peopleList;
@@ -678,7 +672,8 @@ export class CardPostingsComponent implements OnInit {
             },
           });
         } else {
-          this.cardPostingsService.update(result).subscribe({
+          const payload = prepareApiDates(result, ['date', 'dueDate']);
+          this.cardPostingsService.update(payload).subscribe({
             next: () => {
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
@@ -790,11 +785,8 @@ export class CardPostingsComponent implements OnInit {
       if (result) {
         this.hideProgress = false;
 
-        Date.prototype.toJSON = function () {
-          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-        };
-
-        this.cardReceiptsService.create(result).subscribe({
+        const payload = prepareApiDates(result, ['date']);
+        this.cardReceiptsService.create(payload).subscribe({
           next: () => {
             cardspostingsdto.received =
               result.received + result.amount - result.change;

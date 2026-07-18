@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog/cardpostings-dialog';
-import moment from 'moment';
 import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
 import { People } from 'src/app/models/people.model';
 import { Categories } from 'src/app/models/categories.model';
@@ -15,6 +14,7 @@ import { Preferences } from '@capacitor/preferences';
 import { Messenger } from 'src/app/common/messenger';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
 import { finalize } from 'rxjs/operators';
+import { prepareApiDates } from 'src/app/utils/api-date.util';
 
 interface CardNotification extends CardsPostings {
   sourceAppPackageName?: string;
@@ -348,11 +348,8 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
       if (result) {
         //this.hideProgress = false;
 
-        Date.prototype.toJSON = function () {
-          return moment(this).format('YYYY-MM-DDThh:mm:00.000Z');
-        };
-
-        this.cardPostingsService.createFromNotification(result).subscribe({
+        const payload = prepareApiDates(result, ['date', 'dueDate']);
+        this.cardPostingsService.createFromNotification(payload).subscribe({
           next: (cardposting) => {
             this.removeNotification(notification);
 

@@ -312,7 +312,7 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
           ticks: {
             color: colors.text,
             autoSkip: false,
-            maxRotation: 0,
+            maxRotation: 45,
             minRotation: 0,
             font: {
               size: 11,

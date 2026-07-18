@@ -214,16 +214,22 @@ export class ExpensesByCardReportComponent implements OnInit, AfterViewInit {
   private updateChartFromCurrentRows() {
     if (!this.groupByCard || !this.showChart) return;
 
-    const rows = this.dataSourceReport.data ?? [];
+    const currentRows = this.dataSourceReport.data ?? [];
+    const firstCard = currentRows[0]?.cardName;
+    const hasMultipleCards = currentRows.some((row) => row.cardName !== firstCard);
+    const rows = hasMultipleCards
+      ? this.aggregateChartRowsByReference(currentRows)
+      : currentRows;
     const values = rows.map((row) => row.value ?? 0);
     const colors = this.getChartColors();
+    const datasetLabel = hasMultipleCards ? 'Total dos cartões' : 'Valor';
 
     this.cardChartData = {
-      labels: rows.map((row) => this.getChartLabel(row, rows)),
+      labels: rows.map((row) => row.reference),
       datasets: [
         {
           type: 'bar',
-          label: 'Valor',
+          label: datasetLabel,
           data: values,
           backgroundColor: values.map((value, index) =>
             this.getBarColor(value, values[index - 1], index, colors)
@@ -236,7 +242,7 @@ export class ExpensesByCardReportComponent implements OnInit, AfterViewInit {
         },
         {
           type: 'line',
-          label: 'Evolução',
+          label: hasMultipleCards ? 'Total dos cartões' : 'Evolução',
           data: values,
           borderColor: colors.line,
           backgroundColor: colors.lineBackground,
@@ -258,11 +264,17 @@ export class ExpensesByCardReportComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private getChartLabel(row: any, rows: any[]) {
-    const firstCard = rows[0]?.cardName;
-    const hasMultipleCards = rows.some((item) => item.cardName !== firstCard);
+  private aggregateChartRowsByReference(rows: any[]) {
+    const totals = new Map<string, number>();
 
-    return hasMultipleCards ? `${row.reference} - ${row.cardName}` : row.reference;
+    rows.forEach((row) => {
+      totals.set(
+        row.reference,
+        (totals.get(row.reference) ?? 0) + (row.value ?? 0)
+      );
+    });
+
+    return Array.from(totals, ([reference, value]) => ({ reference, value }));
   }
 
   private getBarColor(value: number, previousValue: number | undefined, index: number, colors: any) {
@@ -327,7 +339,7 @@ export class ExpensesByCardReportComponent implements OnInit, AfterViewInit {
           ticks: {
             color: colors.text,
             autoSkip: false,
-            maxRotation: 0,
+            maxRotation: 45,
             minRotation: 0,
             font: {
               size: 11,

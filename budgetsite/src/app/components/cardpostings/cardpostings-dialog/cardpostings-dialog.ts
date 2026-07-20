@@ -610,9 +610,9 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     return (value ?? '').trim().toLocaleLowerCase('pt-BR');
   }
 
-  private suggestExpenseFromCategory(): void {
+  private suggestExpenseFromCategory(force: boolean = false): void {
     if (this.businessFieldsBlocked) return;
-    if (this.cardPosting.expenseId != null) {
+    if (!force && this.cardPosting.expenseId != null) {
       return;
     }
 
@@ -641,7 +641,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     this.cardPosting.amount = this.cardPosting.amount * -1;
   }
 
-  onCategorySelected() {
-    this.suggestExpenseFromCategory();
+  onCategorySelected(categoryId?: number): void {
+    this.cardPosting.categoryId = categoryId;
+    this.suggestExpenseFromCategory(true);
   }
 }

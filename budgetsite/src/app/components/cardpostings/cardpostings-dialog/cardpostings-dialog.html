@@ -102,7 +102,7 @@
                             mat-input
                             [(ngModel)]="cardPosting.categoryId"
                             formControlName="categoryIdFormControl"
-                            (ngModelChange)="onCategorySelected()"
+                            (selectionChange)="onCategorySelected($event.value)"
                         >
                             <mat-option>-- Nenhuma --</mat-option>
                             <mat-option

@@ -317,53 +317,55 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
 
     if (!this.reference || this.validatingInvoiceClosing) return;
     this.validatingInvoiceClosing = true;
-    this.invoiceClosingService.ensure(this.cardId, this.reference).pipe(
+    this.invoiceClosingService.preparePosting(this.cardId, this.reference).pipe(
       finalize(() => this.validatingInvoiceClosing = false)
-    ).subscribe({ next: invoiceClosing => {
-    const dialogRef = this.dialog.open(CardPostingsDialog, {
-      width: '100%',
-      maxWidth: '100%',
-      data: {
-        reference: this.reference,
-        cardId: this.cardId,
-        date: notification.date,
-        description: notification.description,
-        amount: notification.amount,
-        totalAmount: notification.amount,
-        parcels: notification.parcels || 1,
-        parcelNumber: 1,
-        peopleList: this.peopleList,
-        categoriesList: this.categoriesList,
-        cardsList: this.cardsList,
-        editing: false,
-        adding: true,
-        note: notification.note,
-        provisioned: false,
-        invoiceClosing,
-        allowClosedInvoiceOperation: false,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        //this.hideProgress = false;
-
-        const payload = prepareApiDates(result, ['date', 'dueDate']);
-        this.cardPostingsService.createFromNotification(payload).subscribe({
-          next: (cardposting) => {
-            this.removeNotification(notification);
-
-            this.categoriesList = result.categoriesList;
-            this.peopleList = result.peopleList;
-
-            this.categoriesListChange.emit(this.categoriesList);
-            this.peopleListChange.emit(this.peopleList);
-            this.cardPostingCreated.emit(cardposting);
+    ).subscribe({
+      next: invoiceClosing => {
+        const dialogRef = this.dialog.open(CardPostingsDialog, {
+          width: '100%',
+          maxWidth: '100%',
+          data: {
+            reference: this.reference,
+            cardId: this.cardId,
+            date: notification.date,
+            description: notification.description,
+            amount: notification.amount,
+            totalAmount: notification.amount,
+            parcels: notification.parcels || 1,
+            parcelNumber: 1,
+            peopleList: this.peopleList,
+            categoriesList: this.categoriesList,
+            cardsList: this.cardsList,
+            editing: false,
+            adding: true,
+            note: notification.note,
+            provisioned: false,
+            invoiceClosing,
+            allowClosedInvoiceOperation: false,
           },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+          if (result) {
+            //this.hideProgress = false;
+
+            const payload = prepareApiDates(result, ['date', 'dueDate']);
+            this.cardPostingsService.createFromNotification(payload).subscribe({
+              next: (cardposting) => {
+                this.removeNotification(notification);
+
+                this.categoriesList = result.categoriesList;
+                this.peopleList = result.peopleList;
+
+                this.categoriesListChange.emit(this.categoriesList);
+                this.peopleListChange.emit(this.peopleList);
+                this.cardPostingCreated.emit(cardposting);
+              },
+            });
+          }
         });
       }
     });
-    }});
   }
 
   async removeNotification(notification: CardNotification): Promise<void> {

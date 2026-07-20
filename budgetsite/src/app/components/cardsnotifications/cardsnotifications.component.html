@@ -6,6 +6,7 @@
       mat-raised-button
       color="primary"
       (click)="convertToCardPosting(notification)"
+      [disabled]="validatingInvoiceClosing"
     >
       Transformar em Lançamento
     </button>

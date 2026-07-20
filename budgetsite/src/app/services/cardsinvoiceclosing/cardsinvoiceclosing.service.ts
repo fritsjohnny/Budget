@@ -20,6 +20,16 @@ export class CardsInvoiceClosingService {
     );
   }
 
+  preparePosting(cardId: number, reference: string): Observable<CardsInvoiceClosing> {
+    return this.http.post<CardsInvoiceClosing>(
+      `${ApiUrls.cardsInvoiceClosings}/PreparePosting/${cardId}/${reference}`,
+      null
+    ).pipe(
+      map(value => value),
+      catchError(error => this.messenger.errorHandler(error))
+    );
+  }
+
   update(id: number, closingDate: Date): Observable<CardsInvoiceClosing> {
     return this.http.put<CardsInvoiceClosing>(
       `${ApiUrls.cardsInvoiceClosings}/${id}`,

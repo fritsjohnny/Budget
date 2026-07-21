@@ -355,14 +355,28 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         const selectedAccount = this.accountPosting.accountsList?.find((a) => a.id === this.accountPosting.accountId);
         const account = selectedAccount ? { ...selectedAccount } : undefined;
 
-        account!.totalBalance = this.accountPosting.totalBalance;
-        account!.totalBalanceGross = this.accountPosting.totalGrossBalance;
+        const referenceBalance = Number(this.accountPosting.totalBalance ?? 0);
+        const referenceGrossBalance = Number(this.accountPosting.totalGrossBalance ?? referenceBalance);
+        const originalAmount = this.accountPosting.editing
+          ? Number(this.accountPosting.originalAmount ?? 0)
+          : 0;
+        const originalGrossAmount = this.accountPosting.editing
+          ? Number(this.accountPosting.originalGrossAmount ?? this.accountPosting.originalAmount ?? 0)
+          : 0;
+        const referenceBalanceBeforeYield = this.round2(referenceBalance - originalAmount);
+        const referenceGrossBalanceBeforeYield = this.round2(referenceGrossBalance - originalGrossAmount);
+        const currentBalanceForYield = this.round2(
+          Number(this.accountPosting.currentBalanceForYield ?? referenceBalance) - originalAmount
+        );
+        const currentGrossBalanceForYield = this.round2(
+          Number(this.accountPosting.currentGrossBalanceForYield ?? referenceGrossBalance) - originalGrossAmount
+        );
 
-        this.saldoBruto = this.accountPosting.totalGrossBalance;
-        this.saldoLiquido = this.accountPosting.totalBalance;
+        account!.totalBalance = currentBalanceForYield;
+        account!.totalBalanceGross = currentGrossBalanceForYield;
 
-        this.saldoBruto = this.accountPosting.totalGrossBalance;
-        this.saldoLiquido = this.accountPosting.totalBalance;
+        this.saldoBruto = referenceGrossBalance;
+        this.saldoLiquido = referenceBalance;
 
         if (firstLoad && this.accountPosting.editing) {
           this.captureYieldBaseValues();
@@ -403,8 +417,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           this.accountPosting.totalIOF = suggestYield.iofTotal;
           this.accountPosting.totalIR = suggestYield.irTotal;
 
-          this.saldoBruto = suggestYield.totalGross;
-          this.saldoLiquido = suggestYield.totalNet;
+          this.saldoBruto = this.round2(referenceGrossBalanceBeforeYield + suggestYield.grossYield);
+          this.saldoLiquido = this.round2(referenceBalanceBeforeYield + suggestYield.netYield);
 
           this.captureYieldBaseValues();
 

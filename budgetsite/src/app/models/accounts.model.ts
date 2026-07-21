@@ -13,6 +13,8 @@ export interface Accounts {
   grandTotalBalance?: number | undefined;
   grandTotalYields?: number | undefined;
   totalBalance?: number | undefined;
+  currentBalance?: number | undefined;
+  currentGrossBalance?: number | undefined;
   totalBalanceGross?: number | undefined;
   previousBalance?: number | undefined;
   totalYields?: number | undefined;

@@ -26,6 +26,8 @@ export interface AccountsPostings {
   account?: Accounts;
   cardReceipt?: CardsReceipts;
   totalBalance: number;
+  currentBalanceForYield?: number;
+  currentGrossBalanceForYield?: number;
   totalGrossBalance: number;
   totalYields: number | null;
   lastYield: number;

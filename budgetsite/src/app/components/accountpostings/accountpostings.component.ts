@@ -80,6 +80,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   grandTotalBalance?: number = 0;
   grandTotalYields?: number = 0;
   totalBalance?: number = 0;
+  currentBalance?: number = 0;
+  currentGrossBalance?: number = 0;
   totalGrossBalance?: number = 0;
   previousBalance?: number = 0;
   totalYields?: number = 0;
@@ -150,7 +152,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       this._accountsList?.find(a => a.id === this.accountId) ?? null;
 
     if (this.account?.totalBalanceGross !== undefined) {
-      this.totalGrossBalance = this.account.totalBalanceGross;
+      this.currentGrossBalance = this.account.totalBalanceGross;
     }
 
     this.cdr.markForCheck();
@@ -289,8 +291,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           this.grandTotalBalance = account.grandTotalBalance;
           this.grandTotalYields = account.grandTotalYields;
           this.totalBalance = account.totalBalance;
+          this.currentBalance = account.currentBalance;
+          this.currentGrossBalance = account.currentGrossBalance;
           this.totalGrossBalance = account.totalBalanceGross;
-          this.refreshAccountsList(undefined, account.totalBalanceGross);
+          this.refreshAccountsList(undefined, account.currentGrossBalance);
           this.previousBalance = account.previousBalance;
           this.totalYields = this.totalForYieldsDialog = account.totalYields;
 
@@ -387,7 +391,6 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       }
 
       this.accountsList = [...this.accountsList];
-
     }
 
     if (lastYield !== undefined || totalBalanceGross !== undefined) {
@@ -408,6 +411,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         incomesList: this.incomes,
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
+        currentBalanceForYield: this.currentBalance,
+        currentGrossBalanceForYield: this.currentGrossBalance,
         totalGrossBalance: this.totalGrossBalance,
         totalYields: this.totalForYieldsDialog,
         lastYield: this.getLastYield(),
@@ -481,7 +486,11 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         incomesList: this.incomes,
         expensesList: this.expenses,
         totalBalance: this.totalBalance,
-        totalGrossBalance: accountPosting.totalGrossBalance ?? this.totalGrossBalance,
+        currentBalanceForYield: this.currentBalance,
+        currentGrossBalanceForYield: this.currentGrossBalance,
+        totalGrossBalance: accountPosting.type === 'Y'
+          ? (accountPosting.totalGrossBalance ?? this.totalGrossBalance)
+          : this.totalGrossBalance,
         totalIOF: accountPosting.totalIOF,
         totalIR: accountPosting.totalIR,
         iofElapsedDays: accountPosting.iofElapsedDays,

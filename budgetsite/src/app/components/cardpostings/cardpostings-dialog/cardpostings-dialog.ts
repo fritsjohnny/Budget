@@ -643,6 +643,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
 
   onCategorySelected(categoryId?: number): void {
     this.cardPosting.categoryId = categoryId;
+    this.cardPosting.expenseId = undefined;
+    this.cardPostingFormGroup.get('expenseIdFormControl')?.reset(null, { emitEvent: false });
     this.suggestExpenseFromCategory(true);
   }
 }

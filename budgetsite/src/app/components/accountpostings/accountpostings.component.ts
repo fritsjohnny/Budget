@@ -148,11 +148,22 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   private rebindAccount(): void {
-    this.account =
-      this._accountsList?.find(a => a.id === this.accountId) ?? null;
+    const previousAccountId = this.account?.id;
+    const previousCurrentGrossBalance = this.currentGrossBalance;
+
+    this.account = this._accountsList?.find(a => a.id === this.accountId) ?? null;
 
     if (this.account?.totalBalanceGross !== undefined) {
-      this.currentGrossBalance = this.account.totalBalanceGross;
+      const updatedCurrentGrossBalance = Number(this.account.totalBalanceGross);
+
+      if (previousAccountId === this.account.id && previousCurrentGrossBalance !== undefined) {
+        const grossBalanceDifference = updatedCurrentGrossBalance - previousCurrentGrossBalance;
+        this.totalGrossBalance = Number(this.totalGrossBalance ?? 0) + grossBalanceDifference;
+      } else {
+        this.totalGrossBalance = updatedCurrentGrossBalance;
+      }
+
+      this.currentGrossBalance = updatedCurrentGrossBalance;
     }
 
     this.cdr.markForCheck();

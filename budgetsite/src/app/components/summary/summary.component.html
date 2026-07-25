@@ -1,4 +1,9 @@
-<div class="container default-margin-bottom">
+<app-summary-modern-layout
+    *ngIf="useModernLayout"
+    [context]="modernLayoutContext"
+></app-summary-modern-layout>
+
+<div *ngIf="!useModernLayout" class="container default-margin-bottom">
     <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
         <mat-expansion-panel
             class="mat-panel-summary"

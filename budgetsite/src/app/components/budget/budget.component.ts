@@ -898,6 +898,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   deleteExpense(expense: Expenses): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
+      panelClass: this.useModernLayout ? 'modern-budget-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Despesa',
         message: 'Confirma a EXCLUSÃO da despesa?',
@@ -1052,6 +1053,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   repeatPreviousMonth(): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
+      panelClass: this.useModernLayout ? 'modern-budget-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Repetir mês anterior',
         message: 'Essa ação irá apagar TODAS as receitas do mês atual e recriar com base no mês anterior. Deseja continuar?',
@@ -1152,6 +1154,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   deleteIncome(income: Incomes): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
+      panelClass: this.useModernLayout ? 'modern-budget-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Receita',
         message: 'Confirma a EXCLUSÃO da receita?',
@@ -2188,6 +2191,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
+      panelClass: this.useModernLayout ? 'modern-budget-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Cálculo do Saldo Previsto',
         message: message,

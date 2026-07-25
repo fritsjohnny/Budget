@@ -23,7 +23,7 @@
                 <button mat-button type="button" (click)="loadInvoiceClosing(cardPosting.cardId, cardPosting.reference)">Tentar novamente</button>
             </div>
             <div *ngIf="invoiceOperationBlocked" class="alert alert-warning" role="alert">{{ closedInvoiceMessage() }}</div>
-            <p><mat-checkbox [(ngModel)]="cardPosting.allowClosedInvoiceOperation"
+            <p *ngIf="requiresClosedInvoiceOverride"><mat-checkbox [(ngModel)]="cardPosting.allowClosedInvoiceOperation"
                 formControlName="allowClosedInvoiceOperationFormControl" (change)="onClosedInvoiceAuthorizationChanged()">
                 {{ cardPosting.editing ? 'Permitir alteração em fatura fechada' : 'Permitir lançamento em fatura fechada' }}
             </mat-checkbox></p>

@@ -1,8 +1,7 @@
-import { Component, DoCheck, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, DoCheck, ElementRef, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatDatepicker } from '@angular/material/datepicker';
-import { MatSort } from '@angular/material/sort';
 import * as _moment from 'moment';
 import { default as _rollupMoment, Moment } from 'moment';
 import { MY_FORMATS } from 'src/app/shared/datepicker/datepicker.component';
@@ -10,12 +9,12 @@ import { MY_FORMATS } from 'src/app/shared/datepicker/datepicker.component';
 const moment = _rollupMoment || _moment;
 
 @Component({
-  selector: 'app-budget-modern-layout',
-  templateUrl: './budget-modern-layout.component.html',
-  styleUrls: ['./budget-modern-layout.component.scss'],
+  selector: 'app-summary-modern-layout',
+  templateUrl: './summary-modern-layout.component.html',
+  styleUrls: ['./summary-modern-layout.component.scss'],
   providers: [{ provide: MAT_DATE_FORMATS, useValue: MY_FORMATS }],
 })
-export class BudgetModernLayoutComponent implements OnInit, DoCheck {
+export class SummaryModernLayoutComponent implements OnInit, DoCheck {
   @Input() context!: any;
 
   date = new FormControl(moment());
@@ -24,8 +23,6 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
   isPullRefreshing = false;
 
   private synchronizedReference = '';
-  private peopleSort?: MatSort;
-  private categoriesSort?: MatSort;
   private pullStartY?: number;
   private pullTracking = false;
   private readonly pullRefreshThreshold = 58;
@@ -33,23 +30,11 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
 
   constructor(private elementRef: ElementRef<HTMLElement>) {}
 
-  @ViewChild('modernPeopleSort')
-  set modernPeopleSort(sort: MatSort | undefined) {
-    this.peopleSort = sort;
-    this.bindModernSorts();
-  }
-
-  @ViewChild('modernCategoriesSort')
-  set modernCategoriesSort(sort: MatSort | undefined) {
-    this.categoriesSort = sort;
-    this.bindModernSorts();
-  }
-
   ngOnInit(): void {
     moment.locale('pt-BR');
 
     const contextReference = this.context?.reference as string | undefined;
-    const storedDate = localStorage.getItem('budgetDate');
+    const storedDate = localStorage.getItem('summaryDate');
 
     if (contextReference && /^\d{6}$/.test(contextReference)) {
       this.date.setValue(moment(contextReference, 'YYYYMM', true));
@@ -61,9 +46,7 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
   }
 
   ngDoCheck(): void {
-    this.bindModernSorts();
-
-    if (this.isPullRefreshing && !this.context?.isBudgetLoading) {
+    if (this.isPullRefreshing && !this.isLoading) {
       this.finishPullRefresh();
     }
 
@@ -78,6 +61,10 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
 
     this.date.setValue(referenceDate);
     this.synchronizedReference = contextReference;
+  }
+
+  get isLoading(): boolean {
+    return !this.context?.hideAccountsSummaryProgress || !this.context?.hideTotalsAccountsSummaryProgress;
   }
 
   get referenceTitle(): string {
@@ -100,29 +87,54 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
     return this.date.value.format('YYYYMM') === moment().format('YYYYMM');
   }
 
-  get provisionedExpenses(): any[] {
-    const expenses = this.context?.expensesNoFilter ?? this.context?.expenses ?? [];
+  get realForecastBalance(): number {
+    const totals = this.context?.totalsAccountsSummary;
 
-    return expenses.filter((expense: any) => Number(expense?.expectedValue ?? 0) > 0);
+    return (totals?.availableBalance ?? 0) + (totals?.toReceive ?? 0) - (totals?.toPay ?? 0);
   }
 
-  get visibleProvisionedExpenses(): any[] {
-    return this.provisionedExpenses.slice(0, 3);
-  }
-
-  get remainingProvisionedExpenses(): number {
-    return Math.max(0, this.provisionedExpenses.length - this.visibleProvisionedExpenses.length);
+  get previousToPayDisplay(): number {
+    return (this.context?.totalsAccountsSummary?.previousToPay ?? 0) * -1;
   }
 
   get pullRefreshLabel(): string {
-    if (this.isPullRefreshing) return 'Atualizando orçamento...';
+    if (this.isPullRefreshing) return 'Atualizando saldos...';
     if (this.pullReady) return 'Solte para atualizar';
 
     return 'Arraste para atualizar';
   }
 
+  chosenYearHandler(normalizedYear: Moment): void {
+    const selectedDate = this.date.value.clone();
+    selectedDate.year(normalizedYear.year());
+    this.date.setValue(selectedDate);
+  }
+
+  chosenMonthHandler(normalizedMonth: Moment, datepicker: MatDatepicker<Moment>): void {
+    const selectedDate = this.date.value.clone();
+    selectedDate.month(normalizedMonth.month());
+    this.date.setValue(selectedDate);
+    datepicker.close();
+    this.emitReference();
+  }
+
+  setPreviousMonth(): void {
+    this.date.setValue(this.date.value.clone().subtract(1, 'month'));
+    this.emitReference();
+  }
+
+  setNextMonth(): void {
+    this.date.setValue(this.date.value.clone().add(1, 'month'));
+    this.emitReference();
+  }
+
+  setCurrentMonth(): void {
+    this.date.setValue(moment());
+    this.emitReference();
+  }
+
   onPullStart(event: TouchEvent): void {
-    if (!this.isMobileViewport() || this.context?.isBudgetLoading || !this.isAtScrollTop()) return;
+    if (!this.isMobileViewport() || this.isLoading || !this.isAtScrollTop()) return;
     if (event.touches.length !== 1) return;
 
     const touch = event.touches.item(0);
@@ -161,7 +173,7 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
   onPullEnd(): void {
     if (!this.pullTracking) return;
 
-    const shouldRefresh = this.pullReady && !this.context?.isBudgetLoading;
+    const shouldRefresh = this.pullReady && !this.isLoading;
 
     this.pullTracking = false;
     this.pullStartY = undefined;
@@ -181,74 +193,8 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
     this.cancelPull();
   }
 
-  chosenYearHandler(normalizedYear: Moment): void {
-    const selectedDate = this.date.value.clone();
-    selectedDate.year(normalizedYear.year());
-    this.date.setValue(selectedDate);
-  }
-
-  chosenMonthHandler(normalizedMonth: Moment, datepicker: MatDatepicker<Moment>): void {
-    const selectedDate = this.date.value.clone();
-    selectedDate.month(normalizedMonth.month());
-    this.date.setValue(selectedDate);
-    datepicker.close();
-    this.emitReference();
-  }
-
-  setPreviousMonth(): void {
-    this.date.setValue(this.date.value.clone().subtract(1, 'month'));
-    this.emitReference();
-  }
-
-  setNextMonth(): void {
-    this.date.setValue(this.date.value.clone().add(1, 'month'));
-    this.emitReference();
-  }
-
-  setCurrentMonth(): void {
-    this.date.setValue(moment());
-    this.emitReference();
-  }
-
-  getExpenseStatus(expense: any): string {
-    if (Number(expense?.remaining ?? 0) <= 0 && Number(expense?.toPay ?? 0) > 0) return 'Pago';
-    if (Number(expense?.expectedValue ?? 0) > 0 && Number(expense?.toPay ?? 0) <= 0) return 'Provisionado';
-    if (expense?.overdue) return 'Vencido';
-    if (expense?.duetoday) return 'Vence hoje';
-
-    return 'Pendente';
-  }
-
-  getExpenseStatusClass(expense: any): string {
-    const status = this.getExpenseStatus(expense);
-
-    if (status === 'Pago') return 'status-paid';
-    if (status === 'Provisionado') return 'status-provisioned';
-    if (status === 'Vence hoje') return 'status-today';
-    if (status === 'Vencido') return 'status-overdue';
-
-    return 'status-pending';
-  }
-
-  getExpenseStatusIcon(expense: any): string {
-    const status = this.getExpenseStatus(expense);
-
-    if (status === 'Pago') return 'check_circle_outline';
-    if (status === 'Provisionado') return 'event_available';
-    if (status === 'Vence hoje') return 'notification_important';
-    if (status === 'Vencido') return 'error_outline';
-
-    return 'schedule';
-  }
-
-  trackById(index: number, item: any): number {
-    return item?.id ?? index;
-  }
-
-  formatPercentage(value: number | null | undefined): string {
-    if (value === null || value === undefined) return '—';
-
-    return value.toFixed(2).replace('.', ',') + '%';
+  trackByPosition(index: number, item: any): number {
+    return item?.position ?? index;
   }
 
   private isMobileViewport(): boolean {
@@ -276,21 +222,11 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
     this.pullDistance = 0;
   }
 
-  private bindModernSorts(): void {
-    if (this.peopleSort && this.context?.dataSourcePeople && this.context.dataSourcePeople.sort !== this.peopleSort) {
-      this.context.dataSourcePeople.sort = this.peopleSort;
-    }
-
-    if (this.categoriesSort && this.context?.dataSourceCategories && this.context.dataSourceCategories.sort !== this.categoriesSort) {
-      this.context.dataSourceCategories.sort = this.categoriesSort;
-    }
-  }
-
   private emitReference(): void {
     const reference = this.date.value.format('YYYYMM');
 
     this.synchronizedReference = reference;
-    localStorage.setItem('budgetDate', this.date.value.toISOString());
+    localStorage.setItem('summaryDate', this.date.value.toISOString());
 
     if (!this.context) return;
 

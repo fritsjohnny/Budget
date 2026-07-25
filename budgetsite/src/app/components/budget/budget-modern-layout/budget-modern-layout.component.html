@@ -1,4 +1,23 @@
-<div class="modern-budget-shell">
+<div
+  class="modern-budget-shell"
+  [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
+  [class.pull-refreshing]="isPullRefreshing"
+  [style.--pull-distance]="pullDistance + 'px'"
+  (touchstart)="onPullStart($event)"
+  (touchmove)="onPullMove($event)"
+  (touchend)="onPullEnd()"
+  (touchcancel)="onPullCancel()"
+>
+  <div
+    class="pull-refresh-indicator"
+    [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"
+    [class.pull-refresh-ready]="pullReady"
+    aria-live="polite"
+  >
+    <mat-icon>{{ isPullRefreshing ? 'autorenew' : 'arrow_downward' }}</mat-icon>
+    <span>{{ pullRefreshLabel }}</span>
+  </div>
+
   <section class="reference-card" aria-label="Referência do orçamento">
     <div class="reference-navigation">
       <button mat-button class="reference-side" (click)="setPreviousMonth()" aria-label="Referência anterior">
@@ -172,7 +191,7 @@
             <mat-icon>more_vert</mat-icon>
           </button>
 
-          <mat-menu #expensesOptionsMenu="matMenu">
+          <mat-menu #expensesOptionsMenu="matMenu" class="modern-menu modern-menu-expenses">
             <button mat-menu-item (click)="context.orderByDueDate()"><mat-icon>calendar_today</mat-icon><span>Ordenar por vencimento</span></button>
             <div mat-menu-item class="menu-checkbox-item" (click)="$event.stopPropagation()">
               <mat-checkbox [(ngModel)]="context.creditCardsFirst" (click)="$event.stopPropagation()">Cartões de Crédito primeiro</mat-checkbox>
@@ -240,13 +259,13 @@
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row">
                 <button mat-icon-button [matMenuTriggerFor]="expenseRowMenu" (click)="$event.stopPropagation()" aria-label="Ações da despesa"><mat-icon>more_vert</mat-icon></button>
-                <mat-menu #expenseRowMenu="matMenu">
+                <mat-menu #expenseRowMenu="matMenu" class="modern-menu modern-menu-expenses">
                   <button *ngIf="context.showUpcomingExpenses" mat-menu-item (click)="context.removeFromUpcomingFilter(row)"><mat-icon>cancel</mat-icon><span>Remover do filtro</span></button>
                   <button mat-menu-item (click)="context.pay(row)" [disabled]="row.remaining <= 0"><mat-icon>price_check</mat-icon><span>Pagar</span></button>
                   <button mat-menu-item (click)="context.payWithCard(row)" [disabled]="row.remaining <= 0"><mat-icon>credit_score</mat-icon><span>Pagar com cartão</span></button>
                   <button mat-menu-item (click)="context.ajustarDespesaPorCategoria(row)" [disabled]="row.categoryId || row.cardId"><mat-icon>tune</mat-icon><span>Ajustar pelo total da categoria</span></button>
                   <button mat-menu-item (click)="context.expenseClone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button>
-                  <button mat-menu-item (click)="context.deleteExpense(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
+                  <button mat-menu-item class="modern-menu-danger" (click)="context.deleteExpense(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
                   <button mat-menu-item (click)="context.addValue(row, 'P')"><mat-icon>add</mat-icon><span>Adicionar valor</span></button>
                 </mat-menu>
               </td>
@@ -298,7 +317,7 @@
         <div class="panel-toolbar">
           <button mat-mini-fab class="income-add-button" (click)="context.addIncome()" matTooltip="Adicionar receita" aria-label="Adicionar receita"><mat-icon>add</mat-icon></button>
           <button mat-icon-button [matMenuTriggerFor]="incomesOptionsMenu" aria-label="Opções de receitas"><mat-icon>more_vert</mat-icon></button>
-          <mat-menu #incomesOptionsMenu="matMenu">
+          <mat-menu #incomesOptionsMenu="matMenu" class="modern-menu modern-menu-incomes">
             <button mat-menu-item (click)="context.orderIncomesByPreviousMonth()"><mat-icon>sort_by_alpha</mat-icon><span>Organizar igual mês anterior</span></button>
             <button mat-menu-item (click)="context.repeatPreviousMonth()"><mat-icon>repeat</mat-icon><span>Repetir mês anterior</span></button>
           </mat-menu>
@@ -353,10 +372,10 @@
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row">
                 <button mat-icon-button [matMenuTriggerFor]="incomeRowMenu" (click)="$event.stopPropagation()" aria-label="Ações da receita"><mat-icon>more_vert</mat-icon></button>
-                <mat-menu #incomeRowMenu="matMenu">
+                <mat-menu #incomeRowMenu="matMenu" class="modern-menu modern-menu-incomes">
                   <button mat-menu-item (click)="context.receive(row)" [disabled]="row.remaining <= 0"><mat-icon>price_check</mat-icon><span>Receber</span></button>
                   <button mat-menu-item (click)="context.incomeClone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button>
-                  <button mat-menu-item (click)="context.deleteIncome(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
+                  <button mat-menu-item class="modern-menu-danger" (click)="context.deleteIncome(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
                   <button mat-menu-item (click)="context.addValue(row, 'R')"><mat-icon>add</mat-icon><span>Adicionar valor</span></button>
                 </mat-menu>
               </td>
@@ -443,7 +462,7 @@
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row">
                 <button mat-icon-button [matMenuTriggerFor]="peopleRowMenu" (click)="$event.stopPropagation()"><mat-icon>more_vert</mat-icon></button>
-                <mat-menu #peopleRowMenu="matMenu">
+                <mat-menu #peopleRowMenu="matMenu" class="modern-menu modern-menu-people">
                   <button mat-menu-item (click)="context.editPeople(row)"><mat-icon>edit</mat-icon><span>Editar</span></button>
                   <button mat-menu-item (click)="context.charge(row)"><mat-icon>chat</mat-icon><span>{{ row.phoneNumber ? 'Compartilhar via WhatsApp' : 'Copiar lançamentos p/ WhatsApp' }}</span></button>
                   <button mat-menu-item (click)="context.charge(row, true)"><mat-icon>chat</mat-icon><span>{{ row.phoneNumber ? 'Compartilhar via WhatsApp (sem taxa)' : 'Copiar lançamentos p/ WhatsApp (sem taxa)' }}</span></button>
@@ -460,7 +479,10 @@
                   <section class="detail-group" *ngIf="row.cardsPostings?.length > 0">
                     <h4>Cartões</h4>
                     <div class="detail-line" *ngFor="let item of row.cardsPostings; trackBy: trackById">
-                      <span>{{ item.card?.name }} · {{ item.description }}<span *ngIf="item.parcels > 1"> ({{ item.parcelNumber }}/{{ item.parcels }})</span></span>
+                      <div class="detail-copy">
+                        <span class="detail-title">{{ item.card?.name }} · {{ item.description }}</span>
+                        <small class="detail-subline" *ngIf="item.parcels > 1">({{ item.parcelNumber }}/{{ item.parcels }})</small>
+                      </div>
                       <strong>{{ item.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
                     </div>
                   </section>
@@ -468,7 +490,10 @@
                   <section class="detail-group" *ngIf="row.incomes?.length > 0">
                     <h4>Receitas</h4>
                     <div class="detail-line" *ngFor="let item of row.incomes; trackBy: trackById">
-                      <span>{{ item.description }}<span *ngIf="item.parcels > 1"> ({{ item.parcelNumber }}/{{ item.parcels }})</span></span>
+                      <div class="detail-copy">
+                        <span class="detail-title">{{ item.description }}</span>
+                        <small class="detail-subline" *ngIf="item.parcels > 1">({{ item.parcelNumber }}/{{ item.parcels }})</small>
+                      </div>
                       <strong>{{ item.toReceive | currency:'BRL':'symbol':'1.2-2' }}</strong>
                     </div>
                   </section>
@@ -476,7 +501,9 @@
                   <section class="detail-group" *ngIf="row.accountsPostings?.length > 0">
                     <h4>Recebimentos</h4>
                     <div class="detail-line" *ngFor="let item of row.accountsPostings; trackBy: trackById">
-                      <span>{{ item.account?.name }} · {{ item.description }}</span>
+                      <div class="detail-copy">
+                        <span class="detail-title">{{ item.account?.name }} · {{ item.description }}</span>
+                      </div>
                       <strong>{{ item.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
                     </div>
                   </section>
@@ -486,7 +513,7 @@
 
             <tr mat-header-row *matHeaderRowDef="context.displayedPeopleColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: context.displayedPeopleColumns" (click)="context.peopleToggleRow(row, $event)"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['peopleExpandedDetail']" class="detail-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['peopleExpandedDetail']" class="detail-row" [class.detail-row-expanded]="row.expanded"></tr>
             <tr mat-footer-row *matFooterRowDef="context.displayedPeopleColumns"></tr>
           </table>
         </div>
@@ -503,16 +530,21 @@
             <span class="panel-icon"><mat-icon>category</mat-icon></span>
             <span class="panel-heading-copy category-heading-copy">
               <strong>Categorias</strong>
-              <span class="category-chips" *ngIf="visibleProvisionedExpenses.length > 0; else noProvisionedExpenses">
-                <span class="category-chip" *ngFor="let expense of visibleProvisionedExpenses; trackBy: trackById">
-                  {{ expense.description }} · {{ expense.expectedValue | currency:'BRL':'symbol':'1.2-2' }}
-                </span>
-                <span class="category-chip category-chip-more" *ngIf="remainingProvisionedExpenses > 0">+{{ remainingProvisionedExpenses }}</span>
-              </span>
-              <ng-template #noProvisionedExpenses><small>Nenhuma categoria provisionada</small></ng-template>
+              <small *ngIf="provisionedExpenses.length > 0">{{ provisionedExpenses.length }} {{ provisionedExpenses.length === 1 ? 'categoria provisionada' : 'categorias provisionadas' }}</small>
+              <small *ngIf="provisionedExpenses.length === 0">Nenhuma categoria provisionada</small>
             </span>
           </mat-panel-title>
         </mat-expansion-panel-header>
+
+        <div class="provisioned-summary" *ngIf="visibleProvisionedExpenses.length > 0">
+          <span class="provisioned-summary-label"><mat-icon>event_available</mat-icon>Categorias provisionadas</span>
+          <div class="category-chips">
+            <span class="category-chip" *ngFor="let expense of visibleProvisionedExpenses; trackBy: trackById">
+              {{ expense.description }} · {{ expense.expectedValue | currency:'BRL':'symbol':'1.2-2' }}
+            </span>
+            <span class="category-chip category-chip-more" *ngIf="remainingProvisionedExpenses > 0">+{{ remainingProvisionedExpenses }}</span>
+          </div>
+        </div>
 
         <div class="modern-table-container">
           <table
@@ -552,7 +584,10 @@
                   <section class="detail-group" *ngIf="row.expenses?.length > 0">
                     <h4>Despesas</h4>
                     <div class="detail-line" *ngFor="let item of row.expenses; trackBy: trackById">
-                      <span>{{ item.description }}<span *ngIf="item.parcels > 1"> ({{ item.parcelNumber }}/{{ item.parcels }})</span></span>
+                      <div class="detail-copy">
+                        <span class="detail-title">{{ item.description }}</span>
+                        <small class="detail-subline" *ngIf="item.parcels > 1">({{ item.parcelNumber }}/{{ item.parcels }})</small>
+                      </div>
                       <strong>{{ item.toPay | currency:'BRL':'symbol':'1.2-2' }}</strong>
                     </div>
                   </section>
@@ -560,7 +595,10 @@
                   <section class="detail-group" *ngIf="row.cardsPostings?.length > 0">
                     <h4>Cartões</h4>
                     <div class="detail-line" *ngFor="let item of row.cardsPostings; trackBy: trackById">
-                      <span>{{ item.card?.name }} · {{ item.description }}<span *ngIf="item.parcels > 1"> ({{ item.parcelNumber }}/{{ item.parcels }})</span></span>
+                      <div class="detail-copy">
+                        <span class="detail-title">{{ item.card?.name }} · {{ item.description }}</span>
+                        <small class="detail-subline" *ngIf="item.parcels > 1">({{ item.parcelNumber }}/{{ item.parcels }})</small>
+                      </div>
                       <strong>{{ item.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
                     </div>
                   </section>
@@ -570,7 +608,7 @@
 
             <tr mat-header-row *matHeaderRowDef="context.displayedCategoriesColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: context.displayedCategoriesColumns" (click)="context.toggleRow(row)"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row" [class.detail-row-expanded]="row.expanded"></tr>
             <tr mat-footer-row *matFooterRowDef="context.displayedCategoriesColumns"></tr>
           </table>
         </div>

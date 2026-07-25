@@ -65,6 +65,7 @@ import { DatepickerComponent } from './shared/datepicker/datepicker.component';
 import { BudgetViewComponent } from './views/budget-view/budget-view.component';
 import { DatepickerinputComponent } from './shared/datepickerinput/datepickerinput.component';
 import { SummaryComponent } from './components/summary/summary.component';
+import { SummaryModernLayoutComponent } from './components/summary/summary-modern-layout/summary-modern-layout.component';
 import { SummaryViewComponent } from './views/summary-view/summary-view.component';
 import { CategoryComponent } from './components/category/category.component';
 import { DatepickerreferenceComponent } from './shared/datepickerreference/datepickerreference.component';
@@ -141,6 +142,7 @@ registerLocaleData(localePt);
     IncomesDialog,
     DatepickerinputComponent,
     SummaryComponent,
+    SummaryModernLayoutComponent,
     SummaryViewComponent,
     CategoryComponent,
     DatepickerreferenceComponent,

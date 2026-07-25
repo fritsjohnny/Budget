@@ -29,6 +29,12 @@ interface SaldosLegend {
 })
 export class SummaryComponent implements OnInit, AfterViewInit {
 
+  readonly modernLayoutContext: SummaryComponent = this;
+
+  get useModernLayout(): boolean {
+    return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
   reference?: string;
   referenceHead?: string;
   monthName: string = "";

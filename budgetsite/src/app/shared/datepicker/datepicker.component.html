@@ -13,7 +13,7 @@
         startView="multi-year"
         (yearSelected)="chosenYearHandler($event)"
         (monthSelected)="chosenMonthHandler($event, dp)"
-        panelClass="example-month-picker"
+        [panelClass]="datepickerPanelClasses"
       >
       </mat-datepicker>
     </mat-form-field>

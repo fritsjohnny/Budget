@@ -60,7 +60,9 @@ import { BudgetComponent } from './components/budget/budget.component';
 import { BudgetModernLayoutComponent } from './components/budget/budget-modern-layout/budget-modern-layout.component';
 import { PaymentReceiveDialog } from './components/budget/payment-receive-dialog';
 import { IncomesDialog } from './components/budget/incomes-dialog';
+import { IncomesModernDialog } from './components/budget/incomes-modern-dialog';
 import { ExpensesDialog } from './components/budget/expenses-dialog';
+import { ExpensesModernDialog } from './components/budget/expenses-modern-dialog';
 import { DatepickerComponent } from './shared/datepicker/datepicker.component';
 import { BudgetViewComponent } from './views/budget-view/budget-view.component';
 import { DatepickerinputComponent } from './shared/datepickerinput/datepickerinput.component';
@@ -138,8 +140,10 @@ registerLocaleData(localePt);
     AccountPostingsDialog,
     AccountApplicationsDialog,
     ExpensesDialog,
+    ExpensesModernDialog,
     PaymentReceiveDialog,
     IncomesDialog,
+    IncomesModernDialog,
     DatepickerinputComponent,
     SummaryComponent,
     SummaryModernLayoutComponent,

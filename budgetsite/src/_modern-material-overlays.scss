@@ -1,0 +1,630 @@
+/* =====================================================
+   Overlays modernos reutilizáveis do Angular Material 13
+   Uso:
+   - mat-select: panelClass="modern-select-panel"
+   - mat-datepicker: panelClass="modern-datepicker-panel"
+   - mat-dialog: panelClass="modern-aux-dialog-panel"
+   ===================================================== */
+
+.mat-select-panel.modern-select-panel {
+  max-width: calc(100vw - 24px) !important;
+  max-height: min(360px, 62vh) !important;
+  padding: 7px !important;
+  border: 1px solid rgba(23, 35, 55, 0.14);
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  box-shadow: 0 20px 52px rgba(22, 32, 48, 0.24) !important;
+}
+
+.mat-select-panel.modern-select-panel .mat-option {
+  display: flex;
+  min-height: 44px;
+  height: auto;
+  margin: 2px 0;
+  padding: 8px 13px !important;
+  border-radius: 10px;
+  color: #273449 !important;
+  font-size: 14px;
+  line-height: 1.35;
+  white-space: normal;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.mat-select-panel.modern-select-panel .mat-option-text {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.mat-select-panel.modern-select-panel .mat-option:hover:not(.mat-option-disabled),
+.mat-select-panel.modern-select-panel .mat-option.mat-active:not(.mat-option-disabled) {
+  background: #eef3fb !important;
+  color: #304b9a !important;
+}
+
+.mat-select-panel.modern-select-panel .mat-option.mat-selected:not(.mat-option-disabled) {
+  background: rgba(79, 111, 232, 0.14) !important;
+  color: #3f5fd6 !important;
+  font-weight: 700;
+}
+
+.mat-select-panel.modern-select-panel .mat-option.mat-selected:not(.mat-option-disabled) .mat-option-text::after {
+  content: "check";
+  flex: 0 0 auto;
+  color: #4f6fe8;
+  font-family: "Material Icons";
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 1;
+}
+
+.mat-select-panel.modern-select-panel .mat-option.mat-option-disabled {
+  color: #98a2b3 !important;
+  opacity: 0.62;
+}
+
+.mat-select-panel.modern-select-panel::-webkit-scrollbar {
+  width: 7px;
+}
+
+.mat-select-panel.modern-select-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mat-select-panel.modern-select-panel::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(79, 111, 232, 0.34);
+  background-clip: padding-box;
+}
+
+.dark-theme .mat-select-panel.modern-select-panel {
+  border-color: rgba(194, 213, 232, 0.2);
+  background: #111c28 !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.58) !important;
+}
+
+.dark-theme .mat-select-panel.modern-select-panel .mat-option {
+  color: #edf3fa !important;
+}
+
+.dark-theme .mat-select-panel.modern-select-panel .mat-option:hover:not(.mat-option-disabled),
+.dark-theme .mat-select-panel.modern-select-panel .mat-option.mat-active:not(.mat-option-disabled) {
+  background: #1b2c3c !important;
+  color: #ffffff !important;
+}
+
+.dark-theme .mat-select-panel.modern-select-panel .mat-option.mat-selected:not(.mat-option-disabled) {
+  background: rgba(115, 146, 255, 0.18) !important;
+  color: #9eb2ff !important;
+}
+
+.dark-theme .mat-select-panel.modern-select-panel .mat-option.mat-selected:not(.mat-option-disabled) .mat-option-text::after {
+  color: #8fa8ff;
+}
+
+.dark-theme .mat-select-panel.modern-select-panel .mat-option.mat-option-disabled {
+  color: #778392 !important;
+}
+
+.mat-datepicker-content.modern-datepicker-panel,
+.modern-datepicker-panel .mat-datepicker-content {
+  border: 1px solid rgba(23, 35, 55, 0.14);
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  color: #273449 !important;
+  box-shadow: 0 22px 58px rgba(22, 32, 48, 0.28) !important;
+  overflow: hidden;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar {
+  width: min(328px, calc(100vw - 32px));
+  height: auto;
+  background: transparent !important;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-header,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-header {
+  padding: 14px 14px 8px;
+  border-bottom: 1px solid rgba(23, 35, 55, 0.09);
+  background: linear-gradient(145deg, rgba(79, 111, 232, 0.13), #ffffff 72%);
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-controls,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-controls {
+  margin: 0;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-period-button,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-period-button {
+  color: #273449 !important;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-previous-button,
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-next-button,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-previous-button,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-next-button {
+  color: #4f6fe8 !important;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-table-header,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-table-header {
+  color: #6f7b8e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-table-header-divider::after,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-table-header-divider::after {
+  background: rgba(23, 35, 55, 0.1);
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-label,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-label {
+  color: #667085;
+  font-weight: 700;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-cell-content,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-cell-content {
+  border-radius: 10px;
+  color: #344054;
+  transition: background-color 130ms ease, color 130ms ease, box-shadow 130ms ease;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected),
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background: rgba(79, 111, 232, 0.12);
+  color: #304b9a;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-selected,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-selected {
+  background: #4f6fe8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 14px rgba(79, 111, 232, 0.32);
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-today:not(.mat-calendar-body-selected),
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #4f6fe8 !important;
+  color: #3f5fd6 !important;
+  font-weight: 700;
+}
+
+.mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-disabled > .mat-calendar-body-cell-content,
+.modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-disabled > .mat-calendar-body-cell-content {
+  color: #b2bac6 !important;
+}
+
+.dark-theme .mat-datepicker-content.modern-datepicker-panel,
+.dark-theme .modern-datepicker-panel .mat-datepicker-content {
+  border-color: rgba(194, 213, 232, 0.2);
+  background: #111c28 !important;
+  color: #edf3fa !important;
+  box-shadow: 0 26px 66px rgba(0, 0, 0, 0.62) !important;
+}
+
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-header,
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-header {
+  border-bottom-color: rgba(194, 213, 232, 0.12);
+  background: linear-gradient(145deg, rgba(115, 146, 255, 0.16), #111c28 72%);
+}
+
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-period-button,
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-period-button,
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-cell-content,
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-cell-content {
+  color: #edf3fa !important;
+}
+
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-table-header,
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-table-header,
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-label,
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-label {
+  color: #a8b2c1;
+}
+
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-table-header-divider::after,
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-table-header-divider::after {
+  background: rgba(194, 213, 232, 0.12);
+}
+
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected),
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background: rgba(115, 146, 255, 0.16);
+  color: #ffffff !important;
+}
+
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-selected,
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-selected {
+  background: #7392ff !important;
+  color: #0d1621 !important;
+  box-shadow: 0 5px 16px rgba(115, 146, 255, 0.3);
+}
+
+.dark-theme .mat-datepicker-content.modern-datepicker-panel .mat-calendar-body-today:not(.mat-calendar-body-selected),
+.dark-theme .modern-datepicker-panel .mat-datepicker-content .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #8fa8ff !important;
+  color: #9eb2ff !important;
+}
+
+.cdk-overlay-pane.modern-aux-dialog-panel {
+  --modern-aux-accent: #4f6fe8;
+  --modern-aux-accent-soft: rgba(79, 111, 232, 0.14);
+  width: min(420px, calc(100vw - 24px)) !important;
+  max-width: calc(100vw - 24px) !important;
+}
+
+.cdk-overlay-pane.modern-category-dialog-panel {
+  --modern-aux-accent: #e1b900;
+  --modern-aux-accent-soft: rgba(255, 193, 7, 0.14);
+}
+
+.cdk-overlay-pane.modern-people-dialog-panel {
+  --modern-aux-accent: #e03e7e;
+  --modern-aux-accent-soft: rgba(224, 62, 126, 0.14);
+}
+
+.modern-aux-dialog-panel .mat-dialog-container {
+  padding: 0 !important;
+  border: 1px solid rgba(23, 35, 55, 0.14);
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  color: #172033 !important;
+  box-shadow: 0 24px 64px rgba(22, 32, 48, 0.28) !important;
+  overflow: hidden !important;
+}
+
+.modern-aux-dialog-panel form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 210px;
+  max-height: min(86vh, 620px);
+}
+
+.modern-aux-dialog-panel .cancel {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 3;
+  display: block !important;
+}
+
+.modern-aux-dialog-panel .cancel .default-button {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  margin: 0 !important;
+  background: rgba(216, 70, 82, 0.12) !important;
+  color: #d84652 !important;
+  box-shadow: none !important;
+}
+
+.modern-aux-dialog-panel .cancel .default-icon {
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: 22px !important;
+  line-height: 22px !important;
+}
+
+.modern-aux-dialog-panel .mat-dialog-title {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  padding: 21px 68px 16px 20px;
+  border-bottom: 1px solid rgba(23, 35, 55, 0.1);
+  background: linear-gradient(135deg, var(--modern-aux-accent-soft), #ffffff 68%);
+  color: var(--modern-aux-accent) !important;
+  font-size: 21px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.modern-aux-dialog-panel [mat-dialog-content] {
+  flex: 1 1 auto;
+  margin: 0 !important;
+  padding: 18px 18px 4px !important;
+  overflow: auto;
+}
+
+.modern-aux-dialog-panel [mat-dialog-content] .row {
+  width: 100%;
+  margin: 0;
+}
+
+.modern-aux-dialog-panel [mat-dialog-content] .row + .row {
+  margin-top: 8px;
+}
+
+.modern-aux-dialog-panel .mat-form-field {
+  width: 100%;
+}
+
+.modern-aux-dialog-panel .mat-form-field-flex {
+  border-radius: 11px 11px 0 0;
+  background: #f4f7fb !important;
+}
+
+.modern-aux-dialog-panel .mat-input-element,
+.modern-aux-dialog-panel input,
+.modern-aux-dialog-panel textarea {
+  background: transparent !important;
+  color: #172033 !important;
+}
+
+.modern-aux-dialog-panel .mat-form-field-label {
+  color: #667085 !important;
+}
+
+.modern-aux-dialog-panel .mat-form-field-ripple {
+  background-color: var(--modern-aux-accent) !important;
+}
+
+.modern-aux-dialog-panel form > .row:last-child {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  padding: 10px 16px 16px;
+  border-top: 1px solid rgba(23, 35, 55, 0.08);
+}
+
+.modern-aux-dialog-panel form > .row:last-child > .col {
+  padding: 0 4px;
+}
+
+.modern-aux-dialog-panel [mat-dialog-actions] {
+  min-height: 48px;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.modern-aux-dialog-panel [mat-dialog-actions] .default-button {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  margin: 0 !important;
+  background: var(--modern-aux-accent) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.modern-aux-dialog-panel [mat-dialog-actions] .mat-warn {
+  background: rgba(216, 70, 82, 0.14) !important;
+  color: #d84652 !important;
+}
+
+.modern-aux-dialog-panel [mat-dialog-actions] .default-icon {
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: 22px !important;
+  line-height: 22px !important;
+}
+
+.dark-theme .modern-aux-dialog-panel .mat-dialog-container {
+  border-color: rgba(194, 213, 232, 0.2);
+  background: #111c28 !important;
+  color: #edf3fa !important;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.62) !important;
+}
+
+.dark-theme .modern-aux-dialog-panel .mat-dialog-title {
+  border-bottom-color: rgba(194, 213, 232, 0.12);
+  background: linear-gradient(135deg, var(--modern-aux-accent-soft), #111c28 68%);
+}
+
+.dark-theme .modern-aux-dialog-panel .mat-form-field-flex {
+  background: #182634 !important;
+}
+
+.dark-theme .modern-aux-dialog-panel .mat-input-element,
+.dark-theme .modern-aux-dialog-panel input,
+.dark-theme .modern-aux-dialog-panel textarea {
+  background: transparent !important;
+  color: #edf3fa !important;
+}
+
+.dark-theme .modern-aux-dialog-panel .mat-form-field-label {
+  color: #a8b2c1 !important;
+}
+
+.dark-theme .modern-aux-dialog-panel form > .row:last-child {
+  border-top-color: rgba(194, 213, 232, 0.1);
+}
+
+/*
+   Fallback global reutilizável para todos os datepickers.
+   O Angular Material 13 pode aplicar panelClass em níveis diferentes do overlay;
+   por isso o visual moderno também é aplicado diretamente ao conteúdo real.
+*/
+.cdk-overlay-container .mat-datepicker-content {
+  border: 1px solid rgba(23, 35, 55, 0.14) !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  color: #273449 !important;
+  box-shadow: 0 22px 58px rgba(22, 32, 48, 0.28) !important;
+  overflow: hidden !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar {
+  width: min(328px, calc(100vw - 32px)) !important;
+  height: auto !important;
+  background: transparent !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-header {
+  padding: 14px 14px 8px !important;
+  border-bottom: 1px solid rgba(23, 35, 55, 0.09);
+  background: linear-gradient(145deg, rgba(79, 111, 232, 0.13), #ffffff 72%) !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-controls {
+  margin: 0 !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-period-button {
+  color: #273449 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-previous-button,
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-next-button {
+  color: #4f6fe8 !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table-header {
+  color: #6f7b8e !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table-header-divider::after {
+  background: rgba(23, 35, 55, 0.1) !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-label {
+  color: #667085 !important;
+  font-weight: 700 !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell-content {
+  border-radius: 10px !important;
+  color: #344054 !important;
+  transition: background-color 130ms ease, color 130ms ease, box-shadow 130ms ease;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background: rgba(79, 111, 232, 0.12) !important;
+  color: #304b9a !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-selected {
+  background: #4f6fe8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 14px rgba(79, 111, 232, 0.32) !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #4f6fe8 !important;
+  color: #3f5fd6 !important;
+  font-weight: 700 !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-disabled > .mat-calendar-body-cell-content {
+  color: #b2bac6 !important;
+}
+
+/*
+   Neutraliza estilos globais de tabelas dentro do calendário.
+   O app usa tr:nth-child(even/odd) em tabelas comuns, mas o calendário
+   também é renderizado como table e não deve herdar faixas ou grades.
+*/
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table,
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table thead,
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table tbody,
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table tr,
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table tr:nth-child(even),
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table tr:nth-child(odd),
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table th,
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table td {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell-content {
+  top: 50% !important;
+  left: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  transform: translate(-50%, -50%);
+  border-width: 1px !important;
+  background: transparent;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell-content:not(.mat-calendar-body-selected):not(.mat-calendar-body-today) {
+  border-color: transparent !important;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-body-label {
+  background: transparent !important;
+}
+
+.dark-theme .cdk-overlay-container .mat-datepicker-content,
+body.dark-theme .cdk-overlay-container .mat-datepicker-content {
+  border-color: rgba(194, 213, 232, 0.2) !important;
+  background: #111c28 !important;
+  color: #edf3fa !important;
+  box-shadow: 0 26px 66px rgba(0, 0, 0, 0.62) !important;
+}
+
+.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-header,
+body.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-header {
+  border-bottom-color: rgba(194, 213, 232, 0.12) !important;
+  background: linear-gradient(145deg, rgba(115, 146, 255, 0.16), #111c28 72%) !important;
+}
+
+.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-period-button,
+.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell-content,
+body.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-period-button,
+body.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell-content {
+  color: #edf3fa !important;
+}
+
+.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-table-header,
+.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-label,
+body.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-table-header,
+body.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-label {
+  color: #a8b2c1 !important;
+}
+
+.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected),
+body.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background: rgba(115, 146, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-selected,
+body.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-selected {
+  background: #7392ff !important;
+  color: #0d1621 !important;
+  box-shadow: 0 5px 16px rgba(115, 146, 255, 0.3) !important;
+}
+
+.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-today:not(.mat-calendar-body-selected),
+body.dark-theme .cdk-overlay-container .mat-datepicker-content .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #8fa8ff !important;
+  color: #9eb2ff !important;
+}
+
+@media (max-width: 480px) {
+  .mat-select-panel.modern-select-panel {
+    max-height: min(340px, 58vh) !important;
+  }
+
+  .modern-aux-dialog-panel .mat-dialog-title {
+    padding: 18px 62px 14px 16px;
+    font-size: 19px;
+  }
+
+  .modern-aux-dialog-panel [mat-dialog-content] {
+    padding: 15px 14px 3px !important;
+  }
+}

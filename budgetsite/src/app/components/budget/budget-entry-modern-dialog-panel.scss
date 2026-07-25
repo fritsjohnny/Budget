@@ -1,0 +1,29 @@
+.cdk-overlay-pane.modern-budget-entry-dialog-panel {
+  width: min(920px, calc(100vw - 20px)) !important;
+  max-width: calc(100vw - 20px) !important;
+}
+
+.modern-budget-entry-dialog-panel .mat-dialog-container {
+  padding: 0 !important;
+  border: 1px solid rgba(23, 35, 55, 0.14);
+  border-radius: 20px !important;
+  background: transparent !important;
+  box-shadow: 0 24px 64px rgba(22, 32, 48, 0.3) !important;
+  overflow: hidden !important;
+}
+
+.dark-theme .modern-budget-entry-dialog-panel .mat-dialog-container {
+  border-color: rgba(194, 213, 232, 0.2);
+  box-shadow: 0 26px 72px rgba(0, 0, 0, 0.58) !important;
+}
+
+@media (max-width: 720px) {
+  .cdk-overlay-pane.modern-budget-entry-dialog-panel {
+    width: calc(100vw - 8px) !important;
+    max-width: calc(100vw - 8px) !important;
+  }
+
+  .modern-budget-entry-dialog-panel .mat-dialog-container {
+    border-radius: 16px !important;
+  }
+}

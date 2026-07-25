@@ -29,6 +29,13 @@ export class PeopleComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    if (localStorage.getItem('budgetLayout') === 'modern') {
+      this.dialogRef.addPanelClass([
+        'modern-aux-dialog-panel',
+        'modern-people-dialog-panel',
+      ]);
+    }
+
     this.people = {
       id: this.data?.id,
       name: this.data?.name ?? '',
@@ -76,6 +83,9 @@ export class PeopleComponent implements OnInit {
   delete(): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
+      panelClass: localStorage.getItem('budgetLayout') === 'modern'
+        ? 'modern-budget-dialog-panel'
+        : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Pessoa',
         message: 'Confirma a EXCLUSÃO da pessoa?',

@@ -50,6 +50,16 @@ export class DatepickerreferenceComponent implements OnInit {
 
   date = new FormControl(moment());
 
+  get datepickerPanelClasses(): string[] {
+    const classes = ['example-month-picker'];
+
+    if (localStorage.getItem('budgetLayout') === 'modern') {
+      classes.push('modern-datepicker-panel');
+    }
+
+    return classes;
+  }
+
   @Input() reference?: string;
   @Output() referenceChange = new EventEmitter<string>();
 

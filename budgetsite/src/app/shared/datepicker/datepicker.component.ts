@@ -67,6 +67,16 @@ export class DatepickerComponent implements OnInit, OnChanges {
   date = new FormControl(moment());
   monthName: string = '';
 
+  get datepickerPanelClasses(): string[] {
+    const classes = ['example-month-picker'];
+
+    if (localStorage.getItem('budgetLayout') === 'modern') {
+      classes.push('modern-datepicker-panel');
+    }
+
+    return classes;
+  }
+
   @Input() accountId?: number;
   @Input() cardId?: number;
   @Input() budgetId?: number;

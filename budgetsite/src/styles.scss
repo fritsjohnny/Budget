@@ -2,6 +2,7 @@
 @use "../src/app/shared/datepicker/datepicker.component" as datepicker;
 
 @import "~@angular/material/theming";
+@import "./app/components/budget/budget-entry-modern-dialog-panel";
 @include mat.core();
 
 :root {
@@ -1458,3 +1459,5 @@ body.dark-theme {
     padding: 12px 16px 16px;
   }
 }
+
+@import "./modern-material-overlays";

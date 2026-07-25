@@ -22,6 +22,13 @@ export class CategoryComponent implements OnInit {
   ngOnInit(): void {
     this.category ??= {} as Categories;
     this.category.editing = !!this.category.id;
+
+    if (localStorage.getItem('budgetLayout') === 'modern') {
+      this.dialogRef.addPanelClass([
+        'modern-aux-dialog-panel',
+        'modern-category-dialog-panel',
+      ]);
+    }
   }
 
   setTitle() {

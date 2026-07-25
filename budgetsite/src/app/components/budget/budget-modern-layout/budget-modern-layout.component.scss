@@ -680,18 +680,60 @@
 }
 
 .panel-toolbar {
-  display: flex;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
   align-items: center;
-  gap: 4px;
-  min-height: 50px;
-  padding: 4px 6px;
+  min-height: 58px;
+  padding: 6px 8px;
   border-top: 1px solid var(--modern-divider);
 }
 
-.income-add-button {
-  background: var(--modern-blue);
+.modern-add-button {
+  grid-column: 2;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 142px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
   color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 40px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 8px 18px rgba(10, 18, 28, 0.24);
+}
+
+.modern-add-button .mat-icon {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  font-size: 20px;
+  line-height: 20px;
+}
+
+.expense-add-button {
+  border-color: var(--modern-red);
+  background: var(--modern-red-soft);
+  color: var(--modern-red);
+  box-shadow: 0 6px 16px rgba(231, 76, 86, 0.14);
+}
+
+.income-add-button {
+  border-color: var(--modern-blue);
+  background: var(--modern-blue-soft);
+  color: var(--modern-blue);
+  box-shadow: 0 6px 16px rgba(79, 111, 232, 0.14);
+}
+
+.panel-options-button {
+  grid-column: 3;
+  justify-self: end;
+  color: var(--modern-muted);
 }
 
 .menu-checkbox-item {

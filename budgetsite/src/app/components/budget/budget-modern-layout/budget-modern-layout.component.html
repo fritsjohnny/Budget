@@ -425,17 +425,19 @@
 
                 <div class="panel-toolbar">
                     <button
-                        mat-mini-fab
-                        color="accent"
+                        mat-flat-button
+                        class="modern-add-button expense-add-button"
                         (click)="context.addExpense()"
                         matTooltip="Adicionar despesa"
                         aria-label="Adicionar despesa"
                     >
-                        <mat-icon>add</mat-icon>
+                        <mat-icon>post_add</mat-icon>
+                        <span>Nova despesa</span>
                     </button>
 
                     <button
                         mat-icon-button
+                        class="panel-options-button"
                         [matMenuTriggerFor]="expensesOptionsMenu"
                         aria-label="Opções de despesas"
                     >
@@ -809,16 +811,18 @@
 
                 <div class="panel-toolbar">
                     <button
-                        mat-mini-fab
-                        class="income-add-button"
+                        mat-flat-button
+                        class="modern-add-button income-add-button"
                         (click)="context.addIncome()"
                         matTooltip="Adicionar receita"
                         aria-label="Adicionar receita"
                     >
-                        <mat-icon>add</mat-icon>
+                        <mat-icon>post_add</mat-icon>
+                        <span>Nova receita</span>
                     </button>
                     <button
                         mat-icon-button
+                        class="panel-options-button"
                         [matMenuTriggerFor]="incomesOptionsMenu"
                         aria-label="Opções de receitas"
                     >

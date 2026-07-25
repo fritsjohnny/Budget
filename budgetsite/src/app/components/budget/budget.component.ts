@@ -41,7 +41,9 @@ import { People } from 'src/app/models/people.model';
 import { PeopleService } from 'src/app/services/people/people.service';
 import { AddvalueComponent } from 'src/app/shared/addvalue/addvalue.component';
 import { ExpensesDialog } from './expenses-dialog';
+import { ExpensesModernDialog } from './expenses-modern-dialog';
 import { IncomesDialog } from './incomes-dialog';
+import { IncomesModernDialog } from './incomes-modern-dialog';
 import { PaymentReceiveDialog } from './payment-receive-dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog/cardpostings-dialog';
 import { PeopleComponent } from '../people/people.component';
@@ -80,6 +82,18 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   get useModernLayout(): boolean {
     return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
+  private get expenseDialogComponent(): typeof ExpensesDialog {
+    return this.useModernLayout ? ExpensesModernDialog : ExpensesDialog;
+  }
+
+  private get incomeDialogComponent(): typeof IncomesDialog {
+    return this.useModernLayout ? IncomesModernDialog : IncomesDialog;
+  }
+
+  private get budgetEntryDialogPanelClass(): string | undefined {
+    return this.useModernLayout ? 'modern-budget-entry-dialog-panel' : undefined;
   }
 
   validatingInvoiceClosing = false;
@@ -703,9 +717,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   addExpense(): void {
     this.editing = false;
 
-    const dialogRef = this.dialog.open(ExpensesDialog, {
+    const dialogRef = this.dialog.open(this.expenseDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.budgetEntryDialogPanelClass,
       data: {
         reference: this.reference,
         editing: this.editing,
@@ -804,9 +819,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.editing = true;
 
-    const dialogRef = this.dialog.open(ExpensesDialog, {
+    const dialogRef = this.dialog.open(this.expenseDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.budgetEntryDialogPanelClass,
       data: {
         id: expense.id,
         userId: expense.userId,
@@ -988,9 +1004,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   addIncome(): void {
     this.editing = false;
 
-    const dialogRef = this.dialog.open(IncomesDialog, {
+    const dialogRef = this.dialog.open(this.incomeDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.budgetEntryDialogPanelClass,
       data: {
         reference: this.reference,
         editing: this.editing,
@@ -1084,9 +1101,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.editing = true;
 
-    const dialogRef = this.dialog.open(IncomesDialog, {
+    const dialogRef = this.dialog.open(this.incomeDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.budgetEntryDialogPanelClass,
       data: {
         id: income.id,
         userId: income.userId,

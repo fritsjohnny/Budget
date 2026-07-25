@@ -1,0 +1,210 @@
+<div class="modern-entry-dialog modern-income-entry-dialog">
+  <form [formGroup]="incomesFormGroup">
+    <header class="modern-entry-header">
+      <div class="modern-entry-heading">
+        <span class="modern-entry-icon"><mat-icon>attach_money</mat-icon></span>
+        <div>
+          <h2 mat-dialog-title>{{ setTitle() }}</h2>
+          <p>{{ incomes.editing ? 'Atualize os dados da receita' : 'Registre uma nova receita' }}</p>
+        </div>
+      </div>
+
+      <button mat-icon-button type="button" class="modern-entry-close" matTooltip="Cancelar" aria-label="Cancelar" (click)="cancel()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <div mat-dialog-content class="modern-entry-content">
+      <section class="modern-form-section" *ngIf="incomes.received == 0">
+        <div class="modern-section-title">
+          <mat-icon>calendar_month</mat-icon>
+          <span>Referência</span>
+        </div>
+        <div class="modern-reference-field">
+          <app-datepickerreference [(reference)]="incomes.reference"></app-datepickerreference>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>description</mat-icon>
+          <span>Identificação</span>
+        </div>
+
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" class="modern-field-full">
+            <mat-label>Descrição</mat-label>
+            <input *ngIf="!incomes.adding" type="text" id="descriptionFormControl" required matInput formControlName="descriptionFormControl" [(ngModel)]="incomes.description" />
+            <input *ngIf="incomes.adding" type="text" id="descriptionFormControl" required matInput formControlName="descriptionFormControl" [(ngModel)]="incomes.description" cdkFocusInitial />
+            <mat-error *ngIf="incomesFormGroup.get('descriptionFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+          </mat-form-field>
+
+          <div class="modern-field-action modern-field-full">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Pessoa</mat-label>
+              <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="incomes.peopleId" formControlName="peopleFormControl">
+                <mat-option>-- Nenhuma --</mat-option>
+                <mat-option *ngFor="let p of incomes.peopleList" [value]="p.id">{{ p.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-stroked-button type="button" class="modern-add-related" matTooltip="Adicionar pessoa" (click)="addPeople()">
+              <mat-icon>person_add</mat-icon>
+              <span>Nova</span>
+            </button>
+          </div>
+
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Tipo</mat-label>
+            <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="incomes.type" formControlName="typeFormControl">
+              <mat-option>-- Nenhum --</mat-option>
+              <mat-option *ngFor="let t of types" [value]="t.id">{{ t.description }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Cartão</mat-label>
+            <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="incomes.cardId" formControlName="cardIdFormControl" (selectionChange)="setCard()">
+              <mat-option>-- Nenhum --</mat-option>
+              <mat-option *ngFor="let c of cards" [value]="c.id">{{ c.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" floatLabel="always" class="modern-field-full">
+            <mat-label>Conta</mat-label>
+            <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="incomes.accountId" formControlName="accountIdFormControl">
+              <mat-option>-- Nenhuma --</mat-option>
+              <mat-option *ngFor="let a of accounts" [value]="a.id">{{ a.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="modern-field-full">
+            <mat-label>Comentário</mat-label>
+            <textarea matInput rows="3" [(ngModel)]="incomes.note" formControlName="noteFormControl"></textarea>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>payments</mat-icon>
+          <span>Valores</span>
+        </div>
+
+        <div class="modern-paired-grid">
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Total da Receita</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="totalToReceiveFormControl" [(ngModel)]="incomes.totalToReceive" placeholder="0" (ngModelChange)="calculateToReceive()" autocomplete="off" />
+              <mat-error *ngIf="incomesFormGroup.get('totalToReceiveFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>A receber</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="toReceiveFormControl" [(ngModel)]="incomes.toReceive" placeholder="0" (change)="calculateRemaining()" autocomplete="off" />
+              <mat-error *ngIf="incomesFormGroup.get('toReceiveFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Recebido</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="receivedFormControl" [(ngModel)]="incomes.received" placeholder="0" (change)="calculateRemaining()" autocomplete="off" />
+              <mat-error *ngIf="incomesFormGroup.get('receivedFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Restante</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="remainingFormControl" readonly [(ngModel)]="incomes.remaining" placeholder="0" autocomplete="off" />
+            </mat-form-field>
+          </div>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>layers</mat-icon>
+          <span>Parcelamento e recebimento</span>
+        </div>
+
+        <div class="modern-paired-grid">
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Total de Parcelas</mat-label>
+              <input matInput type="number" inputmode="numeric" formControlName="parcelsFormControl" [(ngModel)]="incomes.parcels" min="1" (change)="onParcelsChanged($event)" onfocus="this.select()" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Recebimento</mat-label>
+              <input matInput [matDatepicker]="receiptDatePicker" formControlName="receiptDateFormControl" [(ngModel)]="incomes.receiptDate" />
+              <mat-datepicker-toggle matSuffix [for]="receiptDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #receiptDatePicker panelClass="modern-datepicker-panel"></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Nº. Parcela</mat-label>
+              <input matInput type="number" inputmode="numeric" formControlName="parcelNumberFormControl" [(ngModel)]="incomes.parcelNumber" min="1" onfocus="this.select()" />
+            </mat-form-field>
+          </div>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>tune</mat-icon>
+          <span>Opções</span>
+        </div>
+
+        <div class="modern-options-grid">
+          <mat-checkbox [(ngModel)]="incomes.generateParcels" formControlName="generateParcelsFormControl" [disabled]="disableGenerateParcelsCheck || incomes.repeatToNextMonths! || incomes.repeatIncome!" (change)="onGenerateParcelsChanged($event)">Gerar as demais parcelas</mat-checkbox>
+
+          <div class="modern-inline-option">
+            <mat-checkbox [(ngModel)]="incomes.repeatIncome" formControlName="repeatIncomeFormControl" [disabled]="disableRepeatIncomeCheck || incomes.repeatToNextMonths! || incomes.generateParcels!" (change)="onRepeatIncomeChanged($event)">Repetir para os próximos</mat-checkbox>
+            <input type="number" inputmode="numeric" onfocus="this.select()" min="1" formControlName="monthsToRepeatFormControl" [(ngModel)]="incomes.monthsToRepeat" />
+            <span>meses</span>
+          </div>
+
+          <mat-checkbox *ngIf="incomes.editing" [(ngModel)]="incomes.repeatToNextMonths" formControlName="repeatToNextMonthsFormControl" [disabled]="incomes.repeatIncome! || incomes.generateParcels!" (change)="onRepeatToNextMonthsChanged()">Repetir edição para os próximos meses</mat-checkbox>
+
+          <mat-checkbox *ngIf="incomes.editing" [(ngModel)]="incomes.preserveFutureValues" formControlName="preserveFutureValuesFormControl" [disabled]="!incomes.repeatToNextMonths">Não alterar os valores dos próximos meses</mat-checkbox>
+        </div>
+      </section>
+
+      <section class="modern-form-section modern-technical-section">
+        <div class="modern-section-title">
+          <mat-icon>fingerprint</mat-icon>
+          <span>Identificadores</span>
+        </div>
+
+        <div class="modern-paired-grid">
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>ID</mat-label>
+              <input matInput [value]="incomes.id ?? ''" readonly />
+            </mat-form-field>
+          </div>
+
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Related ID</mat-label>
+              <input matInput [value]="incomes.relatedId ?? ''" readonly />
+            </mat-form-field>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div mat-dialog-actions class="modern-entry-actions">
+      <button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancel()">Cancelar</button>
+      <button *ngIf="incomes.editing" mat-stroked-button type="button" class="modern-delete-action" (click)="delete()">
+        <mat-icon>delete</mat-icon>
+        Excluir
+      </button>
+      <button mat-flat-button type="button" class="modern-save-action" [disabled]="!incomesFormGroup.valid" (click)="save()">
+        <mat-icon>save</mat-icon>
+        Salvar receita
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,580 @@
+<div class="modern-budget-shell">
+  <section class="reference-card" aria-label="Referência do orçamento">
+    <div class="reference-navigation">
+      <button mat-button class="reference-side" (click)="setPreviousMonth()" aria-label="Referência anterior">
+        <mat-icon>chevron_left</mat-icon>
+        <span>{{ previousMonthName }}</span>
+      </button>
+
+      <strong class="reference-title">{{ referenceTitle }}</strong>
+
+      <button mat-button class="reference-side reference-side-next" (click)="setNextMonth()" aria-label="Próxima referência">
+        <span>{{ nextMonthName }}</span>
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+
+    <div class="reference-actions">
+      <button mat-button class="reference-picker-button" (click)="modernDatepicker.open()" aria-label="Selecionar mês e ano">
+        <mat-icon>calendar_month</mat-icon>
+        <span>{{ referenceHead }}</span>
+        <mat-icon>expand_more</mat-icon>
+      </button>
+
+      <button mat-stroked-button class="current-reference-button" [class.current-reference-active]="isCurrentReference" (click)="setCurrentMonth()">
+        <mat-icon>today</mat-icon>
+        <span>Hoje</span>
+      </button>
+
+      <button mat-icon-button class="reference-options-button" (click)="context.showOptions = !context.showOptions" [matTooltip]="context.showOptions ? 'Ocultar filtros' : 'Mostrar filtros'">
+        <mat-icon>{{ context.showOptions ? 'expand_less' : 'tune' }}</mat-icon>
+      </button>
+    </div>
+
+    <mat-form-field class="reference-picker-proxy" aria-hidden="true">
+      <input matInput [matDatepicker]="modernDatepicker" [formControl]="date" />
+      <mat-datepicker
+        #modernDatepicker
+        startView="multi-year"
+        (yearSelected)="chosenYearHandler($event)"
+        (monthSelected)="chosenMonthHandler($event, modernDatepicker)"
+        panelClass="example-month-picker"
+      ></mat-datepicker>
+    </mat-form-field>
+
+    <div class="reference-filters" *ngIf="context.showOptions">
+      <mat-checkbox [(ngModel)]="context.justMyValues" (ngModelChange)="context.onCheckboxJustMyValuesChange()">Apenas meus valores</mat-checkbox>
+      <mat-checkbox [(ngModel)]="context.justToPay" (ngModelChange)="context.onCheckboxJustToPayChange()">Apenas despesas a pagar</mat-checkbox>
+      <mat-checkbox [(ngModel)]="context.justToReceive" (ngModelChange)="context.onCheckboxJustToReceiveChange()">Apenas receitas a receber</mat-checkbox>
+    </div>
+  </section>
+
+  <div class="modern-loading" *ngIf="context.isBudgetLoading && !context.isBudgetLoaded">
+    <mat-spinner color="accent" [diameter]="48"></mat-spinner>
+    <span>Atualizando orçamento...</span>
+  </div>
+
+  <ng-container *ngIf="context.isBudgetLoaded">
+    <section class="summary-grid" aria-label="Resumo financeiro">
+      <article class="summary-card summary-income">
+        <span class="summary-icon"><mat-icon>attach_money</mat-icon></span>
+        <div>
+          <span class="summary-label">Receitas</span>
+          <strong>{{ context.toReceiveTotalNoFilter | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+      </article>
+
+      <article class="summary-card summary-expense">
+        <span class="summary-icon"><mat-icon>money_off</mat-icon></span>
+        <div>
+          <span class="summary-label">Despesas</span>
+          <strong>{{ context.toPayTotalNoFilter | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+      </article>
+
+      <article class="summary-card summary-balance" [class.summary-negative]="context.expectedBalance < 0">
+        <div class="summary-balance-head">
+          <span class="summary-icon"><mat-icon>account_balance_wallet</mat-icon></span>
+          <div>
+            <span class="summary-label">Saldo previsto</span>
+            <strong>{{ context.expectedBalance | currency:'BRL':'symbol':'1.2-2' }}</strong>
+          </div>
+          <button mat-icon-button class="balance-info" (click)="context.openExpectedBalanceInfo()" matTooltip="Entenda o cálculo">
+            <mat-icon>info_outline</mat-icon>
+          </button>
+        </div>
+
+        <div class="balance-composition">
+          <div [class.metric-negative]="context.getExpectedBalanceWithoutYieldsIncomePerc() < 0">
+            <span>{{ formatPercentage(context.getExpectedBalanceWithoutYieldsIncomePerc()) }}</span>
+            <small>{{ context.getExpectedBalanceWithoutYields() | currency:'BRL':'symbol':'1.2-2' }}</small>
+            <span *ngIf="context.getExpectedBalanceWithoutYields() >= 0">{{ context.getExpectedBalanceWithoutYieldsPerc() | number:'1.2-2' }}%</span>
+            <span *ngIf="context.getExpectedBalanceWithoutYields() < 0 && context.expectedBalance < 0">100%</span>
+            <span *ngIf="context.getExpectedBalanceWithoutYields() < 0 && context.expectedBalance >= 0">{{ context.getExpectedBalanceCoveredByYieldsPerc() | number:'1.2-2' }}%</span>
+          </div>
+
+          <div class="balance-composition-yields">
+            <span>{{ formatPercentage(context.getExpectedBalanceIncomePerc()) }}</span>
+            <small>{{ context.budgetTotals?.myYields | currency:'BRL':'symbol':'1.2-2' }}</small>
+            <span *ngIf="context.getExpectedBalanceWithoutYields() >= 0">{{ context.getExpectedBalanceYieldsCompositionPerc() | number:'1.2-2' }}%</span>
+            <span *ngIf="context.getExpectedBalanceWithoutYields() < 0 && context.expectedBalance < 0">↓{{ context.getExpectedBalanceDeficitReductionPerc() | number:'1.2-2' }}%</span>
+            <span *ngIf="context.getExpectedBalanceWithoutYields() < 0 && context.expectedBalance >= 0">{{ context.getExpectedBalancePositiveFromYieldsPerc() | number:'1.2-2' }}%</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="summary-card summary-pending">
+        <span class="summary-icon"><mat-icon>schedule</mat-icon></span>
+        <div class="pending-content">
+          <span class="summary-label">Pendentes</span>
+          <small>Pagar</small>
+          <strong class="pending-pay">{{ context.expensesRemainingTotal | currency:'BRL':'symbol':'1.2-2' }}</strong>
+          <small>Receber</small>
+          <strong class="pending-receive">{{ context.incomesRemainingTotal | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+      </article>
+
+      <button mat-fab color="warn" class="summary-refresh" (click)="context.refresh()" matTooltip="Atualizar orçamento" aria-label="Atualizar orçamento">
+        <mat-icon>autorenew</mat-icon>
+      </button>
+    </section>
+
+    <mat-accordion class="modern-accordion" [multi]="true">
+      <mat-expansion-panel
+        class="modern-panel panel-totals"
+        [(expanded)]="context.budgetPanelExpanded"
+        (closed)="context.budgetPanelClosed()"
+        (opened)="context.budgetPanelOpened()"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="panel-icon"><mat-icon>numbers</mat-icon></span>
+            <span class="panel-heading-copy">
+              <strong>Totais</strong>
+              <small>Minhas despesas {{ context.budgetTotals?.myExpenses | currency:'BRL':'symbol':'1.2-2' }} · Minhas receitas {{ context.budgetTotals?.myIncomes | currency:'BRL':'symbol':'1.2-2' }}</small>
+            </span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="totals-grid">
+          <div><span>Minhas despesas</span><strong>{{ context.budgetTotals?.myExpenses | currency:'BRL':'symbol':'1.2-2' }}</strong><small>{{ context.budgetTotals?.myExpensesPerc }}%</small></div>
+          <div><span>Despesas terceiros</span><strong>{{ context.budgetTotals?.othersExpenses | currency:'BRL':'symbol':'1.2-2' }}</strong><small>{{ context.budgetTotals?.othersExpensesPerc }}%</small></div>
+          <div><span>Minhas receitas</span><strong>{{ context.budgetTotals?.myIncomes | currency:'BRL':'symbol':'1.2-2' }}</strong><small>{{ context.budgetTotals?.myIncomesPerc }}%</small></div>
+          <div><span>Receitas terceiros</span><strong>{{ context.budgetTotals?.othersIncomes | currency:'BRL':'symbol':'1.2-2' }}</strong><small>{{ context.budgetTotals?.othersIncomesPerc }}%</small></div>
+          <div><span>Sem rendimentos</span><strong>{{ context.budgetTotals?.myIncomesWithoutYields | currency:'BRL':'symbol':'1.2-2' }}</strong><small>{{ context.budgetTotals?.myIncomesWithoutYieldsPerc }}%</small></div>
+          <div><span>Rendimentos</span><strong>{{ context.budgetTotals?.myYields | currency:'BRL':'symbol':'1.2-2' }}</strong><small>{{ context.budgetTotals?.myYieldsPerc }}%</small></div>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel
+        class="modern-panel panel-expenses"
+        [(expanded)]="context.expensesPanelExpanded"
+        (closed)="context.expensesPanelClosed()"
+        (opened)="context.expensesPanelOpened()"
+        (afterExpand)="context.focusPendingBudgetEntry('expense')"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="panel-icon"><mat-icon>money_off</mat-icon></span>
+            <span class="panel-heading-copy">
+              <strong>Despesas</strong>
+              <small>{{ context.toPayTotal | currency:'BRL':'symbol':'1.2-2' }} · {{ context.expenses?.length || 0 }} lançamentos · {{ context.expensesRemainingTotal | currency:'BRL':'symbol':'1.2-2' }} pendente</small>
+            </span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="panel-toolbar">
+          <button mat-mini-fab color="accent" (click)="context.addExpense()" matTooltip="Adicionar despesa" aria-label="Adicionar despesa">
+            <mat-icon>add</mat-icon>
+          </button>
+
+          <button mat-icon-button [matMenuTriggerFor]="expensesOptionsMenu" aria-label="Opções de despesas">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+
+          <mat-menu #expensesOptionsMenu="matMenu">
+            <button mat-menu-item (click)="context.orderByDueDate()"><mat-icon>calendar_today</mat-icon><span>Ordenar por vencimento</span></button>
+            <div mat-menu-item class="menu-checkbox-item" (click)="$event.stopPropagation()">
+              <mat-checkbox [(ngModel)]="context.creditCardsFirst" (click)="$event.stopPropagation()">Cartões de Crédito primeiro</mat-checkbox>
+            </div>
+            <button mat-menu-item (click)="context.orderExpensesByPreviousMonth()"><mat-icon>sort_by_alpha</mat-icon><span>Organizar igual mês anterior</span></button>
+            <button mat-menu-item (click)="context.repeatPreviousExpensesMonth()"><mat-icon>repeat</mat-icon><span>Repetir mês anterior</span></button>
+            <div mat-menu-item class="menu-checkbox-item" (click)="$event.stopPropagation()">
+              <mat-checkbox [(ngModel)]="context.showUpcomingExpenses" (change)="context.filterUpcomingExpenses()">Vencendo nos próximos</mat-checkbox>
+              <input class="days-input" type="number" inputmode="numeric" min="1" [(ngModel)]="context.upcomingDays" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" />
+              <span>dias</span>
+            </div>
+            <div mat-menu-item class="menu-checkbox-item" (click)="$event.stopPropagation()">
+              <mat-checkbox [(ngModel)]="context.onlyPendingExpenses" [disabled]="!context.showUpcomingExpenses" (change)="context.filterUpcomingExpenses()">Apenas despesas a pagar</mat-checkbox>
+            </div>
+          </mat-menu>
+        </div>
+
+        <div class="modern-table-container">
+          <table
+            mat-table
+            [dataSource]="context.expenses"
+            class="modern-data-table expense-table"
+            cdkDropList
+            [cdkDropListData]="context.expenses"
+            (cdkDropListDropped)="context.dropExpenses($event)"
+          >
+            <ng-container matColumnDef="description">
+              <th mat-header-cell *matHeaderCellDef>Descrição</th>
+              <td mat-cell *matCellDef="let row">
+                <div class="entry-description">
+                  <span>{{ row.description }}<span *ngIf="row.parcels > 1"> ({{ row.parcelNumber }}/{{ row.parcels }})</span></span>
+                  <mat-icon *ngIf="row.scheduled" class="scheduled-icon">schedule</mat-icon>
+                </div>
+                <div class="entry-metadata">
+                  <span *ngIf="row.dueDate" [class.metadata-alert]="row.overdue || row.duetoday">Venc.: {{ row.dueDate | date:'dd/MM' }}</span>
+                  <span *ngIf="row.expectedValue" class="metadata-provisioned">Previsto: {{ row.expectedValue | currency:'BRL':'symbol':'1.2-2' }}</span>
+                  <span class="status-chip" [ngClass]="getExpenseStatusClass(row)">
+                    <mat-icon>{{ getExpenseStatusIcon(row) }}</mat-icon>
+                    {{ getExpenseStatus(row) }}
+                  </span>
+                </div>
+              </td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <ng-container matColumnDef="toPay">
+              <th mat-header-cell *matHeaderCellDef>Pagar</th>
+              <td mat-cell *matCellDef="let row">{{ row.toPay | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef>{{ context.toPayTotal | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="paid">
+              <th mat-header-cell *matHeaderCellDef>Pago</th>
+              <td mat-cell *matCellDef="let row" class="expense-paid">{{ row.paid | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef class="expense-paid">{{ context.paidTotal | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="remaining">
+              <th mat-header-cell *matHeaderCellDef>Restante</th>
+              <td mat-cell *matCellDef="let row" [class.value-settled]="row.remaining <= 0" [class.value-pending]="row.remaining > 0">{{ row.remaining | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef class="value-pending">{{ context.expensesRemainingTotal | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <button mat-icon-button [matMenuTriggerFor]="expenseRowMenu" (click)="$event.stopPropagation()" aria-label="Ações da despesa"><mat-icon>more_vert</mat-icon></button>
+                <mat-menu #expenseRowMenu="matMenu">
+                  <button *ngIf="context.showUpcomingExpenses" mat-menu-item (click)="context.removeFromUpcomingFilter(row)"><mat-icon>cancel</mat-icon><span>Remover do filtro</span></button>
+                  <button mat-menu-item (click)="context.pay(row)" [disabled]="row.remaining <= 0"><mat-icon>price_check</mat-icon><span>Pagar</span></button>
+                  <button mat-menu-item (click)="context.payWithCard(row)" [disabled]="row.remaining <= 0"><mat-icon>credit_score</mat-icon><span>Pagar com cartão</span></button>
+                  <button mat-menu-item (click)="context.ajustarDespesaPorCategoria(row)" [disabled]="row.categoryId || row.cardId"><mat-icon>tune</mat-icon><span>Ajustar pelo total da categoria</span></button>
+                  <button mat-menu-item (click)="context.expenseClone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button>
+                  <button mat-menu-item (click)="context.deleteExpense(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
+                  <button mat-menu-item (click)="context.addValue(row, 'P')"><mat-icon>add</mat-icon><span>Adicionar valor</span></button>
+                </mat-menu>
+              </td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="context.displayedExpensesColumns"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: context.displayedExpensesColumns"
+              cdkDrag
+              appDragReadyFeedback
+              [cdkDragData]="row"
+              [cdkDragStartDelay]="300"
+              [attr.data-expense-id]="row.id"
+              [attr.tabindex]="-1"
+              [class.budget-entry-focus]="row.id === context.focusedExpenseId"
+              [class.warning-row]="row.overdue || row.duetoday"
+              [class.without-category-row]="row.cardId == null && row.categoryId == null"
+              (click)="context.handleClickExpense(row, $event)"
+              (dblclick)="context.handleDoubleClickExpense(row, $event)"
+            ></tr>
+            <tr mat-footer-row *matFooterRowDef="context.displayedExpensesColumns"></tr>
+          </table>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel
+        class="modern-panel panel-incomes"
+        [(expanded)]="context.incomesPanelExpanded"
+        (closed)="context.incomesPanelClosed()"
+        (opened)="context.incomesPanelOpened()"
+        (afterExpand)="context.focusPendingBudgetEntry('income')"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="panel-icon"><mat-icon>attach_money</mat-icon></span>
+            <span class="panel-heading-copy panel-heading-metrics">
+              <strong>Receitas</strong>
+              <span class="header-metrics">
+                <span><small>Receber</small><b>{{ context.toReceiveTotal | currency:'BRL':'symbol':'1.2-2' }}</b></span>
+                <span><small>Recebido</small><b>{{ context.receivedTotal | currency:'BRL':'symbol':'1.2-2' }}</b></span>
+                <span><small>Pendente</small><b>{{ context.incomesRemainingTotal | currency:'BRL':'symbol':'1.2-2' }}</b></span>
+              </span>
+            </span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="panel-toolbar">
+          <button mat-mini-fab class="income-add-button" (click)="context.addIncome()" matTooltip="Adicionar receita" aria-label="Adicionar receita"><mat-icon>add</mat-icon></button>
+          <button mat-icon-button [matMenuTriggerFor]="incomesOptionsMenu" aria-label="Opções de receitas"><mat-icon>more_vert</mat-icon></button>
+          <mat-menu #incomesOptionsMenu="matMenu">
+            <button mat-menu-item (click)="context.orderIncomesByPreviousMonth()"><mat-icon>sort_by_alpha</mat-icon><span>Organizar igual mês anterior</span></button>
+            <button mat-menu-item (click)="context.repeatPreviousMonth()"><mat-icon>repeat</mat-icon><span>Repetir mês anterior</span></button>
+          </mat-menu>
+        </div>
+
+        <div class="modern-table-container">
+          <table
+            mat-table
+            [dataSource]="context.incomes"
+            class="modern-data-table income-table"
+            cdkDropList
+            [cdkDropListData]="context.incomes"
+            (cdkDropListDropped)="context.dropIncomes($event)"
+          >
+            <ng-container matColumnDef="description">
+              <th mat-header-cell *matHeaderCellDef>Descrição</th>
+              <td mat-cell *matCellDef="let row">
+                <div class="entry-description">{{ row.description }}<span *ngIf="row.parcels > 1"> ({{ row.parcelNumber }}/{{ row.parcels }})</span></div>
+                <div class="entry-metadata">
+                  <span *ngIf="row.type === 'R'" class="metadata-info">Recebimento</span>
+                  <span *ngIf="row.type === 'C'" class="metadata-provisioned">Troco</span>
+                  <span *ngIf="row.type === 'Y'" class="metadata-success">Rendimento</span>
+                  <span *ngIf="row.receiptDate" class="metadata-success">Receb.: {{ row.receiptDate | date:'dd/MM' }}</span>
+                  <span class="status-chip" [class.status-paid]="row.remaining <= 0" [class.status-pending]="row.remaining > 0">
+                    <mat-icon>{{ row.remaining <= 0 ? 'check_circle_outline' : 'schedule' }}</mat-icon>
+                    {{ row.remaining <= 0 ? 'Recebido' : 'Pendente' }}
+                  </span>
+                </div>
+              </td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <ng-container matColumnDef="toReceive">
+              <th mat-header-cell *matHeaderCellDef>Receber</th>
+              <td mat-cell *matCellDef="let row">{{ row.toReceive | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef>{{ context.toReceiveTotal | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="received">
+              <th mat-header-cell *matHeaderCellDef>Recebido</th>
+              <td mat-cell *matCellDef="let row" class="income-received">{{ row.received | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef class="income-received">{{ context.receivedTotal | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="remaining">
+              <th mat-header-cell *matHeaderCellDef>Restante</th>
+              <td mat-cell *matCellDef="let row" [class.value-settled]="row.remaining <= 0" [class.income-pending]="row.remaining > 0">{{ row.remaining | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef class="income-pending">{{ context.incomesRemainingTotal | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <button mat-icon-button [matMenuTriggerFor]="incomeRowMenu" (click)="$event.stopPropagation()" aria-label="Ações da receita"><mat-icon>more_vert</mat-icon></button>
+                <mat-menu #incomeRowMenu="matMenu">
+                  <button mat-menu-item (click)="context.receive(row)" [disabled]="row.remaining <= 0"><mat-icon>price_check</mat-icon><span>Receber</span></button>
+                  <button mat-menu-item (click)="context.incomeClone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button>
+                  <button mat-menu-item (click)="context.deleteIncome(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
+                  <button mat-menu-item (click)="context.addValue(row, 'R')"><mat-icon>add</mat-icon><span>Adicionar valor</span></button>
+                </mat-menu>
+              </td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="context.displayedIncomesColumns"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: context.displayedIncomesColumns"
+              cdkDrag
+              appDragReadyFeedback
+              [cdkDragData]="row"
+              [cdkDragStartDelay]="300"
+              [attr.data-income-id]="row.id"
+              [attr.tabindex]="-1"
+              [class.budget-entry-focus]="row.id === context.focusedIncomeId"
+              (click)="context.handleClickIncome(row, $event)"
+              (dblclick)="context.handleDoubleClickIncome(row, $event)"
+            ></tr>
+            <tr mat-footer-row *matFooterRowDef="context.displayedIncomesColumns"></tr>
+          </table>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel
+        class="modern-panel panel-people"
+        *ngIf="context.cardpostingspeople?.length > 0"
+        [(expanded)]="context.peoplePanelExpanded"
+        (closed)="context.peoplePanelClosed()"
+        (opened)="context.peoplePanelOpened()"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="panel-icon"><mat-icon>people</mat-icon></span>
+            <span class="panel-heading-copy panel-heading-metrics">
+              <strong>Pessoas</strong>
+              <span class="header-metrics">
+                <span><small>Receber</small><b>{{ context.toReceiveTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</b></span>
+                <span><small>Recebido</small><b>{{ context.receivedTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</b></span>
+                <span><small>Pendente</small><b>{{ context.remainingTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</b></span>
+              </span>
+            </span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="modern-table-container">
+          <table
+            mat-table
+            #modernPeopleSort="matSort"
+            [dataSource]="context.dataSourcePeople"
+            class="modern-data-table people-table"
+            multiTemplateDataRows
+            matSort
+            matSortActive="person"
+            matSortDirection="asc"
+            (matSortChange)="context.announceSortChange($event)"
+          >
+            <ng-container matColumnDef="person">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Pessoa</th>
+              <td mat-cell *matCellDef="let row">{{ row.person }}</td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <ng-container matColumnDef="toReceive">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Receber</th>
+              <td mat-cell *matCellDef="let row">{{ row.toReceive | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef>{{ context.toReceiveTotalPeople | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="received">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Recebido</th>
+              <td mat-cell *matCellDef="let row" class="income-received">{{ row.received | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef class="income-received">{{ context.receivedTotalPeople | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="remaining">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Restante</th>
+              <td mat-cell *matCellDef="let row" class="people-pending">{{ row.remaining | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef class="people-pending">{{ context.remainingTotalPeople | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <button mat-icon-button [matMenuTriggerFor]="peopleRowMenu" (click)="$event.stopPropagation()"><mat-icon>more_vert</mat-icon></button>
+                <mat-menu #peopleRowMenu="matMenu">
+                  <button mat-menu-item (click)="context.editPeople(row)"><mat-icon>edit</mat-icon><span>Editar</span></button>
+                  <button mat-menu-item (click)="context.charge(row)"><mat-icon>chat</mat-icon><span>{{ row.phoneNumber ? 'Compartilhar via WhatsApp' : 'Copiar lançamentos p/ WhatsApp' }}</span></button>
+                  <button mat-menu-item (click)="context.charge(row, true)"><mat-icon>chat</mat-icon><span>{{ row.phoneNumber ? 'Compartilhar via WhatsApp (sem taxa)' : 'Copiar lançamentos p/ WhatsApp (sem taxa)' }}</span></button>
+                </mat-menu>
+              </td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <ng-container matColumnDef="peopleExpandedDetail">
+              <td mat-cell *matCellDef="let row" [attr.colspan]="context.displayedPeopleColumns.length" class="detail-cell">
+                <div class="row-detail" *ngIf="row.expanded">
+                  <mat-spinner *ngIf="row.expanding" [diameter]="40"></mat-spinner>
+
+                  <section class="detail-group" *ngIf="row.cardsPostings?.length > 0">
+                    <h4>Cartões</h4>
+                    <div class="detail-line" *ngFor="let item of row.cardsPostings; trackBy: trackById">
+                      <span>{{ item.card?.name }} · {{ item.description }}<span *ngIf="item.parcels > 1"> ({{ item.parcelNumber }}/{{ item.parcels }})</span></span>
+                      <strong>{{ item.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
+                    </div>
+                  </section>
+
+                  <section class="detail-group" *ngIf="row.incomes?.length > 0">
+                    <h4>Receitas</h4>
+                    <div class="detail-line" *ngFor="let item of row.incomes; trackBy: trackById">
+                      <span>{{ item.description }}<span *ngIf="item.parcels > 1"> ({{ item.parcelNumber }}/{{ item.parcels }})</span></span>
+                      <strong>{{ item.toReceive | currency:'BRL':'symbol':'1.2-2' }}</strong>
+                    </div>
+                  </section>
+
+                  <section class="detail-group" *ngIf="row.accountsPostings?.length > 0">
+                    <h4>Recebimentos</h4>
+                    <div class="detail-line" *ngFor="let item of row.accountsPostings; trackBy: trackById">
+                      <span>{{ item.account?.name }} · {{ item.description }}</span>
+                      <strong>{{ item.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
+                    </div>
+                  </section>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="context.displayedPeopleColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: context.displayedPeopleColumns" (click)="context.peopleToggleRow(row, $event)"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['peopleExpandedDetail']" class="detail-row"></tr>
+            <tr mat-footer-row *matFooterRowDef="context.displayedPeopleColumns"></tr>
+          </table>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel
+        class="modern-panel panel-categories"
+        [(expanded)]="context.categoryPanelExpanded"
+        (closed)="context.categoryPanelClosed()"
+        (opened)="context.categoryPanelOpened()"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="panel-icon"><mat-icon>category</mat-icon></span>
+            <span class="panel-heading-copy category-heading-copy">
+              <strong>Categorias</strong>
+              <span class="category-chips" *ngIf="visibleProvisionedExpenses.length > 0; else noProvisionedExpenses">
+                <span class="category-chip" *ngFor="let expense of visibleProvisionedExpenses; trackBy: trackById">
+                  {{ expense.description }} · {{ expense.expectedValue | currency:'BRL':'symbol':'1.2-2' }}
+                </span>
+                <span class="category-chip category-chip-more" *ngIf="remainingProvisionedExpenses > 0">+{{ remainingProvisionedExpenses }}</span>
+              </span>
+              <ng-template #noProvisionedExpenses><small>Nenhuma categoria provisionada</small></ng-template>
+            </span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="modern-table-container">
+          <table
+            mat-table
+            #modernCategoriesSort="matSort"
+            [dataSource]="context.dataSourceCategories"
+            class="modern-data-table categories-table"
+            multiTemplateDataRows
+            matSort
+            matSortActive="amount"
+            matSortDirection="desc"
+            (matSortChange)="context.announceSortChange($event)"
+          >
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
+              <td mat-cell *matCellDef="let row">{{ row.category }}</td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
+              <td mat-cell *matCellDef="let row">{{ row.amount | currency:'':'':'1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef>{{ context.amountTotalCategory | currency:'':'':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="perc">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>%</th>
+              <td mat-cell *matCellDef="let row">{{ row.perc | number:'1.2-2' }}%</td>
+              <td mat-footer-cell *matFooterCellDef>{{ context.percTotalCategory | number:'1.2-2' }}%</td>
+            </ng-container>
+
+            <ng-container matColumnDef="expandedDetail">
+              <td mat-cell *matCellDef="let row" [attr.colspan]="context.displayedCategoriesColumns.length" class="detail-cell">
+                <div class="row-detail" *ngIf="row.expanded">
+                  <mat-spinner *ngIf="row.expanding" [diameter]="40"></mat-spinner>
+
+                  <section class="detail-group" *ngIf="row.expenses?.length > 0">
+                    <h4>Despesas</h4>
+                    <div class="detail-line" *ngFor="let item of row.expenses; trackBy: trackById">
+                      <span>{{ item.description }}<span *ngIf="item.parcels > 1"> ({{ item.parcelNumber }}/{{ item.parcels }})</span></span>
+                      <strong>{{ item.toPay | currency:'BRL':'symbol':'1.2-2' }}</strong>
+                    </div>
+                  </section>
+
+                  <section class="detail-group" *ngIf="row.cardsPostings?.length > 0">
+                    <h4>Cartões</h4>
+                    <div class="detail-line" *ngFor="let item of row.cardsPostings; trackBy: trackById">
+                      <span>{{ item.card?.name }} · {{ item.description }}<span *ngIf="item.parcels > 1"> ({{ item.parcelNumber }}/{{ item.parcels }})</span></span>
+                      <strong>{{ item.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
+                    </div>
+                  </section>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="context.displayedCategoriesColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: context.displayedCategoriesColumns" (click)="context.toggleRow(row)"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+            <tr mat-footer-row *matFooterRowDef="context.displayedCategoriesColumns"></tr>
+          </table>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </ng-container>
+</div>

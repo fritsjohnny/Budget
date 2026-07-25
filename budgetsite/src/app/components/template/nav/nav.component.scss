@@ -43,3 +43,16 @@ mat-toolbar a {
   flex-direction: row;
   flex-wrap: nowrap;
 }
+
+.nav-preferences {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 180px;
+  padding: 8px 0 0;
+}
+
+.nav-preferences ::ng-deep .mat-slide-toggle-label {
+  white-space: normal;
+  line-height: 18px;
+}

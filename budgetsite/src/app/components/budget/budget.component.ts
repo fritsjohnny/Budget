@@ -76,6 +76,12 @@ import { prepareApiDates } from 'src/app/utils/api-date.util';
   ],
 })
 export class BudgetComponent implements OnInit, AfterViewInit {
+  readonly modernLayoutContext: BudgetComponent = this;
+
+  get useModernLayout(): boolean {
+    return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
   validatingInvoiceClosing = false;
   isBudgetLoading = false;
   isBudgetLoaded = false;

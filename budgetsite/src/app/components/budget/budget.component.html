@@ -3,6 +3,12 @@
     <span>Salvando lançamento...</span>
 </div>
 
+<app-budget-modern-layout
+    *ngIf="useModernLayout"
+    [context]="modernLayoutContext"
+></app-budget-modern-layout>
+
+<ng-container *ngIf="!useModernLayout">
 <div class="container default-margin-bottom">
     <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
         <mat-expansion-panel class="mat-panel-budget" [hideToggle]="false">
@@ -2542,3 +2548,4 @@
         </mat-expansion-panel>
     </mat-accordion>
 </div>
+</ng-container>

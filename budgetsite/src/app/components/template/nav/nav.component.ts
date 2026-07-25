@@ -24,6 +24,7 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
   theme = localStorage.getItem('theme') ?? 'light-theme';
   mobile: boolean = false;
   themeToggle = false;
+  budgetLayoutToggle = localStorage.getItem('budgetLayout') === 'modern';
 
   user!: Users;
 
@@ -115,6 +116,13 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
     document.documentElement.className = this.theme;
 
     localStorage.setItem('theme', this.theme);
+  }
+
+  changeBudgetLayout(): void {
+    localStorage.setItem(
+      'budgetLayout',
+      this.budgetLayoutToggle ? 'modern' : 'classic'
+    );
   }
 
   viewUser() {

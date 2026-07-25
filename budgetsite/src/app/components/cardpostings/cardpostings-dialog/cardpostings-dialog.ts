@@ -391,7 +391,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     if (!closing) return '';
     const cardName = closing.cardName || this.cardPosting.cardsList?.find(card => card.id === closing.cardId)?.name || 'selecionado';
     const date = new Date(closing.closingDate).toLocaleDateString('pt-BR');
-    return `A fatura ${formatReference(closing.reference)} do cartão ${cardName} foi fechada em ${date}. Para continuar, marque a permissão abaixo.`;
+    return `A fatura ${formatReference(closing.reference)} do cartão ${cardName} está fechada desde ${date}, quando iniciou a fatura seguinte. Para continuar, marque a permissão abaixo.`;
   }
 
   setPeople(): void {

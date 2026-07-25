@@ -400,7 +400,8 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
     normalizedNotificationDate.setHours(0, 0, 0, 0);
     normalizedClosingDate.setHours(0, 0, 0, 0);
 
-    if (normalizedNotificationDate.getTime() <= normalizedClosingDate.getTime()) {
+    // A data configurada marca o início da nova fatura; somente compras anteriores permanecem na referência atual.
+    if (normalizedNotificationDate.getTime() < normalizedClosingDate.getTime()) {
       return initialReference;
     }
 

@@ -15,11 +15,11 @@
 
         <h2 mat-dialog-title>{{setTitle()}}</h2>
         <div mat-dialog-content>
-            <div *ngIf="validatingInvoiceClosing" class="alert alert-info" role="status">Consultando o fechamento da fatura...</div>
+            <div *ngIf="validatingInvoiceClosing" class="alert alert-info" role="status">Consultando a situação da fatura...</div>
             <div *ngIf="referenceListsLoading" class="alert alert-info" role="status">Carregando categorias e despesas da referência...</div>
             <div *ngIf="referenceListsLoadFailed" class="alert alert-danger" role="alert">Não foi possível carregar categorias e despesas desta referência.</div>
             <div *ngIf="invoiceClosingLoadFailed" class="alert alert-danger" role="alert">
-                Não foi possível validar o fechamento desta fatura. Corrija o cadastro ou tente novamente.
+                Não foi possível validar a situação desta fatura. Corrija o melhor dia de compra ou tente novamente.
                 <button mat-button type="button" (click)="loadInvoiceClosing(cardPosting.cardId, cardPosting.reference)">Tentar novamente</button>
             </div>
             <div *ngIf="invoiceOperationBlocked" class="alert alert-warning" role="alert">{{ closedInvoiceMessage() }}</div>

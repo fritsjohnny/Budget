@@ -57,6 +57,7 @@ import { CardPostingsComponent } from './components/cardpostings/cardpostings.co
 import { CardReceiptsDialog } from './components/cardpostings/cardreceipts-dialog/cardreceipts-dialog';
 import { CardPostingsDialog } from './components/cardpostings/cardpostings-dialog/cardpostings-dialog';
 import { BudgetComponent } from './components/budget/budget.component';
+import { BudgetModernLayoutComponent } from './components/budget/budget-modern-layout/budget-modern-layout.component';
 import { PaymentReceiveDialog } from './components/budget/payment-receive-dialog';
 import { IncomesDialog } from './components/budget/incomes-dialog';
 import { ExpensesDialog } from './components/budget/expenses-dialog';
@@ -128,6 +129,7 @@ registerLocaleData(localePt);
     CardViewComponent,
     CardPostingsComponent,
     BudgetComponent,
+    BudgetModernLayoutComponent,
     DatepickerComponent,
     BudgetViewComponent,
     CardPostingsDialog,

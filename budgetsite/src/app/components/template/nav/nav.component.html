@@ -35,9 +35,14 @@
       <a mat-list-item (click)="logout()" class="row">
         <i class="material-icons">logout</i>Sair</a
       >
-      <div>
+      <div class="nav-preferences">
         <mat-slide-toggle [(ngModel)]="themeToggle" (change)="changeTheme()"
           >Tema escuro</mat-slide-toggle
+        >
+        <mat-slide-toggle
+          [(ngModel)]="budgetLayoutToggle"
+          (change)="changeBudgetLayout()"
+          >Novo leiaute de Orçamentos</mat-slide-toggle
         >
         <p></p>
       </div>

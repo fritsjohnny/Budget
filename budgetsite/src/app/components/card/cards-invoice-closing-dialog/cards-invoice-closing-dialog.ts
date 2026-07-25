@@ -19,7 +19,7 @@ export class CardsInvoiceClosingDialog {
     if (!this.closing.closingDate || this.saving) return;
     this.saving = true;
     this.service.update(this.closing.id, this.closing.closingDate).pipe(finalize(() => this.saving = false)).subscribe({
-      next: updated => { this.messenger.message('Data de fechamento salva com sucesso.'); this.dialogRef.close(updated); }
+      next: updated => { this.messenger.message('Data de início da próxima fatura salva com sucesso.'); this.dialogRef.close(updated); }
     });
   }
 }

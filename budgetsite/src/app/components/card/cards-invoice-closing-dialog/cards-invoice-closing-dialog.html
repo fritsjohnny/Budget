@@ -6,7 +6,7 @@
     </button>
   </div>
 
-  <h2 mat-dialog-title>Fechamento da fatura</h2>
+  <h2 mat-dialog-title>Início da próxima fatura</h2>
 
   <div mat-dialog-content>
     <div class="row">
@@ -23,7 +23,7 @@
     </div>
     <div class="row">
       <app-datepickerinput class="full-width" [currentDate]="closing.closingDate"
-        label="Data de fechamento" (currentDateChanged)="dateChanged($event)">
+        label="Data de início" (currentDateChanged)="dateChanged($event)">
       </app-datepickerinput>
     </div>
     <p class="status">
@@ -31,7 +31,7 @@
       {{ closing.isClosed ? 'Fatura fechada' : 'Fatura aberta' }}
     </p>
     <p class="estimated" *ngIf="closing.isEstimated">
-      Data sugerida automaticamente com base no dia de fechamento cadastrado no cartão.
+      Data sugerida automaticamente com base no melhor dia de compra cadastrado no cartão.
     </p>
   </div>
 

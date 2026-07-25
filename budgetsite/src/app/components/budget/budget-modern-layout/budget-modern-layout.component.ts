@@ -4,6 +4,8 @@ import { MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatDatepicker } from '@angular/material/datepicker';
 import { MatSort } from '@angular/material/sort';
 import * as _moment from 'moment';
+import { CardsPostingsDTO } from 'src/app/models/cardspostingsdto.model';
+import { ExpensesByCategories } from 'src/app/models/expensesbycategories';
 import { default as _rollupMoment, Moment } from 'moment';
 import { MY_FORMATS } from 'src/app/shared/datepicker/datepicker.component';
 
@@ -30,6 +32,11 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
   private pullTracking = false;
   private readonly pullRefreshThreshold = 58;
   private readonly maxPullDistance = 104;
+  private readonly portugueseCollator = new Intl.Collator('pt-BR', {
+    usage: 'sort',
+    sensitivity: 'base',
+    numeric: true,
+  });
 
   constructor(private elementRef: ElementRef<HTMLElement>) {}
 
@@ -100,18 +107,39 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
     return this.date.value.format('YYYYMM') === moment().format('YYYYMM');
   }
 
-  get provisionedExpenses(): any[] {
+  get provisionedCategories(): any[] {
     const expenses = this.context?.expensesNoFilter ?? this.context?.expenses ?? [];
+    const categories = this.context?.expensesByCategories ?? this.context?.dataSourceCategories?.data ?? [];
+    const addedCategories = new Set<string>();
 
-    return expenses.filter((expense: any) => Number(expense?.expectedValue ?? 0) > 0);
-  }
+    return expenses
+      .filter((expense: any) => Number(expense?.expectedValue ?? 0) > 0)
+      .map((expense: any) => {
+        const categoryId = Number(expense?.categoryId ?? 0);
+        const categoryName = String(expense?.category ?? expense?.description ?? '').trim();
+        const normalizedCategoryName = this.normalizeCategoryName(categoryName);
+        const category = categories.find((item: any) => {
+          if (categoryId > 0 && Number(item?.id ?? 0) === categoryId) return true;
 
-  get visibleProvisionedExpenses(): any[] {
-    return this.provisionedExpenses.slice(0, 3);
-  }
+          return this.normalizeCategoryName(item?.category) === normalizedCategoryName;
+        });
+        const categoryKey = categoryId > 0
+          ? `id:${categoryId}`
+          : `name:${normalizedCategoryName}`;
 
-  get remainingProvisionedExpenses(): number {
-    return Math.max(0, this.provisionedExpenses.length - this.visibleProvisionedExpenses.length);
+        return {
+          id: expense?.id,
+          key: categoryKey,
+          description: category?.category ?? categoryName,
+          amount: Number(category?.amount ?? 0),
+        };
+      })
+      .filter((category: any) => {
+        if (!category.key || addedCategories.has(category.key)) return false;
+
+        addedCategories.add(category.key);
+        return true;
+      });
   }
 
   get pullRefreshLabel(): string {
@@ -278,10 +306,78 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
 
   private bindModernSorts(): void {
     if (this.peopleSort && this.context?.dataSourcePeople && this.context.dataSourcePeople.sort !== this.peopleSort) {
+      this.context.dataSourcePeople.sortData = (
+        data: CardsPostingsDTO[],
+        sort: MatSort
+      ): CardsPostingsDTO[] => {
+        if (!sort.active || sort.direction === '') return data;
+
+        const direction = sort.direction === 'asc' ? 1 : -1;
+
+        return [...data].sort((a, b) => {
+          let comparison = 0;
+
+          switch (sort.active) {
+            case 'person':
+              comparison = this.portugueseCollator.compare(
+                a.person ?? '',
+                b.person ?? ''
+              );
+              break;
+
+            case 'toReceive':
+              comparison = (a.toReceive ?? 0) - (b.toReceive ?? 0);
+              break;
+
+            case 'received':
+              comparison = (a.received ?? 0) - (b.received ?? 0);
+              break;
+
+            case 'remaining':
+              comparison = (a.remaining ?? 0) - (b.remaining ?? 0);
+              break;
+          }
+
+          return comparison * direction;
+        });
+      };
+
       this.context.dataSourcePeople.sort = this.peopleSort;
     }
 
     if (this.categoriesSort && this.context?.dataSourceCategories && this.context.dataSourceCategories.sort !== this.categoriesSort) {
+      this.context.dataSourceCategories.sortData = (
+        data: ExpensesByCategories[],
+        sort: MatSort
+      ): ExpensesByCategories[] => {
+        if (!sort.active || sort.direction === '') return data;
+
+        const direction = sort.direction === 'asc' ? 1 : -1;
+
+        return [...data].sort((a, b) => {
+          let comparison = 0;
+
+          switch (sort.active) {
+            case 'category':
+              comparison = this.portugueseCollator.compare(
+                a.category ?? '',
+                b.category ?? ''
+              );
+              break;
+
+            case 'amount':
+              comparison = (a.amount ?? 0) - (b.amount ?? 0);
+              break;
+
+            case 'perc':
+              comparison = (a.perc ?? 0) - (b.perc ?? 0);
+              break;
+          }
+
+          return comparison * direction;
+        });
+      };
+
       this.context.dataSourceCategories.sort = this.categoriesSort;
     }
   }
@@ -296,6 +392,14 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
 
     this.context.monthName = this.capitalize(this.date.value.format('MMMM'));
     this.context.referenceChanges(reference);
+  }
+
+  private normalizeCategoryName(value: unknown): string {
+    return String(value ?? '')
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase('pt-BR');
   }
 
   private capitalize(value: string): string {

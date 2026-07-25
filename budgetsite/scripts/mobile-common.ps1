@@ -56,8 +56,17 @@ function Get-BudgetAdbDevices {
         [string]$AdbPath
     )
 
-    $lines = & $AdbPath devices -l 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $lines = & $AdbPath devices -l 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+
+    if ($exitCode -ne 0) {
         throw "Falha ao consultar dispositivos ADB: $($lines -join [Environment]::NewLine)"
     }
 
@@ -242,8 +251,17 @@ function Connect-BudgetAdbTarget {
         throw "Alvo invalido: '$Target'. Use IP:PORTA, por exemplo 192.168.1.114:46575."
     }
 
-    $output = & $AdbPath connect $Target 2>&1
-    if ($LASTEXITCODE -ne 0 -or ($output -join ' ') -match 'failed|cannot|unable|refused') {
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $output = & $AdbPath connect $Target 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+
+    if ($exitCode -ne 0 -or ($output -join ' ') -match 'failed|cannot|unable|refused') {
         throw "Falha ao conectar ao dispositivo ${Target}: $($output -join [Environment]::NewLine)"
     }
 

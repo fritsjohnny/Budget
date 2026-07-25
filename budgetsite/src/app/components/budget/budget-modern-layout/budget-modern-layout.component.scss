@@ -275,6 +275,7 @@
 
 .summary-income {
   border-color: var(--modern-blue);
+  background: linear-gradient(135deg, var(--modern-blue-soft), var(--modern-surface) 60%);
 }
 
 .summary-income .summary-icon,
@@ -288,6 +289,7 @@
 
 .summary-expense {
   border-color: var(--modern-red);
+  background: linear-gradient(225deg, var(--modern-red-soft), var(--modern-surface) 60%);
 }
 
 .summary-expense .summary-icon,
@@ -302,12 +304,12 @@
 .summary-balance {
   display: block;
   border-color: var(--modern-green);
-  background: linear-gradient(145deg, var(--modern-green-soft), var(--modern-surface) 60%);
+  background: linear-gradient(45deg, var(--modern-green-soft), var(--modern-surface) 60%);
 }
 
 .summary-balance.summary-negative {
   border-color: var(--modern-red);
-  background: linear-gradient(145deg, var(--modern-red-soft), var(--modern-surface) 60%);
+  background: linear-gradient(45deg, var(--modern-red-soft), var(--modern-surface) 60%);
 }
 
 .summary-balance-head {
@@ -383,6 +385,7 @@
 
 .summary-pending {
   border-color: var(--modern-yellow-border);
+  background: linear-gradient(315deg, var(--modern-yellow-soft), var(--modern-surface) 60%);
   align-items: flex-start;
 }
 
@@ -618,10 +621,6 @@
   text-overflow: ellipsis;
 }
 
-.category-chip-more {
-  flex: 0 0 auto;
-}
-
 .provisioned-summary {
   display: grid;
   gap: 8px;
@@ -753,54 +752,6 @@
   font-size: 12px;
   font-weight: 700;
   box-shadow: inset 0 2px 0 var(--table-accent);
-}
-
-::ng-deep .modern-data-table .mat-sort-header-container {
-  width: 100%;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-}
-
-::ng-deep .modern-data-table .mat-sort-header-content {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-  justify-content: flex-start;
-  overflow: hidden;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-::ng-deep .modern-data-table .mat-sort-header-arrow {
-  position: relative;
-  right: auto;
-  flex: 0 0 12px;
-  width: 12px;
-  margin: 0 0 0 4px !important;
-  color: var(--table-accent) !important;
-  opacity: 0 !important;
-  visibility: hidden;
-}
-
-::ng-deep .modern-data-table .mat-sort-header-sorted .mat-sort-header-arrow {
-  opacity: 1 !important;
-  visibility: visible;
-}
-
-::ng-deep .modern-data-table .mat-sort-header-sorted .mat-sort-header-content {
-  color: var(--table-accent) !important;
-}
-
-::ng-deep .people-table .mat-column-toReceive.mat-header-cell,
-::ng-deep .people-table .mat-column-received.mat-header-cell,
-::ng-deep .people-table .mat-column-remaining.mat-header-cell,
-::ng-deep .categories-table .mat-column-amount.mat-header-cell,
-::ng-deep .categories-table .mat-column-perc.mat-header-cell {
-  text-align: left !important;
 }
 
 ::ng-deep .modern-data-table .mat-row,
@@ -967,12 +918,10 @@
 }
 
 ::ng-deep .categories-table .mat-column-amount {
-  width: 28%;
   text-align: right;
 }
 
 ::ng-deep .categories-table .mat-column-perc {
-  width: 18%;
   text-align: right;
 }
 
@@ -1356,10 +1305,6 @@
   .provisioned-summary {
     margin: 2px 2px 8px;
     padding: 8px;
-  }
-
-  .provisioned-summary .category-chips {
-    max-height: 48px;
   }
 
   .category-chip {

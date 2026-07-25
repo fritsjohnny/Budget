@@ -3,7 +3,7 @@
   --modern-surface: #ffffff;
   --modern-surface-soft: #f8f9fc;
   --modern-surface-strong: #eef1f6;
-  --modern-table-header: #edf2f8;
+  --modern-table-header: #e8eef9;
   --modern-border: rgba(23, 35, 55, 0.13);
   --modern-divider: rgba(23, 35, 55, 0.1);
   --modern-text: #172033;
@@ -28,7 +28,7 @@
   --modern-surface: #111c28;
   --modern-surface-soft: #14212e;
   --modern-surface-strong: #172634;
-  --modern-table-header: #142433;
+  --modern-table-header: #102333;
   --modern-border: rgba(194, 213, 232, 0.18);
   --modern-divider: rgba(194, 213, 232, 0.11);
   --modern-text: #edf3fa;
@@ -715,8 +715,25 @@
 
 .modern-data-table {
   width: 100%;
+  --table-accent: var(--modern-blue);
   background: transparent;
   color: var(--modern-text);
+}
+
+.expense-table {
+  --table-accent: var(--modern-red);
+}
+
+.income-table {
+  --table-accent: var(--modern-blue);
+}
+
+.people-table {
+  --table-accent: var(--modern-pink);
+}
+
+.categories-table {
+  --table-accent: var(--modern-yellow);
 }
 
 ::ng-deep .modern-data-table .mat-header-cell,
@@ -726,11 +743,31 @@
   border-bottom-color: var(--modern-divider);
 }
 
+::ng-deep .modern-data-table .mat-header-row,
 ::ng-deep .modern-data-table .mat-header-cell {
-  background: var(--modern-table-header);
-  color: var(--modern-muted);
+  background: var(--modern-table-header) !important;
+}
+
+::ng-deep .modern-data-table .mat-header-cell {
+  color: var(--modern-text) !important;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: inset 0 2px 0 var(--table-accent);
+}
+
+::ng-deep .modern-data-table .mat-sort-header-arrow {
+  color: var(--table-accent) !important;
+  opacity: 0 !important;
+  visibility: hidden;
+}
+
+::ng-deep .modern-data-table .mat-sort-header-sorted .mat-sort-header-arrow {
+  opacity: 1 !important;
+  visibility: visible;
+}
+
+::ng-deep .modern-data-table .mat-sort-header-sorted .mat-sort-header-content {
+  color: var(--table-accent) !important;
 }
 
 ::ng-deep .modern-data-table .mat-row,
@@ -978,16 +1015,6 @@
 .detail-line strong {
   flex: 0 0 auto;
   white-space: nowrap;
-}
-
-::ng-deep .people-table .mat-sort-header-arrow {
-  color: var(--modern-pink) !important;
-  opacity: 1 !important;
-}
-
-::ng-deep .categories-table .mat-sort-header-arrow {
-  color: var(--modern-yellow) !important;
-  opacity: 1 !important;
 }
 
 ::ng-deep .modern-menu.mat-menu-panel {
@@ -1371,8 +1398,8 @@
     padding: 0 3px;
     border-top: 1px solid var(--modern-divider);
     border-bottom: 1px solid var(--modern-divider);
-    background: var(--modern-table-header);
-    color: var(--modern-text);
+    background: var(--modern-table-header) !important;
+    color: var(--modern-text) !important;
     font-size: 11px;
     line-height: 1;
     white-space: nowrap;

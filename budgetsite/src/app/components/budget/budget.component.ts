@@ -768,6 +768,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       ConfirmDialogComponent,
       {
         width: '400px',
+        panelClass: this.useModernLayout ? 'modern-budget-dialog-panel' : undefined,
         data: <ConfirmDialogData>{
           title: 'Repetir mês anterior',
           message:
@@ -1233,6 +1234,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     const dialogRef = this.dialog.open(PaymentReceiveDialog, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.useModernLayout ? 'modern-budget-action-dialog-panel' : undefined,
       data: {
         reference: expense.reference,
         description: 'Pag. ' + expense.description,
@@ -1353,6 +1355,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     const dialogRef = this.dialog.open(PaymentReceiveDialog, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.useModernLayout ? 'modern-budget-action-dialog-panel' : undefined,
       data: {
         reference: income.reference,
         description: 'Rec. ' + income.description,
@@ -1391,6 +1394,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     const dialogRef = this.dialog.open(AddvalueComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.useModernLayout ? 'modern-budget-action-dialog-panel' : undefined,
       data: {
         id: row.id,
         description: row.description,
@@ -1583,6 +1587,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     const dialogRef = this.dialog.open(PeopleComponent, {
       width: '400px',
+      panelClass: this.useModernLayout ? 'modern-budget-action-dialog-panel' : undefined,
       data: { ...person }, // envia cópia para evitar mutação imediata
     });
 

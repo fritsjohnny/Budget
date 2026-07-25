@@ -1,3 +1,8 @@
+<div class="card-posting-saving-overlay" *ngIf="savingCardPosting">
+    <mat-spinner color="warn" [diameter]="52"></mat-spinner>
+    <span>Salvando lançamento...</span>
+</div>
+
 <div class="container default-margin-bottom">
     <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
         <mat-expansion-panel class="mat-panel-budget" [hideToggle]="false">
@@ -391,6 +396,7 @@
             [(expanded)]="expensesPanelExpanded"
             (closed)="expensesPanelClosed()"
             (opened)="expensesPanelOpened()"
+            (afterExpand)="focusPendingBudgetEntry('expense')"
         >
             <mat-expansion-panel-header class="accent">
                 <span class="material-icons center accent">money_off</span>
@@ -838,6 +844,14 @@
                                     </button> -->
                                     <button
                                         mat-menu-item
+                                        id="menu-expenses"
+                                        (click)="deleteExpense(row)"
+                                    >
+                                        <mat-icon id="menu-icon-expenses">delete</mat-icon>
+                                        <span>Excluir</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
                                         id="menu-expenses2"
                                         (click)="addValue(row, 'P')"
                                     >
@@ -872,6 +886,9 @@
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
+                            [attr.data-expense-id]="row.id"
+                            [attr.tabindex]="-1"
+                            [class.budget-entry-focus]="row.id === focusedExpenseId"
                             [ngClass]="{
                                 'card-yield-checked bold':
                                     row.overdue || row.duetoday
@@ -904,6 +921,7 @@
             [(expanded)]="incomesPanelExpanded"
             (closed)="incomesPanelClosed()"
             (opened)="incomesPanelOpened()"
+            (afterExpand)="focusPendingBudgetEntry('income')"
         >
             <mat-expansion-panel-header>
                 <span class="material-icons center primary">attach_money</span>
@@ -1104,6 +1122,14 @@
                                     </button>
                                     <button
                                         mat-menu-item
+                                        id="menu-incomes"
+                                        (click)="deleteIncome(row)"
+                                    >
+                                        <mat-icon id="menu-icon-incomes">delete</mat-icon>
+                                        <span>Excluir</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
                                         id="menu-incomes2"
                                         (click)="addValue(row, 'R')"
                                     >
@@ -1138,6 +1164,9 @@
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
+                            [attr.data-income-id]="row.id"
+                            [attr.tabindex]="-1"
+                            [class.budget-entry-focus]="row.id === focusedIncomeId"
                         ></tr>
                         <tr
                             class="incomes"

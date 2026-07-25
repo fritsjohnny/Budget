@@ -1,3 +1,8 @@
+<div class="card-posting-saving-overlay" *ngIf="savingCardPosting">
+    <mat-spinner color="warn" [diameter]="52"></mat-spinner>
+    <span>Salvando lançamento...</span>
+</div>
+
 <div class="row center">
     <div class="row justify-content-center">
         <mat-spinner color="accent" *ngIf="!hideProgress"></mat-spinner>
@@ -514,6 +519,9 @@
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
+                            [attr.data-card-posting-id]="row.id"
+                            [attr.tabindex]="-1"
+                            [class.card-posting-focus]="row.id === focusedCardPostingId"
                             [ngClass]="{
                                 'card-yield-checked':
                                     (row.isSelected && row.amount >= 0) ||
@@ -772,7 +780,7 @@
     </mat-accordion>
 </div>
 <!-- Notificações de cartões -->
-<div *ngIf="hideProgress" class="row" style="margin-top: 10px">
+<div [hidden]="!hideProgress" class="row" style="margin-top: 10px">
     <app-cards-notifications
         [cardId]="cardId"
         [reference]="reference"
@@ -780,6 +788,8 @@
         [(peopleList)]="peopleList"
         [cardsList]="cardsList"
         (cardPostingCreated)="onCardPostingCreated($event)"
+        (cardPostingSavingChange)="setCardPostingSaving($event)"
+        (notificationContextChange)="notificationContextChange.emit($event)"
         [cardsPostings]="cardpostings"
     ></app-cards-notifications>
 </div>

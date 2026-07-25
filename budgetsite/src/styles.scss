@@ -6,6 +6,7 @@
 
 :root {
   --border-radius: 4px;
+  --yellow: #ffc107;
 
   .table-container {
     border-radius: var(--border-radius);
@@ -143,7 +144,6 @@ $primary-light: map-get($light-theme, primary);
   --summary-background-color: #424242;
   --expansion-panel-header: var(--white-color);
   --accent: rgb(233, 30, 99);
-  --yellow: #ffc107;
   --red3-color: #880e4f;
   --bright-rose: #ff6197;
 

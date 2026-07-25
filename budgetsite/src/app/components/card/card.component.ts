@@ -5,10 +5,11 @@ import { CardService } from 'src/app/services/card/card.service';
 import { CardDialog } from './card-dialog';
 import { NotificationReader } from 'capacitor-notification-reader/src';
 import { Messenger } from 'src/app/common/messenger';
-import { delay, retryWhen, tap } from 'rxjs';
+import { delay, retryWhen, takeWhile, tap } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
 import { CardsInvoiceClosingDialog } from './cards-invoice-closing-dialog/cards-invoice-closing-dialog';
+import type { CardNotificationContext } from '../cardsnotifications/cardsnotifications.component';
 
 @Component({
   selector: 'app-card',
@@ -29,6 +30,7 @@ export class CardComponent implements OnInit, AfterViewInit {
   hideProgress: boolean = false;
   buttonName: string = "";
   validatingInvoiceClosing = false;
+  private cardRefreshRequestId = 0;
 
   constructor(private cardService: CardService,
     private cd: ChangeDetectorRef,
@@ -56,6 +58,9 @@ export class CardComponent implements OnInit, AfterViewInit {
 
     this.hideProgress = false;
 
+    const requestId = ++this.cardRefreshRequestId;
+    const reference = this.reference;
+
     // Lista completa continua sendo usada no dialog de manutenção
     this.cardService.read().subscribe({
       next: (cards) => {
@@ -67,15 +72,26 @@ export class CardComponent implements OnInit, AfterViewInit {
     });
 
     // Lista visível no topo: ativos + desativados com movimento na referência
-    this.cardService.readAvailable(this.reference).pipe(
+    this.cardService.readAvailable(reference).pipe(
       retryWhen(errors =>
         errors.pipe(
           tap((err) => console.warn('🔁 Erro ao carregar cartões disponíveis. Tentando novamente em 10 segundos...', err)),
-          delay(10000)
+          delay(10000),
+          takeWhile(() =>
+            requestId === this.cardRefreshRequestId &&
+            this.reference === reference
+          )
         )
       )
     ).subscribe({
       next: (cards) => {
+        if (
+          requestId !== this.cardRefreshRequestId ||
+          this.reference !== reference
+        ) {
+          return;
+        }
+
         const allCard: Cards = {
           id: 0,
           name: 'Todos',
@@ -97,6 +113,13 @@ export class CardComponent implements OnInit, AfterViewInit {
         this.hideProgress = true;
       },
       error: (err) => {
+        if (
+          requestId !== this.cardRefreshRequestId ||
+          this.reference !== reference
+        ) {
+          return;
+        }
+
         console.error('Erro irrecuperável ao carregar cartões:', err);
         this.cardsVisible = [];
         this.hideProgress = true;
@@ -131,6 +154,16 @@ export class CardComponent implements OnInit, AfterViewInit {
     }
 
     this.hideProgress = true;
+  }
+
+  setNotificationContext(context: CardNotificationContext): void {
+    if (!context.card?.id || context.card.id <= 0 || !/^\d{6}$/.test(context.reference)) {
+      this.messenger.errorHandler('Não foi possível identificar o cartão e a referência do lançamento.');
+      return;
+    }
+
+    this.setCard(context.card);
+    this.setReference(context.reference);
   }
 
   getCardsNotDisabled(cards: Cards[]) {

@@ -6,6 +6,8 @@ import {
   ViewChild,
   ChangeDetectorRef,
   ElementRef,
+  EventEmitter,
+  Output,
 } from '@angular/core';
 import { CardsPostings } from '../../models/cardspostings.model';
 import { CardPostingsService } from '../../services/cardpostings/cardpostings.service';
@@ -30,8 +32,10 @@ import { Messenger } from 'src/app/common/messenger';
 import { Expenses } from 'src/app/models/expenses.model';
 import { CardsInvoiceClosing } from 'src/app/models/cardsinvoiceclosing.model';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
-import { finalize } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import { prepareApiDates } from 'src/app/utils/api-date.util';
+import type { CardNotificationContext } from '../cardsnotifications/cardsnotifications.component';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -45,6 +49,8 @@ import {
 export class CardPostingsComponent implements OnInit {
   @Input() cardId?: number;
   @Input() reference?: string;
+
+  @Output() notificationContextChange = new EventEmitter<CardNotificationContext>();
 
   @ViewChild('input') filterInput!: ElementRef;
 
@@ -105,7 +111,15 @@ export class CardPostingsComponent implements OnInit {
   othersParcels: number | null = null;
   singleParcels: number | null = null;
   private cardPostingsReloadInProgress = false;
+  private cardPostingsReloadRequestId = 0;
+  private pendingCardPostingFocus?: {
+    id: number;
+    cardId: number;
+    reference: string;
+  };
+  focusedCardPostingId?: number;
   validatingInvoiceClosing = false;
+  savingCardPosting = false;
 
   constructor(
     private cardPostingsService: CardPostingsService,
@@ -117,6 +131,7 @@ export class CardPostingsComponent implements OnInit {
     private cardService: CardService,
     public dialog: MatDialog,
     private cd: ChangeDetectorRef,
+    private elementRef: ElementRef,
     private messenger: Messenger,
     private invoiceClosingService: CardsInvoiceClosingService
   ) { }
@@ -139,6 +154,7 @@ export class CardPostingsComponent implements OnInit {
   }
 
   getLists() {
+    const reference = this.reference;
     this.peopleService.read().subscribe({
       next: (people) => {
         this.peopleList = people;
@@ -148,8 +164,12 @@ export class CardPostingsComponent implements OnInit {
       error: () => this.finishAuxiliaryLoading(),
     });
 
-    this.categoryService.readWithExpenses(this.reference!).subscribe({
+    this.categoryService.readWithExpenses(reference!).subscribe({
       next: (categories) => {
+        if (this.reference !== reference) {
+          this.finishAuxiliaryLoading();
+          return;
+        }
         this.categoriesList = categories.sort((a, b) =>
           a.name.localeCompare(b.name)
         );
@@ -177,8 +197,13 @@ export class CardPostingsComponent implements OnInit {
       error: () => this.finishAuxiliaryLoading(),
     });
 
-    this.expenseService.readComboList(this.reference!).subscribe({
+    this.expenseService.readComboList(reference!).subscribe({
       next: (expenses) => {
+        if (this.reference !== reference) {
+          this.finishAuxiliaryLoading();
+          return;
+        }
+
         this.expenses = expenses.sort((a, b) =>
           a.description.localeCompare(b.description));
 
@@ -192,6 +217,10 @@ export class CardPostingsComponent implements OnInit {
     if (!this.cardPostingsReloadInProgress) {
       this.hideProgress = true;
     }
+  }
+
+  setCardPostingSaving(saving: boolean): void {
+    this.savingCardPosting = saving;
   }
 
   refresh() {
@@ -214,36 +243,59 @@ export class CardPostingsComponent implements OnInit {
   // inclusões, clonagens e reordenação por data, já que o backend pode ter
   // recalculado a posição de vários registros além do que foi criado/alterado.
   private reloadCardPostings(): void {
+    const requestId = ++this.cardPostingsReloadRequestId;
+
     if (!(this.cardId! >= 0) || !this.reference) {
       this.cardPostingsReloadInProgress = false;
       this.hideProgress = true;
+      this.savingCardPosting = false;
       return;
     }
 
     this.cardPostingsReloadInProgress = true;
-    this.hideProgress = false;
 
-    this.cardPostingsService.read(this.cardId!, this.reference!).subscribe({
-      next: (cardpostings) => {
-        this.cardpostings = cardpostings.sort(
-          (a, b) => b.position! - a.position!
-        );
+    if (!this.savingCardPosting) {
+      this.hideProgress = false;
+    }
+
+    const cardId = this.cardId!;
+    const reference = this.reference;
+
+    forkJoin({
+      cardpostings: this.cardPostingsService.read(cardId, reference),
+      cardpostingspeople: this.cardPostingsService
+        .readCardsPostingsPeople(cardId, reference)
+        .pipe(catchError(() => of(this.cardpostingspeople ?? []))),
+      expensesByCategories: this.expenseService
+        .readByCategories(reference, cardId === 0 ? -1 : cardId)
+        .pipe(catchError(() => of(this.expensesByCategories ?? []))),
+    }).pipe(
+      finalize(() => {
+        if (requestId !== this.cardPostingsReloadRequestId) return;
+
+        this.cardPostingsReloadInProgress = false;
+        this.hideProgress = true;
+        this.savingCardPosting = false;
+      })
+    ).subscribe({
+      next: ({ cardpostings, cardpostingspeople, expensesByCategories }) => {
+        if (
+          requestId !== this.cardPostingsReloadRequestId ||
+          this.cardId !== cardId ||
+          this.reference !== reference
+        ) {
+          return;
+        }
+
+        this.cardpostings = cardpostings.sort((a, b) => b.position! - a.position!);
+        this.cardpostingspeople = cardpostingspeople.filter(item => item.person !== '');
+        this.expensesByCategories = expensesByCategories;
 
         this.setDataByFilters();
-
-        this.getTotalAmount();
-
+        this.getTotalPeople();
+        this.getTotalByCategories();
         this.checkDueAlerts();
-
-        this.getCardsPostingsPeople();
-        this.getExpensesByCategories();
-
-        this.cardPostingsReloadInProgress = false;
-        this.hideProgress = true;
-      },
-      error: () => {
-        this.cardPostingsReloadInProgress = false;
-        this.hideProgress = true;
+        this.focusPendingCardPosting(cardId, reference);
       },
     });
   }
@@ -513,6 +565,8 @@ export class CardPostingsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.savingCardPosting = true;
+
         const payload = prepareApiDates(result, ['date', 'dueDate']);
         this.cardPostingsService.create(payload).subscribe({
           next: (cardpostings) => {
@@ -521,6 +575,7 @@ export class CardPostingsComponent implements OnInit {
 
             this.onCardPostingCreated(cardpostings);
           },
+          error: () => this.savingCardPosting = false,
         });
       }
     });
@@ -582,6 +637,8 @@ export class CardPostingsComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result: CardsPostings | undefined) => {
       if (!result) return;
 
+      this.savingCardPosting = true;
+
       result.id = undefined;
       result.position = undefined;
       result.relatedId = undefined;
@@ -599,6 +656,7 @@ export class CardPostingsComponent implements OnInit {
 
           this.onCardPostingCreated(createdPosting);
         },
+        error: () => this.savingCardPosting = false,
       });
     });
   }
@@ -672,6 +730,8 @@ export class CardPostingsComponent implements OnInit {
             },
           });
         } else {
+          this.savingCardPosting = true;
+
           const payload = prepareApiDates(result, ['date', 'dueDate']);
           this.cardPostingsService.update(payload).subscribe({
             next: () => {
@@ -680,6 +740,7 @@ export class CardPostingsComponent implements OnInit {
 
               this.reloadCardPostings();
             },
+            error: () => this.savingCardPosting = false,
           });
         }
       }
@@ -993,8 +1054,87 @@ export class CardPostingsComponent implements OnInit {
   // clonada). O backend pode ter recalculado a posição de vários registros
   // além do que foi criado, então recarregamos os lançamentos ao invés de
   // apenas acrescentar o objeto retornado ao array local.
-  onCardPostingCreated(_posting: CardsPostings): void {
+  onCardPostingCreated(posting: CardsPostings): void {
+    if (!posting?.id || !posting.cardId || !posting.reference) {
+      this.reloadCardPostings();
+      return;
+    }
+
+    this.pendingCardPostingFocus = {
+      id: posting.id,
+      cardId: posting.cardId,
+      reference: posting.reference,
+    };
+    this.focusedCardPostingId = posting.id;
+    this.cardPostingsPanelExpanded = true;
+    localStorage.setItem('cardPostingsPanelExpanded', 'true');
+
+    const targetCard = this.cardsList?.find(card => card.id === posting.cardId);
+    const contextChanged =
+      this.cardId !== posting.cardId ||
+      this.reference !== posting.reference;
+
+    if (contextChanged) {
+      if (!targetCard) {
+        this.pendingCardPostingFocus = undefined;
+        this.focusedCardPostingId = undefined;
+        this.messenger.errorHandler(
+          'O lançamento foi salvo, mas não foi possível localizar o cartão para exibi-lo.'
+        );
+        this.reloadCardPostings();
+        return;
+      }
+
+      this.notificationContextChange.emit({
+        card: targetCard,
+        reference: posting.reference,
+      });
+      return;
+    }
+
     this.reloadCardPostings();
+  }
+
+  private focusPendingCardPosting(cardId: number, reference: string): void {
+    const pendingFocus = this.pendingCardPostingFocus;
+
+    if (
+      !pendingFocus ||
+      pendingFocus.cardId !== cardId ||
+      pendingFocus.reference !== reference
+    ) {
+      return;
+    }
+
+    this.focusedCardPostingId = pendingFocus.id;
+
+    setTimeout(() => {
+      const row = this.elementRef.nativeElement.querySelector(
+        `tr[data-card-posting-id="${pendingFocus.id}"]`
+      ) as HTMLTableRowElement | null;
+
+      if (!row) {
+        this.pendingCardPostingFocus = undefined;
+
+        if (this.focusedCardPostingId === pendingFocus.id) {
+          this.focusedCardPostingId = undefined;
+          this.cd.detectChanges();
+        }
+
+        return;
+      }
+
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.focus();
+      this.pendingCardPostingFocus = undefined;
+
+      setTimeout(() => {
+        if (this.focusedCardPostingId !== pendingFocus.id) return;
+
+        this.focusedCardPostingId = undefined;
+        this.cd.detectChanges();
+      }, 2500);
+    });
   }
 
   handleClickCardPosting(row: CardsPostings, event: MouseEvent): void {

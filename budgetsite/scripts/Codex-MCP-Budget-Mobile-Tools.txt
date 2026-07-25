@@ -1,0 +1,90 @@
+Implemente no repositório MCPBudget, localizado em D:\Users\johnn\Documentos\GitHub\MCPBudget, tools específicas e seguras para publicação mobile do BudgetApp por ADB Wi-Fi.
+
+Contexto validado:
+- O BudgetApp frontend está em D:\Users\johnn\Documentos\GitHub\Budget\Budget\budgetsite.
+- O Android SDK usado pelo projeto está em D:\Android\Sdk.
+- O ADB foi validado em D:\Android\Sdk\platform-tools\adb.exe, versão 37.0.0.
+- O Samsung Galaxy S24 Ultra aparece como modelo SM_S928B.
+- O pareamento e a publicação por Wi-Fi foram testados com sucesso usando `npx cap run android --target=<IP:PORTA>`.
+- Não dependa de VS Code aberto, cabo USB, IP fixo, porta fixa ou serial USB fixo.
+- O pareamento ADB é persistente, mas IP e porta de conexão podem mudar.
+
+Arquivos já implementados no BudgetApp:
+- budgetsite/scripts/mobile-common.ps1
+- budgetsite/scripts/mobile-status.ps1
+- budgetsite/scripts/mobile-connect.ps1
+- budgetsite/scripts/mobile-pair.ps1
+- budgetsite/scripts/mobile-publish.ps1
+- budgetsite/scripts/mobile-tool-contract.md
+- budgetsite/scripts/README.md
+- budgetsite/package.json com os novos scripts npm
+
+Antes de implementar, leia esses arquivos e respeite exatamente os contratos e parâmetros existentes. Não duplique a lógica ADB no MCP: as tools devem validar entradas e executar somente esses scripts aprovados.
+
+Crie as seguintes tools:
+
+1. budget_mobile_status
+- Sem parâmetros obrigatórios.
+- Opcionalmente pode aceitar `target` no formato IP:PORTA.
+- Executa `budgetsite/scripts/mobile-status.ps1`.
+- Retorna stdout, stderr, código de saída, duração, timeout e indicação objetiva de dispositivo pronto.
+
+2. budget_mobile_connect
+- Entrada obrigatória `target` no formato IPv4:porta.
+- Executa `budgetsite/scripts/mobile-connect.ps1 -Target <target>`.
+- Não aceite outros argumentos ou comandos.
+
+3. budget_mobile_pair
+- Entradas obrigatórias:
+  - `pairingTarget`: IPv4:porta da tela "Parear dispositivo com código de pareamento";
+  - `pairingCode`: exatamente seis dígitos.
+- Executa `budgetsite/scripts/mobile-pair.ps1 -PairingTarget <pairingTarget>` sem colocar o código na linha de comando.
+- Redirecione stdin, escreva `pairingCode` seguido de quebra de linha e feche a entrada padrão.
+- O código deve existir somente em memória durante a execução.
+- Não grave o código em arquivo, banco, histórico próprio ou log persistente.
+- Não inclua o código integral em mensagens de erro ou no retorno da tool.
+
+4. budget_mobile_publish
+- Parâmetros opcionais:
+  - `target`: IPv4:porta atual;
+  - `skipWebBuild`: booleano, padrão false.
+- Executa `budgetsite/scripts/mobile-publish.ps1` com apenas os parâmetros validados.
+- Use timeout adequado para Angular + Capacitor + Gradle + instalação, preferencialmente configurável e com padrão entre 10 e 15 minutos.
+- Capture stdout e stderr durante a execução.
+- Retorne claramente qual etapa falhou quando o processo encerrar com erro.
+
+Requisitos de segurança:
+- Não criar tool de terminal genérico.
+- Não aceitar nome de executável, caminho de script, argumentos livres ou comando arbitrário vindo do cliente.
+- Caminho do frontend e dos scripts deve vir da configuração validada do MCP Budget ou de constante interna confiável.
+- Validar que os scripts resolvidos permanecem dentro de `budgetsite\scripts`.
+- Iniciar o processo com `UseShellExecute = false`, redirecionar stdout/stderr e não abrir janela.
+- Evitar deadlock lendo stdout e stderr de forma assíncrona.
+- Encerrar a árvore de processos em timeout ou cancelamento, quando suportado.
+- Manter as tools de leitura/escrita/Git existentes funcionando sem regressão.
+
+Requisitos de implementação:
+- Primeiro analise a arquitetura atual do MCPBudget, registro das tools, schemas, validações, executor de processo e testes existentes.
+- Reutilize helpers existentes em vez de criar estrutura paralela.
+- Siga o padrão de nomes e respostas já usado pelas tools `budget_*`.
+- Adicione testes unitários para validação de IP:porta, código de seis dígitos, construção segura dos argumentos, timeout e mascaramento do código.
+- Adicione teste de integração controlado ou modo dry-run para confirmar a resolução do caminho e a linha de execução sem instalar o app durante o teste automatizado.
+- Atualize a documentação/listagem de tools.
+- Não altere os scripts do BudgetApp sem necessidade comprovada. Se encontrar erro neles, explique e corrija de forma pontual.
+- Nunca gere código em formato Diff.
+
+Critérios de aceite:
+- `budget_mobile_status` identifica o SM_S928B conectado por Wi-Fi.
+- Se o aparelho estiver pareado, mas desconectado, o script tenta descoberta mDNS.
+- `budget_mobile_connect` conecta usando o IP:porta atual.
+- `budget_mobile_pair` conclui novo pareamento com dados fornecidos pelo usuário sem persistir o código.
+- `budget_mobile_publish` executa build Angular, sync Capacitor, build Gradle, instala e abre o app.
+- Quando `skipWebBuild=true`, reutiliza o build web existente.
+- Erros retornam mensagem objetiva, stdout/stderr e código de saída sem expor segredos.
+- Nenhuma tool permite executar comando arbitrário.
+
+Ao terminar:
+1. Execute os testes do MCPBudget.
+2. Liste os arquivos criados e alterados.
+3. Explique como reiniciar o MCP e validar cada tool.
+4. Não faça commit sem solicitação explícita.

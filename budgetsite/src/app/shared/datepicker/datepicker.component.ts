@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatDatepicker } from '@angular/material/datepicker';
@@ -63,7 +63,7 @@ export const MY_FORMATS = {
   styleUrls: ['./datepicker.component.scss'],
   providers: [{ provide: MAT_DATE_FORMATS, useValue: MY_FORMATS }],
 })
-export class DatepickerComponent implements OnInit {
+export class DatepickerComponent implements OnInit, OnChanges {
   date = new FormControl(moment());
   monthName: string = '';
 
@@ -74,9 +74,24 @@ export class DatepickerComponent implements OnInit {
   @Input() reportInitialId?: number;
   @Input() reportFinalId?: number;
   @Input() showMonthName?: boolean = true;
+  @Input() reference?: string;
 
   @Output() referenceChange = new EventEmitter<string>();
   @Output() monthChange = new EventEmitter<string>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const reference = changes['reference']?.currentValue as string | undefined;
+
+    if (!reference || !/^\d{6}$/.test(reference)) return;
+
+    const referenceDate = moment(reference, 'YYYYMM', true);
+
+    if (!referenceDate.isValid() || this.date.value?.format('YYYYMM') === reference) return;
+
+    this.date.setValue(referenceDate);
+    this.monthName = referenceDate.format('MMMM');
+    this.persistDate();
+  }
 
   ngOnInit(): void {
     let localDate;
@@ -109,6 +124,22 @@ export class DatepickerComponent implements OnInit {
     this.referenceChange.emit(reference);
     this.monthChange.emit(this.monthName);
 
+    if (this.accountId) {
+      localStorage.setItem('accountDate', this.date.value);
+    } else if (this.cardId) {
+      localStorage.setItem('cardDate', this.date.value);
+    } else if (this.budgetId) {
+      localStorage.setItem('budgetDate', this.date.value);
+    } else if (this.summaryId) {
+      localStorage.setItem('summaryDate', this.date.value);
+    } else if (this.reportInitialId) {
+      localStorage.setItem('reportInitialDate', this.date.value);
+    } else if (this.reportFinalId) {
+      localStorage.setItem('reportFinalDate', this.date.value);
+    }
+  }
+
+  private persistDate(): void {
     if (this.accountId) {
       localStorage.setItem('accountDate', this.date.value);
     } else if (this.cardId) {

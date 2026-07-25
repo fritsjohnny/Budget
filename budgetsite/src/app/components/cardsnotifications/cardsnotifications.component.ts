@@ -13,11 +13,16 @@ import {
 import { Preferences } from '@capacitor/preferences';
 import { Messenger } from 'src/app/common/messenger';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
-import { finalize } from 'rxjs/operators';
+import { finalize, map, switchMap } from 'rxjs/operators';
 import { prepareApiDates } from 'src/app/utils/api-date.util';
 
 interface CardNotification extends CardsPostings {
   sourceAppPackageName?: string;
+}
+
+export interface CardNotificationContext {
+  card: Cards;
+  reference: string;
 }
 
 @Component({
@@ -36,6 +41,8 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
   @Output() peopleListChange = new EventEmitter<People[]>();
   @Output() categoriesListChange = new EventEmitter<Categories[]>();
   @Output() cardPostingCreated = new EventEmitter<CardsPostings>();
+  @Output() cardPostingSavingChange = new EventEmitter<boolean>();
+  @Output() notificationContextChange = new EventEmitter<CardNotificationContext>();
 
   private readonly STORAGE_KEY = 'persisted_notifications';
 
@@ -269,64 +276,62 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
   }
 
   convertToCardPosting(notification: CardNotification): void {
-    if (!this.cardId || this.cardId <= 0) {
+    const notificationDate = this.getNotificationDate(notification.date);
+
+    if (!notificationDate) {
+      this.messenger.errorHandler('A data da notificação é inválida.');
+      return;
+    }
+
+    const initialReference = this.getNotificationReference(notificationDate);
+    const sourceAppPackageName = notification.sourceAppPackageName?.trim().toLowerCase();
+    const targetCard = sourceAppPackageName
+      ? this.cardsList?.find(card => card.appPackageName?.trim().toLowerCase() === sourceAppPackageName)
+      : this.cardsList?.find(card => card.id === this.cardId);
+
+    if (!targetCard?.id || targetCard.id <= 0) {
       this.messenger.errorHandler(
-        'Selecione um cartão específico para transformar a notificação em lançamento.'
+        sourceAppPackageName
+          ? 'Nenhum cartão está configurado para o aplicativo que gerou esta notificação.'
+          : 'Selecione um cartão específico para transformar esta notificação em lançamento.'
       );
       return;
     }
 
-    const selectedCard = this.cardsList?.find(card => card.id === this.cardId);
+    if (this.validatingInvoiceClosing) return;
 
-    if (!selectedCard) {
-      this.messenger.errorHandler('O cartão selecionado não foi encontrado.');
-      return;
-    }
+    const targetCardId = targetCard.id;
 
-    const sourceAppPackageName = notification.sourceAppPackageName
-      ?.trim()
-      .toLowerCase();
-
-    // Notificações antigas ou incompletas podem não ter um pacote confiável para comparar.
-    if (sourceAppPackageName) {
-      const selectedCardPackageName = selectedCard.appPackageName
-        ?.trim()
-        .toLowerCase();
-
-      if (!selectedCardPackageName) {
-        this.messenger.errorHandler(
-          `Configure o pacote do aplicativo no cadastro do cartão ${selectedCard.name}.`
-        );
-        return;
-      }
-
-      if (selectedCardPackageName !== sourceAppPackageName) {
-        const sourceCard = this.cardsList?.find(
-          card =>
-            card.appPackageName?.trim().toLowerCase() === sourceAppPackageName
-        );
-
-        this.messenger.errorHandler(
-          sourceCard
-            ? `Esta notificação pertence ao aplicativo configurado no cartão ${sourceCard.name}, mas o cartão selecionado é ${selectedCard.name}.`
-            : 'O aplicativo que gerou esta notificação não corresponde ao cartão selecionado.'
-        );
-        return;
-      }
-    }
-
-    if (!this.reference || this.validatingInvoiceClosing) return;
     this.validatingInvoiceClosing = true;
-    this.invoiceClosingService.preparePosting(this.cardId, this.reference).pipe(
+    this.invoiceClosingService.ensure(targetCardId, initialReference).pipe(
+      switchMap(initialClosing => {
+        const targetReference = this.resolveNotificationReference(
+          notificationDate,
+          initialReference,
+          initialClosing.closingDate
+        );
+
+        if (!targetReference) {
+          throw new Error('Não foi possível identificar a referência correta da notificação.');
+        }
+
+        if (this.cardId !== targetCardId || this.reference !== targetReference) {
+          this.notificationContextChange.emit({ card: targetCard, reference: targetReference });
+        }
+
+        return this.invoiceClosingService.preparePosting(targetCardId, targetReference).pipe(
+          map(invoiceClosing => ({ targetReference, invoiceClosing }))
+        );
+      }),
       finalize(() => this.validatingInvoiceClosing = false)
     ).subscribe({
-      next: invoiceClosing => {
+      next: ({ targetReference, invoiceClosing }) => {
         const dialogRef = this.dialog.open(CardPostingsDialog, {
           width: '100%',
           maxWidth: '100%',
           data: {
-            reference: this.reference,
-            cardId: this.cardId,
+            reference: targetReference,
+            cardId: targetCardId,
             date: notification.date,
             description: notification.description,
             amount: notification.amount,
@@ -346,26 +351,68 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         });
 
         dialogRef.afterClosed().subscribe((result) => {
-          if (result) {
-            //this.hideProgress = false;
+          if (!result) return;
 
-            const payload = prepareApiDates(result, ['date', 'dueDate']);
-            this.cardPostingsService.createFromNotification(payload).subscribe({
-              next: (cardposting) => {
-                this.removeNotification(notification);
+          this.cardPostingSavingChange.emit(true);
 
-                this.categoriesList = result.categoriesList;
-                this.peopleList = result.peopleList;
+          const payload = prepareApiDates(result, ['date', 'dueDate']);
+          this.cardPostingsService.createFromNotification(payload).subscribe({
+            next: (cardposting) => {
+              this.removeNotification(notification);
 
-                this.categoriesListChange.emit(this.categoriesList);
-                this.peopleListChange.emit(this.peopleList);
-                this.cardPostingCreated.emit(cardposting);
-              },
-            });
-          }
+              this.categoriesList = result.categoriesList;
+              this.peopleList = result.peopleList;
+
+              this.categoriesListChange.emit(this.categoriesList);
+              this.peopleListChange.emit(this.peopleList);
+              this.cardPostingCreated.emit(cardposting);
+            },
+            error: () => this.cardPostingSavingChange.emit(false),
+          });
         });
-      }
+      },
     });
+  }
+
+  private getNotificationDate(date: Date | string): Date | null {
+    const notificationDate = date instanceof Date ? new Date(date.getTime()) : new Date(date);
+
+    return Number.isNaN(notificationDate.getTime()) ? null : notificationDate;
+  }
+
+  private getNotificationReference(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+
+    return `${year}${month}`;
+  }
+
+  private resolveNotificationReference(
+    notificationDate: Date,
+    initialReference: string,
+    closingDate: Date | string
+  ): string | null {
+    const normalizedNotificationDate = new Date(notificationDate.getTime());
+    const normalizedClosingDate = new Date(closingDate);
+
+    if (Number.isNaN(normalizedClosingDate.getTime())) return null;
+
+    normalizedNotificationDate.setHours(0, 0, 0, 0);
+    normalizedClosingDate.setHours(0, 0, 0, 0);
+
+    if (normalizedNotificationDate.getTime() <= normalizedClosingDate.getTime()) {
+      return initialReference;
+    }
+
+    const referenceDate = new Date(
+      Number(initialReference.substring(0, 4)),
+      Number(initialReference.substring(4, 6)) - 1,
+      1
+    );
+
+    referenceDate.setMonth(referenceDate.getMonth() + 1);
+
+    return this.getNotificationReference(referenceDate);
   }
 
   async removeNotification(notification: CardNotification): Promise<void> {

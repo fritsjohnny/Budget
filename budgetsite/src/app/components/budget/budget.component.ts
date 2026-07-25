@@ -4,6 +4,7 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -78,6 +79,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   validatingInvoiceClosing = false;
   isBudgetLoading = false;
   isBudgetLoaded = false;
+  savingCardPosting = false;
+  private budgetRefreshRequestId = 0;
+  focusedExpenseId?: number;
+  focusedIncomeId?: number;
 
   reference?: string;
   referenceHead?: string;
@@ -180,6 +185,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     private incomeService: IncomeService,
     private cardPostingsService: CardPostingsService,
     private cd: ChangeDetectorRef,
+    private elementRef: ElementRef,
     public dialog: MatDialog,
     private cardService: CardService,
     private peopleService: PeopleService,
@@ -359,11 +365,18 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   refresh() {
     if (!this.reference) return;
 
-    this.isBudgetLoading = true;
-    this.isBudgetLoaded = false;
+    const requestId = ++this.budgetRefreshRequestId;
 
-    this.showUpcomingExpenses = false;
-    this.onlyPendingExpenses = false;
+    this.isBudgetLoading = true;
+
+    if (!this.savingCardPosting) {
+      this.isBudgetLoaded = false;
+    }
+
+    if (!this.savingCardPosting) {
+      this.showUpcomingExpenses = false;
+      this.onlyPendingExpenses = false;
+    }
 
     const reference = this.reference;
 
@@ -380,8 +393,12 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     })
       .pipe(
         finalize(() => {
-          if (this.reference === reference) {
+          if (
+            requestId === this.budgetRefreshRequestId &&
+            this.reference === reference
+          ) {
             this.isBudgetLoading = false;
+            this.savingCardPosting = false;
           }
         })
       )
@@ -397,7 +414,12 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           budgetTotals,
           expensesByCategories
         }) => {
-          if (this.reference !== reference) return;
+          if (
+            requestId !== this.budgetRefreshRequestId ||
+            this.reference !== reference
+          ) {
+            return;
+          }
 
           this.cardsList = cards;
 
@@ -416,6 +438,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
           if (this.justToPay) {
             this.expenses = this.expensesNoFilter.filter((e) => e.remaining > 0);
+          }
+
+          if (this.showUpcomingExpenses) {
+            this.filterUpcomingExpenses();
           }
 
           this.incomes = incomes;
@@ -450,9 +476,16 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           this.isBudgetLoaded = true;
         },
         error: () => {
-          if (this.reference !== reference) return;
+          if (
+            requestId !== this.budgetRefreshRequestId ||
+            this.reference !== reference
+          ) {
+            return;
+          }
 
-          this.isBudgetLoaded = false;
+          if (!this.savingCardPosting) {
+            this.isBudgetLoaded = false;
+          }
         }
       });
   }
@@ -700,6 +733,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             this.peopleList = result.peopleList;
 
             this.refreshExpenses();
+            this.focusCreatedExpense(expenses.id);
           },
           error: () => {
           },
@@ -800,7 +834,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       if (result) {
 
         if (result.deleting) {
-          this.deleteExpense(result);
+          this.removeExpense(result);
         } else {
           this.expenseService.update(result).subscribe({
             next: () => {
@@ -855,7 +889,27 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
-  deleteExpense(expense: any) {
+  deleteExpense(expense: Expenses): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Excluir Despesa',
+        message: 'Confirma a EXCLUSÃO da despesa?',
+        confirmText: 'Sim',
+        cancelText: 'Cancelar',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (!confirmed) return;
+
+      this.removeExpense(expense);
+    });
+  }
+
+  private removeExpense(expense: Expenses): void {
+    if (!expense.id) return;
+
     this.expenseService.delete(expense.id).subscribe({
       next: () => {
         this.expenses = this.expenses.filter((t) => t.id! != expense.id!);
@@ -863,9 +917,11 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           (t) => t.id! != expense.id!
         );
 
+        this.messenger.message('Despesa removida com sucesso.');
         this.refreshExpenses();
       },
       error: () => {
+        this.messenger.message('Erro ao remover despesa.');
       },
     });
   }
@@ -962,6 +1018,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             this.peopleList = result.peopleList;
 
             this.refreshIncomes();
+            this.focusCreatedIncome(incomes.id);
           },
           error: () => { },
         });
@@ -1053,17 +1110,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       if (result) {
 
         if (result.deleting) {
-          this.incomeService.delete(result.id).subscribe({
-            next: () => {
-              this.incomes = this.incomes.filter((t) => t.id! != result.id!);
-              this.incomesNoFilter = this.incomesNoFilter.filter(
-                (t) => t.id! != result.id!
-              );
-
-              this.refreshIncomes();
-            },
-            error: () => { },
-          });
+          this.removeIncome(result);
         } else {
           this.incomeService.update(result).subscribe({
             next: (updatedIncome) => {
@@ -1093,6 +1140,43 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           });
         }
       }
+    });
+  }
+
+  deleteIncome(income: Incomes): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: <ConfirmDialogData>{
+        title: 'Excluir Receita',
+        message: 'Confirma a EXCLUSÃO da receita?',
+        confirmText: 'Sim',
+        cancelText: 'Cancelar',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (!confirmed) return;
+
+      this.removeIncome(income);
+    });
+  }
+
+  private removeIncome(income: Incomes): void {
+    if (!income.id) return;
+
+    this.incomeService.delete(income.id).subscribe({
+      next: () => {
+        this.incomes = this.incomes.filter((t) => t.id! != income.id!);
+        this.incomesNoFilter = this.incomesNoFilter.filter(
+          (t) => t.id! != income.id!
+        );
+
+        this.messenger.message('Receita removida com sucesso.');
+        this.refreshIncomes();
+      },
+      error: () => {
+        this.messenger.message('Erro ao remover receita.');
+      },
     });
   }
 
@@ -1231,38 +1315,26 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.savingCardPosting = true;
+
         const payload = prepareApiDates(result, ['date', 'dueDate']);
         this.cardPostingsService.create(payload).subscribe({
-          next: (cardpostings) => {
-            if (cardpostings) {
-              if (result.amount >= expense.toPay) {
-                this.deleteExpense(expense);
-              } else {
-                this.expenseService
-                  .updateValue(expense.id!, result.amount * -1)
-                  .subscribe({
-                    next: () => {
-                      expense.toPay = +(expense.toPay - result.amount).toFixed(
-                        2
-                      );
-                      expense.totalToPay = +(
-                        expense.totalToPay - result.amount
-                      ).toFixed(2);
-                      expense.remaining = +(
-                        expense.toPay - (expense.paid ?? 0)
-                      ).toFixed(2);
-
-                      this.getExpensesTotals();
-                    },
-                  });
-              }
-            }
-
+          next: () => {
             this.categoriesList = result.categoriesList;
             this.peopleList = result.peopleList;
 
-            this.getCardsPostingsPeople();
+            if (result.amount >= expense.toPay) {
+              this.expenseService.delete(expense.id!).pipe(
+                finalize(() => this.refresh())
+              ).subscribe();
+              return;
+            }
+
+            this.expenseService.updateValue(expense.id!, result.amount * -1).pipe(
+              finalize(() => this.refresh())
+            ).subscribe();
           },
+          error: () => this.savingCardPosting = false,
         });
       }
     });
@@ -1364,6 +1436,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         this.expensesNoFilter = [...this.expensesNoFilter, expenses];
 
         this.refreshExpenses();
+        this.focusCreatedExpense(expenses.id);
       },
       error: () => { },
     });
@@ -1389,9 +1462,108 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         this.incomesNoFilter = [...this.incomesNoFilter, incomes];
 
         this.refreshIncomes();
+        this.focusCreatedIncome(incomes.id);
       },
       error: () => { },
     });
+  }
+
+  private focusCreatedExpense(id?: number): void {
+    if (!id) return;
+
+    const wasExpanded = this.expensesPanelExpanded;
+    this.focusedExpenseId = id;
+    this.expensesPanelExpanded = true;
+    localStorage.setItem('expensesPanelExpanded', 'true');
+    if (wasExpanded) {
+      this.focusBudgetEntry('expense', id);
+    }
+  }
+
+  private focusCreatedIncome(id?: number): void {
+    if (!id) return;
+
+    const wasExpanded = this.incomesPanelExpanded;
+    this.focusedIncomeId = id;
+    this.incomesPanelExpanded = true;
+    localStorage.setItem('incomesPanelExpanded', 'true');
+    if (wasExpanded) {
+      this.focusBudgetEntry('income', id);
+    }
+  }
+
+  focusPendingBudgetEntry(type: 'expense' | 'income'): void {
+    const id = type === 'expense' ? this.focusedExpenseId : this.focusedIncomeId;
+
+    if (!id) return;
+
+    this.focusBudgetEntry(type, id);
+  }
+
+  private focusBudgetEntry(
+    type: 'expense' | 'income',
+    id: number,
+    attempt: number = 0
+  ): void {
+    if (attempt > 0) {
+      const currentFocusedId =
+        type === 'expense' ? this.focusedExpenseId : this.focusedIncomeId;
+
+      if (currentFocusedId !== id) return;
+    }
+    if (type === 'expense') {
+      this.focusedExpenseId = id;
+    } else {
+      this.focusedIncomeId = id;
+    }
+
+    setTimeout(() => {
+      const currentFocusedId =
+        type === 'expense' ? this.focusedExpenseId : this.focusedIncomeId;
+
+      if (currentFocusedId !== id) return;
+
+      const row = this.elementRef.nativeElement.querySelector(
+        `tr[data-${type}-id="${id}"]`
+      ) as HTMLTableRowElement | null;
+
+      const rowVisible =
+        !!row &&
+        row.getClientRects().length > 0 &&
+        row.getBoundingClientRect().height > 0;
+
+      if (!rowVisible) {
+        if (attempt < 30) {
+          this.focusBudgetEntry(type, id, attempt + 1);
+          return;
+        }
+        if (type === 'expense' && this.focusedExpenseId === id) {
+          this.focusedExpenseId = undefined;
+        }
+
+        if (type === 'income' && this.focusedIncomeId === id) {
+          this.focusedIncomeId = undefined;
+        }
+
+        this.cd.detectChanges();
+        return;
+      }
+
+      row!.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+      row!.focus({ preventScroll: true });
+
+      setTimeout(() => {
+        if (type === 'expense' && this.focusedExpenseId === id) {
+          this.focusedExpenseId = undefined;
+        }
+
+        if (type === 'income' && this.focusedIncomeId === id) {
+          this.focusedIncomeId = undefined;
+        }
+
+        this.cd.detectChanges();
+      }, 2500);
+    }, attempt === 0 ? 0 : 100);
   }
 
   editPeople(cpp: CardsPostingsDTO) {

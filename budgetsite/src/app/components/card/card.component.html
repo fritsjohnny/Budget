@@ -25,6 +25,7 @@
                 style="margin-top: -75px !important"
                 (referenceChange)="setReference($event)"
                 [cardId]="cardId"
+                [reference]="reference"
             >
             </app-datepicker>
             <div class="">
@@ -93,6 +94,7 @@
         <app-cardpostings
             [cardId]="cardId"
             [reference]="reference"
+            (notificationContextChange)="setNotificationContext($event)"
         ></app-cardpostings>
     </div>
 </div>

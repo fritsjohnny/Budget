@@ -1,0 +1,338 @@
+<div class="modern-entry-dialog modern-account-maintenance-dialog">
+  <form [formGroup]="accountFormGroup">
+    <header class="modern-entry-header">
+      <div class="modern-entry-heading">
+        <span class="modern-entry-icon">
+          <mat-icon>account_balance</mat-icon>
+        </span>
+        <div>
+          <h2 mat-dialog-title>{{ id ? 'Conta - Editar' : 'Conta - Incluir' }}</h2>
+          <p>{{ id ? 'Atualize os dados e configurações da conta' : 'Cadastre uma nova conta financeira' }}</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        mat-icon-button
+        class="modern-entry-close"
+        matTooltip="Fechar"
+        aria-label="Fechar"
+        (click)="cancel()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <div mat-dialog-content class="modern-entry-content">
+      <section class="modern-form-section modern-account-selector-section">
+        <div class="modern-section-title">
+          <mat-icon>account_balance_wallet</mat-icon>
+          <span>Contas cadastradas</span>
+        </div>
+
+        <div class="modern-account-selector">
+          <button
+            type="button"
+            class="modern-account-chip"
+            [class.is-selected]="buttonName === account.name"
+            *ngFor="let account of accounts"
+            [ngStyle]="{ backgroundColor: account.background, color: account.color }"
+            (click)="setAccount(account)"
+          >
+            {{ account.name }}
+          </button>
+
+          <button
+            type="button"
+            class="modern-new-account-chip"
+            mat-stroked-button
+            matTooltip="Incluir conta"
+            (click)="addAccount()"
+          >
+            <mat-icon>add</mat-icon>
+            <span>Nova</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>badge</mat-icon>
+          <span>Identificação</span>
+        </div>
+
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" class="modern-field-full">
+            <mat-label>Nome</mat-label>
+            <input
+              type="text"
+              id="nameFormControl"
+              required
+              matInput
+              formControlName="nameFormControl"
+              (ngModelChange)="onNameChange($event)"
+            />
+            <mat-error *ngIf="accountFormGroup.get('nameFormControl')?.hasError('required')">
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="modern-field-full">
+            <mat-label>Nome do aplicativo</mat-label>
+            <input
+              type="text"
+              id="appPackageNameFormControl"
+              matInput
+              formControlName="appPackageNameFormControl"
+            />
+            <mat-hint>Pacote utilizado para abrir o aplicativo do banco.</mat-hint>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="modern-form-section modern-account-yield-section">
+        <div class="modern-section-title">
+          <mat-icon>trending_up</mat-icon>
+          <span>Rendimentos e impostos</span>
+        </div>
+
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Percentual rendimento</mat-label>
+            <input
+              matInput
+              inputmode="decimal"
+              formControlName="yieldPercentFormControl"
+              placeholder="0"
+              autocomplete="off"
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Percentual IR</mat-label>
+            <input
+              matInput
+              inputmode="decimal"
+              formControlName="irPercentFormControl"
+              placeholder="0"
+              autocomplete="off"
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" floatLabel="always" class="modern-field-full">
+            <mat-label>Saldo bruto</mat-label>
+            <input
+              matInput
+              inputmode="decimal"
+              currencyMask
+              formControlName="totalBalanceGrossFormControl"
+              placeholder="0"
+              autocomplete="off"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="modern-options-grid modern-account-tax-options">
+          <mat-checkbox formControlName="isTaxExemptFormControl">
+            Isento de IR
+          </mat-checkbox>
+        </div>
+      </section>
+
+      <section class="modern-form-section modern-account-ranges-section">
+        <div class="modern-section-heading-row">
+          <div class="modern-section-title">
+            <mat-icon>stacked_line_chart</mat-icon>
+            <span>Faixas de rendimento</span>
+          </div>
+
+          <button
+            type="button"
+            mat-stroked-button
+            class="modern-add-range-button"
+            matTooltip="Adicionar faixa"
+            (click)="addYieldRange()"
+          >
+            <mat-icon>post_add</mat-icon>
+            <span>Adicionar faixa</span>
+          </button>
+        </div>
+
+        <div class="modern-ranges-empty" *ngIf="yieldRanges.length === 0">
+          <mat-icon>show_chart</mat-icon>
+          <div>
+            <strong>Nenhuma faixa cadastrada</strong>
+            <small>Use faixas quando o percentual variar conforme o saldo aplicado.</small>
+          </div>
+        </div>
+
+        <div class="modern-yield-range" *ngFor="let range of yieldRanges; let i = index">
+          <span class="modern-range-index">Faixa {{ i + 1 }}</span>
+
+          <div class="modern-range-fields">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Valor inicial</mat-label>
+              <input
+                matInput
+                inputmode="decimal"
+                currencyMask
+                [(ngModel)]="range.startAmount"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="0"
+                autocomplete="off"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Valor final</mat-label>
+              <input
+                matInput
+                inputmode="decimal"
+                currencyMask
+                [(ngModel)]="range.endAmount"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Sem limite"
+                autocomplete="off"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>% CDI</mat-label>
+              <input
+                matInput
+                inputmode="decimal"
+                [(ngModel)]="range.yieldPercent"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="100"
+                autocomplete="off"
+              />
+            </mat-form-field>
+
+            <button
+              type="button"
+              mat-icon-button
+              class="modern-remove-range-button"
+              matTooltip="Remover faixa"
+              aria-label="Remover faixa"
+              (click)="removeYieldRange(i)"
+            >
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="modern-form-section modern-account-appearance-section">
+        <div class="modern-section-title">
+          <mat-icon>palette</mat-icon>
+          <span>Aparência</span>
+        </div>
+
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Cor de fundo</mat-label>
+            <input
+              matInput
+              [ngxMatColorPicker]="picker1"
+              id="backgroundFormControl"
+              formControlName="backgroundFormControl"
+            />
+            <ngx-mat-color-toggle matSuffix [for]="picker1"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker #picker1></ngx-mat-color-picker>
+            <mat-error *ngIf="accountFormGroup.get('backgroundFormControl')?.hasError('required')">
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Cor do texto</mat-label>
+            <input
+              matInput
+              [ngxMatColorPicker]="picker2"
+              id="colorFormControl"
+              formControlName="colorFormControl"
+            />
+            <ngx-mat-color-toggle matSuffix [for]="picker2"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker #picker2></ngx-mat-color-picker>
+            <mat-error *ngIf="accountFormGroup.get('colorFormControl')?.hasError('required')">
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="modern-account-preview">
+          <small>Pré-visualização</small>
+          <button
+            type="button"
+            class="modern-account-preview-button"
+            [class.has-parens]="hasParens"
+            [ngStyle]="{
+              backgroundColor: accountFormGroup.get('backgroundFormControl')?.value,
+              color: accountFormGroup.get('colorFormControl')?.value
+            }"
+          >
+            {{ buttonText }}
+          </button>
+        </div>
+      </section>
+
+      <section class="modern-form-section modern-technical-section">
+        <div class="modern-section-title">
+          <mat-icon>tune</mat-icon>
+          <span>Configurações</span>
+        </div>
+
+        <div class="modern-form-grid modern-account-settings-grid">
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Posição</mat-label>
+            <input
+              matInput
+              type="number"
+              inputmode="numeric"
+              min="1"
+              formControlName="positionFormControl"
+            />
+          </mat-form-field>
+
+          <div class="modern-options-grid modern-account-status-options">
+            <mat-checkbox formControlName="disabledFormControl">
+              Desativar conta
+            </mat-checkbox>
+
+            <mat-checkbox formControlName="calcInGeneralFormControl">
+              Contabilizar no saldo geral
+            </mat-checkbox>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div mat-dialog-actions class="modern-entry-actions">
+      <button type="button" mat-stroked-button class="modern-cancel-action" (click)="cancel()">
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        mat-stroked-button
+        class="modern-delete-action"
+        *ngIf="id"
+        (click)="delete()"
+      >
+        <mat-icon>delete</mat-icon>
+        Excluir
+      </button>
+
+      <button
+        type="button"
+        mat-flat-button
+        class="modern-save-action"
+        [disabled]="!accountFormGroup.valid"
+        (click)="save()"
+      >
+        <mat-icon>save</mat-icon>
+        Salvar conta
+      </button>
+    </div>
+  </form>
+</div>

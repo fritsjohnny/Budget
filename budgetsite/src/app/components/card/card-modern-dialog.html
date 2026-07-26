@@ -1,0 +1,87 @@
+<section class="modern-entry-dialog modern-card-entry-dialog">
+  <form [formGroup]="cardFormGroup">
+    <header class="modern-entry-header">
+      <div class="modern-entry-heading">
+        <span class="modern-entry-icon"><mat-icon>credit_card</mat-icon></span>
+        <div><h2 mat-dialog-title>{{ id ? 'Editar cartão' : 'Novo cartão' }}</h2><p>Dados, ciclo e aparência do cartão</p></div>
+      </div>
+      <button mat-icon-button type="button" class="modern-entry-close" matTooltip="Cancelar" (click)="cancel()"><mat-icon>close</mat-icon></button>
+    </header>
+
+    <div mat-dialog-content class="modern-entry-content">
+      <section class="modern-form-section modern-card-selector-section">
+        <div class="modern-section-title"><mat-icon>view_carousel</mat-icon><span>Cartões cadastrados</span></div>
+        <div class="modern-card-selector">
+          <button type="button" mat-button class="modern-card-chip" *ngFor="let card of cards"
+            [class.selected]="buttonName === card.name" [ngStyle]="{backgroundColor: card.background, color: card.color}"
+            (click)="setCard(card)">{{ card.name }}</button>
+          <button type="button" mat-stroked-button class="modern-add-card" (click)="addCard()"><mat-icon>add</mat-icon>Novo</button>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title"><mat-icon>badge</mat-icon><span>Identificação</span></div>
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" class="modern-field-full">
+            <mat-label>Nome</mat-label>
+            <input matInput required cdkFocusInitial formControlName="nameFormControl" (ngModelChange)="onNameChange($event)">
+            <mat-error *ngIf="cardFormGroup.get('nameFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="modern-field-full">
+            <mat-label>Nome do aplicativo</mat-label>
+            <input matInput formControlName="appPackageNameFormControl">
+            <mat-hint>Pacote usado para abrir o aplicativo do cartão</mat-hint>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title"><mat-icon>event_repeat</mat-icon><span>Ciclo da fatura</span></div>
+        <div class="modern-form-grid modern-card-cycle-grid">
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Melhor dia de compra</mat-label>
+            <input matInput type="number" inputmode="numeric" formControlName="closingDayFormControl" min="1" max="31" onfocus="this.select()">
+            <mat-error *ngIf="cardFormGroup.get('closingDayFormControl')?.hasError('min')">Valor mínimo é <strong>1</strong>.</mat-error>
+            <mat-error *ngIf="cardFormGroup.get('closingDayFormControl')?.hasError('max')">Valor máximo é <strong>31</strong>.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Dia do vencimento</mat-label>
+            <input matInput type="number" inputmode="numeric" formControlName="dueDayFormControl" min="1" max="31" onfocus="this.select()">
+            <mat-error *ngIf="cardFormGroup.get('dueDayFormControl')?.hasError('min')">Valor mínimo é <strong>1</strong>.</mat-error>
+            <mat-error *ngIf="cardFormGroup.get('dueDayFormControl')?.hasError('max')">Valor máximo é <strong>31</strong>.</mat-error>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title"><mat-icon>palette</mat-icon><span>Aparência</span></div>
+        <div class="modern-form-grid modern-card-colors-grid">
+          <mat-form-field appearance="fill">
+            <mat-label>Cor de fundo</mat-label>
+            <input matInput [ngxMatColorPicker]="picker1" formControlName="backgroundFormControl">
+            <ngx-mat-color-toggle matSuffix [for]="picker1"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker #picker1></ngx-mat-color-picker>
+            <mat-error *ngIf="cardFormGroup.get('backgroundFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Cor do texto</mat-label>
+            <input matInput [ngxMatColorPicker]="picker2" formControlName="colorFormControl">
+            <ngx-mat-color-toggle matSuffix [for]="picker2"></ngx-mat-color-toggle>
+            <ngx-mat-color-picker #picker2></ngx-mat-color-picker>
+            <mat-error *ngIf="cardFormGroup.get('colorFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="modern-card-preview" [ngStyle]="{backgroundColor: cardFormGroup.get('backgroundFormControl')?.value, color: cardFormGroup.get('colorFormControl')?.value}">
+          <mat-icon>credit_card</mat-icon><span>{{ buttonText }}</span>
+        </div>
+        <mat-checkbox formControlName="disabledFormControl">Desativar cartão</mat-checkbox>
+      </section>
+    </div>
+
+    <div mat-dialog-actions class="modern-entry-actions">
+      <button mat-stroked-button type="button" class="modern-delete-action" *ngIf="id" (click)="delete()"><mat-icon>delete</mat-icon>Excluir</button>
+      <button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancel()">Cancelar</button>
+      <button mat-flat-button type="button" class="modern-save-action" [disabled]="!cardFormGroup.valid" (click)="save()"><mat-icon>save</mat-icon>Salvar</button>
+    </div>
+  </form>
+</section>

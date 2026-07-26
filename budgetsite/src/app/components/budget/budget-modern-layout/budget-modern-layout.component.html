@@ -20,82 +20,16 @@
         <span>{{ pullRefreshLabel }}</span>
     </div>
 
-    <section class="reference-card" aria-label="Referência do orçamento">
-        <div class="reference-navigation">
-            <button
-                mat-button
-                class="reference-side"
-                (click)="setPreviousMonth()"
-                aria-label="Referência anterior"
-            >
-                <mat-icon>chevron_left</mat-icon>
-                <span>{{ previousMonthName }}</span>
-            </button>
-
-            <strong class="reference-title">{{ referenceTitle }}</strong>
-
-            <button
-                mat-button
-                class="reference-side reference-side-next"
-                (click)="setNextMonth()"
-                aria-label="Próxima referência"
-            >
-                <span>{{ nextMonthName }}</span>
-                <mat-icon>chevron_right</mat-icon>
-            </button>
-        </div>
-
-        <div class="reference-actions">
-            <button
-                mat-button
-                class="reference-picker-button"
-                (click)="modernDatepicker.open()"
-                aria-label="Selecionar mês e ano"
-            >
-                <mat-icon>calendar_month</mat-icon>
-                <span>{{ referenceHead }}</span>
-                <mat-icon>expand_more</mat-icon>
-            </button>
-
-            <button
-                mat-stroked-button
-                class="current-reference-button"
-                [class.current-reference-active]="isCurrentReference"
-                (click)="setCurrentMonth()"
-            >
-                <mat-icon>today</mat-icon>
-                <span>Hoje</span>
-            </button>
-
-            <button
-                mat-icon-button
-                class="reference-options-button"
-                (click)="context.showOptions = !context.showOptions"
-                [matTooltip]="
-                    context.showOptions ? 'Ocultar filtros' : 'Mostrar filtros'
-                "
-            >
-                <mat-icon>{{
-                    context.showOptions ? "expand_less" : "tune"
-                }}</mat-icon>
-            </button>
-        </div>
-
-        <mat-form-field class="reference-picker-proxy" aria-hidden="true">
-            <input
-                matInput
-                [matDatepicker]="modernDatepicker"
-                [formControl]="date"
-            />
-            <mat-datepicker
-                #modernDatepicker
-                startView="multi-year"
-                (yearSelected)="chosenYearHandler($event)"
-                (monthSelected)="chosenMonthHandler($event, modernDatepicker)"
-                panelClass="example-month-picker"
-            ></mat-datepicker>
-        </mat-form-field>
-
+    <app-modern-reference-selector
+        [reference]="context.reference"
+        storageKey="budgetDate"
+        ariaLabel="Referência do orçamento"
+        [optionIcon]="context.showOptions ? 'expand_less' : 'tune'"
+        [optionTooltip]="context.showOptions ? 'Ocultar filtros' : 'Mostrar filtros'"
+        optionAriaLabel="Mostrar ou ocultar filtros"
+        (referenceChange)="onReferenceChange($event)"
+        (optionsClick)="context.showOptions = !context.showOptions"
+    >
         <div class="reference-filters" *ngIf="context.showOptions">
             <mat-checkbox
                 [(ngModel)]="context.justMyValues"
@@ -113,7 +47,7 @@
                 >Apenas receitas a receber</mat-checkbox
             >
         </div>
-    </section>
+    </app-modern-reference-selector>
 
     <div
         class="modern-loading"

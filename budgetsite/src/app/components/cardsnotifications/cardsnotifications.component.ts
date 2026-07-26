@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog/cardpostings-dialog';
+import { CardPostingsModernDialog } from '../cardpostings/cardpostings-dialog/cardpostings-modern-dialog';
 import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
 import { People } from 'src/app/models/people.model';
 import { Categories } from 'src/app/models/categories.model';
@@ -31,6 +32,8 @@ export interface CardNotificationContext {
   styleUrls: ['./cardsnotifications.component.scss'],
 })
 export class CardsNotificationsComponent implements OnInit, OnDestroy {
+  @Input() modernLayout: boolean = false;
+
   @Input() cardId?: number;
   @Input() reference?: string;
   @Input() peopleList?: People[];
@@ -326,9 +329,10 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
       finalize(() => this.validatingInvoiceClosing = false)
     ).subscribe({
       next: ({ targetReference, invoiceClosing }) => {
-        const dialogRef = this.dialog.open(CardPostingsDialog, {
+        const dialogRef = this.dialog.open(this.modernLayout ? CardPostingsModernDialog : CardPostingsDialog, {
           width: '100%',
           maxWidth: '100%',
+          panelClass: this.modernLayout ? 'modern-entry-dialog-panel' : undefined,
           data: {
             reference: targetReference,
             cardId: targetCardId,

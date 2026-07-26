@@ -50,6 +50,11 @@
   transition: transform 180ms ease-out;
 }
 
+.modern-summary-shell > app-modern-reference-selector {
+  display: block;
+  margin-bottom: 14px;
+}
+
 .modern-summary-shell.pull-active {
   transition: none;
 }
@@ -549,6 +554,10 @@
     min-width: 0;
     padding: 0 7px;
     font-size: 12px;
+  }
+
+  .modern-summary-shell > app-modern-reference-selector {
+    margin-bottom: 10px;
   }
 
   .refresh-row {

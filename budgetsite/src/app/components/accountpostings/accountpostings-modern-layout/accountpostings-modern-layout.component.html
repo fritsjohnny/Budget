@@ -1,0 +1,382 @@
+<div class="modern-account-postings">
+  <div class="modern-loading" *ngIf="!context.hideProgress">
+    <mat-spinner color="accent" [diameter]="44"></mat-spinner>
+    <span>Atualizando conta...</span>
+  </div>
+
+  <ng-container *ngIf="context.hideProgress">
+    <section class="account-summary" aria-label="Resumo da conta">
+      <article class="summary-item summary-general">
+        <span class="summary-icon"><mat-icon>account_balance_wallet</mat-icon></span>
+        <div>
+          <small>Saldo geral</small>
+          <strong>{{ context.grandTotalBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+        </div>
+      </article>
+
+      <article class="summary-item summary-previous">
+        <span class="summary-icon"><mat-icon>history</mat-icon></span>
+        <div>
+          <small>Saldo anterior</small>
+          <strong>{{ context.previousBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+        </div>
+      </article>
+
+      <article class="summary-item summary-gross">
+        <span class="summary-icon"><mat-icon>stacked_bar_chart</mat-icon></span>
+        <div>
+          <small>Saldo bruto</small>
+          <strong>{{ context.totalGrossBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+        </div>
+      </article>
+
+      <button type="button" class="summary-item summary-yield" (click)="context.openGeneralYields()">
+        <span class="summary-icon"><mat-icon>trending_up</mat-icon></span>
+        <div>
+          <small>Rend. geral</small>
+          <strong>{{ context.grandTotalYields | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+        </div>
+      </button>
+
+      <article class="summary-item summary-net">
+        <span class="summary-icon"><mat-icon>paid</mat-icon></span>
+        <div>
+          <small>Saldo líquido</small>
+          <strong>{{ context.totalBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+        </div>
+      </article>
+
+      <button type="button" class="summary-item summary-account-yield" (click)="context.openAccountYields()">
+        <span class="summary-icon"><mat-icon>monetization_on</mat-icon></span>
+        <div>
+          <small>Rendimentos</small>
+          <strong>{{ context.totalYields | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+        </div>
+      </button>
+    </section>
+
+    <div class="refresh-row">
+      <button mat-stroked-button class="refresh-button" (click)="context.refresh()">
+        <mat-icon>autorenew</mat-icon>
+        <span>Atualizar dados</span>
+      </button>
+    </div>
+
+    <mat-accordion class="modern-account-accordion" [multi]="true">
+      <mat-expansion-panel
+        class="modern-panel modern-account-panel postings-panel"
+        [(expanded)]="context.accountPostingsPanelExpanded"
+        (closed)="context.accountPostingsPanelClosed()"
+        (opened)="context.accountPostingsPanelOpened()"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="panel-icon"><mat-icon>receipt_long</mat-icon></span>
+            <span class="panel-heading-copy">
+              <strong>Lançamentos</strong>
+              <small>
+                {{ context.accountpostings?.length || 0 }} registros ·
+                {{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }} no período
+              </small>
+            </span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="panel-toolbar">
+          <button mat-icon-button class="filter-button" (click)="context.openFilter()" matTooltip="Filtrar lançamentos">
+            <mat-icon>search</mat-icon>
+          </button>
+
+          <button mat-button class="modern-add-button postings-add-button" (click)="context.add()">
+            <mat-icon>post_add</mat-icon>
+            <span>Novo lançamento</span>
+          </button>
+
+          <button mat-icon-button class="panel-options-button" [matMenuTriggerFor]="postingsOptionsMenu" aria-label="Opções de lançamentos">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+
+          <mat-menu #postingsOptionsMenu="matMenu" class="modern-menu modern-menu-accounts">
+            <button mat-menu-item (click)="context.refresh()">
+              <mat-icon>autorenew</mat-icon>
+              <span>Atualizar lançamentos</span>
+            </button>
+            <button mat-menu-item (click)="context.openAccountYields()">
+              <mat-icon>trending_up</mat-icon>
+              <span>Rendimentos da conta</span>
+            </button>
+            <button mat-menu-item (click)="context.openGeneralYields()">
+              <mat-icon>query_stats</mat-icon>
+              <span>Rendimentos gerais</span>
+            </button>
+          </mat-menu>
+        </div>
+
+        <mat-form-field appearance="fill" class="filter-field" *ngIf="context.filterOpend">
+          <mat-label>Filtrar lançamentos</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput (keyup)="context.applyFilter($event)" #input />
+        </mat-form-field>
+
+        <div class="modern-table-container">
+          <table
+            mat-table
+            [dataSource]="context.dataSource"
+            class="modern-account-table postings-table"
+            cdkDropList
+            [cdkDropListData]="context.accountpostings"
+            (cdkDropListDropped)="context.drop($event)"
+          >
+            <ng-container matColumnDef="index">
+              <th mat-header-cell *matHeaderCellDef>#</th>
+              <td mat-cell *matCellDef="let row; let i = index" [class.value-yield]="row.type === 'Y'" [class.value-negative]="row.amount < 0">
+                {{ context.accountPostingsLength - i }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Data</th>
+              <td mat-cell *matCellDef="let row" [class.value-yield]="row.type === 'Y'" [class.value-negative]="row.amount < 0">
+                {{ row.date | date: 'dd/MM' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <ng-container matColumnDef="description">
+              <th mat-header-cell *matHeaderCellDef>Descrição</th>
+              <td mat-cell *matCellDef="let row">
+                <div class="posting-description">
+                  <strong
+                    [class.posting-yield]="row.type === 'Y'"
+                    [class.posting-payment]="row.type !== 'Y' && row.amount < 0"
+                    [class.posting-receipt]="row.type !== 'Y' && row.amount > 0"
+                  >{{ row.description }}</strong>
+                  <small *ngIf="row.note">{{ row.note }}</small>
+                </div>
+              </td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Valor</th>
+              <td mat-cell *matCellDef="let row" [class.value-yield]="row.type === 'Y'" [class.value-negative]="row.amount < 0" [class.value-positive]="row.amount > 0 && row.type !== 'Y'">
+                {{ row.amount | currency: '' : '' : '1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef [class.value-negative]="context.total < 0" [class.value-positive]="context.total >= 0">
+                {{ context.total | currency: '' : '' : '1.2-2' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="runningAmount">
+              <th mat-header-cell *matHeaderCellDef>Saldo</th>
+              <td mat-cell *matCellDef="let row" [class.value-negative]="row.runningAmount < 0">
+                {{ row.runningAmount | currency: '' : '' : '1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="context.displayedColumns; sticky: true"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: context.displayedColumns"
+              cdkDrag
+              appDragReadyFeedback
+              [cdkDragData]="row"
+              [cdkDragStartDelay]="300"
+              (click)="context.editOrDelete(row, $event)"
+            ></tr>
+            <tr mat-footer-row *matFooterRowDef="context.displayedColumns; sticky: true"></tr>
+          </table>
+        </div>
+
+        <div
+          class="mobile-extract-list postings-mobile-list"
+          cdkDropList
+          [cdkDropListData]="context.accountpostings"
+          (cdkDropListDropped)="context.drop($event)"
+        >
+          <div
+            class="mobile-extract-row posting-mobile-row"
+            *ngFor="let row of context.dataSource.filteredData; let i = index"
+            cdkDrag
+            appDragReadyFeedback
+            [cdkDragData]="row"
+            [cdkDragStartDelay]="300"
+            (click)="context.editOrDelete(row, $event)"
+          >
+            <span class="mobile-row-index">{{ context.accountPostingsLength - i }}</span>
+
+            <span class="mobile-row-date">
+              <strong>{{ row.date | date: 'dd/MM' }}</strong>
+              <small>{{ row.date | date: 'yyyy' }}</small>
+            </span>
+
+            <span class="mobile-row-copy">
+              <strong
+                [class.posting-yield]="row.type === 'Y'"
+                [class.posting-payment]="row.type !== 'Y' && row.amount < 0"
+                [class.posting-receipt]="row.type !== 'Y' && row.amount > 0"
+              >{{ row.description }}</strong>
+              <small *ngIf="row.note">{{ row.note }}</small>
+              <small *ngIf="!row.note">
+                {{ row.type === 'Y' ? 'Rendimento' : row.amount < 0 ? 'Pagamento' : 'Recebimento' }}
+              </small>
+            </span>
+
+            <span class="mobile-row-values">
+              <strong
+                [class.value-yield]="row.type === 'Y'"
+                [class.value-negative]="row.amount < 0"
+                [class.value-positive]="row.amount > 0 && row.type !== 'Y'"
+              >
+                {{ row.amount | currency: 'BRL' : 'symbol' : '1.2-2' }}
+              </strong>
+              <small>Saldo</small>
+              <span [class.value-negative]="row.runningAmount < 0">
+                {{ row.runningAmount | currency: 'BRL' : 'symbol' : '1.2-2' }}
+              </span>
+            </span>
+
+          </div>
+
+          <div class="mobile-extract-empty" *ngIf="context.dataSource.filteredData.length === 0">
+            <mat-icon>search_off</mat-icon>
+            <div>
+              <strong>Nenhum lançamento encontrado</strong>
+              <small>Inclua um lançamento ou altere o filtro.</small>
+            </div>
+          </div>
+
+          <div class="mobile-extract-total">
+            <strong>Total no período</strong>
+            <span
+              [class.value-negative]="context.total < 0"
+              [class.value-positive]="context.total >= 0"
+            >
+              {{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="balance-range">
+          <span>Menor saldo <strong>{{ context.minBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong></span>
+          <span>Maior saldo <strong>{{ context.maxBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong></span>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel
+        class="modern-panel modern-account-panel applications-panel"
+        [(expanded)]="context.accountApplicationsPanelExpanded"
+        (closed)="context.accountApplicationsPanelClosed()"
+        (opened)="context.accountApplicationsPanelOpened()"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="panel-icon"><mat-icon>trending_up</mat-icon></span>
+            <span class="panel-heading-copy">
+              <strong>Aplicações</strong>
+              <small>
+                {{ context.accountApplications?.length || 0 }} registros ·
+                {{ context.totalApplications | currency: 'BRL' : 'symbol' : '1.2-2' }} aplicado
+              </small>
+            </span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="panel-toolbar applications-toolbar">
+          <span></span>
+          <button mat-flat-button class="modern-add-button applications-add-button" (click)="context.addApplication()">
+            <mat-icon>post_add</mat-icon>
+            <span>Nova aplicação</span>
+          </button>
+          <button mat-icon-button class="panel-options-button" (click)="context.refresh()" matTooltip="Atualizar aplicações">
+            <mat-icon>autorenew</mat-icon>
+          </button>
+        </div>
+
+        <div class="modern-table-container">
+          <table mat-table [dataSource]="context.accountApplicationsDataSource" class="modern-account-table applications-table">
+            <ng-container matColumnDef="indexApplication">
+              <th mat-header-cell *matHeaderCellDef>#</th>
+              <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <ng-container matColumnDef="dateApplication">
+              <th mat-header-cell *matHeaderCellDef>Data</th>
+              <td mat-cell *matCellDef="let row">{{ row.dateApplied | date: 'dd/MM/yyyy' }}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <ng-container matColumnDef="amountApplication">
+              <th mat-header-cell *matHeaderCellDef>Valor</th>
+              <td mat-cell *matCellDef="let row" class="application-value">{{ row.amountApplied | currency: '' : '' : '1.2-2' }}</td>
+              <td mat-footer-cell *matFooterCellDef class="application-value">{{ context.totalApplications | currency: '' : '' : '1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="cdiApplication">
+              <th mat-header-cell *matHeaderCellDef>CDI</th>
+              <td mat-cell *matCellDef="let row">{{ row.cdiPercent * 100 | number: '1.0-2' }}%</td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <ng-container matColumnDef="dueDateApplication">
+              <th mat-header-cell *matHeaderCellDef>Vencimento</th>
+              <td mat-cell *matCellDef="let row">{{ row.maturityDate | date: 'dd/MM/yyyy' }}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="context.accountApplicationsDisplayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: context.accountApplicationsDisplayedColumns" (click)="context.editOrDeleteApplication(row)"></tr>
+            <tr mat-footer-row *matFooterRowDef="context.accountApplicationsDisplayedColumns"></tr>
+          </table>
+        </div>
+        <div class="mobile-extract-list applications-mobile-list">
+          <div
+            class="mobile-extract-row application-mobile-row"
+            *ngFor="let row of context.accountApplicationsDataSource.filteredData"
+            (click)="context.editOrDeleteApplication(row)"
+          >
+            <span class="mobile-application-icon"><mat-icon>trending_up</mat-icon></span>
+
+            <span class="mobile-row-copy">
+              <strong>{{ row.dateApplied | date: 'dd/MM/yyyy' }}</strong>
+              <small>
+                CDI {{ row.cdiPercent * 100 | number: '1.0-2' }}%
+                <ng-container *ngIf="row.maturityDate">
+                  · vence {{ row.maturityDate | date: 'dd/MM/yyyy' }}
+                </ng-container>
+              </small>
+            </span>
+
+            <span class="mobile-row-values application-mobile-value">
+              <strong>{{ row.amountApplied | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+            </span>
+
+            <mat-icon class="mobile-row-chevron">chevron_right</mat-icon>
+          </div>
+
+          <div
+            class="mobile-extract-empty"
+            *ngIf="context.accountApplicationsDataSource.filteredData.length === 0"
+          >
+            <mat-icon>find_in_page</mat-icon>
+            <div>
+              <strong>Nenhuma aplicação encontrada</strong>
+              <small>Use “Nova aplicação” para adicionar.</small>
+            </div>
+          </div>
+
+          <div class="mobile-extract-total">
+            <strong>Total aplicado</strong>
+            <span class="application-value">
+              {{ context.totalApplications | currency: 'BRL' : 'symbol' : '1.2-2' }}
+            </span>
+          </div>
+        </div>
+
+      </mat-expansion-panel>
+    </mat-accordion>
+  </ng-container>
+</div>

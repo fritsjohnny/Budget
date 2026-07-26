@@ -1,0 +1,23 @@
+<section class="modern-entry-dialog modern-invoice-closing-dialog">
+  <form>
+    <header class="modern-entry-header">
+      <div class="modern-entry-heading"><span class="modern-entry-icon"><mat-icon>event_available</mat-icon></span><div><h2 mat-dialog-title>Início da próxima fatura</h2><p>Defina a data de abertura do próximo ciclo</p></div></div>
+      <button mat-icon-button type="button" class="modern-entry-close" (click)="cancel()" [disabled]="saving"><mat-icon>close</mat-icon></button>
+    </header>
+    <div mat-dialog-content class="modern-entry-content">
+      <section class="modern-form-section">
+        <div class="modern-section-title"><mat-icon>credit_card</mat-icon><span>Fatura</span></div>
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill"><mat-label>Cartão</mat-label><input matInput [value]="closing.cardName || closing.cardId" readonly></mat-form-field>
+          <mat-form-field appearance="fill"><mat-label>Referência</mat-label><input matInput [value]="formatReference(closing.reference)" readonly></mat-form-field>
+          <div class="modern-field-full"><app-datepickerinput [currentDate]="closing.closingDate" label="Data de início" (currentDateChanged)="dateChanged($event)"></app-datepickerinput></div>
+        </div>
+        <div class="modern-status-card" [class.closed]="closing.isClosed"><mat-icon>{{ closing.isClosed ? 'lock' : 'lock_open' }}</mat-icon><div><strong>{{ closing.isClosed ? 'Fatura fechada' : 'Fatura aberta' }}</strong><small *ngIf="closing.isEstimated">Data sugerida pelo melhor dia de compra cadastrado.</small></div></div>
+      </section>
+    </div>
+    <div mat-dialog-actions class="modern-entry-actions">
+      <button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancel()" [disabled]="saving">Cancelar</button>
+      <button mat-flat-button type="button" class="modern-save-action" (click)="save()" [disabled]="saving || !closing.closingDate"><mat-icon>save</mat-icon>Salvar</button>
+    </div>
+  </form>
+</section>

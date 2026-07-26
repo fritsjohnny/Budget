@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
 import { NavService } from 'src/app/components/template/nav/nav.service';
@@ -8,7 +8,7 @@ import { NavService } from 'src/app/components/template/nav/nav.service';
   templateUrl: './bottom-tabs.component.html',
   styleUrls: ['./bottom-tabs.component.scss'],
 })
-export class BottomTabsComponent implements OnInit {
+export class BottomTabsComponent implements OnInit, OnDestroy {
   tabs = [
     { path: '/summary', label: 'Saldos', icon: 'account_balance_wallet' },
     { path: '/budget', label: 'Orçamento', icon: 'view_quilt' },
@@ -19,7 +19,13 @@ export class BottomTabsComponent implements OnInit {
   ];
 
   isMobile = false;
-  activeTab = '/budget'; // padrão
+  activeTab = '/budget';
+  useModernLayout = localStorage.getItem('budgetLayout') === 'modern';
+
+  private readonly handleBudgetLayoutChange = (event: Event): void => {
+    const layout = (event as CustomEvent<string>).detail;
+    this.useModernLayout = layout === 'modern';
+  };
 
   constructor(
     private breakpointObserver: BreakpointObserver,
@@ -28,6 +34,11 @@ export class BottomTabsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    window.addEventListener(
+      'budget-layout-change',
+      this.handleBudgetLayoutChange as EventListener
+    );
+
     this.breakpointObserver
       .observe([Breakpoints.Handset])
       .subscribe((result) => {
@@ -36,16 +47,21 @@ export class BottomTabsComponent implements OnInit {
 
     const currentUrl = this.router.url;
 
-    // Se estiver na raiz, redireciona para /budget
     if (currentUrl === '/' || currentUrl === '') {
       this.router.navigateByUrl('/budget');
       this.activeTab = '/budget';
       return;
     }
 
-    // Caso contrário, marca a aba correspondente como ativa
     const found = this.tabs.find((t) => t.path === currentUrl);
     this.activeTab = found ? found.path : '/budget';
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener(
+      'budget-layout-change',
+      this.handleBudgetLayoutChange as EventListener
+    );
   }
 
   setActiveTab(tab: any): void {

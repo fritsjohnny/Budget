@@ -17,10 +17,25 @@ export interface ConfirmDialogData {
 })
 export class ConfirmDialogComponent {
   authorized = false;
+
   constructor(
     public dialogRef: MatDialogRef<ConfirmDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData
-  ) {}
+  ) { }
+
+  get useModernLayout(): boolean {
+    return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
+  get isDangerConfirmation(): boolean {
+    const text = `${this.data.title ?? ''} ${this.data.confirmText ?? ''}`.toLocaleLowerCase('pt-BR');
+
+    return /excluir|exclusão|apagar|remover/.test(text);
+  }
+
+  get confirmationIcon(): string {
+    return this.isDangerConfirmation ? 'delete_outline' : 'help_outline';
+  }
 
   onConfirm(): void {
     this.dialogRef.close(this.data.requireAuthorization ? this.authorized : true);

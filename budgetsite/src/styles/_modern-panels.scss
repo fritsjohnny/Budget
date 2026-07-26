@@ -1,0 +1,63 @@
+.modern-panel-base,
+.modern-panel {
+  --modern-panel-surface: #ffffff;
+  --modern-panel-text: #172033;
+  --modern-panel-border: rgba(23, 35, 55, 0.13);
+  --modern-panel-muted: #687286;
+  --modern-panel-shadow: 0 6px 18px rgba(28, 39, 60, 0.08);
+  margin: 0 !important;
+  border: 1px solid var(--modern-panel-border) !important;
+  border-radius: 14px !important;
+  background: var(--modern-panel-surface) !important;
+  color: var(--modern-panel-text) !important;
+  box-shadow: var(--modern-panel-shadow) !important;
+  overflow: hidden;
+}
+.dark-theme .modern-panel-base,
+.dark-theme .modern-panel {
+  --modern-panel-surface: #111c28;
+  --modern-panel-text: #edf3fa;
+  --modern-panel-border: rgba(194, 213, 232, 0.18);
+  --modern-panel-muted: #a8b2c1;
+  --modern-panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+.modern-panel-base .mat-expansion-panel-header,
+.modern-panel .mat-expansion-panel-header {
+  min-height: 68px !important;
+  height: auto !important;
+  padding: 8px 16px !important;
+  border-left: 3px solid var(--modern-panel-accent) !important;
+  background: linear-gradient(90deg, var(--modern-panel-accent-soft), transparent 52%) !important;
+}
+.modern-panel-base .mat-expansion-panel-header-title,
+.modern-panel .mat-expansion-panel-header-title,
+.modern-panel-base .mat-panel-title,
+.modern-panel .mat-panel-title {
+  min-width: 0;
+  align-items: center;
+  margin-right: 8px;
+  color: var(--modern-panel-text) !important;
+}
+.modern-panel-base .mat-expansion-panel-body,
+.modern-panel .mat-expansion-panel-body { padding: 0 8px 12px !important; }
+.modern-panel-base .panel-icon,
+.modern-panel .panel-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  margin-right: 10px;
+  border-radius: 12px;
+  background: var(--modern-panel-accent-soft) !important;
+  color: var(--modern-panel-accent) !important;
+}
+.modern-panel-base .panel-icon .mat-icon,
+.modern-panel .panel-icon .mat-icon { color: inherit !important; }
+@media (max-width: 700px) {
+  .modern-panel-base .mat-expansion-panel-header,
+  .modern-panel .mat-expansion-panel-header { min-height: 62px !important; padding: 8px 12px !important; }
+  .modern-panel-base .mat-expansion-panel-body,
+  .modern-panel .mat-expansion-panel-body { padding: 0 6px 10px !important; }
+}

@@ -31,36 +31,21 @@ export class SummaryModernLayoutComponent implements OnInit, DoCheck {
   constructor(private elementRef: ElementRef<HTMLElement>) {}
 
   ngOnInit(): void {
-    moment.locale('pt-BR');
+  }
 
-    const contextReference = this.context?.reference as string | undefined;
-    const storedDate = localStorage.getItem('summaryDate');
+  onReferenceChange(reference: string): void {
+    const monthIndex = Number(reference.substring(4, 6)) - 1;
+    const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long' })
+      .format(new Date(2000, monthIndex, 1));
 
-    if (contextReference && /^\d{6}$/.test(contextReference)) {
-      this.date.setValue(moment(contextReference, 'YYYYMM', true));
-    } else if (storedDate && moment(storedDate).isValid()) {
-      this.date.setValue(moment(storedDate));
-    }
-
-    this.emitReference();
+    this.context.monthName = this.capitalize(monthName);
+    this.context.referenceChanges(reference);
   }
 
   ngDoCheck(): void {
     if (this.isPullRefreshing && !this.isLoading) {
       this.finishPullRefresh();
     }
-
-    const contextReference = this.context?.reference as string | undefined;
-
-    if (!contextReference || !/^\d{6}$/.test(contextReference)) return;
-    if (contextReference === this.synchronizedReference) return;
-
-    const referenceDate = moment(contextReference, 'YYYYMM', true);
-
-    if (!referenceDate.isValid()) return;
-
-    this.date.setValue(referenceDate);
-    this.synchronizedReference = contextReference;
   }
 
   get isLoading(): boolean {

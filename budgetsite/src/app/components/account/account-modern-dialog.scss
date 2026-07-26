@@ -1,0 +1,362 @@
+.modern-account-maintenance-dialog {
+  --entry-accent: #4f6fe8;
+  --entry-accent-end: #3658d4;
+  --entry-accent-soft: rgba(79, 111, 232, 0.14);
+}
+
+:host-context(.dark-theme) .modern-account-maintenance-dialog {
+  --entry-accent: #7392ff;
+  --entry-accent-end: #5878eb;
+  --entry-accent-soft: rgba(115, 146, 255, 0.17);
+}
+
+.modern-account-selector-section {
+  display: flex;
+  flex: 0 0 clamp(220px, 30dvh, 300px);
+  height: clamp(220px, 30dvh, 300px);
+  min-height: 220px;
+  padding-bottom: 10px;
+  overflow: hidden;
+  align-self: stretch;
+  flex-direction: column;
+}
+
+.modern-account-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-content: start;
+  flex: 1 1 auto;
+  gap: 8px;
+  width: 100%;
+  min-height: 0;
+  max-height: none;
+  padding: 2px 5px 5px 1px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.modern-account-chip,
+.modern-new-account-chip {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border-radius: 11px;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+.modern-account-chip {
+  padding: 7px 10px;
+  border: 2px solid transparent;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+}
+
+.modern-account-chip.is-selected {
+  border-color: var(--entry-accent);
+  box-shadow: 0 0 0 3px var(--entry-accent-soft);
+}
+
+.modern-new-account-chip {
+  border-color: var(--entry-accent);
+  color: var(--entry-accent);
+}
+
+.modern-new-account-chip .mat-icon {
+  margin-right: 4px;
+}
+
+.modern-account-tax-options,
+.modern-account-status-options {
+  margin-top: 2px;
+}
+
+.modern-section-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.modern-section-heading-row .modern-section-title {
+  margin-bottom: 0;
+}
+
+.modern-add-range-button {
+  border-color: var(--entry-accent);
+  border-radius: 9px;
+  color: var(--entry-accent);
+  font-weight: 700;
+}
+
+.modern-add-range-button .mat-icon {
+  margin-right: 5px;
+}
+
+.modern-ranges-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px dashed var(--entry-border);
+  border-radius: 11px;
+  color: var(--entry-muted);
+  background: var(--entry-surface-soft);
+}
+
+.modern-ranges-empty .mat-icon {
+  color: var(--entry-accent);
+}
+
+.modern-ranges-empty div {
+  display: grid;
+  gap: 2px;
+}
+
+.modern-ranges-empty strong {
+  color: var(--entry-text);
+  font-size: 13px;
+}
+
+.modern-ranges-empty small {
+  font-size: 11px;
+}
+
+.modern-yield-range {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid var(--entry-border);
+  border-radius: 11px;
+  background: var(--entry-surface-soft);
+}
+
+.modern-yield-range + .modern-yield-range {
+  margin-top: 8px;
+}
+
+.modern-range-index {
+  color: var(--entry-accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.modern-range-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 40px;
+  align-items: start;
+  gap: 8px;
+}
+
+.modern-remove-range-button {
+  margin-top: 7px;
+  color: var(--entry-danger);
+  background: var(--entry-danger-soft);
+}
+
+.modern-account-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--entry-border);
+  border-radius: 11px;
+  background: var(--entry-surface-soft);
+}
+
+.modern-account-preview small {
+  color: var(--entry-muted);
+  font-weight: 600;
+}
+
+.modern-account-preview-button {
+  min-width: 150px;
+  min-height: 42px;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 10px;
+  font-weight: 700;
+  white-space: pre-line;
+}
+
+.modern-account-settings-grid {
+  align-items: start;
+}
+
+.modern-account-status-options {
+  align-content: center;
+  min-height: 54px;
+}
+
+::ng-deep .modern-account-maintenance-dialog input.mat-input-element[type='number'] {
+  background: transparent !important;
+}
+
+.modern-account-maintenance-dialog,
+.modern-account-maintenance-dialog form,
+.modern-account-maintenance-dialog .modern-entry-content,
+.modern-account-maintenance-dialog .modern-form-section,
+.modern-account-maintenance-dialog .modern-form-grid,
+.modern-account-maintenance-dialog .modern-range-fields,
+.modern-account-maintenance-dialog .modern-account-selector {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.modern-account-maintenance-dialog .modern-entry-content {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  overflow-x: hidden;
+}
+
+.modern-account-maintenance-dialog .modern-form-section,
+.modern-account-maintenance-dialog .modern-form-grid > *,
+.modern-account-maintenance-dialog .modern-range-fields > * {
+  min-width: 0;
+}
+
+::ng-deep .modern-account-maintenance-dialog .mat-form-field,
+::ng-deep .modern-account-maintenance-dialog .mat-form-field-wrapper,
+::ng-deep .modern-account-maintenance-dialog .mat-form-field-flex,
+::ng-deep .modern-account-maintenance-dialog .mat-form-field-infix {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+::ng-deep .modern-account-maintenance-dialog .mat-input-element {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.modern-account-selector-section {
+  box-sizing: border-box;
+}
+
+.modern-account-selector {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  .modern-account-maintenance-dialog form {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .modern-account-maintenance-dialog .modern-entry-content {
+    padding-right: 8px !important;
+    padding-left: 8px !important;
+  }
+
+  .modern-account-maintenance-dialog .modern-form-section {
+    width: 100%;
+    padding: 9px;
+  }
+
+  .modern-account-selector-section {
+    flex-basis: clamp(240px, 34dvh, 310px);
+    height: clamp(240px, 34dvh, 310px);
+    min-height: 240px;
+  }
+
+  .modern-account-selector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: none;
+    margin: 0;
+    padding: 1px 4px 5px 0;
+  }
+
+  .modern-account-chip {
+    width: 100%;
+    max-width: none;
+    padding: 6px 8px;
+  }
+
+  .modern-section-heading-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .modern-add-range-button {
+    align-self: flex-start;
+  }
+
+  .modern-range-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .modern-range-fields .mat-form-field:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .modern-remove-range-button {
+    justify-self: end;
+    margin-top: 0;
+  }
+
+  .modern-account-preview {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .modern-account-preview-button {
+    width: 100%;
+  }
+
+  .modern-account-status-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .modern-entry-actions {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 380px) {
+  .modern-account-selector {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 430px) {
+  .modern-account-maintenance-dialog .modern-entry-heading {
+    gap: 8px;
+  }
+
+  .modern-account-maintenance-dialog .modern-entry-heading h2.mat-dialog-title {
+    font-size: 18px;
+  }
+
+  .modern-account-maintenance-dialog .modern-entry-heading p {
+    font-size: 11px;
+  }
+
+  .modern-account-maintenance-dialog .modern-entry-actions {
+    display: grid !important;
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+
+  .modern-account-maintenance-dialog .modern-entry-actions button {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .modern-account-maintenance-dialog .modern-save-action {
+    width: 100%;
+  }
+}

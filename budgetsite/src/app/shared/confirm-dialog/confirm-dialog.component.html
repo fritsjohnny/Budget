@@ -1,54 +1,136 @@
-<div class="">
+<ng-container *ngIf="useModernLayout; else classicConfirmDialog">
+  <section
+    class="modern-confirm-dialog"
+    [class.modern-confirm-danger]="isDangerConfirmation"
+    role="alertdialog"
+    [attr.aria-label]="data.title || 'Confirmação'"
+  >
+    <header class="modern-confirm-header">
+      <span class="modern-confirm-icon">
+        <mat-icon>{{ confirmationIcon }}</mat-icon>
+      </span>
+
+      <div class="modern-confirm-heading">
+        <h2 mat-dialog-title>{{ data.title || 'Confirmação' }}</h2>
+        <p>{{ isDangerConfirmation ? 'Revise antes de continuar' : 'Confirme para continuar' }}</p>
+      </div>
+
+      <button
+        mat-icon-button
+        type="button"
+        class="modern-confirm-close"
+        matTooltip="Cancelar"
+        aria-label="Cancelar"
+        (click)="onCancel()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <div mat-dialog-content class="modern-confirm-content">
+      <div class="modern-confirm-message">
+        <mat-icon>{{ isDangerConfirmation ? 'warning_amber' : 'info_outline' }}</mat-icon>
+        <p>{{ data.message }}</p>
+      </div>
+
+      <mat-checkbox
+        *ngIf="data.requireAuthorization"
+        [(ngModel)]="authorized"
+        name="authorized"
+        class="modern-confirm-authorization"
+      >
+        {{ data.authorizationText }}
+      </mat-checkbox>
+    </div>
+
+    <div mat-dialog-actions class="modern-confirm-actions">
+      <button
+        *ngIf="data.cancelText"
+        mat-stroked-button
+        type="button"
+        class="modern-confirm-cancel"
+        (click)="onCancel()"
+      >
+        {{ data.cancelText || 'Cancelar' }}
+      </button>
+
+      <button
+        mat-flat-button
+        type="button"
+        class="modern-confirm-action"
+        [disabled]="data.requireAuthorization && !authorized"
+        (click)="onConfirm()"
+      >
+        <mat-icon>{{ isDangerConfirmation ? 'delete' : 'check' }}</mat-icon>
+        {{ data.confirmText || 'Confirmar' }}
+      </button>
+    </div>
+  </section>
+</ng-container>
+
+<ng-template #classicConfirmDialog>
+  <div>
     <form>
-        <div class="cancel">
-            <div class="col-11">
-                <h2 class="mt-0" mat-dialog-title>
-                    {{ data.title || "Confirmação" }}
-                </h2>
-            </div>
-            <div class="col-1" style="margin-top: -24px">
-                <button
-                    class="default-button"
-                    mat-mini-fab
-                    matTooltip="Cancelar"
-                    color="accent"
-                    aria-label="Cancelar"
-                    (click)="onCancel()"
-                >
-                    <mat-icon class="default-icon">close</mat-icon>
-                </button>
-            </div>
+      <div class="cancel">
+        <div class="col-11">
+          <h2 class="mt-0" mat-dialog-title>
+            {{ data.title || 'Confirmação' }}
+          </h2>
         </div>
-        <div mat-dialog-content>
-            <div class="row">
-                <div class="col">
-                    <p class="confirm-dialog-message">{{ data.message }}</p>
-                </div>
-            </div>
-            <mat-checkbox *ngIf="data.requireAuthorization" [(ngModel)]="authorized" name="authorized">
-                {{ data.authorizationText }}
-            </mat-checkbox>
+        <div class="col-1" style="margin-top: -24px">
+          <button
+            type="button"
+            class="default-button"
+            mat-mini-fab
+            matTooltip="Cancelar"
+            color="accent"
+            aria-label="Cancelar"
+            (click)="onCancel()"
+          >
+            <mat-icon class="default-icon">close</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div mat-dialog-content>
+        <div class="row">
+          <div class="col">
+            <p class="confirm-dialog-message">{{ data.message }}</p>
+          </div>
         </div>
 
-        <div class="row justify-content-center" style="gap: 20px">
-            <button
-                *ngIf="data.cancelText"
-                mat-raised-button
-                color="accent"
-                (click)="onCancel()"
-                style="width: 100px"
-            >
-                {{ data.cancelText || "Cancelar" }}
-            </button>
-            <button
-                mat-raised-button
-                color="warn"
-                [disabled]="data.requireAuthorization && !authorized"
-                (click)="onConfirm()"
-                style="width: 100px"
-            >
-                {{ data.confirmText || "Confirmar" }}
-            </button>
-        </div>
+        <mat-checkbox
+          *ngIf="data.requireAuthorization"
+          [(ngModel)]="authorized"
+          name="authorized"
+        >
+          {{ data.authorizationText }}
+        </mat-checkbox>
+      </div>
+
+      <div class="row justify-content-center" style="gap: 20px">
+        <button
+          *ngIf="data.cancelText"
+          mat-raised-button
+          type="button"
+          color="accent"
+          (click)="onCancel()"
+          style="width: 100px"
+        >
+          {{ data.cancelText || 'Cancelar' }}
+        </button>
+
+        <button
+          mat-raised-button
+          type="button"
+          color="warn"
+          [disabled]="data.requireAuthorization && !authorized"
+          (click)="onConfirm()"
+          style="width: 100px"
+        >
+          {{ data.confirmText || 'Confirmar' }}
+        </button>
+      </div>
     </form>
-</div>
+  </div>
+</ng-template>

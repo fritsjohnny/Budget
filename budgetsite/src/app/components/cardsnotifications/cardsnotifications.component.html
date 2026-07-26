@@ -1,18 +1,23 @@
+<div class="notifications-grid" [class.modern-notifications]="modernLayout">
 <mat-card *ngFor="let notification of notifications" class="notification-card">
   <mat-card-title>{{ notification.description }}</mat-card-title>
   <mat-card-content>{{ notification.note }}</mat-card-content>
   <mat-card-actions>
     <button
-      mat-raised-button
+      mat-flat-button
       color="primary"
+      class="notification-primary-action"
       (click)="convertToCardPosting(notification)"
       [disabled]="validatingInvoiceClosing"
     >
-      Transformar em Lançamento
+      <mat-icon>add_card</mat-icon>
+      <span>Criar lançamento</span>
     </button>
 
-    <button mat-button color="warn" (click)="removeNotification(notification)">
-      Excluir
+    <button mat-stroked-button color="warn" class="notification-delete-action" (click)="removeNotification(notification)">
+      <mat-icon>delete_outline</mat-icon>
+      <span>Excluir</span>
     </button>
   </mat-card-actions>
 </mat-card>
+</div>

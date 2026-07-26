@@ -1,0 +1,29 @@
+<section class="modern-entry-dialog modern-receipt-entry-dialog">
+  <form [formGroup]="cardReceiptsFormGroup">
+    <header class="modern-entry-header">
+      <div class="modern-entry-heading"><span class="modern-entry-icon"><mat-icon>payments</mat-icon></span><div><h2 mat-dialog-title>{{ setTitle() }}</h2><p>Registre o recebimento e a conta de destino</p></div></div>
+      <button mat-icon-button type="button" class="modern-entry-close" (click)="cancel()"><mat-icon>close</mat-icon></button>
+    </header>
+    <div mat-dialog-content class="modern-entry-content">
+      <section class="modern-form-section">
+        <div class="modern-section-title"><mat-icon>summarize</mat-icon><span>Resumo</span></div>
+        <div class="modern-form-grid">
+          <div class="modern-field-full"><app-datepickerinput #datepickerinput [currentDate]="cardReceipts.date" (currentDateChanged)="currentDateChanged($event)"></app-datepickerinput></div>
+          <mat-form-field appearance="fill"><mat-label>A receber</mat-label><input matInput currencyMask formControlName="toReceiveFormControl" readonly [(ngModel)]="cardReceipts.toReceive"></mat-form-field>
+          <mat-form-field appearance="fill"><mat-label>Recebido</mat-label><input matInput currencyMask formControlName="receivedFormControl" readonly [(ngModel)]="cardReceipts.received"></mat-form-field>
+          <mat-form-field appearance="fill" class="modern-field-full"><mat-label>Restante</mat-label><input matInput currencyMask formControlName="remainingFormControl" readonly [(ngModel)]="cardReceipts.remaining"></mat-form-field>
+        </div>
+      </section>
+      <section class="modern-form-section">
+        <div class="modern-section-title"><mat-icon>price_check</mat-icon><span>Recebimento</span></div>
+        <div class="modern-amount-action">
+          <mat-form-field appearance="fill"><mat-label>Valor recebido agora</mat-label><input matInput id="amount" inputmode="numeric" currencyMask formControlName="amountFormControl" [(ngModel)]="cardReceipts.amount" (change)="onAmountChange()" autocomplete="off"><mat-error *ngIf="cardReceiptsFormGroup.get('amountFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error></mat-form-field>
+          <button mat-stroked-button type="button" (click)="setTotalAmount()"><mat-icon>done_all</mat-icon>Restante</button>
+        </div>
+        <mat-form-field appearance="fill"><mat-label>Conta</mat-label><mat-select [(ngModel)]="cardReceipts.accountId" formControlName="accountFormControl"><mat-option>-- Nenhuma --</mat-option><mat-option *ngFor="let account of accounts" [value]="account.id">{{ account.name }}</mat-option></mat-select><mat-error *ngIf="cardReceiptsFormGroup.get('accountFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error></mat-form-field>
+        <mat-form-field appearance="fill"><mat-label>Comentário</mat-label><textarea matInput rows="3" [(ngModel)]="cardReceipts.note" formControlName="noteFormControl"></textarea></mat-form-field>
+      </section>
+    </div>
+    <div mat-dialog-actions class="modern-entry-actions"><button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancel()">Cancelar</button><button mat-flat-button type="button" class="modern-save-action" [disabled]="!cardReceiptsFormGroup.valid" (click)="save()"><mat-icon>save</mat-icon>Salvar</button></div>
+  </form>
+</section>

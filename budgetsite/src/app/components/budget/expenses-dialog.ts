@@ -123,7 +123,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       panelClass: localStorage.getItem('budgetLayout') === 'modern'
-        ? 'modern-budget-dialog-panel'
+        ? 'modern-confirm-dialog-panel'
         : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Despesa',

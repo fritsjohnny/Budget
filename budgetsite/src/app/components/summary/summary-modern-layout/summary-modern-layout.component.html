@@ -18,45 +18,13 @@
     <span>{{ pullRefreshLabel }}</span>
   </div>
 
-  <section class="reference-card" aria-label="Referência dos saldos">
-    <div class="reference-navigation">
-      <button mat-button class="reference-side" (click)="setPreviousMonth()" aria-label="Referência anterior">
-        <mat-icon>chevron_left</mat-icon>
-        <span>{{ previousMonthName }}</span>
-      </button>
-
-      <strong class="reference-title">{{ referenceTitle }}</strong>
-
-      <button mat-button class="reference-side reference-side-next" (click)="setNextMonth()" aria-label="Próxima referência">
-        <span>{{ nextMonthName }}</span>
-        <mat-icon>chevron_right</mat-icon>
-      </button>
-    </div>
-
-    <div class="reference-actions">
-      <button mat-button class="reference-picker-button" (click)="modernSummaryDatepicker.open()" aria-label="Selecionar mês e ano">
-        <mat-icon>calendar_month</mat-icon>
-        <span>{{ referenceHead }}</span>
-        <mat-icon>expand_more</mat-icon>
-      </button>
-
-      <button mat-stroked-button class="current-reference-button" [class.current-reference-active]="isCurrentReference" (click)="setCurrentMonth()">
-        <mat-icon>today</mat-icon>
-        <span>Hoje</span>
-      </button>
-    </div>
-
-    <mat-form-field class="reference-picker-proxy" aria-hidden="true">
-      <input matInput [matDatepicker]="modernSummaryDatepicker" [formControl]="date" />
-      <mat-datepicker
-        #modernSummaryDatepicker
-        startView="multi-year"
-        (yearSelected)="chosenYearHandler($event)"
-        (monthSelected)="chosenMonthHandler($event, modernSummaryDatepicker)"
-        panelClass="example-month-picker"
-      ></mat-datepicker>
-    </mat-form-field>
-  </section>
+  <app-modern-reference-selector
+    [reference]="context.reference"
+    storageKey="summaryDate"
+    ariaLabel="Referência dos saldos"
+    [showOptionButton]="false"
+    (referenceChange)="onReferenceChange($event)"
+  ></app-modern-reference-selector>
 
   <div class="modern-loading" *ngIf="isLoading">
     <mat-spinner color="accent" [diameter]="48"></mat-spinner>

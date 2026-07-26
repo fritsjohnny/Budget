@@ -1,5 +1,6 @@
 import {
   Component,
+  HostBinding,
   OnInit,
   Input,
   SimpleChanges,
@@ -27,7 +28,9 @@ import { CardService } from 'src/app/services/card/card.service';
 import { Cards } from 'src/app/models/cards.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { CardPostingsDialog } from './cardpostings-dialog/cardpostings-dialog';
+import { CardPostingsModernDialog } from './cardpostings-dialog/cardpostings-modern-dialog';
 import { CardReceiptsDialog } from './cardreceipts-dialog/cardreceipts-dialog';
+import { CardReceiptsModernDialog } from './cardreceipts-dialog/cardreceipts-modern-dialog';
 import { Messenger } from 'src/app/common/messenger';
 import { Expenses } from 'src/app/models/expenses.model';
 import { CardsInvoiceClosing } from 'src/app/models/cardsinvoiceclosing.model';
@@ -47,6 +50,26 @@ import {
   styleUrls: ['./cardpostings.component.scss'],
 })
 export class CardPostingsComponent implements OnInit {
+  @Input() modernLayout: boolean = false;
+
+  get modernLayoutContext(): CardPostingsComponent {
+    return this;
+  }
+
+  @HostBinding('class.modern-layout-active')
+  get modernLayoutActive(): boolean {
+    return this.modernLayout;
+  }
+
+
+  private get cardPostingsDialogComponent(): any {
+    return this.modernLayout ? CardPostingsModernDialog : CardPostingsDialog;
+  }
+
+  private get cardReceiptsDialogComponent(): any {
+    return this.modernLayout ? CardReceiptsModernDialog : CardReceiptsDialog;
+  }
+
   @Input() cardId?: number;
   @Input() reference?: string;
 
@@ -97,6 +120,7 @@ export class CardPostingsComponent implements OnInit {
 
   filterOpend: boolean = false;
   dataSource = new MatTableDataSource(this.cardpostings);
+  dataSourceCategories = new MatTableDataSource(this.expensesByCategories);
 
   hideFuturePurchases: boolean = false;
   justLastParcel: boolean = false;
@@ -290,6 +314,7 @@ export class CardPostingsComponent implements OnInit {
         this.cardpostings = cardpostings.sort((a, b) => b.position! - a.position!);
         this.cardpostingspeople = cardpostingspeople.filter(item => item.person !== '');
         this.expensesByCategories = expensesByCategories;
+        this.dataSourceCategories.data = expensesByCategories;
 
         this.setDataByFilters();
         this.getTotalPeople();
@@ -411,6 +436,7 @@ export class CardPostingsComponent implements OnInit {
       .subscribe({
         next: (expensesByCategories) => {
           this.expensesByCategories = expensesByCategories;
+        this.dataSourceCategories.data = expensesByCategories;
 
           this.getTotalByCategories();
 
@@ -543,9 +569,10 @@ export class CardPostingsComponent implements OnInit {
   private openAdd(invoiceClosing: CardsInvoiceClosing) {
     this.editing = false;
 
-    const dialogRef = this.dialog.open(CardPostingsDialog, {
+    const dialogRef = this.dialog.open(this.cardPostingsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.modernLayout ? 'modern-entry-dialog-panel' : undefined,
       data: {
         reference: this.reference,
         cardId: this.cardId,
@@ -592,9 +619,10 @@ export class CardPostingsComponent implements OnInit {
   private openClone(cardPosting: CardsPostings, invoiceClosing: CardsInvoiceClosing): void {
     this.editing = false;
 
-    const dialogRef = this.dialog.open(CardPostingsDialog, {
+    const dialogRef = this.dialog.open(this.cardPostingsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.modernLayout ? 'modern-entry-dialog-panel' : undefined,
       data: {
         id: undefined,
         cardId: cardPosting.cardId,
@@ -681,9 +709,10 @@ export class CardPostingsComponent implements OnInit {
   private openEdit(cardPosting: CardsPostings, sourceInvoiceClosing: CardsInvoiceClosing): void {
     this.editing = true;
 
-    const dialogRef = this.dialog.open(CardPostingsDialog, {
+    const dialogRef = this.dialog.open(this.cardPostingsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.modernLayout ? 'modern-entry-dialog-panel' : undefined,
       data: {
         id: cardPosting.id,
         cardId: cardPosting.cardId,
@@ -769,6 +798,7 @@ export class CardPostingsComponent implements OnInit {
   private confirmDelete(cardPosting: CardsPostings, isClosed: boolean): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
+      panelClass: this.modernLayout ? 'modern-confirm-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Compra',
         message: 'Confirma a EXCLUSÃO da compra?',
@@ -823,9 +853,10 @@ export class CardPostingsComponent implements OnInit {
   }
 
   receive(cardspostingsdto: CardsPostingsDTO) {
-    const dialogRef = this.dialog.open(CardReceiptsDialog, {
+    const dialogRef = this.dialog.open(this.cardReceiptsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.modernLayout ? 'modern-entry-dialog-panel' : undefined,
       data: {
         reference: this.reference,
         cardId: this.cardId,
@@ -1024,6 +1055,7 @@ export class CardPostingsComponent implements OnInit {
   private confirmConvertToExpense(posting: CardsPostings, isClosed: boolean): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
+      panelClass: this.modernLayout ? 'modern-confirm-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Transformar em Despesa',
         message: 'Confirma a Transformação em Despesa?',

@@ -1,3 +1,18 @@
-.notification-card {
-  margin-bottom: 10px;
+.notifications-grid { display: grid; gap: 10px; }
+.notification-card { margin-bottom: 10px; }
+.modern-notifications { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); margin-top: 12px; }
+.modern-notifications .notification-card { margin: 0; min-width: 0; border: 1px solid rgba(127, 99, 244, .28); border-radius: 14px; background: rgba(127, 99, 244, .08); box-shadow: none; }
+.modern-notifications mat-card-title { overflow-wrap: anywhere; font-size: 15px; font-weight: 700; }
+.modern-notifications mat-card-content { overflow-wrap: anywhere; opacity: .72; font-size: 11px; line-height: 1.45; }
+.modern-notifications mat-card-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(104px, auto); gap: 8px; padding: 8px 16px 16px; }
+.modern-notifications mat-card-actions button { min-width: 0; min-height: 44px; margin: 0; border-radius: 12px; font-weight: 700; line-height: 1.15; }
+.modern-notifications mat-card-actions button span { overflow-wrap: anywhere; white-space: normal; }
+.modern-notifications mat-card-actions .notification-primary-action { padding: 0 12px; background: linear-gradient(135deg, #6659e8, #4f6fe8); color: #fff; }
+.modern-notifications mat-card-actions .notification-primary-action mat-icon,
+.modern-notifications mat-card-actions .notification-delete-action mat-icon { flex: 0 0 auto; margin-right: 5px; }
+.modern-notifications mat-card-actions .notification-delete-action { padding: 0 10px; border-color: rgba(233, 79, 138, .55); background: rgba(233, 79, 138, .08); color: #ff6f9f; }
+
+@media (max-width: 380px) {
+  .modern-notifications mat-card-actions { grid-template-columns: 1fr; }
+  .modern-notifications mat-card-actions .notification-delete-action { width: 100%; }
 }

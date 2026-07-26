@@ -3,12 +3,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { Cards } from 'src/app/models/cards.model';
 import { CardService } from 'src/app/services/card/card.service';
 import { CardDialog } from './card-dialog';
+import { CardModernDialog } from './card-modern-dialog';
 import { NotificationReader } from 'capacitor-notification-reader/src';
 import { Messenger } from 'src/app/common/messenger';
 import { delay, retryWhen, takeWhile, tap } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
 import { CardsInvoiceClosingDialog } from './cards-invoice-closing-dialog/cards-invoice-closing-dialog';
+import { CardsInvoiceClosingModernDialog } from './cards-invoice-closing-dialog/cards-invoice-closing-modern-dialog';
 import type { CardNotificationContext } from '../cardsnotifications/cardsnotifications.component';
 
 @Component({
@@ -17,6 +19,23 @@ import type { CardNotificationContext } from '../cardsnotifications/cardsnotific
   styleUrls: ['./card.component.scss']
 })
 export class CardComponent implements OnInit, AfterViewInit {
+
+  get useModernLayout(): boolean {
+    return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
+  get modernLayoutContext(): CardComponent {
+    return this;
+  }
+
+
+  private get cardDialogComponent(): any {
+    return this.useModernLayout ? CardModernDialog : CardDialog;
+  }
+
+  private get invoiceClosingDialogComponent(): any {
+    return this.useModernLayout ? CardsInvoiceClosingModernDialog : CardsInvoiceClosingDialog;
+  }
 
   cards?: Cards[];
   cardsVisible?: Cards[];
@@ -172,9 +191,10 @@ export class CardComponent implements OnInit, AfterViewInit {
   }
 
   cardDialog() {
-    const dialogRef = this.dialog.open(CardDialog, {
+    const dialogRef = this.dialog.open(this.cardDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.useModernLayout ? 'modern-entry-dialog-panel' : undefined,
       data: this.cards
     });
 
@@ -270,11 +290,12 @@ export class CardComponent implements OnInit, AfterViewInit {
     if (!this.cardId || this.cardId <= 0 || !this.reference || !/^\d{6}$/.test(this.reference) || this.validatingInvoiceClosing) return;
     this.validatingInvoiceClosing = true;
     this.invoiceClosingService.ensure(this.cardId, this.reference).pipe(finalize(() => this.validatingInvoiceClosing = false)).subscribe({
-      next: closing => this.dialog.open(CardsInvoiceClosingDialog, {
+      next: closing => this.dialog.open(this.invoiceClosingDialogComponent, {
         width: '100%',
         maxWidth: '100%',
         maxHeight: '95vh',
         autoFocus: false,
+        panelClass: this.useModernLayout ? 'modern-entry-dialog-panel' : undefined,
         data: closing
       })
     });

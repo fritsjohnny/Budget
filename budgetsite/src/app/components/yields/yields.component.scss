@@ -24,31 +24,26 @@ table {
 .account-button {
     display: inline-block;
     min-width: 50px;
-    border-radius: 4px;
-    padding: 5px;
+    max-width: 100%;
+    padding: 5px 8px;
+    border-radius: 7px;
     text-align: center;
     white-space: nowrap;
+    box-sizing: border-box;
 
     &.has-parens {
-        line-height: normal; // só aplica quando tiver parênteses
-        padding-bottom: 4px;
-        white-space: pre-line; /* interpreta \n como quebra */
         margin-top: 3px;
         margin-bottom: 3px;
+        padding-bottom: 4px;
+        line-height: normal;
+        white-space: pre-line;
     }
 }
 
-.mat-column-amount {
-    width: 125px;
-    text-align: right;
-}
-
-.mat-column-runningTotal {
-    width: 125px;
-    text-align: right;
-}
-
-.mat-column-dayTotal {
+.mat-column-amount,
+.mat-column-runningTotal,
+.mat-column-dayTotal,
+.mat-column-subtotalAmount {
     width: 125px;
     text-align: right;
 }
@@ -61,16 +56,11 @@ tr.mat-footer-row {
     width: 300px;
 }
 
-.mat-column-subtotalAmount {
-    width: 125px;
-    text-align: right;
-}
-
 .min-yield,
 .max-yield {
     display: inline-block;
-    text-align: right;
     width: 50px;
+    text-align: right;
 }
 
 .min-yield-label,
@@ -82,13 +72,536 @@ tr.mat-footer-row {
 .min-yield-date,
 .max-yield-date {
     display: inline-block;
-    text-align: right;
     width: 50px;
+    text-align: right;
 }
 
-.min-yield-date-label,
-.max-yield-date-label {
-    display: inline-block;
-    text-align: right;
-    width: 60px;
+.classic-extreme-row {
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.modern-yields-dialog {
+    --yield-accent: #20a968;
+    --yield-accent-strong: #0d8d52;
+    --yield-accent-soft: rgba(32, 169, 104, 0.12);
+    --yield-accent-soft-strong: rgba(32, 169, 104, 0.19);
+    --yield-text: #172033;
+    --yield-muted: #667085;
+    --yield-border: rgba(23, 35, 55, 0.11);
+    --yield-surface: #ffffff;
+    --yield-surface-soft: #f5f8fb;
+    --yield-surface-strong: #edf3f7;
+    display: flex;
+    flex-direction: column;
+    max-height: min(90vh, 860px);
+    color: var(--yield-text);
+}
+
+.modern-yields-header {
+    position: relative;
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 13px;
+    flex: 0 0 auto;
+    padding: 18px 18px 16px;
+    border-bottom: 1px solid var(--yield-border);
+    background:
+        linear-gradient(115deg, var(--yield-accent-soft-strong), transparent 46%),
+        var(--yield-surface);
+}
+
+.modern-yields-header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+    background: var(--yield-accent-soft-strong);
+    color: var(--yield-accent);
+}
+
+.modern-yields-header-icon .mat-icon {
+    width: 27px;
+    height: 27px;
+    color: inherit !important;
+    font-size: 27px;
+    line-height: 27px;
+}
+
+.modern-yields-header-copy {
+    min-width: 0;
+}
+
+.modern-yields-header-copy h2 {
+    margin: 0;
+    color: var(--yield-text);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.modern-yields-header-copy p {
+    margin: 5px 0 0;
+    color: var(--yield-muted);
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.modern-yields-close {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(231, 76, 86, 0.13);
+    color: #df4e59;
+}
+
+.modern-yields-close .mat-icon {
+    color: inherit !important;
+}
+
+.modern-yields-content {
+    flex: 1 1 auto;
+    margin: 0 !important;
+    padding: 16px 18px 18px !important;
+    overflow: auto !important;
+}
+
+.modern-yields-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.modern-yields-summary article {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--yield-border);
+    border-radius: 14px;
+    background: var(--yield-surface-soft);
+}
+
+.modern-yields-summary .summary-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--yield-accent-soft-strong);
+    color: var(--yield-accent);
+}
+
+.modern-yields-summary .summary-icon .mat-icon {
+    color: inherit !important;
+}
+
+.modern-yields-summary article > div {
+    min-width: 0;
+}
+
+.modern-yields-summary small,
+.extreme-copy small,
+.yield-row-values small,
+.yield-row-date small {
+    display: block;
+    color: var(--yield-muted);
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.modern-yields-summary strong {
+    display: block;
+    margin-top: 3px;
+    color: var(--yield-text);
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.modern-yields-summary article:last-child strong {
+    color: var(--yield-accent);
+}
+
+.modern-yields-table-container {
+    max-height: min(51vh, 470px);
+    border: 1px solid var(--yield-border);
+    border-radius: 14px;
+    background: var(--yield-surface);
+    overflow: auto;
+}
+
+.modern-yields-table {
+    width: 100%;
+    background: transparent;
+}
+
+.modern-yields-table th.mat-header-cell {
+    height: 46px !important;
+    padding: 0 10px;
+    border: 0 !important;
+    border-bottom: 1px solid var(--yield-border) !important;
+    background: var(--yield-surface-strong) !important;
+    color: var(--yield-muted) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+.modern-yields-table td.mat-cell,
+.modern-yields-table td.mat-footer-cell {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--yield-border) !important;
+    background: var(--yield-surface) !important;
+    color: var(--yield-text);
+    font-size: 13px;
+}
+
+.modern-yields-table tr.mat-row {
+    height: 48px !important;
+}
+
+.modern-yields-table tr.mat-footer-row {
+    height: 48px !important;
+}
+
+.modern-yields-table .yield-value,
+.modern-yields-table .mat-column-index,
+.modern-yields-table .mat-column-date {
+    color: var(--yield-accent) !important;
+    font-weight: 700;
+}
+
+.modern-yields-table .subtotal-row td {
+    background: var(--yield-surface-soft) !important;
+    color: var(--yield-muted);
+    font-weight: 700;
+}
+
+.modern-yields-table .subtotal-amount {
+    color: var(--yield-accent) !important;
+}
+
+.negative-value {
+    color: #e4525c !important;
+}
+
+.modern-yields-mobile-list {
+    display: none;
+}
+
+.modern-yields-extremes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.yield-extreme-card {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--yield-border);
+    border-radius: 14px;
+    background: var(--yield-surface-soft);
+}
+
+.extreme-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--yield-accent-soft);
+    color: var(--yield-accent);
+}
+
+.extreme-icon .mat-icon {
+    color: inherit !important;
+}
+
+.yield-extreme-min .extreme-icon {
+    background: rgba(79, 111, 232, 0.12);
+    color: #4f6fe8;
+}
+
+.extreme-copy {
+    min-width: 0;
+}
+
+.extreme-copy strong {
+    display: block;
+    margin-top: 2px;
+    color: var(--yield-accent);
+    font-size: 16px;
+}
+
+.extreme-copy > span {
+    color: var(--yield-muted);
+    font-size: 11px;
+}
+
+.extreme-account {
+    max-width: 145px;
+    font-size: 11px;
+}
+
+.modern-yields-empty {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 16px;
+    border: 1px dashed var(--yield-border);
+    border-radius: 14px;
+    color: var(--yield-muted);
+}
+
+.modern-yields-empty .mat-icon {
+    color: var(--yield-accent) !important;
+}
+
+.modern-yields-empty strong,
+.modern-yields-empty small {
+    display: block;
+}
+
+.modern-yields-empty small {
+    margin-top: 3px;
+    font-size: 11px;
+}
+
+:host-context(.dark-theme) .modern-yields-dialog {
+    --yield-accent: #4edb8c;
+    --yield-accent-strong: #21b86b;
+    --yield-accent-soft: rgba(78, 219, 140, 0.12);
+    --yield-accent-soft-strong: rgba(78, 219, 140, 0.17);
+    --yield-text: #edf3fa;
+    --yield-muted: #9eabba;
+    --yield-border: rgba(194, 213, 232, 0.13);
+    --yield-surface: #111c28;
+    --yield-surface-soft: #152330;
+    --yield-surface-strong: #192a39;
+}
+
+:host-context(.dark-theme) .modern-yields-close {
+    background: rgba(255, 98, 105, 0.16);
+    color: #ff777d;
+}
+
+@media (max-width: 600px) {
+    .modern-yields-dialog {
+        max-height: 91vh;
+    }
+
+    .modern-yields-header {
+        grid-template-columns: 44px minmax(0, 1fr) 42px;
+        gap: 10px;
+        padding: 14px 13px 13px;
+    }
+
+    .modern-yields-header-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 13px;
+    }
+
+    .modern-yields-header-icon .mat-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+        line-height: 24px;
+    }
+
+    .modern-yields-header-copy h2 {
+        font-size: 18px;
+    }
+
+    .modern-yields-header-copy p {
+        margin-top: 3px;
+        font-size: 11px;
+    }
+
+    .modern-yields-close {
+        width: 42px;
+        height: 42px;
+    }
+
+    .modern-yields-content {
+        padding: 12px !important;
+    }
+
+    .modern-yields-summary {
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .modern-yields-summary article {
+        gap: 8px;
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    .modern-yields-summary .summary-icon {
+        flex-basis: 34px;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+    }
+
+    .modern-yields-summary strong {
+        font-size: 14px;
+    }
+
+    .modern-yields-table-container {
+        display: none;
+    }
+
+    .modern-yields-mobile-list {
+        display: grid;
+        gap: 9px;
+    }
+
+    .modern-yield-row {
+        display: grid;
+        grid-template-columns: 42px 54px minmax(0, 1fr) minmax(98px, auto);
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        padding: 10px;
+        border: 1px solid var(--yield-border);
+        border-radius: 13px;
+        background: var(--yield-surface-soft);
+    }
+
+    .yield-row-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--yield-accent-soft-strong);
+        color: var(--yield-accent);
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .yield-row-date {
+        min-width: 0;
+    }
+
+    .yield-row-date strong {
+        display: block;
+        color: var(--yield-text);
+        font-size: 13px;
+    }
+
+    .yield-row-account {
+        min-width: 0;
+        padding: 6px;
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .yield-row-values {
+        min-width: 0;
+        text-align: right;
+    }
+
+    .yield-row-values strong,
+    .yield-row-values > span {
+        display: block;
+        white-space: nowrap;
+    }
+
+    .yield-row-values strong {
+        color: var(--yield-accent);
+        font-size: 13px;
+    }
+
+    .yield-row-values small {
+        margin-top: 3px;
+    }
+
+    .yield-row-values > span {
+        margin-top: 2px;
+        color: var(--yield-text);
+        font-size: 11px;
+    }
+
+    .mobile-day-total {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: -3px;
+        padding: 7px 10px;
+        border-radius: 10px;
+        background: var(--yield-accent-soft);
+        color: var(--yield-muted);
+        font-size: 11px;
+    }
+
+    .mobile-day-total strong {
+        color: var(--yield-accent);
+    }
+
+    .modern-yields-extremes {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .yield-extreme-card {
+        grid-template-columns: 38px minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 9px 10px;
+        border-radius: 12px;
+    }
+
+    .extreme-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+    }
+
+    .extreme-copy strong {
+        font-size: 14px;
+    }
+
+    .extreme-account {
+        max-width: 122px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 390px) {
+    .modern-yield-row {
+        grid-template-columns: 38px 48px minmax(0, 1fr) minmax(88px, auto);
+        gap: 6px;
+        padding: 8px;
+    }
+
+    .yield-row-index {
+        width: 38px;
+        height: 38px;
+    }
+
+    .yield-row-account {
+        font-size: 10px;
+    }
+
+    .yield-row-values strong {
+        font-size: 12px;
+    }
 }

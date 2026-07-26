@@ -6,5 +6,195 @@
 }
 
 .confirm-dialog-message {
-    white-space: pre-line;
+  white-space: pre-line;
+}
+
+.modern-confirm-dialog {
+  --confirm-accent: #4f6fe8;
+  --confirm-accent-end: #3658d4;
+  --confirm-accent-soft: rgba(79, 111, 232, 0.14);
+  --confirm-surface: #ffffff;
+  --confirm-surface-soft: #f5f7fb;
+  --confirm-border: rgba(23, 35, 55, 0.14);
+  --confirm-divider: rgba(23, 35, 55, 0.1);
+  --confirm-text: #172033;
+  --confirm-muted: #687286;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--confirm-surface);
+  color: var(--confirm-text);
+}
+
+:host-context(.dark-theme) .modern-confirm-dialog {
+  --confirm-accent: #7392ff;
+  --confirm-accent-end: #5878eb;
+  --confirm-accent-soft: rgba(115, 146, 255, 0.17);
+  --confirm-surface: #111c28;
+  --confirm-surface-soft: #172634;
+  --confirm-border: rgba(194, 213, 232, 0.2);
+  --confirm-divider: rgba(194, 213, 232, 0.12);
+  --confirm-text: #edf3fa;
+  --confirm-muted: #a8b2c1;
+}
+
+.modern-confirm-danger {
+  --confirm-accent: #e74c56;
+  --confirm-accent-end: #c93448;
+  --confirm-accent-soft: rgba(231, 76, 86, 0.14);
+}
+
+:host-context(.dark-theme) .modern-confirm-danger {
+  --confirm-accent: #ff6269;
+  --confirm-accent-end: #e84560;
+  --confirm-accent-soft: rgba(255, 98, 105, 0.16);
+}
+
+.modern-confirm-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 12px;
+  padding: 17px 18px;
+  border-bottom: 1px solid var(--confirm-divider);
+  background: linear-gradient(135deg, var(--confirm-accent-soft), var(--confirm-surface) 62%);
+}
+
+.modern-confirm-icon {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: var(--confirm-accent-soft);
+  color: var(--confirm-accent);
+}
+
+.modern-confirm-icon .mat-icon,
+.modern-confirm-message .mat-icon {
+  color: inherit !important;
+}
+
+.modern-confirm-heading {
+  min-width: 0;
+}
+
+.modern-confirm-heading h2.mat-dialog-title {
+  margin: 0 !important;
+  color: var(--confirm-text);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.modern-confirm-heading p {
+  margin: 3px 0 0;
+  color: var(--confirm-muted);
+  font-size: 12px;
+}
+
+.modern-confirm-close {
+  width: 42px;
+  height: 42px;
+  color: var(--confirm-accent);
+  background: var(--confirm-accent-soft);
+}
+
+.modern-confirm-content {
+  margin: 0 !important;
+  padding: 18px !important;
+}
+
+.modern-confirm-message {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--confirm-border);
+  border-radius: 12px;
+  background: var(--confirm-surface-soft);
+  color: var(--confirm-accent);
+}
+
+.modern-confirm-message p {
+  margin: 0;
+  color: var(--confirm-text);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.modern-confirm-authorization {
+  display: block;
+  margin-top: 14px;
+}
+
+.modern-confirm-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 9px;
+  min-height: 64px;
+  margin: 0 !important;
+  padding: 10px 18px 15px !important;
+  border-top: 1px solid var(--confirm-divider);
+}
+
+.modern-confirm-actions button {
+  min-height: 42px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.modern-confirm-cancel {
+  border-color: var(--confirm-border);
+  color: var(--confirm-muted);
+}
+
+.modern-confirm-action {
+  min-width: 128px;
+  background: linear-gradient(135deg, var(--confirm-accent), var(--confirm-accent-end)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px var(--confirm-accent-soft) !important;
+}
+
+.modern-confirm-action .mat-icon {
+  margin-right: 5px;
+  color: inherit !important;
+}
+
+.modern-confirm-action[disabled] {
+  background: var(--confirm-surface-soft) !important;
+  color: var(--confirm-muted) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 520px) {
+  .modern-confirm-header {
+    grid-template-columns: 40px minmax(0, 1fr) 38px;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .modern-confirm-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .modern-confirm-heading h2.mat-dialog-title {
+    font-size: 19px;
+  }
+
+  .modern-confirm-content {
+    padding: 14px !important;
+  }
+
+  .modern-confirm-actions {
+    padding: 10px 14px 14px !important;
+  }
+
+  .modern-confirm-actions button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }

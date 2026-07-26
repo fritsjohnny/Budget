@@ -53,18 +53,15 @@ export class BudgetModernLayoutComponent implements OnInit, DoCheck {
   }
 
   ngOnInit(): void {
-    moment.locale('pt-BR');
+  }
 
-    const contextReference = this.context?.reference as string | undefined;
-    const storedDate = localStorage.getItem('budgetDate');
+  onReferenceChange(reference: string): void {
+    const monthIndex = Number(reference.substring(4, 6)) - 1;
+    const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long' })
+      .format(new Date(2000, monthIndex, 1));
 
-    if (contextReference && /^\d{6}$/.test(contextReference)) {
-      this.date.setValue(moment(contextReference, 'YYYYMM', true));
-    } else if (storedDate && moment(storedDate).isValid()) {
-      this.date.setValue(moment(storedDate));
-    }
-
-    this.emitReference();
+    this.context.monthName = this.capitalize(monthName);
+    this.context.referenceChanges(reference);
   }
 
   ngDoCheck(): void {

@@ -5,6 +5,7 @@ import { AccountService } from 'src/app/services/account/account.service';
 import { AccountYieldRangeService } from 'src/app/services/accountyieldrange/accountyieldrange.service';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AccountDialog } from './account-dialog';
+import { AccountModernDialog } from './account-modern-dialog';
 import { NotificationReader } from 'capacitor-notification-reader/src';
 import { Messenger } from 'src/app/common/messenger';
 import { delay, retryWhen, take, tap } from 'rxjs';
@@ -23,6 +24,22 @@ export class AccountComponent implements OnInit {
   account: Accounts | undefined;
   hideProgress: boolean = false;
   buttonName: string = '';
+
+  get useModernLayout(): boolean {
+    return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
+  get modernLayoutContext(): AccountComponent {
+    return this;
+  }
+
+  private get accountDialogPanelClass(): string | undefined {
+    return this.useModernLayout ? 'modern-account-entry-dialog-panel' : undefined;
+  }
+
+  private get accountDialogComponent(): any {
+    return this.useModernLayout ? AccountModernDialog : AccountDialog;
+  }
 
   constructor(
     private accountService: AccountService,
@@ -181,9 +198,10 @@ export class AccountComponent implements OnInit {
   }
 
   accountDialog() {
-    const dialogRef = this.dialog.open(AccountDialog, {
+    const dialogRef = this.dialog.open(this.accountDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.accountDialogPanelClass,
       data: this.accounts,
     });
 

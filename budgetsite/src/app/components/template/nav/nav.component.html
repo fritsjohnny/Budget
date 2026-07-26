@@ -1,4 +1,8 @@
-<mat-sidenav-container class="sidenav-container">
+<mat-sidenav-container
+  class="sidenav-container"
+  [class.modern-app-shell]="budgetLayoutToggle"
+  [class.classic-app-shell]="!budgetLayoutToggle"
+>
   <mat-sidenav
     #drawer
     class="sidenav"
@@ -7,76 +11,246 @@
     [mode]="(isHandset$ | async) ? 'over' : 'side'"
     [opened]="(isHandset$ | async) === false"
   >
-    <mat-toolbar>Menu</mat-toolbar>
-    <mat-nav-list>
-      <a mat-list-item (click)="closeSideNav()" routerLink="/summary">
-        <i class="material-icons">account_balance_wallet</i>Saldos</a
-      >
-      <a mat-list-item (click)="closeSideNav()" routerLink="/budget"
-        ><i class="material-icons">view_quilt</i>Orçamento</a
-      >
-      <a mat-list-item (click)="closeSideNav()" routerLink="/accounts"
-        ><i class="material-icons">account_balance</i>Contas</a
-      >
-      <a mat-list-item (click)="closeSideNav()" routerLink="/cards"
-        ><i class="material-icons">credit_card</i>Cartões</a
-      >
-      <a mat-list-item (click)="closeSideNav()" routerLink="/reports"
-        ><i class="material-icons">pie_chart</i>Relatórios</a
-      >
-      <a mat-list-item (click)="closeSideNav()" routerLink="/annual-savings"
-        ><i class="material-icons">savings</i>Economia anual</a
-      >
-    </mat-nav-list>
-    <mat-nav-list class="theme-button">
-      <a mat-list-item (click)="viewUser()"
-        ><i class="material-icons">manage_accounts</i>{{ user.name }}</a
-      >
-      <a mat-list-item (click)="logout()" class="row">
-        <i class="material-icons">logout</i>Sair</a
-      >
-      <div class="nav-preferences">
-        <mat-slide-toggle [(ngModel)]="themeToggle" (change)="changeTheme()"
-          >Tema escuro</mat-slide-toggle
-        >
-        <mat-slide-toggle
-          [(ngModel)]="budgetLayoutToggle"
-          (change)="changeBudgetLayout()"
-          >Novo leiaute de Orçamentos e Saldos</mat-slide-toggle
-        >
-        <p></p>
+    <ng-container *ngIf="budgetLayoutToggle; else classicSidenav">
+      <div class="sidenav-shell">
+        <div class="sidenav-header">
+          <span class="sidenav-header-icon">
+            <mat-icon>apps</mat-icon>
+          </span>
+          <div>
+            <strong>Menu</strong>
+            <small>Navegação principal</small>
+          </div>
+        </div>
+
+        <mat-nav-list class="navigation-list">
+          <a
+            mat-list-item
+            class="navigation-item"
+            (click)="closeSideNav()"
+            routerLink="/summary"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <span class="navigation-icon"><mat-icon>account_balance_wallet</mat-icon></span>
+            <span class="navigation-label">Saldos</span>
+          </a>
+          <a
+            mat-list-item
+            class="navigation-item"
+            (click)="closeSideNav()"
+            routerLink="/budget"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <span class="navigation-icon"><mat-icon>view_quilt</mat-icon></span>
+            <span class="navigation-label">Orçamento</span>
+          </a>
+          <a
+            mat-list-item
+            class="navigation-item"
+            (click)="closeSideNav()"
+            routerLink="/accounts"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <span class="navigation-icon"><mat-icon>account_balance</mat-icon></span>
+            <span class="navigation-label">Contas</span>
+          </a>
+          <a
+            mat-list-item
+            class="navigation-item"
+            (click)="closeSideNav()"
+            routerLink="/cards"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <span class="navigation-icon"><mat-icon>credit_card</mat-icon></span>
+            <span class="navigation-label">Cartões</span>
+          </a>
+          <a
+            mat-list-item
+            class="navigation-item"
+            (click)="closeSideNav()"
+            routerLink="/reports"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <span class="navigation-icon"><mat-icon>pie_chart</mat-icon></span>
+            <span class="navigation-label">Relatórios</span>
+          </a>
+          <a
+            mat-list-item
+            class="navigation-item"
+            (click)="closeSideNav()"
+            routerLink="/annual-savings"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <span class="navigation-icon"><mat-icon>savings</mat-icon></span>
+            <span class="navigation-label">Economia anual</span>
+          </a>
+        </mat-nav-list>
+
+        <div class="sidenav-footer">
+          <div class="account-actions">
+            <button type="button" class="account-action" (click)="viewUser()">
+              <span class="navigation-icon user-icon"><mat-icon>manage_accounts</mat-icon></span>
+              <span>
+                <small>Usuário</small>
+                <strong>{{ user.name }}</strong>
+              </span>
+            </button>
+
+            <button type="button" class="account-action logout-action" (click)="logout()">
+              <span class="navigation-icon"><mat-icon>logout</mat-icon></span>
+              <span class="navigation-label">Sair</span>
+            </button>
+          </div>
+
+          <div class="nav-preferences">
+            <div class="preference-row">
+              <span class="preference-copy">
+                <mat-icon>dark_mode</mat-icon>
+                <span>
+                  <strong>Tema escuro</strong>
+                  <small>Reduz o brilho da interface</small>
+                </span>
+              </span>
+              <mat-slide-toggle
+                [(ngModel)]="themeToggle"
+                (change)="changeTheme()"
+                aria-label="Alternar tema escuro"
+              ></mat-slide-toggle>
+            </div>
+
+            <div class="preference-row">
+              <span class="preference-copy">
+                <mat-icon>dashboard_customize</mat-icon>
+                <span>
+                  <strong>Novo leiaute</strong>
+                  <small>Orçamentos e Saldos</small>
+                </span>
+              </span>
+              <mat-slide-toggle
+                [(ngModel)]="budgetLayoutToggle"
+                (change)="changeBudgetLayout()"
+                aria-label="Alternar novo leiaute de Orçamentos e Saldos"
+              ></mat-slide-toggle>
+            </div>
+          </div>
+        </div>
       </div>
-    </mat-nav-list>
-  </mat-sidenav>
-  <mat-sidenav-content #sidenavContent>
-    <mat-toolbar color="primary">
-      <button
-        type="button"
-        aria-label="Toggle sidenav"
-        mat-icon-button
-        (click)="drawer.toggle()"
-        *ngIf="isHandset$ | async"
-        style="margin-left: -15px"
-      >
-        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-      </button>
-      <div>
-        <img
-          src="./../../../../assets/img/budget64.png"
-          alt="logo"
-          style="height: 50px; padding-right: 5px"
-        />
-        <span style="padding-right: 10px">Budget</span>
-      </div>
-      <span class="title-group">
-        <a routerLink="{{ routeUrl }}">
-          <i class="material-icons">
-            {{ icon }}
-          </i>
-          {{ title }}
+    </ng-container>
+
+    <ng-template #classicSidenav>
+      <mat-toolbar>Menu</mat-toolbar>
+      <mat-nav-list>
+        <a mat-list-item (click)="closeSideNav()" routerLink="/summary">
+          <i class="material-icons">account_balance_wallet</i>Saldos
         </a>
-      </span>
-    </mat-toolbar>
-    <router-outlet></router-outlet>
+        <a mat-list-item (click)="closeSideNav()" routerLink="/budget">
+          <i class="material-icons">view_quilt</i>Orçamento
+        </a>
+        <a mat-list-item (click)="closeSideNav()" routerLink="/accounts">
+          <i class="material-icons">account_balance</i>Contas
+        </a>
+        <a mat-list-item (click)="closeSideNav()" routerLink="/cards">
+          <i class="material-icons">credit_card</i>Cartões
+        </a>
+        <a mat-list-item (click)="closeSideNav()" routerLink="/reports">
+          <i class="material-icons">pie_chart</i>Relatórios
+        </a>
+        <a mat-list-item (click)="closeSideNav()" routerLink="/annual-savings">
+          <i class="material-icons">savings</i>Economia anual
+        </a>
+      </mat-nav-list>
+
+      <mat-nav-list class="theme-button">
+        <a mat-list-item (click)="viewUser()">
+          <i class="material-icons">manage_accounts</i>{{ user.name }}
+        </a>
+        <a mat-list-item (click)="logout()" class="row">
+          <i class="material-icons">logout</i>Sair
+        </a>
+        <div class="nav-preferences-classic">
+          <mat-slide-toggle [(ngModel)]="themeToggle" (change)="changeTheme()">
+            Tema escuro
+          </mat-slide-toggle>
+          <mat-slide-toggle
+            [(ngModel)]="budgetLayoutToggle"
+            (change)="changeBudgetLayout()"
+          >
+            Novo leiaute de Orçamentos e Saldos
+          </mat-slide-toggle>
+          <p></p>
+        </div>
+      </mat-nav-list>
+    </ng-template>
+  </mat-sidenav>
+
+  <mat-sidenav-content
+    #sidenavContent
+    [class.app-content]="budgetLayoutToggle"
+  >
+    <ng-container *ngIf="budgetLayoutToggle; else classicToolbar">
+      <mat-toolbar class="app-toolbar">
+        <button
+          type="button"
+          class="menu-button"
+          aria-label="Abrir menu"
+          mat-icon-button
+          (click)="drawer.toggle()"
+          *ngIf="isHandset$ | async"
+        >
+          <mat-icon>menu</mat-icon>
+        </button>
+
+        <a class="brand" routerLink="/summary" aria-label="Ir para Saldos">
+          <img src="./../../../../assets/img/budget64.png" alt="Logo Budget" />
+          <span>Budget</span>
+        </a>
+
+        <span class="toolbar-divider" aria-hidden="true"></span>
+
+        <a class="page-title" [routerLink]="routeUrl">
+          <span class="page-title-icon"><mat-icon>{{ icon }}</mat-icon></span>
+          <span>{{ title }}</span>
+        </a>
+      </mat-toolbar>
+    </ng-container>
+
+    <ng-template #classicToolbar>
+      <mat-toolbar color="primary">
+        <button
+          type="button"
+          aria-label="Toggle sidenav"
+          mat-icon-button
+          (click)="drawer.toggle()"
+          *ngIf="isHandset$ | async"
+          style="margin-left: -15px"
+        >
+          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+        </button>
+        <div>
+          <img
+            src="./../../../../assets/img/budget64.png"
+            alt="logo"
+            style="height: 50px; padding-right: 5px"
+          />
+          <span style="padding-right: 10px">Budget</span>
+        </div>
+        <span class="title-group">
+          <a [routerLink]="routeUrl">
+            <i class="material-icons">{{ icon }}</i>
+            {{ title }}
+          </a>
+        </span>
+      </mat-toolbar>
+    </ng-template>
+
+    <main [class.page-surface]="budgetLayoutToggle">
+      <router-outlet></router-outlet>
+    </main>
   </mat-sidenav-content>
 </mat-sidenav-container>

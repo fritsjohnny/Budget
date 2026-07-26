@@ -58,6 +58,11 @@
   transition: transform 180ms ease-out;
 }
 
+.modern-budget-shell > app-modern-reference-selector {
+  display: block;
+  margin-bottom: 14px;
+}
+
 .modern-budget-shell.pull-active {
   transition: none;
 }
@@ -430,15 +435,22 @@
 }
 
 .modern-accordion {
-  display: block;
+  display: grid;
+  gap: 12px;
 }
 
 .modern-panel {
   border-radius: 14px !important;
-  margin: 0 0 10px !important;
+  margin: 0 !important;
   overflow: hidden;
   color: var(--modern-text);
 }
+
+.panel-totals { --modern-panel-accent: var(--modern-green); --modern-panel-accent-soft: var(--modern-green-soft); }
+.panel-expenses { --modern-panel-accent: var(--modern-red); --modern-panel-accent-soft: var(--modern-red-soft); }
+.panel-incomes { --modern-panel-accent: var(--modern-blue); --modern-panel-accent-soft: var(--modern-blue-soft); }
+.panel-people { --modern-panel-accent: var(--modern-pink); --modern-panel-accent-soft: var(--modern-pink-soft); }
+.panel-categories { --modern-panel-accent: var(--modern-yellow); --modern-panel-accent-soft: var(--modern-yellow-soft); }
 
 ::ng-deep .modern-panel.mat-expansion-panel {
   background: var(--modern-surface) !important;
@@ -449,6 +461,31 @@
   min-height: 68px;
   height: auto !important;
   padding: 8px 16px;
+}
+
+::ng-deep .panel-totals .mat-expansion-panel-header {
+  border-left: 3px solid var(--modern-green) !important;
+  background: linear-gradient(90deg, var(--modern-green-soft), transparent 52%);
+}
+
+::ng-deep .panel-expenses .mat-expansion-panel-header {
+  border-left: 3px solid var(--modern-red) !important;
+  background: linear-gradient(90deg, var(--modern-red-soft), transparent 52%);
+}
+
+::ng-deep .panel-incomes .mat-expansion-panel-header {
+  border-left: 3px solid var(--modern-blue) !important;
+  background: linear-gradient(90deg, var(--modern-blue-soft), transparent 52%);
+}
+
+::ng-deep .panel-people .mat-expansion-panel-header {
+  border-left: 3px solid var(--modern-pink) !important;
+  background: linear-gradient(90deg, var(--modern-pink-soft), transparent 52%);
+}
+
+::ng-deep .panel-categories .mat-expansion-panel-header {
+  border-left: 3px solid var(--modern-yellow) !important;
+  background: linear-gradient(90deg, var(--modern-yellow-soft), transparent 52%);
 }
 
 ::ng-deep .modern-panel .mat-expansion-panel-header-title {
@@ -1540,14 +1577,36 @@
     display: none;
   }
 
+  .modern-table-container:has(.people-table) {
+    overflow-x: hidden;
+  }
+
+  .people-table {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  ::ng-deep .people-table .mat-header-cell,
+  ::ng-deep .people-table .mat-cell,
+  ::ng-deep .people-table .mat-footer-cell {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
   ::ng-deep .people-table .mat-column-person {
     width: 30%;
+    max-width: 30%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   ::ng-deep .people-table .mat-column-toReceive,
   ::ng-deep .people-table .mat-column-received,
   ::ng-deep .people-table .mat-column-remaining {
-    width: 20%;
+    width: calc((70% - 30px) / 3);
+    max-width: calc((70% - 30px) / 3);
     padding: 0 3px;
   }
 }

@@ -1,3 +1,5 @@
+<app-cardpostings-modern-layout *ngIf="modernLayout" [context]="modernLayoutContext"></app-cardpostings-modern-layout>
+
 <div class="card-posting-saving-overlay" *ngIf="savingCardPosting">
     <mat-spinner color="warn" [diameter]="52"></mat-spinner>
     <span>Salvando lançamento...</span>

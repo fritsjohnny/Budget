@@ -1,0 +1,247 @@
+<div class="modern-entry-dialog modern-account-posting-entry-dialog">
+  <form [formGroup]="accountPostingFormGroup">
+    <header class="modern-entry-header">
+      <div class="modern-entry-heading">
+        <span class="modern-entry-icon"><mat-icon>receipt_long</mat-icon></span>
+        <div>
+          <h2 mat-dialog-title>{{ setTitle() }}</h2>
+          <p>{{ accountPosting.editing ? 'Atualize os dados do lançamento' : 'Registre um novo lançamento na conta' }}</p>
+        </div>
+      </div>
+
+      <button mat-icon-button type="button" class="modern-entry-close" matTooltip="Cancelar" aria-label="Cancelar" (click)="cancel()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <div mat-dialog-content class="modern-entry-content">
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>category</mat-icon>
+          <span>Tipo do lançamento</span>
+        </div>
+
+        <mat-radio-group
+          name="typeFormControl"
+          id="typeFormControl"
+          formControlName="typeFormControl"
+          [(ngModel)]="accountPosting.type"
+          (change)="onTypeChange()"
+          class="modern-entry-radio-grid"
+        >
+          <mat-radio-button value="R" cdkFocusInitial [disabled]="accountPosting.editing">Recebimento</mat-radio-button>
+          <mat-radio-button value="Y" [disabled]="accountPosting.editing">Rendimento</mat-radio-button>
+          <mat-radio-button value="P" [disabled]="accountPosting.editing">Pagamento</mat-radio-button>
+          <mat-radio-button value="C" [disabled]="accountPosting.editing">Troco</mat-radio-button>
+          <mat-radio-button value="T" [disabled]="accountPosting.editing">Transferência entre contas</mat-radio-button>
+        </mat-radio-group>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>account_balance</mat-icon>
+          <span>Conta e data</span>
+        </div>
+
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Conta</mat-label>
+            <mat-select
+              mat-input
+              panelClass="modern-select-panel"
+              [(ngModel)]="accountPosting.accountId"
+              formControlName="accountIdFormControl"
+              (selectionChange)="onAccountChanged()"
+            >
+              <mat-option *ngFor="let c of accountPosting.accountsList" [value]="c.id">{{ c.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="modern-date-field">
+            <app-datepickerinput
+              #datepickerinput
+              [currentDate]="accountPosting.date"
+              (currentDateChanged)="currentDateChanged($event)"
+            ></app-datepickerinput>
+          </div>
+
+          <mat-form-field appearance="fill" floatLabel="always" class="modern-field-full" *ngIf="isTransferMode()">
+            <mat-label>Conta destino</mat-label>
+            <mat-select
+              mat-input
+              panelClass="modern-select-panel"
+              [(ngModel)]="accountPosting.toAccountId"
+              formControlName="toAccountIdFormControl"
+              (selectionChange)="onToAccountChanged()"
+            >
+              <mat-option *ngFor="let c of transferAccountsList" [value]="c.id">{{ c.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>description</mat-icon>
+          <span>Identificação</span>
+        </div>
+
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" class="modern-field-full">
+            <mat-label>Descrição</mat-label>
+            <input
+              type="text"
+              id="descriptionFormControl"
+              required
+              matInput
+              formControlName="descriptionFormControl"
+              [(ngModel)]="accountPosting.description"
+              [readonly]="accountPosting.type === 'Y' || isTransferMode()"
+            />
+            <mat-error *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')">
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" floatLabel="always" *ngIf="accountPosting.type !== 'Y'">
+            <mat-label>Receita</mat-label>
+            <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="accountPosting.incomeId" formControlName="incomeIdFormControl">
+              <mat-option>-- Nenhuma --</mat-option>
+              <mat-option *ngFor="let i of accountPosting.incomesList" [value]="i.id">{{ i.description }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" floatLabel="always" *ngIf="accountPosting.type !== 'Y'">
+            <mat-label>Despesa</mat-label>
+            <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="accountPosting.expenseId" formControlName="expenseIdFormControl">
+              <mat-option>-- Nenhuma --</mat-option>
+              <mat-option *ngFor="let i of accountPosting.expensesList" [value]="i.id">{{ i.description }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="modern-field-full">
+            <mat-label>Comentário</mat-label>
+            <textarea matInput rows="3" [(ngModel)]="accountPosting.note" formControlName="noteFormControl"></textarea>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>payments</mat-icon>
+          <span>Valores</span>
+        </div>
+
+        <div class="modern-form-grid" *ngIf="accountPosting.type !== 'Y'">
+          <mat-form-field appearance="fill" floatLabel="always" class="modern-field-full">
+            <mat-label>Valor</mat-label>
+            <input
+              matInput
+              inputmode="numeric"
+              currencyMask
+              formControlName="amountFormControl"
+              [(ngModel)]="accountPosting.amount"
+              placeholder="0"
+              autocomplete="off"
+              (ngModelChange)="onValorChanged($event)"
+            />
+            <mat-error *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')">
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="modern-paired-grid" *ngIf="accountPosting.type === 'Y'">
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Valor bruto</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="grossAmountFormControl" [(ngModel)]="accountPosting.grossAmount" placeholder="0" autocomplete="off" (ngModelChange)="onValorBrutoChanged($event)" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Saldo bruto</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="totalGrossBalanceFormControl" [(ngModel)]="saldoBruto" placeholder="0" autocomplete="off" (ngModelChange)="onSaldoBrutoChanged($event)" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Desconto de IOF</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="iofTotalFormControl" [(ngModel)]="accountPosting.totalIOF" placeholder="0" autocomplete="off" (ngModelChange)="onTotalIOFChanged($event)" />
+            </mat-form-field>
+          </div>
+
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Valor líquido</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="amountFormControl" [(ngModel)]="accountPosting.amount" placeholder="0" autocomplete="off" (ngModelChange)="onValorChanged($event)" />
+              <mat-error *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Saldo líquido</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="totalBalanceFormControl" [(ngModel)]="saldoLiquido" placeholder="0" autocomplete="off" (ngModelChange)="onSaldoLiquidoChanged($event)" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Desconto de IR</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="irTotalFormControl" [(ngModel)]="accountPosting.totalIR" placeholder="0" autocomplete="off" (ngModelChange)="onTotalIRChanged($event)" />
+            </mat-form-field>
+          </div>
+        </div>
+      </section>
+
+      <section class="modern-form-section" *ngIf="accountPosting.type === 'Y'">
+        <div class="modern-section-title">
+          <mat-icon>calculate</mat-icon>
+          <span>Cálculo do rendimento</span>
+        </div>
+
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" floatLabel="always" class="modern-field-full">
+            <mat-label>Algoritmo de cálculo</mat-label>
+            <mat-select
+              mat-input
+              panelClass="modern-select-panel"
+              [(ngModel)]="accountPosting.algorithmType"
+              formControlName="algorithmTypeFormControl"
+              (selectionChange)="onAlgorithmTypeChange($event)"
+            >
+              <mat-option *ngFor="let at of algorithmTypes" [value]="at.value">{{ at.viewValue }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="modern-yield-stepper modern-field-full">
+            <span>Dias corridos para cálculo do IOF</span>
+            <button type="button" aria-label="Diminuir dias" (click)="changeDays(-1)">−</button>
+            <input readonly type="number" inputmode="numeric" min="0" formControlName="iofElapsedDaysFormControl" />
+            <button type="button" aria-label="Aumentar dias" (click)="changeDays(1)">+</button>
+          </div>
+        </div>
+
+        <div class="modern-calculation-options">
+          <mat-checkbox
+            *ngIf="accountPosting.algorithmType === '3'"
+            [(ngModel)]="previousBusinessDayHoliday"
+            formControlName="previousBusinessDayHolidayFormControl"
+            (change)="onPreviousBusinessDayHolidayChanged()"
+          >Dia anterior foi feriado/sem rendimento bruto</mat-checkbox>
+
+          <mat-checkbox [(ngModel)]="noRecalculate" formControlName="noRecalculateFormControl">
+            Não calcular valores relacionados
+          </mat-checkbox>
+        </div>
+      </section>
+    </div>
+
+    <div mat-dialog-actions class="modern-entry-actions">
+      <button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancel()">Cancelar</button>
+      <button *ngIf="accountPosting.editing" mat-stroked-button type="button" class="modern-delete-action" (click)="delete()">
+        <mat-icon>delete</mat-icon>
+        Excluir
+      </button>
+      <button mat-flat-button type="button" class="modern-save-action" [disabled]="!accountPostingFormGroup.valid || isCalculating" (click)="save()">
+        <mat-icon>save</mat-icon>
+        Salvar lançamento
+      </button>
+    </div>
+  </form>
+</div>

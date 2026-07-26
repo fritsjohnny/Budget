@@ -1,6 +1,7 @@
 :host {
   display: block;
   --entry-accent: #4f6fe8;
+  --entry-accent-end: #3658d4;
   --entry-accent-soft: rgba(79, 111, 232, 0.14);
   --entry-surface: #ffffff;
   --entry-surface-soft: #f5f7fb;
@@ -27,21 +28,25 @@
 
 .modern-expense-entry-dialog {
   --entry-accent: #e74c56;
+  --entry-accent-end: #c93448;
   --entry-accent-soft: rgba(231, 76, 86, 0.14);
 }
 
 :host-context(.dark-theme) .modern-expense-entry-dialog {
   --entry-accent: #ff6269;
+  --entry-accent-end: #e84560;
   --entry-accent-soft: rgba(255, 98, 105, 0.16);
 }
 
 .modern-income-entry-dialog {
   --entry-accent: #4f6fe8;
+  --entry-accent-end: #3658d4;
   --entry-accent-soft: rgba(79, 111, 232, 0.14);
 }
 
 :host-context(.dark-theme) .modern-income-entry-dialog {
   --entry-accent: #7392ff;
+  --entry-accent-end: #5878eb;
   --entry-accent-soft: rgba(115, 146, 255, 0.17);
 }
 
@@ -336,12 +341,16 @@
 
 .modern-save-action {
   min-width: 154px;
-  background: var(--entry-accent);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--entry-accent), var(--entry-accent-end)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px var(--entry-accent-soft) !important;
 }
 
 .modern-save-action[disabled] {
-  opacity: 0.48;
+  background: var(--entry-surface-strong) !important;
+  color: var(--entry-muted) !important;
+  box-shadow: none !important;
+  opacity: 0.55;
 }
 
 .modern-entry-actions .mat-icon {

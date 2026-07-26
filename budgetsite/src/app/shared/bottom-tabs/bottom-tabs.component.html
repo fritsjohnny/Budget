@@ -1,14 +1,22 @@
-<div class="tabs-footer botton-tabs">
+<nav
+  class="tabs-footer botton-tabs"
+  [class.modern-bottom-tabs]="useModernLayout"
+  [class.classic-bottom-tabs]="!useModernLayout"
+  aria-label="Navegação principal"
+>
   <a
     *ngFor="let tab of tabs"
-    mat-icon-button
+    class="tab-link"
     [routerLink]="tab.path"
     routerLinkActive="active"
     [routerLinkActiveOptions]="{ exact: true }"
     (click)="setActiveTab(tab)"
-    [class.active]="activeTab === tab.path"
+    [attr.aria-label]="tab.label"
+    [attr.title]="tab.label"
   >
-    <mat-icon>{{ tab.icon }}</mat-icon>
-    <span *ngIf="!isMobile">{{ tab.label }}</span>
+    <span class="tab-icon">
+      <mat-icon>{{ tab.icon }}</mat-icon>
+    </span>
+    <span class="tab-label" *ngIf="!isMobile">{{ tab.label }}</span>
   </a>
-</div>
+</nav>

@@ -267,6 +267,9 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   delete(): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
+      panelClass: localStorage.getItem('budgetLayout') === 'modern'
+        ? 'modern-confirm-dialog-panel'
+        : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Lançamento',
         message: 'Confirma a EXCLUSÃO do lançamento?',

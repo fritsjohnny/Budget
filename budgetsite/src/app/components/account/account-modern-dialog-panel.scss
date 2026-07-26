@@ -1,0 +1,197 @@
+.cdk-overlay-pane.modern-account-dialog-panel {
+  width: min(760px, calc(100vw - 24px)) !important;
+  max-width: calc(100vw - 24px) !important;
+}
+
+.modern-account-dialog-panel .mat-dialog-container {
+  padding: 0 !important;
+  border: 1px solid rgba(23, 35, 55, 0.14);
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  color: #172033 !important;
+  box-shadow: 0 24px 64px rgba(22, 32, 48, 0.26) !important;
+  overflow: hidden !important;
+}
+
+.modern-account-dialog-panel form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: min(90vh, 860px);
+}
+
+.modern-account-dialog-panel .cancel {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 5;
+  display: block !important;
+}
+
+.modern-account-dialog-panel .cancel .default-button {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  margin: 0 !important;
+  background: rgba(231, 76, 86, 0.12) !important;
+  color: #d84652 !important;
+  box-shadow: none !important;
+}
+
+.modern-account-dialog-panel .cancel .default-icon {
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: 22px !important;
+  line-height: 22px !important;
+}
+
+.modern-account-dialog-panel .mat-dialog-title {
+  flex: 0 0 auto;
+  min-height: 66px;
+  margin: 0 !important;
+  padding: 20px 70px 14px 20px;
+  border-bottom: 1px solid rgba(23, 35, 55, 0.1);
+  color: #172033 !important;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.25;
+  box-sizing: border-box;
+}
+
+.modern-account-dialog-panel [mat-dialog-content] {
+  flex: 1 1 auto;
+  margin: 0 !important;
+  padding: 18px 20px 10px !important;
+  color: #475467 !important;
+  overflow: auto !important;
+}
+
+.modern-account-dialog-panel form > [mat-dialog-content]:first-of-type {
+  padding-top: 72px !important;
+}
+
+.modern-account-dialog-panel .mat-dialog-title + [mat-dialog-content] {
+  padding-top: 18px !important;
+}
+
+.modern-account-dialog-panel .row {
+  width: 100%;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.modern-account-dialog-panel .row + .row {
+  margin-top: 6px;
+}
+
+.modern-account-dialog-panel .col,
+.modern-account-dialog-panel [class^='col-'] {
+  min-width: 0;
+}
+
+.modern-account-dialog-panel .mat-form-field {
+  width: 100%;
+}
+
+.modern-account-dialog-panel .mat-form-field-flex {
+  border-radius: 10px 10px 0 0;
+  background: #f4f7fb !important;
+}
+
+.modern-account-dialog-panel input.mat-input-element,
+.modern-account-dialog-panel textarea.mat-input-element {
+  background: transparent !important;
+}
+
+.modern-account-dialog-panel .radio-grid {
+  padding: 12px;
+  border: 1px solid rgba(23, 35, 55, 0.1);
+  border-radius: 12px;
+  background: #f7f9fc;
+}
+
+.modern-account-dialog-panel .account-button {
+  border-radius: 10px;
+}
+
+.modern-account-dialog-panel [mat-dialog-actions] {
+  min-height: 62px;
+  margin: 0 !important;
+  padding: 10px 18px 16px !important;
+  border-top: 1px solid rgba(23, 35, 55, 0.08);
+}
+
+.modern-account-dialog-panel [mat-dialog-actions] .mat-mini-fab {
+  width: 46px;
+  height: 46px;
+  line-height: 46px;
+  box-shadow: none !important;
+}
+
+.modern-account-dialog-panel [mat-dialog-actions] .bg-primary {
+  background: #4f6fe8 !important;
+  color: #ffffff !important;
+}
+
+.dark-theme .modern-account-dialog-panel .mat-dialog-container {
+  border-color: rgba(194, 213, 232, 0.2);
+  background: #111c28 !important;
+  color: #edf3fa !important;
+  box-shadow: 0 26px 72px rgba(0, 0, 0, 0.56) !important;
+}
+
+.dark-theme .modern-account-dialog-panel .mat-dialog-title {
+  border-bottom-color: rgba(194, 213, 232, 0.12);
+  color: #edf3fa !important;
+}
+
+.dark-theme .modern-account-dialog-panel [mat-dialog-content] {
+  color: #b8c3d0 !important;
+}
+
+.dark-theme .modern-account-dialog-panel .mat-form-field-flex,
+.dark-theme .modern-account-dialog-panel .radio-grid {
+  border-color: rgba(194, 213, 232, 0.12);
+  background: #182634 !important;
+}
+
+.dark-theme .modern-account-dialog-panel [mat-dialog-actions] {
+  border-top-color: rgba(194, 213, 232, 0.1);
+}
+
+.dark-theme .modern-account-dialog-panel [mat-dialog-actions] .bg-primary {
+  background: #7392ff !important;
+  color: #0d1621 !important;
+}
+
+@media (max-width: 600px) {
+  .cdk-overlay-pane.modern-account-dialog-panel {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .modern-account-dialog-panel .mat-dialog-title {
+    min-height: 60px;
+    padding: 17px 64px 12px 15px;
+    font-size: 19px;
+  }
+
+  .modern-account-dialog-panel [mat-dialog-content] {
+    padding: 14px 14px 8px !important;
+  }
+
+  .modern-account-dialog-panel form > [mat-dialog-content]:first-of-type {
+    padding-top: 66px !important;
+  }
+
+  .modern-account-dialog-panel .mat-dialog-title + [mat-dialog-content] {
+    padding-top: 14px !important;
+  }
+
+  .modern-account-dialog-panel .cancel {
+    top: 9px;
+    right: 9px;
+  }
+}

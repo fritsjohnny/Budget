@@ -119,9 +119,11 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   changeBudgetLayout(): void {
-    localStorage.setItem(
-      'budgetLayout',
-      this.budgetLayoutToggle ? 'modern' : 'classic'
+    const layout = this.budgetLayoutToggle ? 'modern' : 'classic';
+
+    localStorage.setItem('budgetLayout', layout);
+    window.dispatchEvent(
+      new CustomEvent('budget-layout-change', { detail: layout })
     );
   }
 

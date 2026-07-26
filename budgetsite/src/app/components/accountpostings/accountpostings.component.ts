@@ -24,10 +24,12 @@ import { IncomeService } from 'src/app/services/income/income.service';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { AccountPostingsDialog } from './accountpostings-dialog/accountpostings-dialog';
+import { AccountPostingsModernDialog } from './accountpostings-dialog/accountpostings-modern-dialog';
 import { YieldsComponent } from '../yields/yields.component';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
 import { AccountApplicationsDialog } from './accountapplications-dialog/accountapplications-dialog';
+import { AccountApplicationsModernDialog } from './accountapplications-dialog/accountapplications-modern-dialog';
 import { GenerateCardReceiptDialog } from './generate-cardreceipt-dialog/generate-cardreceipt-dialog';
 import { Messenger } from 'src/app/common/messenger';
 import { prepareApiDates } from 'src/app/utils/api-date.util';
@@ -38,6 +40,28 @@ import { prepareApiDates } from 'src/app/utils/api-date.util';
   styleUrls: ['./accountpostings.component.scss'],
 })
 export class AccountPostingsComponent implements OnInit, AfterViewInit {
+  @Input() modernLayout: boolean = false;
+
+  get modernLayoutContext(): AccountPostingsComponent {
+    return this;
+  }
+
+  private get accountEntryDialogPanelClass(): string | undefined {
+    return this.modernLayout ? 'modern-account-entry-dialog-panel' : undefined;
+  }
+
+  private get accountAuxDialogPanelClass(): string | undefined {
+    return this.modernLayout ? 'modern-account-dialog-panel' : undefined;
+  }
+
+  private get accountPostingsDialogComponent(): any {
+    return this.modernLayout ? AccountPostingsModernDialog : AccountPostingsDialog;
+  }
+
+  private get accountApplicationsDialogComponent(): any {
+    return this.modernLayout ? AccountApplicationsModernDialog : AccountApplicationsDialog;
+  }
+
   @Input() accountId?: number;
   @Input() reference?: string;
 
@@ -410,9 +434,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   add() {
-    const dialogRef = this.dialog.open(AccountPostingsDialog, {
+    const dialogRef = this.dialog.open(this.accountPostingsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.accountEntryDialogPanelClass,
       data: {
         reference: this.reference,
         accountId: this.accountId,
@@ -472,9 +497,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(AccountPostingsDialog, {
+    const dialogRef = this.dialog.open(this.accountPostingsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.accountEntryDialogPanelClass,
       data: {
         id: accountPosting.id,
         accountId: accountPosting.accountId,
@@ -582,9 +608,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   addApplication() {
-    const dialogRef = this.dialog.open(AccountApplicationsDialog, {
+    const dialogRef = this.dialog.open(this.accountApplicationsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.accountEntryDialogPanelClass,
       data: {
         reference: this.reference,
         accountId: this.accountId,
@@ -616,9 +643,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   editOrDeleteApplication(accountApplication: AccountsApplications) {
-    const dialogRef = this.dialog.open(AccountApplicationsDialog, {
+    const dialogRef = this.dialog.open(this.accountApplicationsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.accountEntryDialogPanelClass,
       data: {
         ...accountApplication,
         editing: true,
@@ -715,7 +743,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
     this.cdr.detectChanges();
 
-    if (this.filterOpend) {
+    if (this.filterOpend && this.filterInput?.nativeElement) {
       this.filterInput.nativeElement.focus();
     }
   }
@@ -732,10 +760,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.dialog.open(YieldsComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.accountAuxDialogPanelClass,
       data: {
         reference: this.reference,
         accountId: this.accountId,
         title: 'Rendimentos da Conta',
+        modernLayout: this.modernLayout,
       },
     });
   }
@@ -744,10 +774,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.dialog.open(YieldsComponent, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.accountAuxDialogPanelClass,
       data: {
         reference: this.reference,
         accountId: null,
         title: 'Rendimentos Gerais',
+        modernLayout: this.modernLayout,
       },
     });
   }
@@ -756,6 +788,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     const dialogRef = this.dialog.open(GenerateCardReceiptDialog, {
       width: '100%',
       maxWidth: '100%',
+      panelClass: this.accountAuxDialogPanelClass,
       data: {
         amount: accountPosting.amount,
         date: accountPosting.date,

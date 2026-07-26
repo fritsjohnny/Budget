@@ -1,0 +1,201 @@
+:host {
+  --reference-surface: #ffffff;
+  --reference-surface-soft: #f5f7fb;
+  --reference-border: rgba(23, 35, 55, 0.13);
+  --reference-divider: rgba(23, 35, 55, 0.09);
+  --reference-text: #172033;
+  --reference-muted: #687286;
+  --reference-green: #2dbf60;
+  --reference-green-soft: rgba(45, 191, 96, 0.12);
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+:host-context(.dark-theme) {
+  --reference-surface: #111c28;
+  --reference-surface-soft: #162330;
+  --reference-border: rgba(194, 213, 232, 0.18);
+  --reference-divider: rgba(194, 213, 232, 0.1);
+  --reference-text: #edf3fa;
+  --reference-muted: #9eabba;
+  --reference-green: #58d77b;
+  --reference-green-soft: rgba(88, 215, 123, 0.14);
+}
+
+.modern-reference-card {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 16px 8px;
+  border: 1px solid var(--reference-border);
+  border-radius: 16px;
+  background: var(--reference-surface);
+  color: var(--reference-text);
+  box-shadow: 0 8px 22px rgba(16, 27, 43, 0.08);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.modern-reference-navigation {
+  display: grid;
+  grid-template-columns: minmax(82px, 1fr) minmax(150px, auto) minmax(82px, 1fr);
+  align-items: center;
+  min-height: 46px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--reference-divider);
+}
+
+.modern-reference-side {
+  min-width: 0;
+  padding: 0 3px;
+  color: var(--reference-muted);
+  justify-self: start;
+}
+
+.modern-reference-side-next {
+  justify-self: end;
+}
+
+::ng-deep .modern-reference-side .mat-button-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+::ng-deep .modern-reference-side-next .mat-button-wrapper {
+  justify-content: flex-end;
+}
+
+.modern-reference-title {
+  color: var(--reference-text);
+  font-size: clamp(20px, 4vw, 27px);
+  line-height: 1.1;
+  text-align: center;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.modern-reference-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 40px;
+  align-items: center;
+  gap: 7px;
+  min-height: 48px;
+  padding-top: 6px;
+}
+
+.modern-reference-actions-no-option {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.modern-reference-picker {
+  justify-self: start;
+  min-width: 0;
+  min-height: 40px;
+  border-radius: 10px;
+  background: var(--reference-surface-soft);
+  color: var(--reference-text);
+}
+
+.modern-reference-today {
+  min-height: 40px;
+  border-color: var(--reference-border);
+  border-radius: 10px;
+  color: var(--reference-muted);
+}
+
+.modern-reference-today-active {
+  border-color: rgba(45, 190, 96, 0.28);
+  background: var(--reference-green-soft);
+  color: var(--reference-green);
+}
+
+.modern-reference-options {
+  justify-self: end;
+  color: var(--reference-muted);
+}
+
+::ng-deep .modern-reference-picker .mat-button-wrapper,
+::ng-deep .modern-reference-today .mat-button-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modern-reference-picker-proxy {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .modern-reference-card {
+    padding: 8px 10px 6px;
+    border-radius: 13px;
+  }
+
+  .modern-reference-navigation {
+    grid-template-columns: minmax(68px, 1fr) minmax(136px, auto) minmax(68px, 1fr);
+    min-height: 42px;
+    padding-bottom: 5px;
+  }
+
+  .modern-reference-side {
+    padding: 0 1px;
+    font-size: 12px;
+    line-height: 34px;
+  }
+
+  .modern-reference-side .mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 18px;
+  }
+
+  .modern-reference-title {
+    font-size: 20px;
+  }
+
+  .modern-reference-actions {
+    grid-template-columns: minmax(0, 1fr) auto 36px;
+    gap: 3px;
+    min-height: 42px;
+    padding-top: 4px;
+  }
+
+  .modern-reference-actions-no-option {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .modern-reference-picker,
+  .modern-reference-today {
+    min-width: 0;
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .modern-reference-options {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+  }
+}
+
+@media (max-width: 380px) {
+  .modern-reference-side span {
+    max-width: 52px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .modern-reference-picker,
+  .modern-reference-today {
+    padding: 0 6px;
+  }
+}

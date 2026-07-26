@@ -1,0 +1,237 @@
+<div class="modern-card-postings">
+  <div class="saving-overlay" *ngIf="context.savingCardPosting">
+    <mat-spinner color="accent" [diameter]="52"></mat-spinner>
+    <span>Salvando lançamento...</span>
+  </div>
+
+  <div class="modern-loading" *ngIf="!context.hideProgress">
+    <mat-spinner color="accent" [diameter]="46"></mat-spinner>
+    <span>Carregando cartões...</span>
+  </div>
+
+  <ng-container *ngIf="context.hideProgress">
+    <section class="summary-grid">
+      <article class="summary-card summary-main">
+        <span class="summary-icon"><mat-icon>account_balance_wallet</mat-icon></span>
+        <div><small>Total geral</small><strong>{{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong></div>
+      </article>
+      <article class="summary-card summary-mine">
+        <span class="summary-icon"><mat-icon>person</mat-icon></span>
+        <div><small>Meu total</small><strong>{{ context.myTotal | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong><em>{{ context.percMyTotal }}</em></div>
+      </article>
+      <article class="summary-card summary-others">
+        <span class="summary-icon"><mat-icon>group</mat-icon></span>
+        <div><small>Total de terceiros</small><strong>{{ context.othersTotal | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong><em>{{ context.percOthersTotal }}</em></div>
+      </article>
+      <article class="summary-card summary-cycle">
+        <span class="summary-icon"><mat-icon>check_circle</mat-icon></span>
+        <div><small>No ciclo</small><strong>{{ context.inTheCycleTotal | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong><em>{{ context.percInTheCycleTotal }}</em></div>
+      </article>
+      <article class="summary-card summary-out">
+        <span class="summary-icon"><mat-icon>schedule</mat-icon></span>
+        <div><small>Fora do ciclo</small><strong>{{ context.outTheCycleTotal | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong><em>{{ context.percOutTheCycleTotal }}</em></div>
+      </article>
+    </section>
+
+    <div class="desktop-refresh"><button mat-stroked-button (click)="context.refresh()"><mat-icon>autorenew</mat-icon>Atualizar</button></div>
+
+    <mat-accordion class="modern-accordion" [multi]="true">
+      <mat-expansion-panel class="modern-panel postings-panel" [(expanded)]="context.cardPostingsPanelExpanded"
+        (opened)="context.cardPostingsPanelOpened()" (closed)="context.cardPostingsPanelClosed()">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="panel-icon"><mat-icon>credit_score</mat-icon></span>
+            <span class="panel-copy"><strong>Lançamentos</strong><small>{{ context.cardPostingsLength }} registros · {{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}</small></span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="panel-toolbar">
+          <button mat-icon-button class="sort-button" (click)="context.sort()" [disabled]="context.cardId <= 0" matTooltip="Ordenar lançamentos">
+            <mat-icon>sort_by_alpha</mat-icon>
+          </button>
+
+          <button mat-button class="modern-add-button postings-add-button" (click)="context.add()">
+            <mat-icon>post_add</mat-icon>
+            <span>Novo lançamento</span>
+          </button>
+
+          <div class="toolbar-actions">
+            <button mat-icon-button class="filter-button" (click)="context.openFilter()" matTooltip="Buscar lançamentos">
+              <mat-icon>search</mat-icon>
+            </button>
+
+            <button mat-icon-button class="panel-options-button filter-menu-button" [matMenuTriggerFor]="optionsMenu" matTooltip="Opções de lançamentos" [attr.aria-label]="activeFilterCount > 0 ? 'Opções de lançamentos, ' + activeFilterCount + ' filtros ativos' : 'Opções de lançamentos'">
+              <mat-icon>more_vert</mat-icon>
+              <span class="filter-count-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
+            </button>
+          </div>
+        </div>
+
+        <mat-menu #optionsMenu="matMenu" class="modern-menu modern-card-filters-menu">
+          <div class="options-menu" (click)="$event.stopPropagation()"><div class="options-menu-title"><mat-icon>filter_alt</mat-icon><div><strong>Filtros</strong><small>Refine os lançamentos exibidos</small></div></div>
+            <mat-checkbox [(ngModel)]="context.hideFuturePurchases" (change)="context.setDataByFilters()">Remover compras futuras</mat-checkbox>
+            <mat-checkbox [(ngModel)]="context.justMyShopping" (change)="context.setDataByFilters()" [disabled]="context.justOthersShopping">Minhas compras</mat-checkbox>
+            <mat-checkbox [(ngModel)]="context.justOthersShopping" (change)="context.setDataByFilters()" [disabled]="context.justMyShopping">Compras de terceiros</mat-checkbox>
+            <mat-checkbox [(ngModel)]="context.justSingleParcel" (change)="context.setDataByFilters()" [disabled]="context.justFirstParcel || context.justLastParcel || context.justOthersParcels">Compras não parceladas</mat-checkbox>
+            <mat-checkbox [(ngModel)]="context.justFirstParcel" (change)="context.setDataByFilters()" [disabled]="context.justLastParcel || context.justOthersParcels || context.justSingleParcel">Primeira parcela</mat-checkbox>
+            <mat-checkbox [(ngModel)]="context.justLastParcel" (change)="context.setDataByFilters()" [disabled]="context.justFirstParcel || context.justOthersParcels || context.justSingleParcel">Última parcela</mat-checkbox>
+            <mat-checkbox [(ngModel)]="context.justOthersParcels" (change)="context.setDataByFilters()" [disabled]="context.justFirstParcel || context.justLastParcel || context.justSingleParcel">Demais parcelas</mat-checkbox>
+            <mat-checkbox [(ngModel)]="context.checkCard">Modo conferência</mat-checkbox>
+          </div>
+        </mat-menu>
+
+        <mat-form-field class="filter-field" appearance="outline" *ngIf="context.filterOpend">
+          <mat-label>Buscar lançamento</mat-label>
+          <input matInput #input (keyup)="context.applyFilter($event)">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="desktop-table">
+          <table mat-table [dataSource]="context.dataSource" class="modern-table" cdkDropList
+            [cdkDropListDisabled]="!context.cardId || context.cardId <= 0" [cdkDropListData]="context.cardpostings"
+            (cdkDropListDropped)="context.drop($event)">
+            <ng-container matColumnDef="index"><th mat-header-cell *matHeaderCellDef>#</th><td mat-cell *matCellDef="let row; let i=index">{{ context.cardPostingsLength - i }}</td><td mat-footer-cell *matFooterCellDef>Total</td></ng-container>
+            <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef>Data</th><td mat-cell *matCellDef="let row">{{ row.date | date:'dd/MM' }}</td><td mat-footer-cell *matFooterCellDef></td></ng-container>
+            <ng-container matColumnDef="card"><th mat-header-cell *matHeaderCellDef>Cartão</th><td mat-cell *matCellDef="let row"><span class="card-badge" [style.background]="row.card?.background" [style.color]="row.card?.color">{{ row.card?.name }}</span></td><td mat-footer-cell *matFooterCellDef></td></ng-container>
+            <ng-container matColumnDef="description"><th mat-header-cell *matHeaderCellDef>Descrição</th><td mat-cell *matCellDef="let row"><strong>{{ row.description }}</strong><small *ngIf="row.peopleId || row.parcels > 1"><span class="third-party-person" *ngIf="row.people?.name">{{ row.people.name }}</span><ng-container *ngIf="row.parcels > 1"><ng-container *ngIf="row.people?.name"> · </ng-container><span class="installment-info">{{ row.parcelNumber }}/{{ row.parcels }}</span></ng-container></small></td><td mat-footer-cell *matFooterCellDef></td></ng-container>
+            <ng-container matColumnDef="amount"><th mat-header-cell *matHeaderCellDef>Valor</th><td mat-cell *matCellDef="let row" [class.negative]="row.amount < 0">{{ row.amount | currency:'BRL':'symbol':'1.2-2' }}</td><td mat-footer-cell *matFooterCellDef>{{ context.total | currency:'BRL':'symbol':'1.2-2' }}</td></ng-container>
+            <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let row"><button mat-icon-button [matMenuTriggerFor]="rowMenu" (click)="$event.stopPropagation()"><mat-icon>more_vert</mat-icon></button><mat-menu #rowMenu="matMenu" class="modern-menu modern-card-posting-actions-menu"><button mat-menu-item (click)="context.editOrDelete(row, null)"><mat-icon>edit</mat-icon><span>Editar</span></button><button mat-menu-item (click)="context.clone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button><button mat-menu-item (click)="context.convertToExpense(row)"><mat-icon>swap_horiz</mat-icon><span>Transformar em despesa</span></button><button mat-menu-item class="modern-menu-danger" (click)="context.delete(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button></mat-menu></td><td mat-footer-cell *matFooterCellDef></td></ng-container>
+            <tr mat-header-row *matHeaderRowDef="context.displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: context.displayedColumns" (click)="context.handleClickCardPosting(row, $event)"
+              cdkDrag [cdkDragDisabled]="!context.cardId || context.cardId <= 0" [cdkDragData]="row" [cdkDragStartDelay]="300"
+              [ngClass]="{
+                'card-yield-checked': (row.isSelected && row.amount >= 0) || (!row.isPaid && (row.overdue || row.duetoday)),
+                'card-yield-checked2': row.isSelected && row.amount < 0
+              }"></tr>
+            <tr mat-footer-row *matFooterRowDef="context.displayedColumns"></tr>
+          </table>
+        </div>
+
+        <div class="mobile-list" cdkDropList [cdkDropListData]="context.cardpostings" (cdkDropListDropped)="context.drop($event)">
+          <article class="mobile-posting" *ngFor="let row of postings; let i=index; trackBy: trackById"
+            (click)="context.handleClickCardPosting(row, $event)" cdkDrag [cdkDragData]="row" [cdkDragStartDelay]="300"
+            [ngClass]="{
+              'card-yield-checked': (row.isSelected && row.amount >= 0) || (!row.isPaid && (row.overdue || row.duetoday)),
+              'card-yield-checked2': row.isSelected && row.amount < 0
+            }">
+            <span class="posting-index">{{ context.cardPostingsLength - i }}</span>
+            <div class="posting-copy"><strong>{{ row.description }}</strong><small>{{ row.date | date:'dd/MM/yyyy' }}<ng-container *ngIf="row.people?.name"> · <span class="third-party-person">{{ row.people.name }}</span></ng-container><ng-container *ngIf="row.parcels > 1"> · <span class="installment-info">{{ row.parcelNumber }}/{{ row.parcels }}</span></ng-container></small></div>
+            <strong class="posting-value" [class.negative]="row.amount < 0">{{ row.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
+            <button mat-icon-button [matMenuTriggerFor]="mobileMenu" (click)="$event.stopPropagation()"><mat-icon>more_vert</mat-icon></button>
+            <mat-menu #mobileMenu="matMenu" class="modern-menu modern-card-posting-actions-menu"><button mat-menu-item (click)="context.editOrDelete(row, null)"><mat-icon>edit</mat-icon><span>Editar</span></button><button mat-menu-item (click)="context.clone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button><button mat-menu-item (click)="context.convertToExpense(row)"><mat-icon>swap_horiz</mat-icon><span>Transformar em despesa</span></button><button mat-menu-item class="modern-menu-danger" (click)="context.delete(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button></mat-menu>
+          </article>
+          <div class="empty" *ngIf="postings.length === 0"><mat-icon>receipt_long</mat-icon><span>Nenhum lançamento encontrado.</span></div>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel class="modern-panel people-panel" *ngIf="context.cardpostingspeople?.length > 0" [(expanded)]="context.peoplePanelExpanded"
+        (opened)="context.peoplePanelOpened()" (closed)="context.peoplePanelClosed()">
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>people</mat-icon></span><span class="panel-copy"><strong>Pessoas</strong><small>Receber {{ context.toReceiveTotalPeople | currency:'BRL':'symbol':'1.2-2' }} · Restante {{ context.remainingTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</small></span></mat-panel-title></mat-expansion-panel-header>
+        <div class="compact-list">
+          <article class="compact-row" *ngFor="let row of people">
+            <div><strong>{{ row.person }}</strong><small>Recebido {{ row.received | currency:'BRL':'symbol':'1.2-2' }}</small></div>
+            <div class="compact-values"><small>Receber</small><strong>{{ row.toReceive | currency:'BRL':'symbol':'1.2-2' }}</strong><small>Restante {{ row.remaining | currency:'BRL':'symbol':'1.2-2' }}</small></div>
+            <button mat-icon-button (click)="context.receive(row)" [disabled]="row.remaining <= 0" matTooltip="Receber"><mat-icon>price_check</mat-icon></button>
+          </article>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel class="modern-panel categories-panel" [(expanded)]="context.categoryPanelExpanded"
+        (opened)="context.categoryPanelOpened()" (closed)="context.categoryPanelClosed()">
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>category</mat-icon></span><span class="panel-copy"><strong>Categorias</strong><small>{{ context.amountTotalCategory | currency:'BRL':'symbol':'1.2-2' }} · {{ context.percTotalCategory | number:'1.2-2' }}%</small></span></mat-panel-title></mat-expansion-panel-header>
+        <div class="modern-table-container">
+          <table
+            mat-table
+            #modernCategoriesSort="matSort"
+            [dataSource]="context.dataSourceCategories"
+            class="modern-data-table categories-table"
+            matSort
+            matSortActive="amount"
+            matSortDirection="desc"
+          >
+            <ng-container matColumnDef="category">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                arrowPosition="after"
+                start="asc"
+                sortActionDescription="Ordenar por Categoria"
+              >
+                Categoria
+              </th>
+              <td mat-cell *matCellDef="let row">{{ row.category }}</td>
+              <td mat-footer-cell *matFooterCellDef>Total</td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                arrowPosition="before"
+                start="desc"
+                sortActionDescription="Ordenar por Total"
+              >
+                Total
+              </th>
+              <td mat-cell *matCellDef="let row">
+                {{ row.amount | currency:'' : '' : '1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef>
+                {{ context.amountTotalCategory | currency:'' : '' : '1.2-2' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="perc">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                arrowPosition="before"
+                start="desc"
+                sortActionDescription="Ordenar por Percentual"
+              >
+                %
+              </th>
+              <td mat-cell *matCellDef="let row">
+                {{ row.perc | number:'1.2-2' }}%
+              </td>
+              <td mat-footer-cell *matFooterCellDef>
+                {{ context.percTotalCategory | number:'1.2-2' }}%
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="context.displayedCategoriesColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: context.displayedCategoriesColumns"></tr>
+            <tr mat-footer-row *matFooterRowDef="context.displayedCategoriesColumns"></tr>
+          </table>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel class="modern-panel notifications-panel">
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>notifications_active</mat-icon></span><span class="panel-copy"><strong>Compras detectadas</strong><small>Toque para transformar notificações em lançamentos</small></span></mat-panel-title></mat-expansion-panel-header>
+        <app-cards-notifications
+          [modernLayout]="true" [cardId]="context.cardId" [reference]="context.reference"
+          [(categoriesList)]="context.categoriesList" [(peopleList)]="context.peopleList"
+          [cardsList]="context.cardsList" [cardsPostings]="context.cardpostings"
+          (cardPostingCreated)="context.onCardPostingCreated($event)"
+          (cardPostingSavingChange)="context.setCardPostingSaving($event)"
+          (notificationContextChange)="context.notificationContextChange.emit($event)"
+        ></app-cards-notifications>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel class="modern-panel parcels-panel">
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>view_timeline</mat-icon></span><span class="panel-copy"><strong>Resumo das parcelas</strong><small>Total {{ parcelSummaryTotal | currency:'BRL':'symbol':'1.2-2' }}</small></span></mat-panel-title></mat-expansion-panel-header>
+        <div class="parcel-grid">
+          <div><small>Parcelas iniciando</small><strong>{{ context.startingParcels | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+          <div><small>Outras parcelas</small><strong>{{ context.othersParcels | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+          <div><small>Parcelas terminando</small><strong>{{ context.endingParcels | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+          <div><small>Total parcelado</small><strong>{{ totalParcels | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+          <div><small>Não parcelado</small><strong>{{ context.singleParcels | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+          <div class="parcel-total"><small>Total</small><strong>{{ parcelSummaryTotal | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </ng-container>
+</div>

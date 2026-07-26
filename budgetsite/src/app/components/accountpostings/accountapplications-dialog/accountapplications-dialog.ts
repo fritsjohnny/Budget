@@ -81,6 +81,9 @@ export class AccountApplicationsDialog implements OnInit, AfterViewInit {
     delete(): void {
         const dialogRef = this.dialog.open(ConfirmDialogComponent, {
             width: '420px',
+            panelClass: localStorage.getItem('budgetLayout') === 'modern'
+                ? 'modern-confirm-dialog-panel'
+                : undefined,
             data: <ConfirmDialogData>{
                 title: 'Excluir aplicação',
                 message: 'Confirma excluir esta aplicação?',

@@ -1,0 +1,97 @@
+<div class="modern-entry-dialog modern-account-application-entry-dialog">
+  <form [formGroup]="accountApplicationFormGroup">
+    <header class="modern-entry-header">
+      <div class="modern-entry-heading">
+        <span class="modern-entry-icon"><mat-icon>trending_up</mat-icon></span>
+        <div>
+          <h2 mat-dialog-title>{{ setTitle() }}</h2>
+          <p>{{ accountApplication.editing ? 'Atualize os dados da aplicação' : 'Registre uma nova aplicação financeira' }}</p>
+        </div>
+      </div>
+
+      <button mat-icon-button type="button" class="modern-entry-close" matTooltip="Cancelar" aria-label="Cancelar" (click)="cancel()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <div mat-dialog-content class="modern-entry-content">
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>account_balance</mat-icon>
+          <span>Conta e aplicação</span>
+        </div>
+
+        <div class="modern-form-grid">
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Conta</mat-label>
+            <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="accountApplication.accountId" formControlName="accountIdFormControl">
+              <mat-option *ngFor="let c of accountApplication.accountsList" [value]="c.id">{{ c.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="accountApplicationFormGroup.get('accountIdFormControl')?.hasError('required')">
+              Campo <strong>obrigatório</strong>.
+            </mat-error>
+          </mat-form-field>
+
+          <div class="modern-date-field">
+            <app-datepickerinput
+              #datepickerinput
+              [currentDate]="accountApplication.dateApplied"
+              (currentDateChanged)="currentDateChanged($event)"
+            ></app-datepickerinput>
+          </div>
+        </div>
+      </section>
+
+      <section class="modern-form-section">
+        <div class="modern-section-title">
+          <mat-icon>payments</mat-icon>
+          <span>Valores e rentabilidade</span>
+        </div>
+
+        <div class="modern-paired-grid">
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Valor aplicado</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="amountAppliedFormControl" [(ngModel)]="accountApplication.amountApplied" placeholder="0" autocomplete="off" />
+              <mat-error *ngIf="accountApplicationFormGroup.get('amountAppliedFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Taxa fixa (a.a.)</mat-label>
+              <input matInput inputmode="decimal" formControlName="fixedRateFormControl" [(ngModel)]="accountApplication.fixedRate" placeholder="Opcional" autocomplete="off" />
+            </mat-form-field>
+          </div>
+
+          <div class="modern-field-column">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>% do CDI</mat-label>
+              <input matInput inputmode="decimal" formControlName="cdiPercentFormControl" [(ngModel)]="accountApplication.cdiPercent" placeholder="1,00" autocomplete="off" />
+              <mat-error *ngIf="accountApplicationFormGroup.get('cdiPercentFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Vencimento</mat-label>
+              <input matInput [matDatepicker]="pickerMaturity" formControlName="maturityDateFormControl" [(ngModel)]="accountApplication.maturityDate" placeholder="Opcional" autocomplete="off" />
+              <mat-datepicker-toggle matSuffix [for]="pickerMaturity"></mat-datepicker-toggle>
+              <mat-datepicker #pickerMaturity panelClass="modern-datepicker-panel"></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <p class="modern-entry-help">Informe 1,00 para 100% do CDI. A taxa fixa e o vencimento são opcionais.</p>
+      </section>
+    </div>
+
+    <div mat-dialog-actions class="modern-entry-actions">
+      <button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancel()">Cancelar</button>
+      <button *ngIf="accountApplication.editing" mat-stroked-button type="button" class="modern-delete-action" (click)="delete()">
+        <mat-icon>delete</mat-icon>
+        Excluir
+      </button>
+      <button mat-flat-button type="button" class="modern-save-action" [disabled]="!accountApplicationFormGroup.valid" (click)="save()">
+        <mat-icon>save</mat-icon>
+        Salvar aplicação
+      </button>
+    </div>
+  </form>
+</div>

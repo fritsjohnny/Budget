@@ -1,7 +1,12 @@
-<div class="center">
+<app-accountpostings-modern-layout
+    *ngIf="modernLayout"
+    [context]="modernLayoutContext"
+></app-accountpostings-modern-layout>
+
+<div class="center" *ngIf="!modernLayout">
     <mat-spinner color="accent" *ngIf="!hideProgress"></mat-spinner>
 </div>
-<div class="row center">
+<div class="row center" *ngIf="!modernLayout">
     <div
         class="col d-flex flex-column justify-content-center"
         *ngIf="hideProgress"
@@ -31,7 +36,7 @@
         >
     </div>
 </div>
-<div class="row center mt-2 mb-2" *ngIf="hideProgress">
+<div class="row center mt-2 mb-2" *ngIf="!modernLayout && hideProgress">
     <div class="col text-center">
         <span class="center">Saldo Bruto:</span>
         <span class="center"
@@ -52,7 +57,7 @@
     </div>
 </div>
 <!-- Refresh button -->
-<div class="row center" *ngIf="hideProgress">
+<div class="row center" *ngIf="!modernLayout && hideProgress">
     <div class="col center">
         <button
             class="default-button"
@@ -69,7 +74,7 @@
 </div>
 
 <!-- Lançamentos -->
-<div class="row">
+<div class="row" *ngIf="!modernLayout">
     <mat-accordion
         displayMode="default"
         [multi]="true"
@@ -326,7 +331,7 @@
 </div>
 
 <!-- Aplicações -->
-<div class="row">
+<div class="row" *ngIf="!modernLayout">
     <mat-accordion
         displayMode="default"
         [multi]="true"

@@ -1,0 +1,123 @@
+.modern-account-posting-entry-dialog {
+  --entry-accent: #4f6fe8;
+  --entry-accent-end: #3658d4;
+  --entry-accent-soft: rgba(79, 111, 232, 0.14);
+}
+
+:host-context(.dark-theme) .modern-account-posting-entry-dialog {
+  --entry-accent: #7392ff;
+  --entry-accent-end: #5878eb;
+  --entry-accent-soft: rgba(115, 146, 255, 0.17);
+}
+
+.modern-account-application-entry-dialog {
+  --entry-accent: #7f63f4;
+  --entry-accent-end: #6547df;
+  --entry-accent-soft: rgba(127, 99, 244, 0.14);
+}
+
+:host-context(.dark-theme) .modern-account-application-entry-dialog {
+  --entry-accent: #9a86ff;
+  --entry-accent-end: #7f63f4;
+  --entry-accent-soft: rgba(154, 134, 255, 0.17);
+}
+
+.modern-entry-radio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  padding: 11px 12px;
+  border: 1px solid var(--entry-border);
+  border-radius: 12px;
+  background: var(--entry-surface-soft);
+}
+
+.modern-entry-radio-grid .mat-radio-button:last-child {
+  grid-column: 1 / -1;
+}
+
+.modern-date-field {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.modern-entry-dialog app-datepickerinput {
+  display: block;
+  width: 100%;
+}
+
+::ng-deep .modern-entry-dialog app-datepickerinput .mat-form-field,
+::ng-deep .modern-entry-dialog app-datepickerinput .mat-form-field-wrapper,
+::ng-deep .modern-entry-dialog app-datepickerinput .mat-form-field-flex,
+::ng-deep .modern-entry-dialog app-datepickerinput .mat-form-field-infix {
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.modern-yield-stepper {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 7px 10px;
+  border: 1px solid var(--entry-border);
+  border-radius: 10px;
+  background: var(--entry-surface-soft);
+}
+
+.modern-yield-stepper > span {
+  flex: 1 1 210px;
+  color: var(--entry-muted);
+  font-size: 12px;
+}
+
+.modern-yield-stepper button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--entry-border);
+  border-radius: 8px;
+  background: var(--entry-surface-strong);
+  color: var(--entry-accent);
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.modern-yield-stepper input {
+  width: 48px;
+  height: 32px;
+  border: 1px solid var(--entry-border);
+  border-radius: 8px;
+  background: var(--entry-surface-strong) !important;
+  color: var(--entry-text);
+  text-align: center;
+}
+
+.modern-calculation-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.modern-entry-help {
+  margin: -2px 0 6px;
+  color: var(--entry-muted);
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .modern-entry-radio-grid {
+    gap: 9px 8px;
+    padding: 10px;
+  }
+
+  .modern-entry-radio-grid .mat-radio-button {
+    font-size: 13px;
+  }
+
+  .modern-yield-stepper > span {
+    flex-basis: 100%;
+  }
+}

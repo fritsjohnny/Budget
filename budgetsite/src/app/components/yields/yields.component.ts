@@ -48,7 +48,12 @@ export class YieldsComponent implements OnInit {
 
   constructor(
     private accountPostingsService: AccountPostingsService,
-    @Inject(MAT_DIALOG_DATA) public data: { reference: string | null, accountId: number | null; title: string },
+    @Inject(MAT_DIALOG_DATA) public data: {
+      reference: string | null;
+      accountId: number | null;
+      title: string;
+      modernLayout?: boolean;
+    },
     public dialogRef: MatDialogRef<YieldsComponent>) { }
 
   ngOnInit(): void {
@@ -58,6 +63,24 @@ export class YieldsComponent implements OnInit {
 
   cancel(): void {
     this.dialogRef.close();
+  }
+
+  get useModernLayout(): boolean {
+    return this.data.modernLayout === true;
+  }
+
+  get isGeneralYields(): boolean {
+    return this.data.accountId === null;
+  }
+
+  get dialogSubtitle(): string {
+    return this.isGeneralYields
+      ? 'Acompanhe os rendimentos de todas as contas no período'
+      : 'Acompanhe a evolução dos rendimentos desta conta';
+  }
+
+  trackByYield(index: number, item: AccountsYieldsDto): number {
+    return item?.rowNum ?? index;
   }
 
   loadYields(reference: string | null, accountId: number | null) {

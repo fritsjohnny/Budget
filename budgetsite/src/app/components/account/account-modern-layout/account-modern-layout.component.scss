@@ -1,0 +1,443 @@
+:host {
+  --account-bg: #f3f6fa;
+  --account-surface: #ffffff;
+  --account-surface-soft: #f5f7fb;
+  --account-border: rgba(23, 35, 55, 0.13);
+  --account-divider: rgba(23, 35, 55, 0.09);
+  --account-text: #172033;
+  --account-muted: #687286;
+  --account-primary: #4f6fe8;
+  --account-primary-soft: rgba(79, 111, 232, 0.12);
+  display: block;
+}
+
+:host-context(.dark-theme) {
+  --account-bg: #0b141e;
+  --account-surface: #111c28;
+  --account-surface-soft: #162330;
+  --account-border: rgba(194, 213, 232, 0.18);
+  --account-divider: rgba(194, 213, 232, 0.1);
+  --account-text: #edf3fa;
+  --account-muted: #9eabba;
+  --account-primary: #7392ff;
+  --account-primary-soft: rgba(115, 146, 255, 0.16);
+}
+
+.modern-account-shell {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 16px 18px 74px;
+  color: var(--account-text);
+  box-sizing: border-box;
+  transform: translateY(var(--pull-distance, 0));
+  transition: transform 180ms ease-out;
+}
+
+.modern-account-shell.pull-active {
+  transition: none;
+}
+
+.pull-refresh-indicator {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--account-border);
+  border-radius: 999px;
+  background: var(--account-surface);
+  box-shadow: 0 8px 22px rgba(16, 27, 43, 0.12);
+  color: var(--account-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -135%);
+  transition: opacity 120ms ease-out, color 120ms ease-out;
+}
+
+.pull-refresh-indicator.pull-refresh-visible {
+  opacity: 1;
+}
+
+.pull-refresh-indicator.pull-refresh-ready {
+  color: var(--account-primary);
+}
+
+.pull-refresh-indicator .mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 18px;
+  transition: transform 120ms ease-out;
+}
+
+.pull-refresh-indicator.pull-refresh-ready .mat-icon {
+  transform: rotate(180deg);
+}
+
+.pull-refreshing .pull-refresh-indicator .mat-icon {
+  animation: account-refresh-spin 800ms linear infinite;
+}
+
+@keyframes account-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.modern-loading {
+  display: flex;
+  min-height: 420px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--account-muted);
+  font-size: 14px;
+}
+
+.reference-card,
+.account-selector {
+  border: 1px solid var(--account-border);
+  border-radius: 18px;
+  background: var(--account-surface);
+  box-shadow: 0 8px 22px rgba(16, 27, 43, 0.08);
+}
+
+.reference-card {
+  position: relative;
+  padding: 16px 20px;
+}
+
+.reference-navigation {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) auto minmax(90px, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--account-divider);
+}
+
+.reference-side {
+  min-width: 0;
+  color: var(--account-muted);
+}
+
+.reference-side ::ng-deep .mat-button-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.reference-side-next ::ng-deep .mat-button-wrapper {
+  justify-content: flex-end;
+}
+
+.reference-title {
+  color: var(--account-text);
+  font-size: 22px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.reference-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 44px;
+  align-items: center;
+  gap: 10px;
+  padding-top: 13px;
+}
+
+.reference-picker-button {
+  justify-self: start;
+  min-height: 42px;
+  border-radius: 11px;
+  background: var(--account-surface-soft);
+  color: var(--account-text);
+}
+
+.reference-picker-button ::ng-deep .mat-button-wrapper,
+.current-reference-button ::ng-deep .mat-button-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.current-reference-button {
+  min-height: 42px;
+  border-color: var(--account-border);
+  border-radius: 10px;
+  color: var(--account-muted);
+}
+
+.current-reference-active {
+  border-color: rgba(45, 190, 96, 0.28);
+  background: rgba(45, 190, 96, 0.12);
+  color: #2dbf60;
+}
+
+.reference-options-button {
+  color: var(--account-muted);
+}
+
+.reference-picker-proxy {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.account-selector {
+  padding: 14px;
+}
+
+.selected-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 2px 12px;
+}
+
+.selected-account-copy,
+.selected-account-actions {
+  display: flex;
+  align-items: center;
+}
+
+.selected-account-copy {
+  min-width: 0;
+  gap: 11px;
+}
+
+.account-selector-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--account-primary-soft);
+  color: var(--account-primary);
+}
+
+.account-selector-icon .mat-icon,
+.selected-account-actions .mat-icon {
+  color: inherit !important;
+}
+
+.selected-account-copy small,
+.selected-account-copy strong {
+  display: block;
+}
+
+.selected-account-copy small {
+  color: var(--account-muted);
+  font-size: 11px;
+}
+
+.selected-account-copy strong {
+  margin-top: 3px;
+  overflow: hidden;
+  font-size: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-account-actions {
+  color: var(--account-muted);
+}
+
+.add-account-button {
+  color: var(--account-primary);
+}
+
+.add-account-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.add-account-bank {
+  width: 22px;
+  height: 22px;
+  font-size: 22px;
+  line-height: 22px;
+}
+
+.add-account-plus {
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--account-surface);
+  border-radius: 50%;
+  background: var(--account-surface);
+  font-size: 14px;
+  line-height: 14px;
+}
+
+.account-chips {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.account-chip {
+  flex: 0 0 auto;
+  min-height: 48px;
+  max-width: 220px;
+  padding: 4px 12px !important;
+  border: 1px solid var(--account-border);
+  border-radius: 13px;
+  background: var(--account-surface-soft);
+  color: var(--account-text);
+  white-space: pre-line;
+}
+
+.account-chip ::ng-deep .mat-button-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.account-chip-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--account-background, var(--account-primary-soft));
+  color: var(--account-color, var(--account-primary));
+}
+
+.account-chip-swatch .mat-icon {
+  color: inherit !important;
+}
+
+.account-chip-active {
+  border-color: var(--account-primary);
+  box-shadow: inset 0 0 0 1px var(--account-primary), 0 6px 16px var(--account-primary-soft);
+}
+
+:host,
+.modern-account-shell,
+.reference-card,
+.account-selector,
+app-accountpostings {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+:host {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.modern-account-shell {
+  overflow: visible;
+}
+
+app-accountpostings {
+  display: block;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  :host {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .modern-account-shell {
+    width: 100%;
+    gap: 10px;
+    padding: 10px 10px 68px;
+    overflow: visible;
+  }
+
+  .reference-card {
+    padding: 14px 12px;
+  }
+
+  .reference-navigation {
+    grid-template-columns: minmax(64px, 1fr) minmax(132px, auto) minmax(64px, 1fr);
+    min-width: 0;
+  }
+
+  .reference-title {
+    font-size: 19px;
+  }
+
+  .reference-side {
+    padding: 0 2px;
+    font-size: 12px;
+  }
+
+  .reference-actions {
+    grid-template-columns: minmax(0, 1fr) auto 38px;
+    gap: 4px;
+  }
+
+  .reference-picker-button,
+  .current-reference-button {
+    min-width: 0;
+    padding: 0 9px;
+  }
+
+  .account-selector {
+    padding: 12px;
+  }
+
+  .selected-account {
+    min-width: 0;
+  }
+
+  .selected-account-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .selected-account-actions {
+    flex: 0 0 auto;
+  }
+
+  .account-chips {
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 3px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+
+  .selected-account-copy strong {
+    font-size: 15px;
+  }
+
+  .account-chip {
+    max-width: 180px;
+  }
+}

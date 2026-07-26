@@ -47,15 +47,25 @@ import { ClipboardModule } from 'ngx-clipboard';
 import { NavComponent } from './components/template/nav/nav.component';
 import { AccountViewComponent } from './views/account-view/account-view.component';
 import { AccountComponent } from './components/account/account.component';
+import { AccountModernLayoutComponent } from './components/account/account-modern-layout/account-modern-layout.component';
 import { AccountDialog } from './components/account/account-dialog';
+import { AccountModernDialog } from './components/account/account-modern-dialog';
 import { AccountPostingsComponent } from './components/accountpostings/accountpostings.component';
+import { AccountPostingsModernLayoutComponent } from './components/accountpostings/accountpostings-modern-layout/accountpostings-modern-layout.component';
 import { AccountPostingsDialog } from './components/accountpostings/accountpostings-dialog/accountpostings-dialog';
+import { AccountPostingsModernDialog } from './components/accountpostings/accountpostings-dialog/accountpostings-modern-dialog';
 import { CardViewComponent } from './views/card-view/card-view.component';
 import { CardComponent } from './components/card/card.component';
+import { CardModernLayoutComponent } from './components/card/card-modern-layout/card-modern-layout.component';
+import { CardModernDialog } from './components/card/card-modern-dialog';
+import { CardsInvoiceClosingModernDialog } from './components/card/cards-invoice-closing-dialog/cards-invoice-closing-modern-dialog';
 import { CardDialog } from './components/card/card-dialog';
 import { CardPostingsComponent } from './components/cardpostings/cardpostings.component';
+import { CardPostingsModernLayoutComponent } from './components/cardpostings/cardpostings-modern-layout/cardpostings-modern-layout.component';
 import { CardReceiptsDialog } from './components/cardpostings/cardreceipts-dialog/cardreceipts-dialog';
+import { CardReceiptsModernDialog } from './components/cardpostings/cardreceipts-dialog/cardreceipts-modern-dialog';
 import { CardPostingsDialog } from './components/cardpostings/cardpostings-dialog/cardpostings-dialog';
+import { CardPostingsModernDialog } from './components/cardpostings/cardpostings-dialog/cardpostings-modern-dialog';
 import { BudgetComponent } from './components/budget/budget.component';
 import { BudgetModernLayoutComponent } from './components/budget/budget-modern-layout/budget-modern-layout.component';
 import { PaymentReceiveDialog } from './components/budget/payment-receive-dialog';
@@ -64,6 +74,7 @@ import { IncomesModernDialog } from './components/budget/incomes-modern-dialog';
 import { ExpensesDialog } from './components/budget/expenses-dialog';
 import { ExpensesModernDialog } from './components/budget/expenses-modern-dialog';
 import { DatepickerComponent } from './shared/datepicker/datepicker.component';
+import { ModernReferenceSelectorComponent } from './shared/modern-reference-selector/modern-reference-selector.component';
 import { BudgetViewComponent } from './views/budget-view/budget-view.component';
 import { DatepickerinputComponent } from './shared/datepickerinput/datepickerinput.component';
 import { SummaryComponent } from './components/summary/summary.component';
@@ -75,6 +86,7 @@ import { PeopleComponent } from './components/people/people.component';
 import { ReportViewComponent } from './views/report-view/report-view.component';
 import { ReportComponent } from './components/report/report.component';
 import { AccountApplicationsDialog } from './components/accountpostings/accountapplications-dialog/accountapplications-dialog';
+import { AccountApplicationsModernDialog } from './components/accountpostings/accountapplications-dialog/accountapplications-modern-dialog';
 
 import { MAT_COLOR_FORMATS, NgxMatColorPickerModule, NGX_MAT_COLOR_FORMATS } from '@angular-material-components/color-picker';
 import { AddvalueComponent } from './shared/addvalue/addvalue.component';
@@ -124,21 +136,33 @@ registerLocaleData(localePt);
     AppComponent,
     NavComponent,
     AccountComponent,
+    AccountModernLayoutComponent,
     AccountDialog,
+    AccountModernDialog,
     AccountPostingsComponent,
+    AccountPostingsModernLayoutComponent,
     CardComponent,
+    CardModernLayoutComponent,
+    CardModernDialog,
+    CardsInvoiceClosingModernDialog,
     CardDialog,
     AccountViewComponent,
     CardViewComponent,
     CardPostingsComponent,
+    CardPostingsModernLayoutComponent,
     BudgetComponent,
     BudgetModernLayoutComponent,
     DatepickerComponent,
+    ModernReferenceSelectorComponent,
     BudgetViewComponent,
     CardPostingsDialog,
+    CardPostingsModernDialog,
     CardReceiptsDialog,
+    CardReceiptsModernDialog,
     AccountPostingsDialog,
+    AccountPostingsModernDialog,
     AccountApplicationsDialog,
+    AccountApplicationsModernDialog,
     ExpensesDialog,
     ExpensesModernDialog,
     PaymentReceiveDialog,

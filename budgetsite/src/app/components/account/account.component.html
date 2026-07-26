@@ -1,3 +1,9 @@
+<app-account-modern-layout
+    *ngIf="useModernLayout"
+    [context]="modernLayoutContext"
+></app-account-modern-layout>
+
+<ng-container *ngIf="!useModernLayout">
 <div class="container default-margin-bottom">
     <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
         <mat-expansion-panel
@@ -115,3 +121,4 @@
         ></app-accountpostings>
     </div>
 </div>
+</ng-container>

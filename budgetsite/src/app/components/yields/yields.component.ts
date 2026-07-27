@@ -127,6 +127,13 @@ export class YieldsComponent implements OnInit {
     }
   }
 
+  getWeekday(date: string | Date): string {
+    return new Intl.DateTimeFormat('pt-BR', { weekday: 'short' })
+      .format(new Date(date))
+      .replace('.', '')
+      .toLowerCase();
+  }
+
   getDescription(account: AccountsYieldsDto): string {
     if (!account || !account.account) {
       return '';

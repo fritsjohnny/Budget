@@ -60,6 +60,24 @@ export class CardPostingsModernLayoutComponent implements DoCheck {
     return this.totalParcels + (this.context?.singleParcels ?? 0);
   }
 
+  getCategoryName(posting: any): string {
+    const categoryName = String(posting?.category ?? '').trim();
+    if (categoryName) return categoryName;
+
+    if (posting?.categoryId == null) return '';
+
+    return String(
+      this.context?.categoriesList?.find((category: any) => category.id === posting.categoryId)?.name ?? ''
+    ).trim();
+  }
+
+  getWeekday(date: string | Date): string {
+    return new Intl.DateTimeFormat('pt-BR', { weekday: 'short' })
+      .format(new Date(date))
+      .replace('.', '')
+      .toLowerCase();
+  }
+
   trackById(index: number, item: any): number {
     return item?.id ?? index;
   }

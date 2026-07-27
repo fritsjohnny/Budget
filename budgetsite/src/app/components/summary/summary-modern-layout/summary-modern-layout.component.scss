@@ -601,7 +601,7 @@
   }
 
   .metric-card {
-    min-height: 152px;
+    min-height: 0;
     grid-template-columns: 34px minmax(0, 1fr);
     gap: 7px;
     padding: 10px 8px;
@@ -738,7 +738,7 @@
   }
 
   .metric-card {
-    min-height: 158px;
+    min-height: 0;
   }
 
   .metric-copy h3 {

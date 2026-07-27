@@ -34,8 +34,8 @@
         <div class="modern-form-grid">
           <mat-form-field appearance="fill" class="modern-field-full">
             <mat-label>Descrição</mat-label>
-            <input *ngIf="!expenses.adding" type="text" id="descriptionFormControl" required matInput formControlName="descriptionFormControl" [(ngModel)]="expenses.description" />
-            <input *ngIf="expenses.adding" type="text" id="descriptionFormControl" required matInput formControlName="descriptionFormControl" [(ngModel)]="expenses.description" (blur)="onDescriptionChange()" cdkFocusInitial />
+            <input *ngIf="!expenses.adding" type="text" id="descriptionFormControl" required matInput tabindex="1" formControlName="descriptionFormControl" [(ngModel)]="expenses.description" (keydown.tab)="focusTotalToPay($event)" />
+            <input *ngIf="expenses.adding" type="text" id="descriptionFormControl" required matInput tabindex="1" formControlName="descriptionFormControl" [(ngModel)]="expenses.description" (blur)="onDescriptionChange()" (keydown.tab)="focusTotalToPay($event)" cdkFocusInitial />
             <mat-error *ngIf="expensesFormGroup.get('descriptionFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
           </mat-form-field>
 
@@ -92,7 +92,7 @@
           <div class="modern-field-column">
             <mat-form-field appearance="fill" floatLabel="always">
               <mat-label>Total da Despesa</mat-label>
-              <input matInput inputmode="numeric" currencyMask formControlName="totalToPayFormControl" [(ngModel)]="expenses.totalToPay" placeholder="0" (ngModelChange)="calculateToPay()" autocomplete="off" />
+              <input #totalToPayInput matInput tabindex="2" inputmode="numeric" currencyMask formControlName="totalToPayFormControl" [(ngModel)]="expenses.totalToPay" placeholder="0" (ngModelChange)="calculateToPay()" autocomplete="off" />
               <mat-error *ngIf="expensesFormGroup.get('totalToPayFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
             </mat-form-field>
 

@@ -890,9 +890,183 @@ body.dark-theme {
   color: #721c24 !important; // texto vermelho escuro
 }
 
+.modern-snackbar.mat-snack-bar-container {
+  position: relative;
+  width: min(520px, calc(100vw - 28px));
+  min-width: 0;
+  max-width: min(520px, calc(100vw - 28px));
+  margin-top: 12px;
+  padding: 0 !important;
+  border: 1px solid var(--snackbar-border);
+  border-left: 4px solid var(--snackbar-accent);
+  border-radius: 16px !important;
+  background: var(--snackbar-background) !important;
+  color: #edf3fa !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden;
+}
+
+.modern-snackbar.mat-snack-bar-container::before {
+  content: var(--snackbar-icon);
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: var(--snackbar-icon-background);
+  color: var(--snackbar-accent);
+  font-family: 'Material Icons';
+  font-size: 21px;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.modern-snackbar .mat-simple-snackbar {
+  min-height: 64px;
+  padding: 12px 12px 12px 64px;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.modern-snackbar .mat-simple-snackbar > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.modern-snackbar .mat-simple-snackbar-action {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.modern-snackbar .mat-simple-snackbar-action button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--snackbar-accent) !important;
+  font-size: 0;
+  letter-spacing: 0;
+}
+
+.modern-snackbar .mat-simple-snackbar-action button::before {
+  content: 'close';
+  font-family: 'Material Icons';
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.modern-snackbar-success {
+  --snackbar-accent: #58d77b;
+  --snackbar-background: #123121;
+  --snackbar-border: rgba(88, 215, 123, 0.48);
+  --snackbar-icon-background: rgba(88, 215, 123, 0.18);
+  --snackbar-icon: 'check_circle';
+}
+
+.modern-snackbar-warning {
+  --snackbar-accent: #ffc928;
+  --snackbar-background: #302914;
+  --snackbar-border: rgba(255, 201, 40, 0.52);
+  --snackbar-icon-background: rgba(255, 201, 40, 0.2);
+  --snackbar-icon: 'notifications_active';
+}
+
+.modern-snackbar-error {
+  --snackbar-accent: #ff777d;
+  --snackbar-background: #321a20;
+  --snackbar-border: rgba(255, 119, 125, 0.5);
+  --snackbar-icon-background: rgba(255, 119, 125, 0.2);
+  --snackbar-icon: 'error';
+}
+
+@media (max-width: 600px) {
+  .modern-snackbar.mat-snack-bar-container {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    margin-top: 8px;
+    border-radius: 14px !important;
+  }
+
+  .modern-snackbar.mat-snack-bar-container::before {
+    left: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-size: 20px;
+  }
+
+  .modern-snackbar .mat-simple-snackbar {
+    min-height: 58px;
+    padding: 10px 8px 10px 56px;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .modern-snackbar .mat-simple-snackbar-action button {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+  }
+
+  .modern-snackbar .mat-simple-snackbar-action button::before {
+    font-size: 21px;
+  }
+}
+
 .ready-to-drag {
-  border: 2px solid var(--yellow);
-  box-shadow: 0 0 4px 2px rgba(255, 255, 0, 0.4); // sombra amarela suave
+  border: 2px solid var(--drag-accent, var(--yellow)) !important;
+  border-radius: 10px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--drag-accent, var(--yellow)) 28%, transparent),
+    0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box !important;
+  min-width: 0;
+  border: 2px solid var(--drag-accent, var(--yellow)) !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #172033 !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--drag-accent, var(--yellow)) 24%, transparent),
+    0 14px 32px rgba(0, 0, 0, 0.38) !important;
+  opacity: 1 !important;
+  overflow: hidden;
+}
+
+.dark-theme .cdk-drag-preview {
+  background: #172634 !important;
+  color: #edf3fa !important;
+}
+
+tr.cdk-drag-preview {
+  display: table !important;
+  table-layout: fixed;
+  border-collapse: separate;
+}
+
+tr.cdk-drag-preview > td.mat-cell {
+  display: table-cell;
+  overflow: hidden;
+  background: inherit !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+tr.cdk-drag-preview > td.mat-cell:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+tr.cdk-drag-preview > td.mat-cell:last-child {
+  border-radius: 0 8px 8px 0;
 }
 
 // ✅ O CDK adiciona automaticamente um elemento com a classe `.cdk-drag-placeholder`

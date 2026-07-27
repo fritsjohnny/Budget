@@ -30,6 +30,7 @@ export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
   @Input() optionTooltip = 'Opções';
   @Input() optionAriaLabel = 'Opções da referência';
   @Input() showOptionButton = true;
+  @Input() optionsAsMenu = false;
 
   @Output() referenceChange = new EventEmitter<string>();
   @Output() optionsClick = new EventEmitter<void>();

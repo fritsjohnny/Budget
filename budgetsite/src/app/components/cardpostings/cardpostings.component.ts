@@ -144,6 +144,7 @@ export class CardPostingsComponent implements OnInit {
   focusedCardPostingId?: number;
   validatingInvoiceClosing = false;
   savingCardPosting = false;
+  detectedPurchasesCount = 0;
 
   constructor(
     private cardPostingsService: CardPostingsService,
@@ -1141,9 +1142,12 @@ export class CardPostingsComponent implements OnInit {
     this.focusedCardPostingId = pendingFocus.id;
 
     setTimeout(() => {
-      const row = this.elementRef.nativeElement.querySelector(
-        `tr[data-card-posting-id="${pendingFocus.id}"]`
-      ) as HTMLTableRowElement | null;
+      const rows = Array.from(
+        this.elementRef.nativeElement.querySelectorAll(
+          `[data-card-posting-id="${pendingFocus.id}"]`
+        )
+      ) as HTMLElement[];
+      const row = rows.find(element => element.getClientRects().length > 0) ?? null;
 
       if (!row) {
         this.pendingCardPostingFocus = undefined;

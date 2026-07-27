@@ -299,6 +299,7 @@
                             (click)="editOrDelete(row, $event)"
                             *matRowDef="let row; columns: displayedColumns"
                             cdkDrag
+                            style="--drag-accent: #29bf6a"
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"

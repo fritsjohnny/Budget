@@ -24,13 +24,20 @@
         [reference]="context.reference"
         storageKey="budgetDate"
         ariaLabel="Referência do orçamento"
-        [optionIcon]="context.showOptions ? 'expand_less' : 'tune'"
-        [optionTooltip]="context.showOptions ? 'Ocultar filtros' : 'Mostrar filtros'"
-        optionAriaLabel="Mostrar ou ocultar filtros"
+        optionIcon="tune"
+        optionTooltip="Mostrar filtros"
+        optionAriaLabel="Mostrar filtros"
+        [optionsAsMenu]="true"
         (referenceChange)="onReferenceChange($event)"
-        (optionsClick)="context.showOptions = !context.showOptions"
     >
-        <div class="reference-filters" *ngIf="context.showOptions">
+        <div class="reference-filters">
+            <div class="reference-filters-title">
+                <mat-icon>filter_alt</mat-icon>
+                <div>
+                    <strong>Filtros</strong>
+                    <small>Refine os valores exibidos</small>
+                </div>
+            </div>
             <mat-checkbox
                 [(ngModel)]="context.justMyValues"
                 (ngModelChange)="context.onCheckboxJustMyValuesChange()"
@@ -93,10 +100,13 @@
                     >
                     <div>
                         <span class="summary-label">Saldo previsto</span>
-                        <strong>{{
-                            context.expectedBalance
-                                | currency: "BRL" : "symbol" : "1.2-2"
-                        }}</strong>
+                        <strong
+                            [class.metric-negative]="context.expectedBalance < 0"
+                            >{{
+                                context.expectedBalance
+                                    | currency: "BRL" : "symbol" : "1.2-2"
+                            }}</strong
+                        >
                     </div>
                     <button
                         mat-icon-button
@@ -109,24 +119,33 @@
                 </div>
 
                 <div class="balance-composition">
-                    <div
-                        [class.metric-negative]="
-                            context.getExpectedBalanceWithoutYieldsIncomePerc() <
-                            0
-                        "
-                    >
-                        <span>{{
-                            formatPercentage(
-                                context.getExpectedBalanceWithoutYieldsIncomePerc()
-                            )
-                        }}</span>
-                        <small>{{
-                            context.getExpectedBalanceWithoutYields()
-                                | currency: "BRL" : "symbol" : "1.2-2"
-                        }}</small>
+                    <div>
+                        <span
+                            [class.metric-negative]="
+                                context.getExpectedBalanceWithoutYieldsIncomePerc() <
+                                0
+                            "
+                            >{{
+                                formatPercentage(
+                                    context.getExpectedBalanceWithoutYieldsIncomePerc()
+                                )
+                            }}</span
+                        >
+                        <small
+                            [class.metric-negative]="
+                                context.getExpectedBalanceWithoutYields() < 0
+                            "
+                            >{{
+                                context.getExpectedBalanceWithoutYields()
+                                    | currency: "BRL" : "symbol" : "1.2-2"
+                            }}</small
+                        >
                         <span
                             *ngIf="
                                 context.getExpectedBalanceWithoutYields() >= 0
+                            "
+                            [class.metric-negative]="
+                                context.getExpectedBalanceWithoutYieldsPerc() < 0
                             "
                             >{{
                                 context.getExpectedBalanceWithoutYieldsPerc()
@@ -145,6 +164,9 @@
                                 context.getExpectedBalanceWithoutYields() < 0 &&
                                 context.expectedBalance >= 0
                             "
+                            [class.metric-negative]="
+                                context.getExpectedBalanceCoveredByYieldsPerc() < 0
+                            "
                             >{{
                                 context.getExpectedBalanceCoveredByYieldsPerc()
                                     | number: "1.2-2"
@@ -153,18 +175,31 @@
                     </div>
 
                     <div class="balance-composition-yields">
-                        <span>{{
-                            formatPercentage(
-                                context.getExpectedBalanceIncomePerc()
-                            )
-                        }}</span>
-                        <small>{{
-                            context.budgetTotals?.myYields
-                                | currency: "BRL" : "symbol" : "1.2-2"
-                        }}</small>
+                        <span
+                            [class.metric-negative]="
+                                context.getExpectedBalanceIncomePerc() < 0
+                            "
+                            >{{
+                                formatPercentage(
+                                    context.getExpectedBalanceIncomePerc()
+                                )
+                            }}</span
+                        >
+                        <small
+                            [class.metric-negative]="
+                                (context.budgetTotals?.myYields || 0) < 0
+                            "
+                            >{{
+                                context.budgetTotals?.myYields
+                                    | currency: "BRL" : "symbol" : "1.2-2"
+                            }}</small
+                        >
                         <span
                             *ngIf="
                                 context.getExpectedBalanceWithoutYields() >= 0
+                            "
+                            [class.metric-negative]="
+                                context.getExpectedBalanceYieldsCompositionPerc() < 0
                             "
                             >{{
                                 context.getExpectedBalanceYieldsCompositionPerc()
@@ -176,6 +211,9 @@
                                 context.getExpectedBalanceWithoutYields() < 0 &&
                                 context.expectedBalance < 0
                             "
+                            [class.metric-negative]="
+                                context.getExpectedBalanceDeficitReductionPerc() < 0
+                            "
                             >↓{{
                                 context.getExpectedBalanceDeficitReductionPerc()
                                     | number: "1.2-2"
@@ -185,6 +223,9 @@
                             *ngIf="
                                 context.getExpectedBalanceWithoutYields() < 0 &&
                                 context.expectedBalance >= 0
+                            "
+                            [class.metric-negative]="
+                                context.getExpectedBalancePositiveFromYieldsPerc() < 0
                             "
                             >{{
                                 context.getExpectedBalancePositiveFromYieldsPerc()
@@ -238,18 +279,6 @@
                         >
                         <span class="panel-heading-copy">
                             <strong>Totais</strong>
-                            <small
-                                >Minhas despesas
-                                {{
-                                    context.budgetTotals?.myExpenses
-                                        | currency: "BRL" : "symbol" : "1.2-2"
-                                }}
-                                · Minhas receitas
-                                {{
-                                    context.budgetTotals?.myIncomes
-                                        | currency: "BRL" : "symbol" : "1.2-2"
-                                }}</small
-                            >
                         </span>
                     </mat-panel-title>
                 </mat-expansion-panel-header>
@@ -671,6 +700,7 @@
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
+                            style="--drag-accent: #e74c56"
                             [attr.data-expense-id]="row.id"
                             [attr.tabindex]="-1"
                             [class.budget-entry-focus]="
@@ -974,6 +1004,7 @@
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
+                            style="--drag-accent: #4f6fe8"
                             [attr.data-income-id]="row.id"
                             [attr.tabindex]="-1"
                             [class.budget-entry-focus]="

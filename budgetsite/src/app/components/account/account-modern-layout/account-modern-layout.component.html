@@ -87,6 +87,7 @@
         [style.--account-color]="account.color"
         (click)="context.setAccount(account)"
         cdkDrag
+        [style.--drag-accent]="account.color || '#29bf6a'"
       >
         <span class="account-chip-swatch"><mat-icon>account_balance_wallet</mat-icon></span>
         <span>{{ context.getDescription(account) }}</span>

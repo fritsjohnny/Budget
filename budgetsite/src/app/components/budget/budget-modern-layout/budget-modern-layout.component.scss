@@ -215,12 +215,44 @@
 }
 
 .reference-filters {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  gap: 8px;
+  min-width: 280px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+}
+
+.reference-filters-title {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: -4px -4px 4px;
+  padding: 10px;
+  border-bottom: 1px solid var(--modern-divider);
+  color: var(--modern-green);
+}
+
+.reference-filters-title .mat-icon {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 6px 18px;
-  padding: 10px 4px 4px;
-  border-top: 1px solid var(--modern-divider);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--modern-green-soft);
+  color: var(--modern-green);
+}
+
+.reference-filters-title strong,
+.reference-filters-title small {
+  display: block;
+}
+
+.reference-filters-title small {
+  margin-top: 2px;
+  color: var(--modern-muted);
+  font-size: 10px;
 }
 
 .modern-loading {
@@ -367,7 +399,14 @@
 .balance-composition > div {
   display: grid;
   gap: 3px;
-  color: var(--modern-red);
+  color: var(--modern-blue);
+}
+
+.balance-composition > div > span {
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  font-weight: 700;
 }
 
 .balance-composition > div + div {
@@ -378,14 +417,23 @@
   color: var(--modern-blue);
 }
 
-.balance-composition small {
-  color: var(--modern-muted);
-  font-size: 11px;
-  white-space: nowrap;
+.summary-balance-head strong {
+  color: var(--modern-text);
 }
 
-.balance-composition .metric-negative {
-  color: var(--modern-red);
+.balance-composition small {
+  color: var(--modern-green);
+}
+
+.balance-composition small {
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.summary-balance .metric-negative {
+  color: var(--modern-red) !important;
 }
 
 .summary-pending {
@@ -1260,9 +1308,7 @@
   }
 
   .reference-filters {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 2px;
+    min-width: min(280px, calc(100vw - 32px));
   }
 
   .summary-grid {
@@ -1313,8 +1359,12 @@
     font-size: 11px;
   }
 
+  .balance-composition > div > span {
+    font-size: 13px;
+  }
+
   .balance-composition small {
-    font-size: 10px;
+    font-size: 13px;
   }
 
   .summary-pending {
@@ -1370,7 +1420,7 @@
   }
 
   .header-metrics > span {
-    padding: 0 4px;
+    padding: 0 1px;
   }
 
   .header-metrics small {
@@ -1378,7 +1428,8 @@
   }
 
   .header-metrics b {
-    font-size: 10px;
+    font-size: 9px;
+    letter-spacing: -0.1px;
   }
 
   .provisioned-summary {

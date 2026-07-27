@@ -46,6 +46,7 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
   @Output() cardPostingCreated = new EventEmitter<CardsPostings>();
   @Output() cardPostingSavingChange = new EventEmitter<boolean>();
   @Output() notificationContextChange = new EventEmitter<CardNotificationContext>();
+  @Output() notificationsCountChange = new EventEmitter<number>();
 
   private readonly STORAGE_KEY = 'persisted_notifications';
 
@@ -69,6 +70,7 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
       const parsed = JSON.parse(stored.value);
       this.notifications.push(...parsed);
       this.sortNotificationsByDate();
+      this.emitNotificationsCount();
     }
 
     // 2. Busca notificações ativas do sistema
@@ -88,6 +90,7 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
         this.notifications.unshift(cardPosting);
         this.sortNotificationsByDate();
         await this.saveNotificationsToStorage();
+        this.emitNotificationsCount();
       }
     });
   }
@@ -114,6 +117,8 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('[DEBUG] Erro ao buscar notificações ativas:', error);
     }
+
+    this.emitNotificationsCount();
   }
 
   private sortNotificationsByDate(): void {
@@ -422,7 +427,12 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
 
   async removeNotification(notification: CardNotification): Promise<void> {
     this.notifications = this.notifications.filter((n) => n !== notification);
+    this.emitNotificationsCount();
     await this.saveNotificationsToStorage();
+  }
+
+  private emitNotificationsCount(): void {
+    this.notificationsCountChange.emit(this.notifications.length);
   }
 
   private async saveNotificationsToStorage(): Promise<void> {

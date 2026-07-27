@@ -61,7 +61,7 @@
             </button>
 
             <button mat-icon-button class="panel-options-button filter-menu-button" [matMenuTriggerFor]="optionsMenu" matTooltip="Opções de lançamentos" [attr.aria-label]="activeFilterCount > 0 ? 'Opções de lançamentos, ' + activeFilterCount + ' filtros ativos' : 'Opções de lançamentos'">
-              <mat-icon>more_vert</mat-icon>
+              <mat-icon>tune</mat-icon>
               <span class="filter-count-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
             </button>
           </div>
@@ -91,17 +91,19 @@
             [cdkDropListDisabled]="!context.cardId || context.cardId <= 0" [cdkDropListData]="context.cardpostings"
             (cdkDropListDropped)="context.drop($event)">
             <ng-container matColumnDef="index"><th mat-header-cell *matHeaderCellDef>#</th><td mat-cell *matCellDef="let row; let i=index">{{ context.cardPostingsLength - i }}</td><td mat-footer-cell *matFooterCellDef>Total</td></ng-container>
-            <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef>Data</th><td mat-cell *matCellDef="let row">{{ row.date | date:'dd/MM' }}</td><td mat-footer-cell *matFooterCellDef></td></ng-container>
+            <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef>Data</th><td mat-cell *matCellDef="let row"><strong>{{ row.date | date:'dd/MM' }} ({{ getWeekday(row.date) }})</strong><small class="posting-category" *ngIf="getCategoryName(row) as categoryName">{{ categoryName }}</small></td><td mat-footer-cell *matFooterCellDef></td></ng-container>
             <ng-container matColumnDef="card"><th mat-header-cell *matHeaderCellDef>Cartão</th><td mat-cell *matCellDef="let row"><span class="card-badge" [style.background]="row.card?.background" [style.color]="row.card?.color">{{ row.card?.name }}</span></td><td mat-footer-cell *matFooterCellDef></td></ng-container>
             <ng-container matColumnDef="description"><th mat-header-cell *matHeaderCellDef>Descrição</th><td mat-cell *matCellDef="let row"><strong>{{ row.description }}</strong><small *ngIf="row.peopleId || row.parcels > 1"><span class="third-party-person" *ngIf="row.people?.name">{{ row.people.name }}</span><ng-container *ngIf="row.parcels > 1"><ng-container *ngIf="row.people?.name"> · </ng-container><span class="installment-info">{{ row.parcelNumber }}/{{ row.parcels }}</span></ng-container></small></td><td mat-footer-cell *matFooterCellDef></td></ng-container>
             <ng-container matColumnDef="amount"><th mat-header-cell *matHeaderCellDef>Valor</th><td mat-cell *matCellDef="let row" [class.negative]="row.amount < 0">{{ row.amount | currency:'BRL':'symbol':'1.2-2' }}</td><td mat-footer-cell *matFooterCellDef>{{ context.total | currency:'BRL':'symbol':'1.2-2' }}</td></ng-container>
             <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let row"><button mat-icon-button [matMenuTriggerFor]="rowMenu" (click)="$event.stopPropagation()"><mat-icon>more_vert</mat-icon></button><mat-menu #rowMenu="matMenu" class="modern-menu modern-card-posting-actions-menu"><button mat-menu-item (click)="context.editOrDelete(row, null)"><mat-icon>edit</mat-icon><span>Editar</span></button><button mat-menu-item (click)="context.clone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button><button mat-menu-item (click)="context.convertToExpense(row)"><mat-icon>swap_horiz</mat-icon><span>Transformar em despesa</span></button><button mat-menu-item class="modern-menu-danger" (click)="context.delete(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button></mat-menu></td><td mat-footer-cell *matFooterCellDef></td></ng-container>
             <tr mat-header-row *matHeaderRowDef="context.displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: context.displayedColumns" (click)="context.handleClickCardPosting(row, $event)"
-              cdkDrag [cdkDragDisabled]="!context.cardId || context.cardId <= 0" [cdkDragData]="row" [cdkDragStartDelay]="300"
+              [attr.data-card-posting-id]="row.id" [class.card-posting-focus]="row.id === context.focusedCardPostingId" tabindex="-1"
+              cdkDrag style="--drag-accent: #6f87ff" [cdkDragDisabled]="!context.cardId || context.cardId <= 0" [cdkDragData]="row" [cdkDragStartDelay]="300"
               [ngClass]="{
                 'card-yield-checked': (row.isSelected && row.amount >= 0) || (!row.isPaid && (row.overdue || row.duetoday)),
-                'card-yield-checked2': row.isSelected && row.amount < 0
+                'card-yield-checked2': row.isSelected && row.amount < 0,
+                'highlighted-posting': row.parcels > 1 || !!row.peopleId
               }"></tr>
             <tr mat-footer-row *matFooterRowDef="context.displayedColumns"></tr>
           </table>
@@ -109,13 +111,15 @@
 
         <div class="mobile-list" cdkDropList [cdkDropListData]="context.cardpostings" (cdkDropListDropped)="context.drop($event)">
           <article class="mobile-posting" *ngFor="let row of postings; let i=index; trackBy: trackById"
-            (click)="context.handleClickCardPosting(row, $event)" cdkDrag [cdkDragData]="row" [cdkDragStartDelay]="300"
+            [attr.data-card-posting-id]="row.id" [class.card-posting-focus]="row.id === context.focusedCardPostingId" tabindex="-1"
+            (click)="context.handleClickCardPosting(row, $event)" cdkDrag style="--drag-accent: #6f87ff" [cdkDragData]="row" [cdkDragStartDelay]="300"
             [ngClass]="{
               'card-yield-checked': (row.isSelected && row.amount >= 0) || (!row.isPaid && (row.overdue || row.duetoday)),
-              'card-yield-checked2': row.isSelected && row.amount < 0
+              'card-yield-checked2': row.isSelected && row.amount < 0,
+              'highlighted-posting': row.parcels > 1 || !!row.peopleId
             }">
             <span class="posting-index">{{ context.cardPostingsLength - i }}</span>
-            <div class="posting-copy"><strong>{{ row.description }}</strong><small>{{ row.date | date:'dd/MM/yyyy' }}<ng-container *ngIf="row.people?.name"> · <span class="third-party-person">{{ row.people.name }}</span></ng-container><ng-container *ngIf="row.parcels > 1"> · <span class="installment-info">{{ row.parcelNumber }}/{{ row.parcels }}</span></ng-container></small></div>
+            <div class="posting-copy"><strong>{{ row.description }}</strong><small class="posting-meta">{{ row.date | date:'dd/MM/yyyy' }} ({{ getWeekday(row.date) }})<ng-container *ngIf="row.people?.name"> · <span class="third-party-person">{{ row.people.name }}</span></ng-container><ng-container *ngIf="row.parcels > 1"> · <span class="installment-info">{{ row.parcelNumber }}/{{ row.parcels }}</span></ng-container></small><small class="posting-category" *ngIf="getCategoryName(row) as categoryName">{{ categoryName }}</small></div>
             <strong class="posting-value" [class.negative]="row.amount < 0">{{ row.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
             <button mat-icon-button [matMenuTriggerFor]="mobileMenu" (click)="$event.stopPropagation()"><mat-icon>more_vert</mat-icon></button>
             <mat-menu #mobileMenu="matMenu" class="modern-menu modern-card-posting-actions-menu"><button mat-menu-item (click)="context.editOrDelete(row, null)"><mat-icon>edit</mat-icon><span>Editar</span></button><button mat-menu-item (click)="context.clone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button><button mat-menu-item (click)="context.convertToExpense(row)"><mat-icon>swap_horiz</mat-icon><span>Transformar em despesa</span></button><button mat-menu-item class="modern-menu-danger" (click)="context.delete(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button></mat-menu>
@@ -209,7 +213,7 @@
         </div>
       </mat-expansion-panel>
 
-      <mat-expansion-panel class="modern-panel notifications-panel">
+      <mat-expansion-panel class="modern-panel notifications-panel" [style.display]="context.detectedPurchasesCount > 0 ? '' : 'none'">
         <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>notifications_active</mat-icon></span><span class="panel-copy"><strong>Compras detectadas</strong><small>Toque para transformar notificações em lançamentos</small></span></mat-panel-title></mat-expansion-panel-header>
         <app-cards-notifications
           [modernLayout]="true" [cardId]="context.cardId" [reference]="context.reference"
@@ -218,6 +222,7 @@
           (cardPostingCreated)="context.onCardPostingCreated($event)"
           (cardPostingSavingChange)="context.setCardPostingSaving($event)"
           (notificationContextChange)="context.notificationContextChange.emit($event)"
+          (notificationsCountChange)="context.detectedPurchasesCount = $event"
         ></app-cards-notifications>
       </mat-expansion-panel>
 

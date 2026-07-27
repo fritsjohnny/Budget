@@ -518,6 +518,7 @@
                             *matRowDef="let row; columns: displayedColumns"
                             cdkDrag
                             [cdkDragDisabled]="!cardId || cardId <= 0"
+                            style="--drag-accent: #6f87ff"
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"

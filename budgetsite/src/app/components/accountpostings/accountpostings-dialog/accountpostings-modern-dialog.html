@@ -97,6 +97,8 @@
               formControlName="descriptionFormControl"
               [(ngModel)]="accountPosting.description"
               [readonly]="accountPosting.type === 'Y' || isTransferMode()"
+              tabindex="1"
+               (keydown.tab)="focusPrimaryValue($event)"
             />
             <mat-error *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')">
               Campo <strong>obrigatório</strong>.
@@ -136,6 +138,8 @@
           <mat-form-field appearance="fill" floatLabel="always" class="modern-field-full">
             <mat-label>Valor</mat-label>
             <input
+              #primaryValueInput
+               tabindex="2"
               matInput
               inputmode="numeric"
               currencyMask
@@ -155,7 +159,7 @@
           <div class="modern-field-column">
             <mat-form-field appearance="fill" floatLabel="always">
               <mat-label>Valor bruto</mat-label>
-              <input matInput inputmode="numeric" currencyMask formControlName="grossAmountFormControl" [(ngModel)]="accountPosting.grossAmount" placeholder="0" autocomplete="off" (ngModelChange)="onValorBrutoChanged($event)" />
+              <input #primaryValueInput matInput tabindex="2" inputmode="numeric" currencyMask formControlName="grossAmountFormControl" [(ngModel)]="accountPosting.grossAmount" placeholder="0" autocomplete="off" (ngModelChange)="onValorBrutoChanged($event)" />
             </mat-form-field>
 
             <mat-form-field appearance="fill" floatLabel="always">

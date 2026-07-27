@@ -31,7 +31,18 @@
     </button>
 
     <button
-      *ngIf="showOptionButton"
+      *ngIf="showOptionButton && optionsAsMenu"
+      mat-icon-button
+      class="modern-reference-options"
+      [matMenuTriggerFor]="modernOptionsMenu"
+      [matTooltip]="optionTooltip"
+      [attr.aria-label]="optionAriaLabel"
+    >
+      <mat-icon>{{ optionIcon }}</mat-icon>
+    </button>
+
+    <button
+      *ngIf="showOptionButton && !optionsAsMenu"
       mat-icon-button
       class="modern-reference-options"
       (click)="openOptions()"
@@ -41,6 +52,20 @@
       <mat-icon>{{ optionIcon }}</mat-icon>
     </button>
   </div>
+
+  <ng-template #projectedOptions>
+    <ng-content></ng-content>
+  </ng-template>
+
+  <ng-container *ngIf="!optionsAsMenu">
+    <ng-container *ngTemplateOutlet="projectedOptions"></ng-container>
+  </ng-container>
+
+  <mat-menu #modernOptionsMenu="matMenu" class="modern-reference-options-menu">
+    <div class="modern-reference-options-content" (click)="$event.stopPropagation()">
+      <ng-container *ngTemplateOutlet="projectedOptions"></ng-container>
+    </div>
+  </mat-menu>
 
   <mat-form-field class="modern-reference-picker-proxy" aria-hidden="true">
     <input matInput [matDatepicker]="modernDatepicker" [formControl]="date" />

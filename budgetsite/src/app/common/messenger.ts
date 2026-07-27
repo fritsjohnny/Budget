@@ -17,7 +17,7 @@ export class Messenger {
       duration: 10000,
       horizontalPosition: 'center',
       verticalPosition: 'top',
-      panelClass: ['snackbar-error']
+      panelClass: this.getPanelClass('error')
     });
 
     return throwError(err);
@@ -30,8 +30,24 @@ export class Messenger {
       duration,
       horizontalPosition: 'center',
       verticalPosition: 'top',
-      panelClass: ['snackbar-success']
+      panelClass: this.getPanelClass(this.getMessageType(message))
     });
+  }
+
+  private getPanelClass(type: 'success' | 'warning' | 'error'): string[] {
+    const legacyClass = type === 'error' ? 'snackbar-error' : 'snackbar-success';
+
+    if (localStorage.getItem('budgetLayout') !== 'modern') return [legacyClass];
+
+    return ['modern-snackbar', `modern-snackbar-${type}`];
+  }
+
+  private getMessageType(message: string): 'success' | 'warning' {
+    const normalizedMessage = message.toLocaleLowerCase('pt-BR');
+
+    return normalizedMessage.includes('vencid') || normalizedMessage.includes('vencendo')
+      ? 'warning'
+      : 'success';
   }
 
   private extractMessage(input: any): string {

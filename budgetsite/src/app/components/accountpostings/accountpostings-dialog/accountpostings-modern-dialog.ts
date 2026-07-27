@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { AccountPostingsDialog } from './accountpostings-dialog';
 
 @Component({
@@ -9,4 +9,12 @@ import { AccountPostingsDialog } from './accountpostings-dialog';
     '../account-entry-modern-dialog.scss',
   ],
 })
-export class AccountPostingsModernDialog extends AccountPostingsDialog { }
+export class AccountPostingsModernDialog extends AccountPostingsDialog {
+  @ViewChild('primaryValueInput') private primaryValueInput!: ElementRef<HTMLInputElement>;
+
+  focusPrimaryValue(event: Event): void {
+    event.preventDefault();
+    this.primaryValueInput.nativeElement.focus();
+    this.primaryValueInput.nativeElement.select();
+  }
+}

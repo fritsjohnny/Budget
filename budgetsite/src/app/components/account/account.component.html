@@ -55,6 +55,7 @@
                         }"
                         (click)="setAccount(account)"
                         cdkDrag
+                        [style.--drag-accent]="account.color || '#29bf6a'"
                     >
                         {{ getDescription(account) }}
                     </button>

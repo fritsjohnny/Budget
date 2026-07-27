@@ -34,8 +34,8 @@
         <div class="modern-form-grid">
           <mat-form-field appearance="fill" class="modern-field-full">
             <mat-label>Descrição</mat-label>
-            <input *ngIf="!incomes.adding" type="text" id="descriptionFormControl" required matInput formControlName="descriptionFormControl" [(ngModel)]="incomes.description" />
-            <input *ngIf="incomes.adding" type="text" id="descriptionFormControl" required matInput formControlName="descriptionFormControl" [(ngModel)]="incomes.description" cdkFocusInitial />
+            <input *ngIf="!incomes.adding" type="text" id="descriptionFormControl" required matInput tabindex="1" formControlName="descriptionFormControl" [(ngModel)]="incomes.description" (keydown.tab)="focusTotalToReceive($event)" />
+            <input *ngIf="incomes.adding" type="text" id="descriptionFormControl" required matInput tabindex="1" formControlName="descriptionFormControl" [(ngModel)]="incomes.description" (keydown.tab)="focusTotalToReceive($event)" cdkFocusInitial />
             <mat-error *ngIf="incomesFormGroup.get('descriptionFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
           </mat-form-field>
 
@@ -94,7 +94,7 @@
           <div class="modern-field-column">
             <mat-form-field appearance="fill" floatLabel="always">
               <mat-label>Total da Receita</mat-label>
-              <input matInput inputmode="numeric" currencyMask formControlName="totalToReceiveFormControl" [(ngModel)]="incomes.totalToReceive" placeholder="0" (ngModelChange)="calculateToReceive()" autocomplete="off" />
+              <input #totalToReceiveInput matInput tabindex="2" inputmode="numeric" currencyMask formControlName="totalToReceiveFormControl" [(ngModel)]="incomes.totalToReceive" placeholder="0" (ngModelChange)="calculateToReceive()" autocomplete="off" />
               <mat-error *ngIf="incomesFormGroup.get('totalToReceiveFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
             </mat-form-field>
 

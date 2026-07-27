@@ -19,11 +19,14 @@ export class CardModernLayoutComponent implements DoCheck {
   private readonly minPullRefreshDuration = 650;
   private pullRefreshStartedAt = 0;
   private pullRefreshFinishTimer?: number;
+  private scheduledCardSelectionKey = '';
+  private visibleCardSelectionKey = '';
 
   constructor(private elementRef: ElementRef<HTMLElement>) {}
 
   ngDoCheck(): void {
     if (this.isPullRefreshing && this.context?.hideProgress) this.schedulePullRefreshFinish();
+    this.ensureSelectedCardVisible();
   }
 
   onReferenceChange(reference: string): void {
@@ -86,6 +89,58 @@ export class CardModernLayoutComponent implements DoCheck {
 
   trackById(index: number, item: any): number {
     return item?.id ?? index;
+  }
+
+  private ensureSelectedCardVisible(): void {
+    if (!this.context?.hideProgress || this.isPullRefreshing) {
+      this.visibleCardSelectionKey = '';
+      return;
+    }
+
+    const cardId = this.context?.cardId;
+    const cardIds = (this.context?.cardsVisible ?? []).map((card: any) => card?.id).join(',');
+    const selectionKey = `${cardId ?? ''}:${cardIds}`;
+
+    if (cardId === undefined || cardId === null || !cardIds || selectionKey === this.scheduledCardSelectionKey) return;
+
+    const currentSelectedChip = this.elementRef.nativeElement.querySelector('.card-chip.active') as HTMLElement | null;
+    const currentChipContainer = currentSelectedChip?.closest('.card-chips') as HTMLElement | null;
+
+    if (
+      selectionKey === this.visibleCardSelectionKey &&
+      currentSelectedChip &&
+      currentChipContainer &&
+      this.isChipVisible(currentSelectedChip, currentChipContainer)
+    ) {
+      return;
+    }
+
+    this.scheduledCardSelectionKey = selectionKey;
+
+    window.setTimeout(() => {
+      const selectedChip = this.elementRef.nativeElement.querySelector('.card-chip.active') as HTMLElement | null;
+
+      this.scheduledCardSelectionKey = '';
+
+      if (!selectedChip || this.context?.cardId !== cardId) return;
+
+      const chipContainer = selectedChip.closest('.card-chips') as HTMLElement | null;
+
+      if (!chipContainer) return;
+
+      const centeredPosition = selectedChip.offsetLeft - (chipContainer.clientWidth - selectedChip.offsetWidth) / 2;
+      chipContainer.scrollTo({ left: Math.max(0, centeredPosition), behavior: 'smooth' });
+      this.visibleCardSelectionKey = selectionKey;
+    });
+  }
+
+  private isChipVisible(chip: HTMLElement, container: HTMLElement): boolean {
+    const chipLeft = chip.offsetLeft;
+    const chipRight = chipLeft + chip.offsetWidth;
+    const visibleLeft = container.scrollLeft;
+    const visibleRight = visibleLeft + container.clientWidth;
+
+    return chipLeft >= visibleLeft && chipRight <= visibleRight;
   }
 
   private isMobileViewport(): boolean {

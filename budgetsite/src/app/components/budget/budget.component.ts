@@ -919,7 +919,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       panelClass: this.useModernLayout ? 'modern-confirm-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Despesa',
-        message: 'Confirma a EXCLUSÃO da despesa?',
+        message: `Confirma a EXCLUSÃO da despesa "${expense.description}"?`,
         confirmText: 'Sim',
         cancelText: 'Cancelar',
       },
@@ -1177,7 +1177,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       panelClass: this.useModernLayout ? 'modern-confirm-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Receita',
-        message: 'Confirma a EXCLUSÃO da receita?',
+        message: `Confirma a EXCLUSÃO da receita "${income.description}"?`,
         confirmText: 'Sim',
         cancelText: 'Cancelar',
       },

@@ -127,7 +127,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
         : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Despesa',
-        message: 'Confirma a EXCLUSÃO da despesa?',
+        message: `Confirma a EXCLUSÃO da despesa "${this.expenses.description}"?`,
         confirmText: 'Sim',
         cancelText: 'Cancelar',
       },

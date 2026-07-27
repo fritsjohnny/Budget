@@ -100,7 +100,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
         : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Receita',
-        message: 'Confirma a EXCLUSÃO da receita?',
+        message: `Confirma a EXCLUSÃO da receita "${this.incomes.description}"?`,
         confirmText: 'Sim',
         cancelText: 'Cancelar',
       },

@@ -113,7 +113,23 @@ export class CardPostingsComponent implements OnInit {
   cardPostingsPanelExpanded: boolean = false;
   peoplePanelExpanded: boolean = false;
   categoryPanelExpanded: boolean = false;
-  checkCard: boolean = false;
+  private _checkCard: boolean = false;
+  private checkedCardPostingIds = new Set<number>();
+  private ignoredCardPostingIds = new Set<number>();
+
+  get checkCard(): boolean {
+    return this._checkCard;
+  }
+
+  set checkCard(value: boolean) {
+    this._checkCard = value;
+
+    if (!value) {
+      this.clearCardPostingChecks();
+      this.clearIgnoredCardPostings();
+    }
+  }
+
   justMyShopping: boolean = false;
   darkTheme?: boolean;
   cardPostingsLength: number = 0;
@@ -313,6 +329,8 @@ export class CardPostingsComponent implements OnInit {
         }
 
         this.cardpostings = cardpostings.sort((a, b) => b.position! - a.position!);
+        this.restoreCardPostingChecks();
+        this.restoreIgnoredCardPostings();
         this.cardpostingspeople = cardpostingspeople.filter(item => item.person !== '');
         this.expensesByCategories = expensesByCategories;
         this.dataSourceCategories.data = expensesByCategories;
@@ -410,7 +428,15 @@ export class CardPostingsComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // if (changes['cardId']?.currentValue || changes['reference']?.currentValue) {
+    const cardChanged = changes['cardId'] && !changes['cardId'].firstChange &&
+      changes['cardId'].previousValue !== changes['cardId'].currentValue;
+    const referenceChanged = changes['reference'] && !changes['reference'].firstChange &&
+      changes['reference'].previousValue !== changes['reference'].currentValue;
+
+    if (cardChanged || referenceChanged) {
+      this.checkCard = false;
+    }
+
     this.refresh();
   }
 
@@ -449,17 +475,20 @@ export class CardPostingsComponent implements OnInit {
 
   getTotalAmount(): void {
     const source = this.dataSource?.filteredData ?? this.cardpostings ?? [];
+    const balanceSource = this.checkCard
+      ? source.filter(posting => !this.isCardPostingIgnored(posting))
+      : source;
 
-    this.total = source
+    this.total = balanceSource
       .map((t) => t.amount)
       .reduce((acc, value) => acc + value, 0);
 
-    this.myTotal = source
+    this.myTotal = balanceSource
       .filter((t) => !t.others)
       .map((t) => t.amount)
       .reduce((acc, value) => acc + value, 0);
 
-    this.othersTotal = source
+    this.othersTotal = balanceSource
       .filter((t) => t.others)
       .map((t) => t.amount)
       .reduce((acc, value) => acc + value, 0);
@@ -471,43 +500,43 @@ export class CardPostingsComponent implements OnInit {
       (this.total ? (this.othersTotal / this.total) * 100 : 0).toFixed(2) + '%';
 
     if (this.justMyShopping) {
-      this.inTheCycleTotal = source
+      this.inTheCycleTotal = balanceSource
         .filter((t) => !t.others && (t.parcelNumber === 1 || t.parcelNumber == null))
         .map((t) => t.amount)
         .reduce((acc, value) => acc + value, 0);
 
-      this.outTheCycleTotal = source
+      this.outTheCycleTotal = balanceSource
         .filter((t) => !t.others && t.parcelNumber! > 1)
         .map((t) => t.amount)
         .reduce((acc, value) => acc + value, 0);
     } else {
-      this.inTheCycleTotal = source
+      this.inTheCycleTotal = balanceSource
         .filter((t) => t.parcelNumber === 1 || t.parcelNumber == null)
         .map((t) => t.amount)
         .reduce((acc, value) => acc + value, 0);
 
-      this.outTheCycleTotal = source
+      this.outTheCycleTotal = balanceSource
         .filter((t) => t.parcelNumber! > 1)
         .map((t) => t.amount)
         .reduce((acc, value) => acc + value, 0);
     }
 
-    this.startingParcels = source
+    this.startingParcels = balanceSource
       .filter(t => t.parcels! > 1 && t.parcelNumber == 1)
       .map(t => t.amount)
       .reduce((acc, value) => acc + value, 0) ?? 0;
 
-    this.endingParcels = source
+    this.endingParcels = balanceSource
       .filter(t => t.parcels! > 1 && t.parcelNumber == t.parcels)
       .map(t => t.amount)
       .reduce((acc, value) => acc + value, 0) ?? 0;
 
-    this.othersParcels = source
+    this.othersParcels = balanceSource
       .filter(t => t.parcels! > 1 && t.parcelNumber! > 1 && t.parcelNumber! < t.parcels!)
       .map(t => t.amount)
       .reduce((acc, value) => acc + value, 0) ?? 0;
 
-    this.singleParcels = source
+    this.singleParcels = balanceSource
       .filter(t => t.parcels! === 1)
       .map(t => t.amount)
       .reduce((acc, value) => acc + value, 0) ?? 0;
@@ -695,7 +724,7 @@ export class CardPostingsComponent implements OnInit {
       return;
     }
     if (this.checkCard && event != null) {
-      cardPosting.isSelected = !cardPosting.isSelected;
+      this.toggleCardPostingCheck(cardPosting);
 
       return;
     }
@@ -778,6 +807,10 @@ export class CardPostingsComponent implements OnInit {
   }
 
   afterDelete(result: CardsPostings) {
+    if (result.id != null) {
+      this.checkedCardPostingIds.delete(result.id);
+    }
+
     this.cardpostings = this.cardpostings.filter((t) => t.id! != result.id!);
 
     this.setDataByFilters();
@@ -802,7 +835,7 @@ export class CardPostingsComponent implements OnInit {
       panelClass: this.modernLayout ? 'modern-confirm-dialog-panel' : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Compra',
-        message: 'Confirma a EXCLUSÃO da compra?',
+        message: `Confirma a EXCLUSÃO da compra "${cardPosting.description}"?`,
         confirmText: 'Sim',
         cancelText: 'Cancelar',
         requireAuthorization: isClosed,
@@ -1173,6 +1206,78 @@ export class CardPostingsComponent implements OnInit {
     });
   }
 
+  private toggleCardPostingCheck(cardPosting: CardsPostings): void {
+    cardPosting.isSelected = !cardPosting.isSelected;
+
+    if (cardPosting.id == null) return;
+
+    if (cardPosting.isSelected) {
+      this.checkedCardPostingIds.add(cardPosting.id);
+    } else {
+      this.checkedCardPostingIds.delete(cardPosting.id);
+    }
+  }
+
+  private restoreCardPostingChecks(): void {
+    const currentIds = new Set(
+      this.cardpostings
+        .filter(posting => posting.id != null)
+        .map(posting => posting.id!)
+    );
+
+    this.checkedCardPostingIds.forEach(id => {
+      if (!currentIds.has(id)) {
+        this.checkedCardPostingIds.delete(id);
+      }
+    });
+
+    this.cardpostings.forEach(posting => {
+      posting.isSelected = posting.id != null &&
+        this.checkedCardPostingIds.has(posting.id);
+    });
+  }
+
+  private clearCardPostingChecks(): void {
+    this.checkedCardPostingIds.clear();
+
+    this.cardpostings?.forEach(posting => posting.isSelected = false);
+  }
+
+  toggleCardPostingIgnored(cardPosting: CardsPostings): void {
+    if (!this.checkCard || cardPosting.id == null) return;
+
+    if (this.ignoredCardPostingIds.has(cardPosting.id)) {
+      this.ignoredCardPostingIds.delete(cardPosting.id);
+    } else {
+      this.ignoredCardPostingIds.add(cardPosting.id);
+    }
+
+    this.getTotalAmount();
+  }
+
+  isCardPostingIgnored(cardPosting: CardsPostings): boolean {
+    return cardPosting.id != null && this.ignoredCardPostingIds.has(cardPosting.id);
+  }
+
+  private restoreIgnoredCardPostings(): void {
+    const currentIds = new Set(
+      this.cardpostings
+        .filter(posting => posting.id != null)
+        .map(posting => posting.id!)
+    );
+
+    this.ignoredCardPostingIds.forEach(id => {
+      if (!currentIds.has(id)) {
+        this.ignoredCardPostingIds.delete(id);
+      }
+    });
+  }
+
+  private clearIgnoredCardPostings(): void {
+    this.ignoredCardPostingIds.clear();
+    this.getTotalAmount();
+  }
+
   handleClickCardPosting(row: CardsPostings, event: MouseEvent): void {
     this.editOrDelete(row, event);
   }
@@ -1186,6 +1291,8 @@ export class CardPostingsComponent implements OnInit {
     this.cardPostingsService.readById(cardposting.id).subscribe({
       next: (res: CardsPostings) => {
         Object.assign(cardposting, res);
+        cardposting.isSelected = cardposting.id != null &&
+          this.checkedCardPostingIds.has(cardposting.id);
       },
       error: (err) => {
         this.messenger.errorHandler(err);

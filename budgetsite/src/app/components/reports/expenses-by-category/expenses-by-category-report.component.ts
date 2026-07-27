@@ -274,8 +274,8 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
         pointBorder: '#ffffff',
       }
       : {
-        text: '#303030',
-        grid: 'rgba(0, 0, 0, 0.12)',
+        text: '#172033',
+        grid: 'rgba(79, 111, 232, 0.18)',
         neutral: '#3f51b5',
         up: '#f44336',
         down: '#008000',

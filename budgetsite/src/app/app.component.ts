@@ -17,6 +17,14 @@ export class AppComponent implements OnInit, OnDestroy {
   showBottomTabs = true;
 
   private sub: any;
+  private keyboardViewport?: VisualViewport;
+  private keyboardViewportHeight = 0;
+  private keyboardOpen = false;
+  private keyboardScrollContainer?: HTMLElement;
+  private keyboardScrollTop = 0;
+  private pageScrollTop = 0;
+  private focusedEditableElement?: HTMLElement;
+  private keyboardScrollTimer?: number;
 
   constructor(
     private router: Router,
@@ -43,6 +51,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.notificationService.initNotifications();
+    this.initializeModernKeyboardScroll();
 
     // só Android puro, sem Ionic Platform
     if (/Android/.test(navigator.userAgent) && window.visualViewport) {
@@ -92,5 +101,111 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.sub?.remove?.();
+    this.keyboardViewport?.removeEventListener('resize', this.handleKeyboardViewportChange);
+    this.keyboardViewport?.removeEventListener('scroll', this.handleKeyboardViewportChange);
+    document.removeEventListener('focusin', this.handleModernFieldFocus);
+    document.removeEventListener('focusout', this.handleModernFieldBlur);
+    if (this.keyboardScrollTimer != null) window.clearTimeout(this.keyboardScrollTimer);
+  }
+
+  private initializeModernKeyboardScroll(): void {
+    if (!window.visualViewport) return;
+
+    this.keyboardViewport = window.visualViewport;
+    this.keyboardViewportHeight = this.keyboardViewport.height;
+    document.documentElement.style.setProperty('--visual-viewport-height', `${this.keyboardViewport.height}px`);
+    this.keyboardViewport.addEventListener('resize', this.handleKeyboardViewportChange);
+    this.keyboardViewport.addEventListener('scroll', this.handleKeyboardViewportChange);
+    document.addEventListener('focusin', this.handleModernFieldFocus);
+    document.addEventListener('focusout', this.handleModernFieldBlur);
+  }
+
+  private readonly handleModernFieldFocus = (event: FocusEvent): void => {
+    const target = event.target as HTMLElement | null;
+    if (!target || !this.isEditableElement(target) || localStorage.getItem('budgetLayout') !== 'modern') return;
+
+    const modernDialog = target.closest('.modern-entry-dialog, .modern-account-dialog');
+    if (!modernDialog) return;
+
+    this.focusedEditableElement = target;
+    const scrollContainer = target.closest('[mat-dialog-content], .modern-entry-content') as HTMLElement | null;
+    this.keyboardScrollContainer = scrollContainer ?? undefined;
+    this.keyboardScrollTop = scrollContainer?.scrollTop ?? 0;
+    this.pageScrollTop = window.scrollY;
+    this.scheduleFocusedFieldVisibility();
+  };
+
+  private readonly handleModernFieldBlur = (): void => {
+    window.setTimeout(() => {
+      const activeElement = document.activeElement as HTMLElement | null;
+      if (!activeElement || !this.isEditableElement(activeElement)) this.focusedEditableElement = undefined;
+    }, 0);
+  };
+
+  private readonly handleKeyboardViewportChange = (): void => {
+    if (!this.keyboardViewport) return;
+
+    const viewportHeight = this.keyboardViewport.height;
+    document.documentElement.style.setProperty('--visual-viewport-height', `${viewportHeight}px`);
+    const keyboardHeight = Math.max(0, window.innerHeight - viewportHeight - this.keyboardViewport.offsetTop);
+    const keyboardIsOpen = keyboardHeight > 120 && !!this.focusedEditableElement;
+
+    if (keyboardIsOpen) {
+      document.body.classList.add('modern-keyboard-open');
+      this.keyboardOpen = true;
+      this.scheduleFocusedFieldVisibility();
+    } else if (this.keyboardOpen && keyboardHeight <= 120) {
+      document.body.classList.remove('modern-keyboard-open');
+      this.keyboardOpen = false;
+      this.restorePreKeyboardPosition();
+    }
+
+    this.keyboardViewportHeight = viewportHeight;
+  };
+
+  private scheduleFocusedFieldVisibility(): void {
+    if (this.keyboardScrollTimer != null) window.clearTimeout(this.keyboardScrollTimer);
+    this.keyboardScrollTimer = window.setTimeout(() => this.ensureFocusedFieldIsVisible(), 180);
+  }
+
+  private ensureFocusedFieldIsVisible(): void {
+    const target = this.focusedEditableElement;
+    const viewport = this.keyboardViewport;
+    if (!target || !viewport || !document.body.contains(target)) return;
+
+    const field = (target.closest('.mat-form-field, .modern-inline-option') as HTMLElement | null) ?? target;
+    const rect = field.getBoundingClientRect();
+    const visibleTop = viewport.offsetTop + 12;
+    const actions = target.closest('.modern-entry-dialog, .modern-account-dialog')?.querySelector('[mat-dialog-actions]') as HTMLElement | null;
+    const actionsHeight = actions?.getBoundingClientRect().height ?? 0;
+    const visibleBottom = viewport.offsetTop + viewport.height - actionsHeight - 12;
+
+    if (rect.bottom > visibleBottom) {
+      this.scrollFocusedArea(rect.bottom - visibleBottom);
+    } else if (rect.top < visibleTop) {
+      this.scrollFocusedArea(rect.top - visibleTop);
+    }
+  }
+
+  private scrollFocusedArea(delta: number): void {
+    if (this.keyboardScrollContainer) {
+      this.keyboardScrollContainer.scrollTo({ top: this.keyboardScrollContainer.scrollTop + delta, behavior: 'smooth' });
+      return;
+    }
+
+    window.scrollTo({ top: window.scrollY + delta, behavior: 'smooth' });
+  }
+
+  private restorePreKeyboardPosition(): void {
+    if (this.keyboardScrollTimer != null) window.clearTimeout(this.keyboardScrollTimer);
+    this.keyboardScrollContainer?.scrollTo({ top: this.keyboardScrollTop, behavior: 'smooth' });
+    window.scrollTo({ top: this.pageScrollTop, behavior: 'smooth' });
+    this.keyboardScrollContainer = undefined;
+  }
+
+  private isEditableElement(element: HTMLElement): boolean {
+    if (element instanceof HTMLTextAreaElement) return !element.readOnly && !element.disabled;
+    if (!(element instanceof HTMLInputElement)) return false;
+    return !element.readOnly && !element.disabled && !['button', 'checkbox', 'radio', 'file', 'submit'].includes(element.type);
   }
 }

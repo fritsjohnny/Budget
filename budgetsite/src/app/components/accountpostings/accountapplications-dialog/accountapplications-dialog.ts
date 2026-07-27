@@ -86,7 +86,7 @@ export class AccountApplicationsDialog implements OnInit, AfterViewInit {
                 : undefined,
             data: <ConfirmDialogData>{
                 title: 'Excluir aplicação',
-                message: 'Confirma excluir esta aplicação?',
+                message: `Confirma a EXCLUSÃO da aplicação de ${this.accountApplication.amountApplied.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?`,
                 confirmText: 'Excluir',
                 cancelText: 'Cancelar',
             },

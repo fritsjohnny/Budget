@@ -226,7 +226,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       width: '400px',
       data: <ConfirmDialogData>{
         title: 'Excluir Compra',
-        message: 'Confirma a EXCLUSÃO da compra?',
+        message: `Confirma a EXCLUSÃO da compra "${this.cardPosting.description}"?`,
         confirmText: 'Sim',
         cancelText: 'Cancelar',
       },

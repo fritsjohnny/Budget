@@ -18,17 +18,18 @@ export class ReportComponent implements OnInit, AfterViewInit {
   finalReference: string | undefined;
   initialMonthName: string | undefined;
   finalMonthName: string | undefined;
+  catalogPanelExpanded: boolean = true;
   reportPanelExpanded: boolean = true;
   selectedReportType: number | undefined;
   reportType: number | undefined;
   reports = [
-    { id: 1, name: 'Despesas Fixas' },
-    { id: 2, name: 'Despesas de Terceiros' },
-    { id: 3, name: 'Despesas por Categoria' },
-    { id: 4, name: 'Despesas por Data de Vencimento' },
-    { id: 5, name: 'Despesas por Cartão' },
-    { id: 6, name: 'Saldo Previsto em Conta' },
-    { id: 7, name: 'Saúde Financeira' },
+    { id: 1, name: 'Despesas Fixas', description: 'Acompanhe compromissos recorrentes por período.', icon: 'event_repeat', color: 'blue' },
+    { id: 2, name: 'Despesas de Terceiros', description: 'Visualize valores vinculados a outras pessoas.', icon: 'group', color: 'purple' },
+    { id: 3, name: 'Despesas por Categoria', description: 'Compare categorias, agrupamentos e gráficos.', icon: 'donut_large', color: 'orange' },
+    { id: 4, name: 'Despesas por Vencimento', description: 'Analise despesas pela data em que vencem.', icon: 'event', color: 'red' },
+    { id: 5, name: 'Despesas por Cartão', description: 'Consolide gastos e compare seus cartões.', icon: 'credit_card', color: 'cyan' },
+    { id: 6, name: 'Saldo Previsto em Conta', description: 'Projete a evolução do saldo de uma conta.', icon: 'account_balance', color: 'green' },
+    { id: 7, name: 'Saúde Financeira', description: 'Avalie reserva, compromissos e projeções.', icon: 'monitor_heart', color: 'pink' },
   ];
   showReport: boolean = false;
   categories: Categories[] = [];
@@ -60,6 +61,24 @@ export class ReportComponent implements OnInit, AfterViewInit {
 
   @ViewChild('reportInitialDatepicker') reportInitialDatepicker!: DatepickerComponent;
   @ViewChild('reportFinalDatepicker') reportFinalDatepicker!: DatepickerComponent;
+
+  get useModernLayout(): boolean {
+    return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
+  selectReport(reportId: number): void {
+    this.selectedReportType = reportId;
+    localStorage.setItem('lastSelectedReport', reportId.toString());
+    this.reportType = undefined;
+    this.showReport = false;
+    this.reportPanelExpanded = true;
+
+    setTimeout(() => this.ensureFinancialHealthDefaultPeriod());
+  }
+
+  get selectedReport() {
+    return this.reports.find(report => report.id === this.selectedReportType);
+  }
 
   constructor(
     private categoryService: CategoryService,
@@ -278,6 +297,7 @@ export class ReportComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    this.catalogPanelExpanded = false;
     this.reportPanelExpanded = false;
     this.showReport = false;
 

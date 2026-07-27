@@ -481,6 +481,23 @@
                                     </button>
 
                                     <button
+                                        *ngIf="checkCard"
+                                        mat-menu-item
+                                        (click)="toggleCardPostingIgnored(row)"
+                                    >
+                                        <mat-icon>{{
+                                            isCardPostingIgnored(row)
+                                                ? "add_circle_outline"
+                                                : "remove_circle_outline"
+                                        }}</mat-icon>
+                                        <span>{{
+                                            isCardPostingIgnored(row)
+                                                ? "Considerar no saldo"
+                                                : "Desconsiderar do saldo"
+                                        }}</span>
+                                    </button>
+
+                                    <button
                                         mat-menu-item
                                         [id]="'menu-expenses'"
                                         (click)="delete(row)"
@@ -532,6 +549,8 @@
                                         (row.overdue || row.duetoday)),
                                 'card-yield-checked2':
                                     row.isSelected && row.amount < 0,
+                                'card-posting-ignored':
+                                    isCardPostingIgnored(row),
                                 'ready-to-drag': row.readyToDrag,
                                 'dragging-row': row.dragging
                             }"

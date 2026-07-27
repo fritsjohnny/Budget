@@ -1,5 +1,38 @@
-<div class="container default-margin-bottom">
-    <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
+<div class="container default-margin-bottom" [class.modern-report-shell]="useModernLayout">
+    <mat-accordion *ngIf="useModernLayout" displayMode="default">
+        <mat-expansion-panel class="modern-report-catalog" [(expanded)]="catalogPanelExpanded">
+            <mat-expansion-panel-header>
+                <div class="modern-report-heading">
+                    <span class="modern-report-heading-icon"><mat-icon>insights</mat-icon></span>
+                    <div>
+                        <h1>Central de relatórios</h1>
+                        <p>{{ selectedReport?.name || 'Escolha uma análise para configurar e gerar.' }}</p>
+                    </div>
+                </div>
+            </mat-expansion-panel-header>
+
+            <div class="modern-report-grid" role="list">
+            <button
+                type="button"
+                class="modern-report-card"
+                *ngFor="let report of reports"
+                [class.modern-report-card-active]="selectedReportType === report.id"
+                [attr.data-color]="report.color"
+                (click)="selectReport(report.id)"
+                role="listitem"
+            >
+                <span class="modern-report-card-icon"><mat-icon>{{ report.icon }}</mat-icon></span>
+                <span class="modern-report-card-copy">
+                    <strong>{{ report.name }}</strong>
+                    <small>{{ report.description }}</small>
+                </span>
+                <mat-icon class="modern-report-card-check">{{ selectedReportType === report.id ? 'check_circle' : 'chevron_right' }}</mat-icon>
+            </button>
+            </div>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+    <mat-accordion *ngIf="selectedReportType || !useModernLayout" displayMode="default" [multi]="true" [hideToggle]="false">
         <mat-expansion-panel
             class="mat-panel-report"
             [hideToggle]="false"
@@ -8,10 +41,17 @@
             (opened)="reportPanelOpened()"
         >
             <mat-expansion-panel-header>
-                <div class="row center month-name2">Parâmetros</div>
+                <div class="report-panel-title" *ngIf="useModernLayout">
+                    <span class="report-panel-icon"><mat-icon>tune</mat-icon></span>
+                    <span>
+                        <strong>Parâmetros</strong>
+                        <small>{{ selectedReport?.name || 'Selecione um relatório' }}</small>
+                    </span>
+                </div>
+                <div class="row center month-name2" *ngIf="!useModernLayout">Parâmetros</div>
             </mat-expansion-panel-header>
 
-            <div class="row">
+            <div class="row" *ngIf="!useModernLayout">
                 <div class="col">
                     <mat-form-field
                         appearance="fill"
@@ -387,9 +427,10 @@
         </mat-expansion-panel>
     </mat-accordion>
 
-    <div class="row mt-3">
+    <div class="row mt-3" *ngIf="selectedReportType || !useModernLayout">
         <div class="col d-flex justify-content-center">
             <button
+                *ngIf="!useModernLayout"
                 mat-mini-fab
                 color="warn"
                 (click)="generateReport()"
@@ -400,10 +441,22 @@
             >
                 <mat-icon class="default-icon">table_chart</mat-icon>
             </button>
+
+            <button
+                *ngIf="useModernLayout"
+                type="button"
+                (click)="generateReport()"
+                [disabled]="reportInvalid"
+                class="mat-elevation-z4 generate-report-button"
+            >
+                <mat-icon>table_chart</mat-icon>
+                <span>Gerar relatório</span>
+            </button>
         </div>
     </div>
 
     <div
+        *ngIf="showReport || !useModernLayout"
         class="row mt-3 report-container"
         [class.financial-health-report-container]="reportType === 7"
     >

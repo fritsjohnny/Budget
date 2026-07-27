@@ -88,7 +88,7 @@ export class PeopleComponent implements OnInit {
         : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Pessoa',
-        message: 'Confirma a EXCLUSÃO da pessoa?',
+        message: `Confirma a EXCLUSÃO da pessoa "${this.people.name}"?`,
         confirmText: 'Sim',
         cancelText: 'Cancelar',
       },

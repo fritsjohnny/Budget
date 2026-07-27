@@ -30,6 +30,8 @@ export class AccountModernLayoutComponent implements OnInit, DoCheck {
   private readonly minPullRefreshDuration = 650;
   private pullRefreshStartedAt = 0;
   private pullRefreshFinishTimer?: number;
+  private scheduledAccountSelectionKey = '';
+  private visibleAccountSelectionKey = '';
 
   constructor(private elementRef: ElementRef<HTMLElement>) {}
 
@@ -44,6 +46,8 @@ export class AccountModernLayoutComponent implements OnInit, DoCheck {
     if (this.isPullRefreshing && this.context?.hideProgress) {
       this.schedulePullRefreshFinish();
     }
+
+    this.ensureSelectedAccountVisible();
 
     const contextReference = this.context?.reference as string | undefined;
 
@@ -177,6 +181,58 @@ export class AccountModernLayoutComponent implements OnInit, DoCheck {
 
   trackById(index: number, item: any): number {
     return item?.id ?? index;
+  }
+
+  private ensureSelectedAccountVisible(): void {
+    if (!this.context?.hideProgress || this.isPullRefreshing) {
+      this.visibleAccountSelectionKey = '';
+      return;
+    }
+
+    const accountId = this.context?.accountId;
+    const accountIds = (this.context?.accountsVisible ?? []).map((account: any) => account?.id).join(',');
+    const selectionKey = `${accountId ?? ''}:${accountIds}`;
+
+    if (!accountId || !accountIds || selectionKey === this.scheduledAccountSelectionKey) return;
+
+    const currentSelectedChip = this.elementRef.nativeElement.querySelector('.account-chip-active') as HTMLElement | null;
+    const currentChipContainer = currentSelectedChip?.closest('.account-chips') as HTMLElement | null;
+
+    if (
+      selectionKey === this.visibleAccountSelectionKey &&
+      currentSelectedChip &&
+      currentChipContainer &&
+      this.isChipVisible(currentSelectedChip, currentChipContainer)
+    ) {
+      return;
+    }
+
+    this.scheduledAccountSelectionKey = selectionKey;
+
+    window.setTimeout(() => {
+      const selectedChip = this.elementRef.nativeElement.querySelector('.account-chip-active') as HTMLElement | null;
+
+      this.scheduledAccountSelectionKey = '';
+
+      if (!selectedChip || this.context?.accountId !== accountId) return;
+
+      const chipContainer = selectedChip.closest('.account-chips') as HTMLElement | null;
+
+      if (!chipContainer) return;
+
+      const centeredPosition = selectedChip.offsetLeft - (chipContainer.clientWidth - selectedChip.offsetWidth) / 2;
+      chipContainer.scrollTo({ left: Math.max(0, centeredPosition), behavior: 'smooth' });
+      this.visibleAccountSelectionKey = selectionKey;
+    });
+  }
+
+  private isChipVisible(chip: HTMLElement, container: HTMLElement): boolean {
+    const chipLeft = chip.offsetLeft;
+    const chipRight = chipLeft + chip.offsetWidth;
+    const visibleLeft = container.scrollLeft;
+    const visibleRight = visibleLeft + container.clientWidth;
+
+    return chipLeft >= visibleLeft && chipRight <= visibleRight;
   }
 
   private isMobileViewport(): boolean {

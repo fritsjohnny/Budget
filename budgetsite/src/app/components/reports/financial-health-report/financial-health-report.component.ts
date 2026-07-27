@@ -591,8 +591,8 @@ export class FinancialHealthReportComponent implements AfterViewInit {
         ]
       }
       : {
-        text: '#303030',
-        grid: 'rgba(0, 0, 0, 0.11)',
+        text: '#172033',
+        grid: 'rgba(79, 111, 232, 0.16)',
         income: '#2e7d32',
         expenses: '#d32f2f',
         surplus: '#3f51b5',
@@ -602,7 +602,7 @@ export class FinancialHealthReportComponent implements AfterViewInit {
         warning: '#ed6c02',
         danger: '#d32f2f',
         info: '#1976d2',
-        track: 'rgba(0, 0, 0, 0.09)',
+        track: 'rgba(79, 111, 232, 0.12)',
         palette: [
           '#1976d2',
           '#ed6c02',

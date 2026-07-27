@@ -272,7 +272,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         : undefined,
       data: <ConfirmDialogData>{
         title: 'Excluir Lançamento',
-        message: 'Confirma a EXCLUSÃO do lançamento?',
+        message: `Confirma a EXCLUSÃO do lançamento "${this.accountPosting.description}"?`,
         confirmText: 'Sim',
         cancelText: 'Cancelar',
       },

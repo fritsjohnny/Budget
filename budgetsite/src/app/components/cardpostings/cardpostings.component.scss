@@ -23,6 +23,16 @@
   font-weight: 500;
 }
 
+:host ::ng-deep .card-posting-ignored,
+:host ::ng-deep .card-posting-ignored td.mat-cell {
+  background-color: #8f1d2c !important;
+  color: #fff !important;
+}
+
+:host ::ng-deep .card-posting-ignored td.mat-cell .mat-icon {
+  color: #fff !important;
+}
+
 tr.card-posting-focus {
   position: relative;
   z-index: 1;

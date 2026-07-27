@@ -667,6 +667,27 @@ $primary-light: map-get($light-theme, primary);
   }
 }
 
+/* Mantém formulários modernos utilizáveis quando o teclado virtual reduz a viewport. */
+body.modern-keyboard-open .cdk-overlay-pane:has(.modern-entry-dialog),
+body.modern-keyboard-open .cdk-overlay-pane:has(.modern-account-dialog) {
+  max-height: calc(var(--visual-viewport-height, 100vh) - 8px) !important;
+}
+
+body.modern-keyboard-open .modern-entry-dialog,
+body.modern-keyboard-open .modern-account-dialog,
+body.modern-keyboard-open .modern-entry-dialog form,
+body.modern-keyboard-open .modern-account-dialog form {
+  max-height: calc(var(--visual-viewport-height, 100vh) - 8px) !important;
+}
+
+body.modern-keyboard-open .modern-entry-content,
+body.modern-keyboard-open .modern-entry-dialog [mat-dialog-content],
+body.modern-keyboard-open .modern-account-dialog [mat-dialog-content] {
+  min-height: 0 !important;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   height: 100%;

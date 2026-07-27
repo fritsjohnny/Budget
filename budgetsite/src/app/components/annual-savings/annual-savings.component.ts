@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { finalize, forkJoin } from 'rxjs';
 import { AnnualSavingsConsolidated, AnnualSavingsMonth, AnnualSavingsReport } from 'src/app/models/annual-savings.model';
@@ -23,6 +23,9 @@ export class AnnualSavingsComponent implements OnInit {
   includeNextMonths: boolean = false;
   includeCurrentYear: boolean = true;
   includeNextYears: boolean = false;
+  pullDistance: number = 0;
+  pullReady: boolean = false;
+  isPullRefreshing: boolean = false;
 
   annualGoal: number = 0;
   annualGoalTarget: number = 0;
@@ -42,6 +45,15 @@ export class AnnualSavingsComponent implements OnInit {
   goalCalculationResult: string = '';
 
   annualSavingsMonthlySimulation: { [reference: string]: number } = {};
+
+  get useModernLayout(): boolean {
+    return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
+  private pullStartY?: number;
+  private pullTracking: boolean = false;
+  private readonly pullRefreshThreshold: number = 58;
+  private readonly maxPullDistance: number = 104;
   private annualSavingsCurrentMonthSimulation: { [reference: string]: number } = {};
   private annualSavingsOriginalMonthTotals: { [reference: string]: number | null } = {};
   private annualSavingsGeneralBalanceBase: number = 0;
@@ -49,7 +61,8 @@ export class AnnualSavingsComponent implements OnInit {
 
   constructor(
     private annualSavingsService: AnnualSavingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private elementRef: ElementRef<HTMLElement>
   ) { }
 
   ngOnInit(): void {
@@ -81,7 +94,11 @@ export class AnnualSavingsComponent implements OnInit {
       previousYearEndReport: this.annualSavingsService.getByYear(this.year - 1, true, true),
       currentYearEndReport: this.annualSavingsService.getByYear(this.year, this.includeCurrentMonth, false)
     })
-      .pipe(finalize(() => this.showProgress = false))
+      .pipe(finalize(() => {
+        this.showProgress = false;
+        this.isPullRefreshing = false;
+        this.pullDistance = 0;
+      }))
       .subscribe({
         next: ({ report, consolidated, previousYearEndReport, currentYearEndReport }) => {
           this.report = report;
@@ -95,6 +112,71 @@ export class AnnualSavingsComponent implements OnInit {
           this.calculateAnnualGoal();
         }
       });
+  }
+
+  get pullRefreshLabel(): string {
+    if (this.isPullRefreshing) return 'Atualizando economia anual...';
+    if (this.pullReady) return 'Solte para atualizar';
+
+    return 'Arraste para atualizar';
+  }
+
+  onPullStart(event: TouchEvent): void {
+    if (!this.useModernLayout || !this.isMobileViewport() || this.showProgress || !this.isAtScrollTop()) return;
+    if (event.touches.length !== 1) return;
+
+    const touch = event.touches.item(0);
+
+    if (!touch) return;
+
+    this.pullStartY = touch.clientY;
+    this.pullTracking = true;
+    this.pullDistance = 0;
+    this.pullReady = false;
+  }
+
+  onPullMove(event: TouchEvent): void {
+    if (!this.pullTracking || this.pullStartY === undefined) return;
+
+    const touch = event.touches.item(0);
+
+    if (!touch || !this.isAtScrollTop()) {
+      this.cancelPull();
+      return;
+    }
+
+    const delta = touch.clientY - this.pullStartY;
+
+    if (delta <= 0) {
+      this.cancelPull();
+      return;
+    }
+
+    event.preventDefault();
+    this.pullDistance = Math.min(this.maxPullDistance, delta * 0.55);
+    this.pullReady = this.pullDistance >= this.pullRefreshThreshold;
+  }
+
+  onPullEnd(): void {
+    if (!this.pullTracking) return;
+
+    const shouldRefresh = this.pullReady && !this.showProgress;
+    this.pullTracking = false;
+    this.pullStartY = undefined;
+    this.pullReady = false;
+
+    if (!shouldRefresh) {
+      this.pullDistance = 0;
+      return;
+    }
+
+    this.isPullRefreshing = true;
+    this.pullDistance = this.pullRefreshThreshold;
+    this.refresh();
+  }
+
+  onPullCancel(): void {
+    this.cancelPull();
   }
 
   annualGoalChanged() {
@@ -343,6 +425,24 @@ export class AnnualSavingsComponent implements OnInit {
     this.currentYearRealBalance = this.normalizeNumber(currentYearEndReport?.realGeneralBalance);
   }
 
+  get showPreviousYearForecastBalance(): boolean {
+    return !this.areCurrencyValuesEqual(this.previousYearForecastBalance, this.previousYearRealBalance);
+  }
+
+  get showCurrentYearForecastBalance(): boolean {
+    return !this.areCurrencyValuesEqual(this.currentYearForecastBalance, this.currentYearRealBalance);
+  }
+
+  get annualBalanceColumnCount(): number {
+    return 2
+      + (this.showPreviousYearForecastBalance ? 1 : 0)
+      + (this.showCurrentYearForecastBalance ? 1 : 0);
+  }
+
+  get showRealGeneralBalanceColumn(): boolean {
+    return !this.areCurrencyValuesEqual(this.report?.generalBalance, this.report?.realGeneralBalance);
+  }
+
   getPreviousYearEndDateLabel(): string {
     return `31/12/${this.year - 1}`;
   }
@@ -394,6 +494,11 @@ export class AnnualSavingsComponent implements OnInit {
     return isNaN(numberValue) ? 0 : numberValue;
   }
 
+  private areCurrencyValuesEqual(firstValue: number | null | undefined, secondValue: number | null | undefined): boolean {
+    return Math.round(this.normalizeNumber(firstValue) * 100)
+      === Math.round(this.normalizeNumber(secondValue) * 100);
+  }
+
   setPreviousYear() {
     this.year--;
     this.refresh();
@@ -410,6 +515,17 @@ export class AnnualSavingsComponent implements OnInit {
   }
 
   yearChanged() {
+    this.refresh();
+  }
+
+  modernYearChanged(reference: string) {
+    const selectedYear = Number(reference);
+
+    if (!Number.isInteger(selectedYear) || selectedYear === this.year) {
+      return;
+    }
+
+    this.year = selectedYear;
     this.refresh();
   }
 
@@ -474,6 +590,25 @@ export class AnnualSavingsComponent implements OnInit {
       autoFocus: false,
       panelClass: 'annual-goal-dialog-panel'
     });
+  }
+
+  private isMobileViewport(): boolean {
+    return window.matchMedia('(max-width: 600px)').matches;
+  }
+
+  private isAtScrollTop(): boolean {
+    const scrollContainer = this.elementRef.nativeElement.closest('.mat-sidenav-content, .mat-drawer-content') as HTMLElement | null;
+
+    if (scrollContainer) return scrollContainer.scrollTop <= 0;
+
+    return window.scrollY <= 0 && document.documentElement.scrollTop <= 0 && document.body.scrollTop <= 0;
+  }
+
+  private cancelPull(): void {
+    this.pullTracking = false;
+    this.pullStartY = undefined;
+    this.pullDistance = 0;
+    this.pullReady = false;
   }
 
   private setAnnualGoalCalculation(field: string) {

@@ -24,6 +24,7 @@ const moment = _rollupMoment || _moment;
 })
 export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
   @Input() reference?: string;
+  @Input() mode: 'month' | 'year' = 'month';
   @Input() storageKey = 'modernReferenceDate';
   @Input() ariaLabel = 'Seleção de referência';
   @Input() optionIcon = 'tune';
@@ -31,9 +32,13 @@ export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
   @Input() optionAriaLabel = 'Opções da referência';
   @Input() showOptionButton = true;
   @Input() optionsAsMenu = false;
+  @Input() showRefreshButton = false;
+  @Input() refreshTooltip = 'Atualizar';
+  @Input() refreshAriaLabel = 'Atualizar referência';
 
   @Output() referenceChange = new EventEmitter<string>();
   @Output() optionsClick = new EventEmitter<void>();
+  @Output() refreshClick = new EventEmitter<void>();
 
   date = new FormControl(moment());
 
@@ -65,29 +70,47 @@ export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
   }
 
   get referenceTitle(): string {
-    return this.selectedDate.format('MMMM YYYY').toLocaleUpperCase('pt-BR');
+    return this.mode === 'year'
+      ? this.selectedDate.format('YYYY')
+      : this.selectedDate.format('MMMM YYYY').toLocaleUpperCase('pt-BR');
   }
 
   get referenceHead(): string {
-    return this.selectedDate.format('MM/YYYY');
+    return this.mode === 'year'
+      ? this.selectedDate.format('YYYY')
+      : this.selectedDate.format('MM/YYYY');
   }
 
-  get previousMonthName(): string {
-    return this.capitalize(this.selectedDate.clone().subtract(1, 'month').format('MMMM'));
+  get previousReferenceLabel(): string {
+    return this.mode === 'year'
+      ? this.selectedDate.clone().subtract(1, 'year').format('YYYY')
+      : this.capitalize(this.selectedDate.clone().subtract(1, 'month').format('MMMM'));
   }
 
-  get nextMonthName(): string {
-    return this.capitalize(this.selectedDate.clone().add(1, 'month').format('MMMM'));
+  get nextReferenceLabel(): string {
+    return this.mode === 'year'
+      ? this.selectedDate.clone().add(1, 'year').format('YYYY')
+      : this.capitalize(this.selectedDate.clone().add(1, 'month').format('MMMM'));
   }
 
   get isCurrentReference(): boolean {
-    return this.selectedDate.format('YYYYMM') === moment().format('YYYYMM');
+    const format = this.mode === 'year' ? 'YYYY' : 'YYYYMM';
+    return this.selectedDate.format(format) === moment().format(format);
   }
 
-  chosenYearHandler(normalizedYear: Moment): void {
+  get pickerAriaLabel(): string {
+    return this.mode === 'year' ? 'Selecionar ano' : 'Selecionar mês e ano';
+  }
+
+  chosenYearHandler(normalizedYear: Moment, datepicker: MatDatepicker<Moment>): void {
     const selectedDate = this.selectedDate.clone();
     selectedDate.year(normalizedYear.year());
     this.date.setValue(selectedDate);
+
+    if (this.mode === 'year') {
+      datepicker.close();
+      this.emitReference();
+    }
   }
 
   chosenMonthHandler(normalizedMonth: Moment, datepicker: MatDatepicker<Moment>): void {
@@ -98,17 +121,19 @@ export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
     this.emitReference();
   }
 
-  setPreviousMonth(): void {
-    this.date.setValue(this.selectedDate.clone().subtract(1, 'month'));
+  setPreviousReference(): void {
+    const unit = this.mode === 'year' ? 'year' : 'month';
+    this.date.setValue(this.selectedDate.clone().subtract(1, unit));
     this.emitReference();
   }
 
-  setNextMonth(): void {
-    this.date.setValue(this.selectedDate.clone().add(1, 'month'));
+  setNextReference(): void {
+    const unit = this.mode === 'year' ? 'year' : 'month';
+    this.date.setValue(this.selectedDate.clone().add(1, unit));
     this.emitReference();
   }
 
-  setCurrentMonth(): void {
+  setCurrentReference(): void {
     this.date.setValue(moment());
     this.emitReference();
   }
@@ -122,7 +147,7 @@ export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
   }
 
   private emitReference(): void {
-    const reference = this.selectedDate.format('YYYYMM');
+    const reference = this.selectedDate.format(this.mode === 'year' ? 'YYYY' : 'YYYYMM');
 
     this.synchronizedReference = reference;
 
@@ -134,9 +159,12 @@ export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
   }
 
   private parseReference(reference?: string): Moment | null {
-    if (!reference || !/^\d{6}$/.test(reference)) return null;
+    const format = this.mode === 'year' ? 'YYYY' : 'YYYYMM';
+    const pattern = this.mode === 'year' ? /^\d{4}$/ : /^\d{6}$/;
 
-    const parsed = moment(reference, 'YYYYMM', true);
+    if (!reference || !pattern.test(reference)) return null;
+
+    const parsed = moment(reference, format, true);
     return parsed.isValid() ? parsed : null;
   }
 

@@ -19,7 +19,7 @@ export class BottomTabsComponent implements OnInit, OnDestroy {
   ];
 
   isMobile = false;
-  activeTab = '/budget';
+  activeTab = '/summary';
   useModernLayout = localStorage.getItem('budgetLayout') === 'modern';
 
   private readonly handleBudgetLayoutChange = (event: Event): void => {
@@ -45,16 +45,10 @@ export class BottomTabsComponent implements OnInit, OnDestroy {
         this.isMobile = result.matches;
       });
 
-    const currentUrl = this.router.url;
+    const currentUrl = this.router.url.split(/[?#]/, 1)[0];
+    const found = this.tabs.find((tab) => tab.path === currentUrl);
 
-    if (currentUrl === '/' || currentUrl === '') {
-      this.router.navigateByUrl('/budget');
-      this.activeTab = '/budget';
-      return;
-    }
-
-    const found = this.tabs.find((t) => t.path === currentUrl);
-    this.activeTab = found ? found.path : '/budget';
+    this.activeTab = found ? found.path : '/summary';
   }
 
   ngOnDestroy(): void {

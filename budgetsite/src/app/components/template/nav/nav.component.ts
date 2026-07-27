@@ -13,6 +13,7 @@ import { MatDrawer, MatSidenavContent } from '@angular/material/sidenav';
 import { UserService } from 'src/app/services/user/user.service';
 import { Users } from 'src/app/models/users';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import { ThemeService } from 'src/app/services/theme/theme.service';
 
 @Component({
   selector: 'app-nav',
@@ -32,6 +33,15 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatSidenavContent) sidenavContent!: MatSidenavContent;
 
   private readonly scrollPositions = new Map<string, number>();
+  private readonly lastRouteStorageKey = 'lastVisitedRoute';
+  private readonly restorableRoutes = new Set([
+    '/summary',
+    '/budget',
+    '/accounts',
+    '/cards',
+    '/reports',
+    '/annual-savings'
+  ]);
   private routerEventsSubscription?: Subscription;
   private currentRouteKey = '';
   private firstAnimationFrame?: number;
@@ -41,7 +51,8 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
     private breakpointObserver: BreakpointObserver,
     private navService: NavService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private themeService: ThemeService
   ) { }
 
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
@@ -54,13 +65,14 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.themeToggle = this.theme == 'dark-theme';
 
-    document.documentElement.className = this.theme;
+    this.themeService.applyTheme(this.theme);
 
     this.user = JSON.parse(localStorage.getItem('user')!);
   }
 
   ngAfterViewInit(): void {
-    this.currentRouteKey = this.normalizeRouteKey(this.router.url);
+    const initialUrl = this.router.url;
+    this.currentRouteKey = this.normalizeRouteKey(initialUrl);
 
     this.routerEventsSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
@@ -69,9 +81,14 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if (event instanceof NavigationEnd) {
         this.currentRouteKey = this.normalizeRouteKey(event.urlAfterRedirects);
+        this.saveLastVisitedRoute(this.currentRouteKey);
         this.scheduleScrollRestoration(this.currentRouteKey);
       }
     });
+
+    if (this.isRootRoute(initialUrl) && this.restoreLastVisitedRoute()) {
+      return;
+    }
 
     this.scheduleScrollRestoration(this.currentRouteKey);
   }
@@ -111,11 +128,9 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
 
   changeTheme() {
 
-    this.theme = this.themeToggle ? 'dark-theme' : 'light-theme'
+    this.theme = this.themeToggle ? 'dark-theme' : 'light-theme';
 
-    document.documentElement.className = this.theme;
-
-    localStorage.setItem('theme', this.theme);
+    this.themeService.applyTheme(this.theme);
   }
 
   changeBudgetLayout(): void {
@@ -132,6 +147,36 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
     this.closeSideNav();
 
     this.router.navigate(['/users'], { state: { user: this.user } });
+  }
+
+  private restoreLastVisitedRoute(): boolean {
+    const savedRoute = localStorage.getItem(this.lastRouteStorageKey);
+
+    if (!savedRoute) {
+      return false;
+    }
+
+    if (!this.restorableRoutes.has(savedRoute)) {
+      localStorage.removeItem(this.lastRouteStorageKey);
+      return false;
+    }
+
+    if (savedRoute === '/summary') {
+      return false;
+    }
+
+    void this.router.navigateByUrl(savedRoute, { replaceUrl: true });
+    return true;
+  }
+
+  private saveLastVisitedRoute(routeKey: string): void {
+    if (this.restorableRoutes.has(routeKey)) {
+      localStorage.setItem(this.lastRouteStorageKey, routeKey);
+    }
+  }
+
+  private isRootRoute(url: string): boolean {
+    return url.split(/[?#]/, 1)[0] === '/';
   }
 
   private saveCurrentScrollPosition(): void {

@@ -1,20 +1,24 @@
 <section class="modern-reference-card" [attr.aria-label]="ariaLabel">
   <div class="modern-reference-navigation">
-    <button mat-button class="modern-reference-side" (click)="setPreviousMonth()" aria-label="Referência anterior">
+    <button mat-button class="modern-reference-side" (click)="setPreviousReference()" aria-label="Referência anterior">
       <mat-icon>chevron_left</mat-icon>
-      <span>{{ previousMonthName }}</span>
+      <span>{{ previousReferenceLabel }}</span>
     </button>
 
     <strong class="modern-reference-title">{{ referenceTitle }}</strong>
 
-    <button mat-button class="modern-reference-side modern-reference-side-next" (click)="setNextMonth()" aria-label="Próxima referência">
-      <span>{{ nextMonthName }}</span>
+    <button mat-button class="modern-reference-side modern-reference-side-next" (click)="setNextReference()" aria-label="Próxima referência">
+      <span>{{ nextReferenceLabel }}</span>
       <mat-icon>chevron_right</mat-icon>
     </button>
   </div>
 
-  <div class="modern-reference-actions" [class.modern-reference-actions-no-option]="!showOptionButton">
-    <button mat-button class="modern-reference-picker" (click)="modernDatepicker.open()" aria-label="Selecionar mês e ano">
+  <div
+    class="modern-reference-actions"
+    [class.modern-reference-actions-no-option]="!showOptionButton && !showRefreshButton"
+    [class.modern-reference-actions-with-refresh]="showRefreshButton"
+  >
+    <button mat-button class="modern-reference-picker" (click)="modernDatepicker.open()" [attr.aria-label]="pickerAriaLabel">
       <mat-icon>calendar_month</mat-icon>
       <span>{{ referenceHead }}</span>
       <mat-icon>expand_more</mat-icon>
@@ -24,10 +28,21 @@
       mat-stroked-button
       class="modern-reference-today"
       [class.modern-reference-today-active]="isCurrentReference"
-      (click)="setCurrentMonth()"
+      (click)="setCurrentReference()"
     >
       <mat-icon>today</mat-icon>
       <span>Hoje</span>
+    </button>
+
+    <button
+      *ngIf="showRefreshButton"
+      mat-icon-button
+      class="modern-reference-refresh"
+      (click)="refreshClick.emit()"
+      [matTooltip]="refreshTooltip"
+      [attr.aria-label]="refreshAriaLabel"
+    >
+      <mat-icon>autorenew</mat-icon>
     </button>
 
     <button
@@ -72,7 +87,7 @@
     <mat-datepicker
       #modernDatepicker
       startView="multi-year"
-      (yearSelected)="chosenYearHandler($event)"
+      (yearSelected)="chosenYearHandler($event, modernDatepicker)"
       (monthSelected)="chosenMonthHandler($event, modernDatepicker)"
       [panelClass]="['example-month-picker', 'modern-datepicker-panel']"
     ></mat-datepicker>

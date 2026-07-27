@@ -3,6 +3,34 @@
     padding-bottom: -50px !important;
 }
 
+.annual-savings-shell > app-modern-reference-selector {
+    display: block;
+    margin-top: 10px;
+}
+
+.annual-modern-reference-options {
+    display: grid;
+    gap: 8px;
+    min-width: 250px;
+    padding: 4px 2px;
+}
+
+.annual-modern-reference-options .annual-checkbox-title {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--modern-divider);
+}
+
+.annual-modern-reference-options .annual-checkbox-title:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.annual-modern-reference-options mat-checkbox {
+    display: block;
+}
+
 .annual-filter-row {
     align-items: center;
 }
@@ -110,6 +138,26 @@
     border-right: none;
 }
 
+.annual-economy-table-without-real-balance {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+}
+
+.annual-economy-table-without-real-balance th:first-child,
+.annual-economy-table-without-real-balance td:first-child {
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+}
+
+.annual-economy-table-without-real-balance th:not(:first-child),
+.annual-economy-table-without-real-balance td:not(:first-child) {
+    width: calc((100% - 44px) / 3);
+    min-width: 0;
+    max-width: none;
+}
+
 .annual-total-row {
     font-weight: 600;
 }
@@ -201,9 +249,9 @@
 
 .annual-balance-table th,
 .annual-balance-table td {
-    width: 25% !important;
+    width: calc(100% / var(--annual-balance-column-count)) !important;
     min-width: 0 !important;
-    max-width: 25%;
+    max-width: none;
     text-align: center !important;
     white-space: normal !important;
     padding-left: 4px;
@@ -214,11 +262,255 @@
 .annual-balance-table td:first-child,
 .annual-balance-table th:nth-child(2),
 .annual-balance-table td:nth-child(2) {
-    width: 25% !important;
+    width: calc(100% / var(--annual-balance-column-count)) !important;
     min-width: 0 !important;
     text-align: center !important;
     padding-left: 4px;
     padding-right: 4px;
+}
+
+.annual-balance-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.annual-balance-card {
+    overflow: hidden;
+    border: 1px solid var(--annual-border);
+    border-radius: 14px;
+    background: var(--annual-surface);
+    box-shadow: 0 8px 20px rgba(18, 29, 47, 0.12);
+}
+
+.annual-balance-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--annual-surface-strong);
+}
+
+.annual-balance-card-header > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.annual-balance-card-header > div > span {
+    color: var(--annual-muted);
+    font-size: 0.78em;
+}
+
+.annual-balance-card-header > div > strong {
+    color: var(--annual-text);
+    font-size: 1em;
+}
+
+.annual-balance-card-icon {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: var(--annual-primary-soft);
+    color: var(--annual-primary);
+}
+
+.annual-balance-card-icon mat-icon {
+    width: 21px;
+    height: 21px;
+    font-size: 21px;
+}
+
+.annual-balance-card-current .annual-balance-card-icon {
+    background: rgba(23, 116, 58, 0.12);
+    color: var(--annual-positive);
+}
+
+.annual-balance-card-values {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--annual-border);
+}
+
+.annual-balance-card-values.annual-balance-single-value {
+    grid-template-columns: 1fr;
+}
+
+.annual-balance-card-values > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+}
+
+.annual-balance-card-values > div + div {
+    border-left: 1px solid var(--annual-border);
+}
+
+.annual-balance-card-values > div > span {
+    color: var(--annual-muted);
+    font-size: 0.76em;
+}
+
+.annual-balance-card-values > div > strong {
+    overflow: hidden;
+    font-size: 1em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.annual-economy-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.annual-economy-card {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--annual-border);
+    border-radius: 14px;
+    background: var(--annual-surface);
+    box-shadow: 0 8px 20px rgba(18, 29, 47, 0.1);
+}
+
+.annual-economy-card > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.annual-economy-card > div > span {
+    color: var(--annual-muted);
+    font-size: 0.78em;
+}
+
+.annual-economy-card > div > strong {
+    overflow: hidden;
+    font-size: 1em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.annual-economy-card-icon {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+}
+
+.annual-economy-card-icon mat-icon {
+    width: 21px;
+    height: 21px;
+    font-size: 21px;
+}
+
+.annual-economy-total .annual-economy-card-icon {
+    background: rgba(23, 116, 58, 0.12);
+    color: var(--annual-positive);
+}
+
+.annual-economy-average .annual-economy-card-icon {
+    background: var(--annual-primary-soft);
+    color: var(--annual-primary);
+}
+
+.annual-economy-balance .annual-economy-card-icon {
+    background: rgba(233, 67, 135, 0.12);
+    color: #d63d7c;
+}
+
+.annual-economy-real-balance .annual-economy-card-icon {
+    background: rgba(237, 176, 32, 0.15);
+    color: #b67800;
+}
+
+@media (max-width: 900px) {
+    .annual-economy-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .annual-balance-summary {
+        gap: 8px;
+    }
+
+    .annual-balance-card-header,
+    .annual-balance-card-values > div {
+        padding: 9px;
+    }
+
+    .annual-economy-summary {
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .annual-economy-card {
+        gap: 7px;
+        padding: 9px;
+    }
+
+    .annual-economy-card-icon {
+        flex-basis: 32px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .annual-economy-card-icon mat-icon {
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+    }
+
+    .annual-economy-card > div > span {
+        font-size: 0.7em;
+    }
+
+    .annual-economy-card > div > strong {
+        font-size: 0.86em;
+    }
+
+    .annual-balance-card-header {
+        gap: 7px;
+    }
+
+    .annual-balance-card-icon {
+        flex-basis: 32px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .annual-balance-card-icon mat-icon {
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+    }
+
+    .annual-balance-card-header > div > span,
+    .annual-balance-card-values > div > span {
+        font-size: 0.7em;
+    }
+
+    .annual-balance-card-header > div > strong,
+    .annual-balance-card-values > div > strong {
+        font-size: 0.86em;
+    }
 }
 
 .annual-balance-date-row td {
@@ -312,21 +604,25 @@
 
 .annual-total-input-wrapper {
     position: relative;
-    width: 105px;
-    max-width: 105px;
-    display: inline-block;
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
 }
 
 .annual-total-input {
-    width: 105px;
-    max-width: 105px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     border: none;
     outline: none;
-    background: transparent;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
     color: inherit;
     font: inherit;
     text-align: right;
-    padding-left: 16px;
+    padding: 0 0 0 18px;
 }
 
 .annual-total-input:focus {
@@ -358,4 +654,496 @@
 
 .annual-total-clear-button:active {
     transform: scale(0.92);
+}
+
+
+/* Atualização por gesto no mobile do leiaute moderno. */
+.annual-savings-shell {
+    position: relative;
+    transform: translateY(var(--annual-pull-distance, 0));
+    transition: transform 180ms ease-out;
+}
+
+.annual-savings-shell.annual-pull-active { transition: none; }
+
+.annual-pull-indicator {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--annual-border);
+    border-radius: 999px;
+    background: var(--annual-surface);
+    box-shadow: 0 8px 22px rgba(16, 27, 43, 0.12);
+    color: var(--annual-muted);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -135%);
+}
+
+.annual-pull-indicator-visible { opacity: 1; }
+.annual-pull-indicator-ready { color: var(--annual-primary); }
+.annual-pull-indicator mat-icon { width: 18px; height: 18px; font-size: 18px; line-height: 18px; }
+.annual-pull-indicator-ready mat-icon { transform: rotate(180deg); }
+.annual-pull-refreshing .annual-pull-indicator mat-icon { animation: annual-refresh-spin 800ms linear infinite; }
+
+@keyframes annual-refresh-spin { to { transform: rotate(360deg); } }
+
+/* Modernização cromática: preserva integralmente as medidas do leiaute clássico. */
+.annual-savings-shell {
+    --annual-surface: #ffffff;
+    --annual-surface-soft: #f4f7fd;
+    --annual-surface-strong: #e7edfb;
+    --annual-border: rgba(23, 35, 55, 0.18);
+    --annual-text: #172033;
+    --annual-muted: #687286;
+    --annual-primary: #4f6fe8;
+    --annual-primary-soft: rgba(79, 111, 232, 0.12);
+    --annual-positive: #17743a;
+    --annual-negative: #c83d46;
+    color: var(--annual-text);
+}
+
+:host-context(.dark-theme) .annual-savings-shell {
+    --annual-surface: #0f1d2b;
+    --annual-surface-soft: #16283b;
+    --annual-surface-strong: #1b344a;
+    --annual-border: rgba(194, 213, 232, 0.2);
+    --annual-text: #edf3fa;
+    --annual-muted: #a8b2c1;
+    --annual-primary: #7392ff;
+    --annual-primary-soft: rgba(71, 102, 217, 0.2);
+    --annual-positive: #8ed6a7;
+    --annual-negative: #ff9e99;
+}
+
+.mat-panel-annual-savings,
+.table-container,
+.annual-info-content {
+    border-color: var(--annual-border);
+    background: var(--annual-surface);
+    color: var(--annual-text);
+}
+
+.annual-table-title,
+.annual-table {
+    background: var(--annual-surface);
+    color: var(--annual-text);
+}
+
+.annual-table-title,
+.annual-table th,
+.annual-table td {
+    border-color: var(--annual-border);
+}
+
+.annual-table th {
+    background: var(--annual-surface-strong);
+    color: var(--annual-text);
+}
+
+.annual-table td {
+    background: var(--annual-surface);
+    color: var(--annual-text);
+}
+
+.annual-table tbody tr:nth-child(even):not(.annual-total-row) td,
+.annual-average-cell {
+    background: var(--annual-surface-soft);
+}
+
+.annual-total-row td {
+    background: var(--annual-primary-soft);
+}
+
+.positive {
+    color: var(--annual-positive) !important;
+}
+
+.negative {
+    color: var(--annual-negative) !important;
+}
+
+.annual-info-content {
+    color: var(--annual-muted);
+}
+
+::ng-deep .annual-savings-shell .annual-year-field.mat-form-field-appearance-fill .mat-form-field-flex,
+::ng-deep .annual-savings-shell .annual-year-field .mat-form-field-wrapper,
+::ng-deep .annual-savings-shell .annual-year-field .mat-form-field-infix,
+::ng-deep .annual-savings-shell .annual-year-field .mat-input-element {
+    background: var(--annual-surface) !important;
+    background-color: var(--annual-surface) !important;
+}
+
+::ng-deep .annual-savings-shell .mat-form-field-label,
+::ng-deep .annual-savings-shell .mat-input-element,
+::ng-deep .annual-savings-shell .mat-checkbox-label {
+    color: var(--annual-text);
+}
+
+::ng-deep .annual-savings-shell .mat-form-field-underline {
+    background-color: var(--annual-border);
+}
+
+::ng-deep .annual-savings-shell .mat-focused .mat-form-field-ripple {
+    background-color: var(--annual-primary);
+}
+
+::ng-deep .annual-savings-shell .mat-expansion-panel,
+::ng-deep .annual-savings-shell .mat-expansion-panel-header {
+    background: var(--annual-surface) !important;
+    color: var(--annual-text);
+}
+
+::ng-deep .annual-savings-shell .mat-expansion-indicator::after {
+    color: var(--annual-muted);
+}
+
+::ng-deep .annual-goal-dialog-panel .mat-dialog-container {
+    background: var(--annual-surface);
+    color: var(--annual-text);
+}
+
+
+/* Cantos das tabelas e do aviso alinhados ao padrão dos cards modernos. */
+.annual-savings-shell .annual-table-container,
+.annual-savings-shell .annual-info-content {
+    overflow: auto;
+    border: 1px solid var(--annual-border);
+    border-radius: 16px;
+    background: var(--annual-surface);
+}
+
+.annual-savings-shell .annual-table-container .annual-table-title {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.annual-savings-shell .annual-table-container:has(.annual-section-title-economy) {
+    border-color: var(--annual-primary);
+}
+
+.annual-savings-shell .annual-table-container:has(.annual-section-title-consolidated) {
+    border-color: #e94387;
+}
+
+.annual-savings-shell .annual-table-container:has(.annual-section-title-goals) {
+    border-color: #d99700;
+}
+
+.annual-savings-shell .annual-table-container .annual-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 15px;
+}
+
+.annual-savings-shell .annual-table-container .annual-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 15px;
+}
+
+/* Títulos no padrão dos painéis do leiaute moderno de Orçamentos. */
+.annual-savings-shell .annual-section-title {
+    --annual-title-accent: var(--annual-primary);
+    --annual-title-soft: var(--annual-primary-soft);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 68px;
+    box-sizing: border-box;
+    border-left: 3px solid var(--annual-title-accent);
+    gap: 10px;
+    padding: 8px 16px;
+    background: linear-gradient(90deg, var(--annual-title-soft), var(--annual-surface) 70%);
+    color: var(--annual-title-accent);
+}
+
+.annual-savings-shell .annual-section-title-consolidated {
+    --annual-title-accent: #e94387;
+    --annual-title-soft: rgba(233, 67, 135, 0.12);
+}
+
+.annual-savings-shell .annual-section-title-goals {
+    --annual-title-accent: #d99700;
+    --annual-title-soft: rgba(217, 151, 0, 0.13);
+}
+
+.annual-section-title-icon {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: var(--annual-title-soft);
+    color: var(--annual-title-accent);
+}
+
+.annual-section-title-icon mat-icon { width: 21px; height: 21px; font-size: 21px; line-height: 21px; }
+.annual-section-title-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left; }
+.annual-section-title-copy b { color: var(--annual-title-accent); font-size: 16px; line-height: 1.2; }
+.annual-section-title-copy small { color: var(--annual-muted); font-size: 11px; line-height: 1.2; }
+
+/* Cards de resumo no mesmo padrão visual do resumo de Orçamentos. */
+.annual-balance-summary,
+.annual-economy-summary {
+    gap: 12px;
+}
+
+.annual-summary-card,
+.annual-economy-card {
+    --annual-card-accent: var(--annual-primary);
+    --annual-card-soft: var(--annual-primary-soft);
+    min-width: 0;
+    min-height: 138px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    padding: 14px;
+    border: 1px solid var(--annual-card-accent);
+    border-radius: 16px;
+    background: linear-gradient(
+        135deg,
+        var(--annual-card-soft),
+        var(--annual-surface) 60%
+    );
+    box-shadow: 0 6px 18px rgba(28, 39, 60, 0.08);
+}
+
+.annual-summary-current,
+.annual-economy-total {
+    --annual-card-accent: var(--annual-positive);
+    --annual-card-soft: rgba(41, 164, 82, 0.12);
+}
+
+.annual-economy-average {
+    --annual-card-accent: var(--annual-primary);
+    --annual-card-soft: var(--annual-primary-soft);
+}
+
+.annual-economy-balance {
+    --annual-card-accent: #e94387;
+    --annual-card-soft: rgba(233, 67, 135, 0.12);
+}
+
+.annual-economy-real-balance {
+    --annual-card-accent: #d99700;
+    --annual-card-soft: rgba(217, 151, 0, 0.13);
+}
+
+.annual-summary-icon,
+.annual-economy-card-icon {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--annual-card-soft) !important;
+    color: var(--annual-card-accent) !important;
+}
+
+.annual-summary-icon mat-icon,
+.annual-economy-card-icon mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 24px;
+}
+
+.annual-summary-content,
+.annual-economy-card > div {
+    min-width: 0;
+    display: block;
+}
+
+.annual-summary-label,
+.annual-economy-card > div > span {
+    display: block;
+    color: var(--annual-card-accent);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.annual-summary-content > strong,
+.annual-economy-card > div > strong {
+    display: block;
+    overflow: hidden;
+    margin-top: 8px;
+    color: var(--annual-text);
+    font-size: clamp(17px, 2.4vw, 24px);
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.annual-card-legend {
+    display: block;
+    margin-top: 5px;
+    color: var(--annual-muted);
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+.annual-summary-values {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.annual-summary-values > div {
+    min-width: 0;
+}
+
+.annual-summary-values > div + div {
+    padding-left: 12px;
+    border-left: 1px solid var(--annual-border);
+}
+
+.annual-summary-values small {
+    display: block;
+    color: var(--annual-muted);
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.annual-summary-values strong {
+    display: block;
+    overflow: hidden;
+    margin-top: 2px;
+    color: var(--annual-text);
+    font-size: clamp(14px, 2vw, 20px);
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+:host-context(.dark-theme) .annual-summary-current,
+:host-context(.dark-theme) .annual-economy-total {
+    --annual-card-soft: rgba(63, 186, 84, 0.17);
+}
+
+:host-context(.dark-theme) .annual-economy-balance {
+    --annual-card-accent: #ff5b9c;
+    --annual-card-soft: rgba(255, 91, 156, 0.16);
+}
+
+:host-context(.dark-theme) .annual-economy-real-balance {
+    --annual-card-accent: #ffc107;
+    --annual-card-soft: rgba(255, 193, 7, 0.14);
+}
+
+/* Respiro lateral e contorno discreto nas superfícies do leiaute moderno. */
+.annual-savings-shell {
+    --annual-section-outline: rgba(79, 111, 232, 0.55);
+}
+
+:host-context(.dark-theme) .annual-savings-shell {
+    --annual-section-outline: rgba(115, 146, 255, 0.55);
+}
+
+.annual-savings-shell .annual-table-container,
+.annual-savings-shell .annual-info-content {
+    width: calc(100% - 6px);
+    margin-left: 3px;
+    margin-right: 3px;
+    box-sizing: border-box;
+    border-color: var(--annual-section-outline);
+}
+
+.annual-economy-summary-without-real {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+    .annual-summary-card,
+    .annual-economy-card {
+        min-height: 120px;
+    }
+}
+
+@media (max-width: 600px) {
+    .annual-balance-summary,
+    .annual-economy-summary {
+        gap: 8px;
+    }
+
+    .annual-economy-summary-without-real {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .annual-economy-summary-without-real .annual-economy-balance {
+        grid-column: 1 / -1;
+        width: calc((100% - 8px) / 2);
+        justify-self: center;
+    }
+
+    .annual-summary-card,
+    .annual-economy-card {
+        min-height: 106px;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    .annual-summary-icon,
+    .annual-economy-card-icon {
+        flex-basis: 36px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .annual-summary-icon mat-icon,
+    .annual-economy-card-icon mat-icon {
+        width: 21px;
+        height: 21px;
+        font-size: 21px;
+        line-height: 21px;
+    }
+
+    .annual-summary-label,
+    .annual-economy-card > div > span {
+        font-size: 13px;
+    }
+
+    .annual-summary-content > strong,
+    .annual-economy-card > div > strong {
+        margin-top: 5px;
+        font-size: 16px;
+    }
+
+    .annual-card-legend {
+        margin-top: 4px;
+        font-size: 8px;
+        line-height: 1.15;
+    }
+
+    .annual-summary-values {
+        gap: 6px;
+        margin-top: 5px;
+    }
+
+    .annual-summary-values > div + div {
+        padding-left: 6px;
+    }
+
+    .annual-summary-values small {
+        font-size: 9px;
+    }
+
+    .annual-summary-values strong {
+        font-size: 13px;
+    }
 }

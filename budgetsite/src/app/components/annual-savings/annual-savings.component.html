@@ -1,5 +1,51 @@
-<div class="container default-margin-bottom">
-    <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
+<div
+    class="container default-margin-bottom"
+    [class.annual-savings-shell]="useModernLayout"
+    [class.annual-pull-active]="pullDistance > 0 && !isPullRefreshing"
+    [class.annual-pull-refreshing]="isPullRefreshing"
+    [style.--annual-pull-distance]="pullDistance + 'px'"
+    (touchstart)="onPullStart($event)"
+    (touchmove)="onPullMove($event)"
+    (touchend)="onPullEnd()"
+    (touchcancel)="onPullCancel()"
+>
+    <div
+        *ngIf="useModernLayout"
+        class="annual-pull-indicator"
+        [class.annual-pull-indicator-visible]="pullDistance > 0 || isPullRefreshing"
+        [class.annual-pull-indicator-ready]="pullReady"
+        aria-live="polite"
+    >
+        <mat-icon>{{ isPullRefreshing ? "autorenew" : "arrow_downward" }}</mat-icon>
+        <span>{{ pullRefreshLabel }}</span>
+    </div>
+    <app-modern-reference-selector
+        *ngIf="useModernLayout"
+        [reference]="year.toString()"
+        mode="year"
+        storageKey="annualSavingsReferenceDate"
+        ariaLabel="Referência da economia anual"
+        optionIcon="tune"
+        optionTooltip="Mostrar filtros"
+        optionAriaLabel="Mostrar filtros"
+        [optionsAsMenu]="true"
+        [showRefreshButton]="true"
+        refreshTooltip="Atualizar economia anual"
+        refreshAriaLabel="Atualizar economia anual"
+        (refreshClick)="refresh()"
+        (referenceChange)="modernYearChanged($event)"
+    >
+        <div class="annual-modern-reference-options">
+            <div class="annual-checkbox-title"><span>Economia anual</span></div>
+            <mat-checkbox [(ngModel)]="includeCurrentMonth" (change)="filtersChanged()">Incluir mês atual</mat-checkbox>
+            <mat-checkbox [(ngModel)]="includeNextMonths" (change)="filtersChanged()">Incluir próximos meses</mat-checkbox>
+            <div class="annual-checkbox-title"><span>Consolidado</span></div>
+            <mat-checkbox [(ngModel)]="includeCurrentYear" (change)="filtersChanged()">Incluir ano atual</mat-checkbox>
+            <mat-checkbox [(ngModel)]="includeNextYears" (change)="filtersChanged()">Incluir próximos anos</mat-checkbox>
+        </div>
+    </app-modern-reference-selector>
+
+    <mat-accordion *ngIf="!useModernLayout" displayMode="default" [multi]="true" [hideToggle]="false">
         <mat-expansion-panel
             class="mat-panel-annual-savings"
             [hideToggle]="false"
@@ -16,6 +62,7 @@
             <div class="row d-flex annual-filter-row">
                 <div class="col-6 mb-2">
                     <mat-form-field
+                        class="annual-year-field"
                         appearance="fill"
                         floatLabel="always"
                         style="width: 100% !important"
@@ -110,7 +157,7 @@
     </div>
 
     <!-- BOTÃO ATUALIZAR -->
-    <div class="row center" *ngIf="!showProgress">
+    <div class="row center" *ngIf="!showProgress && !useModernLayout">
         <div class="col refresh">
             <button
                 class="default-button"
@@ -127,31 +174,44 @@
     </div>
 
     <!-- SALDOS ANUAIS -->
-    <div class="row center" *ngIf="!showProgress && report">
+    <div
+        class="row center"
+        *ngIf="!showProgress && report && !useModernLayout"
+    >
         <div
             class="table-container mat-elevation-z8 mytable2 annual-table-container"
         >
-            <table class="annual-table annual-balance-table">
+            <table
+                class="annual-table annual-balance-table"
+                [style.--annual-balance-column-count]="annualBalanceColumnCount"
+            >
                 <thead>
                     <tr>
-                        <th>Previsto(1)</th>
-                        <th>Real(2)</th>
-                        <th>Previsto(3)</th>
-                        <th>Real(4)</th>
+                        <th *ngIf="showPreviousYearForecastBalance">Previsto(1)</th>
+                        <th>
+                            {{ showPreviousYearForecastBalance ? "Real(2)" : "Real" }}
+                        </th>
+                        <th *ngIf="showCurrentYearForecastBalance">Previsto(3)</th>
+                        <th>
+                            {{ showCurrentYearForecastBalance ? "Real(4)" : "Real" }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="annual-balance-date-row">
+                        <td *ngIf="showPreviousYearForecastBalance">
+                            {{ getPreviousYearEndDateLabel() }}
+                        </td>
                         <td>{{ getPreviousYearEndDateLabel() }}</td>
-                        <td>{{ getPreviousYearEndDateLabel() }}</td>
-                        <td>{{ getCurrentYearEndDateLabel() }}</td>
+                        <td *ngIf="showCurrentYearForecastBalance">
+                            {{ getCurrentYearEndDateLabel() }}
+                        </td>
                         <td>{{ getCurrentYearEndDateLabel() }}</td>
                     </tr>
                     <tr class="annual-total-row">
                         <td
-                            [ngClass]="
-                                getValueClass(previousYearForecastBalance)
-                            "
+                            *ngIf="showPreviousYearForecastBalance"
+                            [ngClass]="getValueClass(previousYearForecastBalance)"
                         >
                             {{ formatCurrency(previousYearForecastBalance) }}
                         </td>
@@ -159,9 +219,8 @@
                             {{ formatCurrency(previousYearRealBalance) }}
                         </td>
                         <td
-                            [ngClass]="
-                                getValueClass(currentYearForecastBalance)
-                            "
+                            *ngIf="showCurrentYearForecastBalance"
+                            [ngClass]="getValueClass(currentYearForecastBalance)"
                         >
                             {{ formatCurrency(currentYearForecastBalance) }}
                         </td>
@@ -174,25 +233,178 @@
         </div>
     </div>
 
+    <section
+        class="annual-balance-summary"
+        *ngIf="!showProgress && report && useModernLayout"
+        aria-label="Resumo dos saldos anuais"
+    >
+        <article class="annual-summary-card annual-summary-previous">
+            <span class="annual-summary-icon">
+                <mat-icon>history</mat-icon>
+            </span>
+            <div class="annual-summary-content">
+                <span class="annual-summary-label">{{
+                    getPreviousYearEndDateLabel()
+                }}</span>
+                <ng-container *ngIf="!showPreviousYearForecastBalance">
+                    <strong [ngClass]="getValueClass(previousYearRealBalance)">
+                        {{ formatCurrency(previousYearRealBalance) }}
+                    </strong>
+                </ng-container>
+                <div
+                    class="annual-summary-values"
+                    *ngIf="showPreviousYearForecastBalance"
+                >
+                    <div>
+                        <small>Previsto</small>
+                        <strong
+                            [ngClass]="getValueClass(previousYearForecastBalance)"
+                        >
+                            {{ formatCurrency(previousYearForecastBalance) }}
+                        </strong>
+                    </div>
+                    <div>
+                        <small>Real</small>
+                        <strong
+                            [ngClass]="getValueClass(previousYearRealBalance)"
+                        >
+                            {{ formatCurrency(previousYearRealBalance) }}
+                        </strong>
+                    </div>
+                </div>
+                <small class="annual-card-legend">Fechamento antes do ano selecionado</small>
+            </div>
+        </article>
+
+        <article class="annual-summary-card annual-summary-current">
+            <span class="annual-summary-icon">
+                <mat-icon>account_balance_wallet</mat-icon>
+            </span>
+            <div class="annual-summary-content">
+                <span class="annual-summary-label">{{
+                    getCurrentYearEndDateLabel()
+                }}</span>
+                <ng-container *ngIf="!showCurrentYearForecastBalance">
+                    <strong [ngClass]="getValueClass(currentYearRealBalance)">
+                        {{ formatCurrency(currentYearRealBalance) }}
+                    </strong>
+                </ng-container>
+                <div
+                    class="annual-summary-values"
+                    *ngIf="showCurrentYearForecastBalance"
+                >
+                    <div>
+                        <small>Previsto</small>
+                        <strong
+                            [ngClass]="getValueClass(currentYearForecastBalance)"
+                        >
+                            {{ formatCurrency(currentYearForecastBalance) }}
+                        </strong>
+                    </div>
+                    <div>
+                        <small>Real</small>
+                        <strong
+                            [ngClass]="getValueClass(currentYearRealBalance)"
+                        >
+                            {{ formatCurrency(currentYearRealBalance) }}
+                        </strong>
+                    </div>
+                </div>
+                <small class="annual-card-legend">Fechamento ao fim do ano selecionado</small>
+            </div>
+        </article>
+    </section>
+
+    <section
+        class="annual-economy-summary"
+        [class.annual-economy-summary-without-real]="!showRealGeneralBalanceColumn"
+        *ngIf="!showProgress && report && useModernLayout"
+        [attr.aria-label]="'Resumo da economia de ' + report.year"
+    >
+        <article class="annual-economy-card annual-economy-total">
+            <span class="annual-economy-card-icon">
+                <mat-icon>savings</mat-icon>
+            </span>
+            <div>
+                <span>Total</span>
+                <strong [ngClass]="getValueClass(report.total)">
+                    {{ formatCurrency(report.total) }}
+                </strong>
+                <small class="annual-card-legend">Soma dos meses incluídos</small>
+            </div>
+        </article>
+
+        <article class="annual-economy-card annual-economy-average">
+            <span class="annual-economy-card-icon">
+                <mat-icon>insights</mat-icon>
+            </span>
+            <div>
+                <span>Média</span>
+                <strong [ngClass]="getValueClass(report.average)">
+                    {{ formatCurrency(report.average) }}
+                </strong>
+                <small class="annual-card-legend">Média dos meses com dados</small>
+            </div>
+        </article>
+
+        <article class="annual-economy-card annual-economy-balance">
+            <span class="annual-economy-card-icon">
+                <mat-icon>account_balance</mat-icon>
+            </span>
+            <div>
+                <span>Saldo geral</span>
+                <strong [ngClass]="getValueClass(report.generalBalance)">
+                    {{ formatCurrency(report.generalBalance) }}
+                </strong>
+                <small class="annual-card-legend">Saldo acumulado ao fim do período</small>
+            </div>
+        </article>
+
+        <article
+            *ngIf="showRealGeneralBalanceColumn"
+            class="annual-economy-card annual-economy-real-balance"
+        >
+            <span class="annual-economy-card-icon">
+                <mat-icon>verified</mat-icon>
+            </span>
+            <div>
+                <span>Saldo geral real</span>
+                <strong [ngClass]="getValueClass(report.realGeneralBalance)">
+                    {{ formatCurrency(report.realGeneralBalance) }}
+                </strong>
+                <small class="annual-card-legend">Saldo acumulado somente com valores realizados</small>
+            </div>
+        </article>
+    </section>
+
     <!-- ECONOMIA ANUAL -->
     <div class="row center" *ngIf="!showProgress && report">
         <div
             class="table-container mat-elevation-z8 mytable2 annual-table-container"
         >
-            <div class="annual-table-title">
-                <span
-                    ><b>Economia {{ report.year }}</b></span
-                >
+            <div class="annual-table-title annual-section-title annual-section-title-economy">
+                <span class="annual-section-title-icon"><mat-icon>savings</mat-icon></span>
+                <span class="annual-section-title-copy">
+                    <b>Economia</b>
+                    <small>{{ report.year }}</small>
+                </span>
             </div>
 
-            <table class="annual-table">
+            <table
+                class="annual-table annual-economy-table"
+                [class.annual-economy-table-without-real-balance]="
+                    !showRealGeneralBalanceColumn
+                "
+            >
                 <thead>
                     <tr>
                         <th>Mês</th>
                         <th>Total</th>
                         <th>Média</th>
                         <th>Saldo Geral</th>
-                        <th>Saldo Geral (Real)</th>
+                        <th *ngIf="showRealGeneralBalanceColumn">
+                            Saldo Geral (Real)
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -208,6 +420,7 @@
                             <b>{{ formatCurrency(report.generalBalance) }}</b>
                         </td>
                         <td
+                            *ngIf="showRealGeneralBalanceColumn"
                             [ngClass]="getValueClass(report.realGeneralBalance)"
                         >
                             <b>{{
@@ -278,7 +491,10 @@
                         <td [ngClass]="getValueClass(row.generalBalance)">
                             {{ formatCurrency(row.generalBalance) }}
                         </td>
-                        <td [ngClass]="getValueClass(row.realGeneralBalance)">
+                        <td
+                            *ngIf="showRealGeneralBalanceColumn"
+                            [ngClass]="getValueClass(row.realGeneralBalance)"
+                        >
                             {{ formatCurrency(row.realGeneralBalance) }}
                         </td>
                     </tr>
@@ -295,8 +511,12 @@
         <div
             class="table-container mat-elevation-z8 mytable2 annual-table-container"
         >
-            <div class="annual-table-title">
-                <span><b>Consolidado</b></span>
+            <div class="annual-table-title annual-section-title annual-section-title-consolidated">
+                <span class="annual-section-title-icon"><mat-icon>analytics</mat-icon></span>
+                <span class="annual-section-title-copy">
+                    <b>Consolidado</b>
+                    <small>Histórico anual</small>
+                </span>
             </div>
 
             <table class="annual-table consolidated-table">
@@ -358,12 +578,17 @@
         <div
             class="table-container mat-elevation-z8 mytable2 annual-table-container"
         >
-            <div class="annual-table-title">
-                <span><b>Metas</b></span>
+            <div class="annual-table-title annual-section-title annual-section-title-goals">
+                <span class="annual-section-title-icon"><mat-icon>flag</mat-icon></span>
+                <span class="annual-section-title-copy">
+                    <b>Metas</b>
+                    <small>Acompanhamento de {{ year }}</small>
+                </span>
             </div>
 
             <div class="annual-goal-editor">
                 <mat-form-field
+                    
                     appearance="fill"
                     floatLabel="always"
                     style="width: 100% !important"

@@ -127,6 +127,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
   lastYield: number = 0;
   totalPreviousYield: number = 0;
+  private pendingAccountPostingFocusId?: number;
+  focusedAccountPostingId?: number;
 
   constructor(
     private accountPostingsService: AccountPostingsService,
@@ -136,6 +138,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     private expenseService: ExpenseService,
     public dialog: MatDialog,
     private cdr: ChangeDetectorRef,
+    private elementRef: ElementRef,
     private messenger: Messenger
   ) { }
 
@@ -372,6 +375,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           this.dataSource = new MatTableDataSource(this.accountpostings);
 
           this.hideProgress = true;
+          this.focusPendingAccountPosting();
         },
         error: () => (this.hideProgress = true),
       });
@@ -480,6 +484,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
               localStorage.setItem(this.IOF_DAYS_STORAGE_KEY, result.iofElapsedDays?.toString());
               localStorage.setItem(this.IOF_DATE_STORAGE_KEY, accountpostings.date?.toString());
+              this.prepareAccountPostingFocus(accountpostings.id);
             }
 
             this.getTotalAmount();
@@ -490,6 +495,53 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  private prepareAccountPostingFocus(postingId?: number): void {
+    if (!this.modernLayout || !postingId) return;
+
+    this.pendingAccountPostingFocusId = postingId;
+    this.focusedAccountPostingId = postingId;
+    this.accountPostingsPanelExpanded = true;
+    localStorage.setItem('accountPostingsPanelExpanded', 'true');
+  }
+
+  private focusPendingAccountPosting(): void {
+    const postingId = this.pendingAccountPostingFocusId;
+    if (!this.modernLayout || !postingId) return;
+
+    this.focusedAccountPostingId = postingId;
+
+    setTimeout(() => {
+      const rows = Array.from(
+        this.elementRef.nativeElement.querySelectorAll(
+          `[data-account-posting-id="${postingId}"]`
+        )
+      ) as HTMLElement[];
+      const row = rows.find(element => element.getClientRects().length > 0) ?? null;
+
+      if (!row) {
+        this.clearAccountPostingFocus(postingId);
+        return;
+      }
+
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.focus({ preventScroll: true });
+      this.pendingAccountPostingFocusId = undefined;
+
+      setTimeout(() => this.clearAccountPostingFocus(postingId), 2500);
+    });
+  }
+
+  private clearAccountPostingFocus(postingId: number): void {
+    if (this.pendingAccountPostingFocusId === postingId) {
+      this.pendingAccountPostingFocusId = undefined;
+    }
+
+    if (this.focusedAccountPostingId === postingId) {
+      this.focusedAccountPostingId = undefined;
+      this.cdr.detectChanges();
+    }
   }
 
   editOrDelete(accountPosting: AccountsPostings, event: any) {
@@ -595,6 +647,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
               ];
 
               this.dataSource = new MatTableDataSource(this.accountpostings);
+              this.prepareAccountPostingFocus(result.id);
 
               this.getTotalAmount();
               this.getAccountTotals();

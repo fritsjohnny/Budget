@@ -14,7 +14,7 @@
       </button>
     </header>
 
-    <div mat-dialog-content class="modern-entry-content">
+    <div #dialogContent mat-dialog-content class="modern-entry-content">
       <section class="modern-form-section">
         <div class="modern-section-title">
           <mat-icon>category</mat-icon>
@@ -26,7 +26,7 @@
           id="typeFormControl"
           formControlName="typeFormControl"
           [(ngModel)]="accountPosting.type"
-          (change)="onTypeChange()"
+          (change)="onModernTypeChange()"
           class="modern-entry-radio-grid"
         >
           <mat-radio-button value="R" cdkFocusInitial [disabled]="accountPosting.editing">Recebimento</mat-radio-button>
@@ -128,7 +128,7 @@
         </div>
       </section>
 
-      <section class="modern-form-section">
+      <section #valuesSection class="modern-form-section">
         <div class="modern-section-title">
           <mat-icon>payments</mat-icon>
           <span>Valores</span>

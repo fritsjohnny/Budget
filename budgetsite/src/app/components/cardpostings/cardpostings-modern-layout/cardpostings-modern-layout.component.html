@@ -104,6 +104,7 @@
                 'card-yield-checked': (row.isSelected && row.amount >= 0) || (!row.isPaid && (row.overdue || row.duetoday)),
                 'card-yield-checked2': row.isSelected && row.amount < 0,
                 'selected-posting': row.isSelected,
+                'overdue-posting': !row.isPaid && (row.overdue || row.duetoday),
                 'card-posting-ignored': context.isCardPostingIgnored(row),
                 'highlighted-posting': row.parcels > 1 || !!row.peopleId
               }"></tr>
@@ -119,6 +120,7 @@
               'card-yield-checked': (row.isSelected && row.amount >= 0) || (!row.isPaid && (row.overdue || row.duetoday)),
               'card-yield-checked2': row.isSelected && row.amount < 0,
               'selected-posting': row.isSelected,
+                'overdue-posting': !row.isPaid && (row.overdue || row.duetoday),
                 'card-posting-ignored': context.isCardPostingIgnored(row),
               'highlighted-posting': row.parcels > 1 || !!row.peopleId
             }">

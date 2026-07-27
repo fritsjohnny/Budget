@@ -1,5 +1,7 @@
-import { Component, DoCheck, ElementRef, Input, OnInit } from '@angular/core';
+import { Component, DoCheck, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatDatepicker } from '@angular/material/datepicker';
 import * as _moment from 'moment';
@@ -14,7 +16,7 @@ const moment = _rollupMoment || _moment;
   styleUrls: ['./account-modern-layout.component.scss'],
   providers: [{ provide: MAT_DATE_FORMATS, useValue: MY_FORMATS }],
 })
-export class AccountModernLayoutComponent implements OnInit, DoCheck {
+export class AccountModernLayoutComponent implements OnInit, DoCheck, OnDestroy {
   @Input() context!: any;
 
   date = new FormControl(moment());
@@ -32,10 +34,22 @@ export class AccountModernLayoutComponent implements OnInit, DoCheck {
   private pullRefreshFinishTimer?: number;
   private scheduledAccountSelectionKey = '';
   private visibleAccountSelectionKey = '';
+  private routerEventsSubscription?: Subscription;
 
-  constructor(private elementRef: ElementRef<HTMLElement>) {}
+  constructor(private elementRef: ElementRef<HTMLElement>, private router: Router) {}
 
   ngOnInit(): void {
+    this.routerEventsSubscription = this.router.events.subscribe((event) => {
+      if (!(event instanceof NavigationEnd) || this.normalizeRoute(event.urlAfterRedirects) !== '/accounts') return;
+
+      this.visibleAccountSelectionKey = '';
+      this.scheduledAccountSelectionKey = '';
+      window.setTimeout(() => this.ensureSelectedAccountVisible());
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.routerEventsSubscription?.unsubscribe();
   }
 
   onReferenceChange(reference: string): void {
@@ -195,17 +209,7 @@ export class AccountModernLayoutComponent implements OnInit, DoCheck {
 
     if (!accountId || !accountIds || selectionKey === this.scheduledAccountSelectionKey) return;
 
-    const currentSelectedChip = this.elementRef.nativeElement.querySelector('.account-chip-active') as HTMLElement | null;
-    const currentChipContainer = currentSelectedChip?.closest('.account-chips') as HTMLElement | null;
-
-    if (
-      selectionKey === this.visibleAccountSelectionKey &&
-      currentSelectedChip &&
-      currentChipContainer &&
-      this.isChipVisible(currentSelectedChip, currentChipContainer)
-    ) {
-      return;
-    }
+    if (selectionKey === this.visibleAccountSelectionKey) return;
 
     this.scheduledAccountSelectionKey = selectionKey;
 
@@ -221,18 +225,16 @@ export class AccountModernLayoutComponent implements OnInit, DoCheck {
       if (!chipContainer) return;
 
       const centeredPosition = selectedChip.offsetLeft - (chipContainer.clientWidth - selectedChip.offsetWidth) / 2;
-      chipContainer.scrollTo({ left: Math.max(0, centeredPosition), behavior: 'smooth' });
+      const scrollBehavior: ScrollBehavior = this.visibleAccountSelectionKey ? 'smooth' : 'auto';
+
+      chipContainer.scrollTo({ left: Math.max(0, centeredPosition), behavior: scrollBehavior });
       this.visibleAccountSelectionKey = selectionKey;
     });
   }
 
-  private isChipVisible(chip: HTMLElement, container: HTMLElement): boolean {
-    const chipLeft = chip.offsetLeft;
-    const chipRight = chipLeft + chip.offsetWidth;
-    const visibleLeft = container.scrollLeft;
-    const visibleRight = visibleLeft + container.clientWidth;
-
-    return chipLeft >= visibleLeft && chipRight <= visibleRight;
+  private normalizeRoute(url: string): string {
+    const path = url.split(/[?#]/, 1)[0];
+    return path.startsWith('/') ? path : `/${path}`;
   }
 
   private isMobileViewport(): boolean {

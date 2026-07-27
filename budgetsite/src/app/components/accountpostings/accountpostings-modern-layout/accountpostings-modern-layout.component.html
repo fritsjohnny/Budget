@@ -185,6 +185,9 @@
               appDragReadyFeedback
               [cdkDragData]="row"
               [cdkDragStartDelay]="300"
+              [attr.data-account-posting-id]="row.id"
+              [class.account-posting-focus]="row.id === context.focusedAccountPostingId"
+              tabindex="-1"
               (click)="context.editOrDelete(row, $event)"
             ></tr>
             <tr mat-footer-row *matFooterRowDef="context.displayedColumns; sticky: true"></tr>
@@ -205,13 +208,16 @@
             appDragReadyFeedback
             [cdkDragData]="row"
             [cdkDragStartDelay]="300"
+            [attr.data-account-posting-id]="row.id"
+            [class.account-posting-focus]="row.id === context.focusedAccountPostingId"
+            tabindex="-1"
             (click)="context.editOrDelete(row, $event)"
           >
             <span class="mobile-row-index">{{ context.accountPostingsLength - i }}</span>
 
             <span class="mobile-row-date">
               <strong>{{ row.date | date: 'dd/MM' }}</strong>
-              <small>{{ row.date | date: 'yyyy' }}</small>
+              <small>{{ row.date | date: 'EEE' }}</small>
             </span>
 
             <span class="mobile-row-copy">

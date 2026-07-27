@@ -352,6 +352,14 @@ button.summary-item {
   font-weight: 700;
 }
 
+.account-posting-focus {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--posting-green);
+  outline-offset: -2px;
+  box-shadow: 0 0 0 4px var(--posting-green-soft) !important;
+}
+
 .posting-description strong,
 .posting-description small {
   display: block;

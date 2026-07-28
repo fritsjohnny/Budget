@@ -91,7 +91,7 @@ export class CardComponent implements OnInit, AfterViewInit {
     });
 
     // Lista visível no topo: ativos + desativados com movimento na referência
-    this.cardService.readAvailable(reference).pipe(
+    this.cardService.readAvailable(reference, this.getCurrentLocalDate()).pipe(
       retryWhen(errors =>
         errors.pipe(
           tap((err) => console.warn('🔁 Erro ao carregar cartões disponíveis. Tentando novamente em 10 segundos...', err)),
@@ -144,6 +144,15 @@ export class CardComponent implements OnInit, AfterViewInit {
         this.hideProgress = true;
       },
     });
+  }
+
+  private getCurrentLocalDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 
   setReference(reference: string) {

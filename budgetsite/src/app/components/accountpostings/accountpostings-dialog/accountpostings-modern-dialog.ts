@@ -14,20 +14,60 @@ export class AccountPostingsModernDialog extends AccountPostingsDialog {
   @ViewChild('primaryValueInput') private primaryValueInput!: ElementRef<HTMLInputElement>;
   @ViewChild('valuesSection') private valuesSection!: ElementRef<HTMLElement>;
 
+  private dialogOpened = false;
+  private initialValuesReady = false;
+  private initialValuesScrolled = false;
+
+  override ngAfterViewInit(): void {
+    this.dialogRef.afterOpened().subscribe(() => {
+      this.dialogOpened = true;
+      this.tryScrollInitialValues();
+    });
+
+    super.ngAfterViewInit();
+  }
+
+  override async onTypeChange(firstLoad: boolean = false): Promise<void> {
+    await super.onTypeChange(firstLoad);
+
+    if (this.accountPosting.type !== 'Y' || this.accountPosting.editing) return;
+
+    if (firstLoad) {
+      this.initialValuesReady = true;
+      this.tryScrollInitialValues();
+      return;
+    }
+
+    this.scheduleValuesScroll();
+  }
+
   async onModernTypeChange(): Promise<void> {
     await this.onTypeChange();
-
-    if (this.accountPosting.type !== 'Y') return;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => this.scrollValuesToTop());
-    });
   }
 
   focusPrimaryValue(event: Event): void {
     event.preventDefault();
     this.primaryValueInput.nativeElement.focus();
     this.primaryValueInput.nativeElement.select();
+  }
+
+  private tryScrollInitialValues(): void {
+    if (
+      !this.dialogOpened ||
+      !this.initialValuesReady ||
+      this.initialValuesScrolled
+    ) {
+      return;
+    }
+
+    this.initialValuesScrolled = true;
+    this.scheduleValuesScroll();
+  }
+
+  private scheduleValuesScroll(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.scrollValuesToTop());
+    });
   }
 
   private scrollValuesToTop(): void {

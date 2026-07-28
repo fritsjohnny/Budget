@@ -76,7 +76,10 @@
               <strong>Lançamentos</strong>
               <small>
                 {{ context.accountpostings?.length || 0 }} registros ·
-                {{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }} no período
+                <span [class.value-negative]="context.total < 0">
+                  {{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}
+                </span>
+                no período
               </small>
             </span>
           </mat-panel-title>
@@ -286,7 +289,10 @@
               <strong>Aplicações</strong>
               <small>
                 {{ context.accountApplications?.length || 0 }} registros ·
-                {{ context.totalApplications | currency: 'BRL' : 'symbol' : '1.2-2' }} aplicado
+                <span [class.value-negative]="context.totalApplications < 0">
+                  {{ context.totalApplications | currency: 'BRL' : 'symbol' : '1.2-2' }}
+                </span>
+                aplicado
               </small>
             </span>
           </mat-panel-title>

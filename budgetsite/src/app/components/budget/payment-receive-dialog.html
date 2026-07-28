@@ -159,6 +159,7 @@
                     <mat-label>Conta</mat-label>
                     <mat-select
                         mat-input
+                        [panelClass]="useModernLayout ? 'modern-select-panel' : ''"
                         [(ngModel)]="accountPosting.accountId"
                         formControlName="accountFormControl"
                     >

@@ -369,17 +369,23 @@
                         <span class="panel-heading-copy">
                             <strong>Despesas</strong>
                             <small
-                                >{{
-                                    context.toPayTotal
-                                        | currency: "BRL" : "symbol" : "1.2-2"
-                                }}
+                                ><span
+                                    [class.panel-negative-value]="context.toPayTotal < 0"
+                                    >{{
+                                        context.toPayTotal
+                                            | currency: "BRL" : "symbol" : "1.2-2"
+                                    }}</span
+                                >
                                 ·
                                 {{ context.expenses?.length || 0 }} lançamentos
                                 ·
-                                {{
-                                    context.expensesRemainingTotal
-                                        | currency: "BRL" : "symbol" : "1.2-2"
-                                }}
+                                <span
+                                    [class.panel-negative-value]="context.expensesRemainingTotal < 0"
+                                    >{{
+                                        context.expensesRemainingTotal
+                                            | currency: "BRL" : "symbol" : "1.2-2"
+                                    }}</span
+                                >
                                 pendente</small
                             >
                         </span>
@@ -740,7 +746,7 @@
                             <span class="header-metrics">
                                 <span
                                     ><small>Receber</small
-                                    ><b>{{
+                                    ><b [class.panel-negative-value]="context.toReceiveTotal < 0">{{
                                         context.toReceiveTotal
                                             | currency
                                                 : "BRL"
@@ -750,7 +756,7 @@
                                 >
                                 <span
                                     ><small>Recebido</small
-                                    ><b>{{
+                                    ><b [class.panel-negative-value]="context.receivedTotal < 0">{{
                                         context.receivedTotal
                                             | currency
                                                 : "BRL"
@@ -760,7 +766,7 @@
                                 >
                                 <span
                                     ><small>Pendente</small
-                                    ><b>{{
+                                    ><b [class.panel-negative-value]="context.incomesRemainingTotal < 0">{{
                                         context.incomesRemainingTotal
                                             | currency
                                                 : "BRL"
@@ -1040,7 +1046,7 @@
                             <span class="header-metrics">
                                 <span
                                     ><small>Receber</small
-                                    ><b>{{
+                                    ><b [class.panel-negative-value]="context.toReceiveTotalPeople < 0">{{
                                         context.toReceiveTotalPeople
                                             | currency
                                                 : "BRL"
@@ -1050,7 +1056,7 @@
                                 >
                                 <span
                                     ><small>Recebido</small
-                                    ><b>{{
+                                    ><b [class.panel-negative-value]="context.receivedTotalPeople < 0">{{
                                         context.receivedTotalPeople
                                             | currency
                                                 : "BRL"
@@ -1060,7 +1066,7 @@
                                 >
                                 <span
                                     ><small>Pendente</small
-                                    ><b>{{
+                                    ><b [class.panel-negative-value]="context.remainingTotalPeople < 0">{{
                                         context.remainingTotalPeople
                                             | currency
                                                 : "BRL"

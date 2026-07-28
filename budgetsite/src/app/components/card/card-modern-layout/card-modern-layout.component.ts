@@ -57,7 +57,7 @@ export class CardModernLayoutComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   onPullStart(event: TouchEvent): void {
-    if (!this.isMobileViewport() || !this.context?.hideProgress || !this.isAtScrollTop()) return;
+    if (!this.isMobileViewport() || !this.context?.hideProgress || !this.isAtScrollTop(event)) return;
     if (event.touches.length !== 1) return;
     const touch = event.touches.item(0);
     if (!touch) return;
@@ -70,7 +70,7 @@ export class CardModernLayoutComponent implements OnInit, DoCheck, OnDestroy {
   onPullMove(event: TouchEvent): void {
     if (!this.pullTracking || this.pullStartY === undefined) return;
     const touch = event.touches.item(0);
-    if (!touch || !this.isAtScrollTop()) {
+    if (!touch || !this.isAtScrollTop(event)) {
       this.cancelPull();
       return;
     }
@@ -152,11 +152,26 @@ export class CardModernLayoutComponent implements OnInit, DoCheck, OnDestroy {
     return window.matchMedia('(max-width: 600px)').matches;
   }
 
-  private isAtScrollTop(): boolean {
-    const host = this.elementRef.nativeElement;
-    const scrollContainer = host.closest('.mat-sidenav-content, .mat-drawer-content') as HTMLElement | null;
-    return scrollContainer ? scrollContainer.scrollTop <= 0 :
-      window.scrollY <= 0 && document.documentElement.scrollTop <= 0 && document.body.scrollTop <= 0;
+  private isAtScrollTop(event?: TouchEvent): boolean {
+    let element: Element | null =
+      event?.target instanceof Element
+        ? event.target
+        : this.elementRef.nativeElement;
+
+    while (element && element !== document.body) {
+      const style = window.getComputedStyle(element);
+      const canScrollVertically =
+        /(auto|scroll|overlay)/.test(style.overflowY) &&
+        element.scrollHeight > element.clientHeight + 1;
+
+      if (canScrollVertically && element.scrollTop > 0) return false;
+
+      element = element.parentElement;
+    }
+
+    return window.scrollY <= 0 &&
+      document.documentElement.scrollTop <= 0 &&
+      document.body.scrollTop <= 0;
   }
 
   private cancelPull(): void {

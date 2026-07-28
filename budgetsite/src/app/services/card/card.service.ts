@@ -28,8 +28,10 @@ export class CardService {
     );
   }
 
-  readAvailable(reference: string | undefined): Observable<Cards[]> {
-    return this.http.get<Cards[]>(`${ApiUrls.cards}/available?reference=${reference ?? ''}`).pipe(
+  readAvailable(reference: string | undefined, currentDate: string): Observable<Cards[]> {
+    return this.http.get<Cards[]>(
+      `${ApiUrls.cards}/available?reference=${reference ?? ''}&currentDate=${currentDate}`
+    ).pipe(
       map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))
     );

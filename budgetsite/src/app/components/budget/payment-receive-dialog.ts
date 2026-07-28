@@ -20,6 +20,10 @@ import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepic
   styleUrls: ['./budget.component.scss'],
 })
 export class PaymentReceiveDialog implements OnInit, AfterViewInit {
+  get useModernLayout(): boolean {
+    return localStorage.getItem('budgetLayout') === 'modern';
+  }
+
   @ViewChild('datepickerinput') datepickerinput!: DatepickerinputComponent;
 
   accountsList?: Accounts[];

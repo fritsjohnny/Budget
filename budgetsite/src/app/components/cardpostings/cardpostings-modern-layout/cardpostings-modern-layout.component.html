@@ -41,7 +41,7 @@
         <mat-expansion-panel-header>
           <mat-panel-title>
             <span class="panel-icon"><mat-icon>credit_score</mat-icon></span>
-            <span class="panel-copy"><strong>Lançamentos</strong><small>{{ context.cardPostingsLength }} registros · {{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}</small></span>
+            <span class="panel-copy"><strong>Lançamentos</strong><small>{{ context.cardPostingsLength }} registros · <span [class.negative]="context.total < 0">{{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}</span></small></span>
           </mat-panel-title>
         </mat-expansion-panel-header>
 
@@ -136,7 +136,7 @@
 
       <mat-expansion-panel class="modern-panel people-panel" *ngIf="context.cardpostingspeople?.length > 0" [(expanded)]="context.peoplePanelExpanded"
         (opened)="context.peoplePanelOpened()" (closed)="context.peoplePanelClosed()">
-        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>people</mat-icon></span><span class="panel-copy"><strong>Pessoas</strong><small>Receber {{ context.toReceiveTotalPeople | currency:'BRL':'symbol':'1.2-2' }} · Restante {{ context.remainingTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</small></span></mat-panel-title></mat-expansion-panel-header>
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>people</mat-icon></span><span class="panel-copy"><strong>Pessoas</strong><small>Receber <span [class.negative]="context.toReceiveTotalPeople < 0">{{ context.toReceiveTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</span> · Restante <span [class.negative]="context.remainingTotalPeople < 0">{{ context.remainingTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</span></small></span></mat-panel-title></mat-expansion-panel-header>
         <div class="compact-list">
           <article class="compact-row" *ngFor="let row of people">
             <div><strong>{{ row.person }}</strong><small>Recebido {{ row.received | currency:'BRL':'symbol':'1.2-2' }}</small></div>
@@ -148,7 +148,7 @@
 
       <mat-expansion-panel class="modern-panel categories-panel" [(expanded)]="context.categoryPanelExpanded"
         (opened)="context.categoryPanelOpened()" (closed)="context.categoryPanelClosed()">
-        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>category</mat-icon></span><span class="panel-copy"><strong>Categorias</strong><small>{{ context.amountTotalCategory | currency:'BRL':'symbol':'1.2-2' }} · {{ context.percTotalCategory | number:'1.2-2' }}%</small></span></mat-panel-title></mat-expansion-panel-header>
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>category</mat-icon></span><span class="panel-copy"><strong>Categorias</strong><small><span [class.negative]="context.amountTotalCategory < 0">{{ context.amountTotalCategory | currency:'BRL':'symbol':'1.2-2' }}</span> · {{ context.percTotalCategory | number:'1.2-2' }}%</small></span></mat-panel-title></mat-expansion-panel-header>
         <div class="modern-table-container">
           <table
             mat-table
@@ -233,7 +233,7 @@
       </mat-expansion-panel>
 
       <mat-expansion-panel class="modern-panel parcels-panel">
-        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>view_timeline</mat-icon></span><span class="panel-copy"><strong>Resumo das parcelas</strong><small>Total {{ parcelSummaryTotal | currency:'BRL':'symbol':'1.2-2' }}</small></span></mat-panel-title></mat-expansion-panel-header>
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>view_timeline</mat-icon></span><span class="panel-copy"><strong>Resumo das parcelas</strong><small>Total <span [class.negative]="parcelSummaryTotal < 0">{{ parcelSummaryTotal | currency:'BRL':'symbol':'1.2-2' }}</span></small></span></mat-panel-title></mat-expansion-panel-header>
         <div class="parcel-grid">
           <div><small>Parcelas iniciando</small><strong>{{ context.startingParcels | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
           <div><small>Outras parcelas</small><strong>{{ context.othersParcels | currency:'BRL':'symbol':'1.2-2' }}</strong></div>

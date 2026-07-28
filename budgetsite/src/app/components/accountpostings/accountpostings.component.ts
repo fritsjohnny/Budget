@@ -446,7 +446,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         reference: this.reference,
         accountId: this.accountId,
         editing: false,
-        type: 'R',
+        type: 'Y',
         accountsList: this.accountsList,
         incomesList: this.incomes,
         expensesList: this.expenses,

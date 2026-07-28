@@ -580,6 +580,10 @@
   text-overflow: ellipsis;
 }
 
+.panel-negative-value {
+  color: var(--modern-red) !important;
+}
+
 .panel-totals .panel-icon,
 .panel-totals .panel-heading-copy strong {
   color: var(--modern-green);

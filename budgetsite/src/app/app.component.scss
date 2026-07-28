@@ -1,11 +1,12 @@
 :host {
   display: block;
   min-height: 100%;
+  min-height: 100dvh;
   background-color: #f1f4f8;
   color: #172033;
 }
 
 :host-context(.dark-theme) {
-  background-color: #111c28;
+  background-color: #0b141e;
   color: #edf3fa;
 }

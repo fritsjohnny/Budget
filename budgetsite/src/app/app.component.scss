@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  min-height: 100%;
+  background-color: #f1f4f8;
+  color: #172033;
+}
+
+:host-context(.dark-theme) {
+  background-color: #111c28;
+  color: #edf3fa;
+}

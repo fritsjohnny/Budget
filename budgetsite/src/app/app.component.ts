@@ -14,7 +14,7 @@ import { UserService } from './services/user/user.service';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  showBottomTabs = true;
+  showBottomTabs = false;
 
   private sub: any;
   private keyboardViewport?: VisualViewport;
@@ -36,9 +36,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.themeService.init();
     this.router.events.subscribe((evt) => {
       if (evt instanceof NavigationEnd) {
-        this.showBottomTabs = !['/login', '/register'].includes(
-          evt.urlAfterRedirects
-        );
+        const currentUrl = evt.urlAfterRedirects.split(/[?#]/, 1)[0];
+        this.showBottomTabs = !['/login', '/usersregister'].includes(currentUrl);
       }
     });
   }

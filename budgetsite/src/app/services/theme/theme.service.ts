@@ -14,7 +14,7 @@ export class ThemeService {
     const normalizedTheme = theme === this.darkTheme ? this.darkTheme : this.lightTheme;
 
     this.applyThemeClass(document.documentElement, normalizedTheme);
-    document.body.classList.remove(this.lightTheme, this.darkTheme);
+    this.applyThemeClass(document.body, normalizedTheme);
     localStorage.setItem(this.key, normalizedTheme);
   }
 

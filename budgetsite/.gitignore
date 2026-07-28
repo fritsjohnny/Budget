@@ -50,3 +50,6 @@ Thumbs.db
 # Firebase
 **/google-services.json
 
+
+# MCP-controlled Angular development runtime
+/scripts/.runtime/frontend-dev/

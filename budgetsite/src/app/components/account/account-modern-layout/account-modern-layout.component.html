@@ -91,9 +91,10 @@
             ></mat-progress-bar>
 
             <div
-                class="account-chips"
+                class="account-chips account-drag-boundary"
                 cdkDropList
                 cdkDropListOrientation="horizontal"
+                [cdkDropListAutoScrollStep]="7"
                 [cdkDropListData]="context.accountsVisible || []"
                 (cdkDropListDropped)="context.drop($event)"
             >
@@ -111,6 +112,8 @@
                     [style.--account-color]="account.color"
                     (click)="context.setAccount(account)"
                     cdkDrag
+                    cdkDragLockAxis="x"
+                    cdkDragBoundary=".account-drag-boundary"
                     [style.--drag-accent]="account.color || '#29bf6a'"
                 >
                     <span class="account-chip-swatch"

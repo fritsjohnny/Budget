@@ -470,7 +470,9 @@
     <div
         *ngIf="showReport || !useModernLayout"
         class="row mt-3 report-container"
+        [class.modern-panel-scroll-container]="useModernLayout"
         [class.financial-health-report-container]="reportType === 7"
+        cdkScrollable
     >
         <div class="col d-flex">
             <div class="col" *ngIf="reportType === 1 && showReport">

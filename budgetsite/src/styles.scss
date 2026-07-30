@@ -1068,6 +1068,32 @@ body.dark-theme {
   color: #edf3fa !important;
 }
 
+.budget-mobile-row.cdk-drag-preview {
+  --modern-surface-soft: #f8f9fc;
+  --modern-surface-strong: #eef1f6;
+  --modern-divider: rgba(23, 35, 55, 0.1);
+  --modern-text: #172033;
+  --modern-blue: #4f6fe8;
+  --modern-red: #e74c56;
+  --modern-red-soft: rgba(231, 76, 86, 0.12);
+  --modern-green: #29a452;
+  --modern-yellow: #d99700;
+  background: var(--modern-surface-soft) !important;
+  color: var(--modern-text) !important;
+}
+
+.dark-theme .budget-mobile-row.cdk-drag-preview {
+  --modern-surface-soft: #14212e;
+  --modern-surface-strong: #172634;
+  --modern-divider: rgba(194, 213, 232, 0.11);
+  --modern-text: #edf3fa;
+  --modern-blue: #7392ff;
+  --modern-red: #ff6269;
+  --modern-red-soft: rgba(215, 61, 73, 0.17);
+  --modern-green: #57d66f;
+  --modern-yellow: #ffc107;
+}
+
 tr.cdk-drag-preview {
   display: table !important;
   table-layout: fixed;

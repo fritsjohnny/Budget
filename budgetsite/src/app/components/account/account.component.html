@@ -39,7 +39,9 @@
                     *ngIf="!hideProgress"
                 ></mat-progress-bar>
                 <div
+                    class="account-drag-boundary"
                     cdkDropList
+                    [cdkDropListAutoScrollStep]="7"
                     [cdkDropListData]="accountsVisible!"
                     (cdkDropListDropped)="drop($event)"
                     style="display: flex; flex-wrap: wrap"
@@ -55,6 +57,7 @@
                         }"
                         (click)="setAccount(account)"
                         cdkDrag
+                        cdkDragBoundary=".account-drag-boundary"
                         [style.--drag-accent]="account.color || '#29bf6a'"
                     >
                         {{ getDescription(account) }}

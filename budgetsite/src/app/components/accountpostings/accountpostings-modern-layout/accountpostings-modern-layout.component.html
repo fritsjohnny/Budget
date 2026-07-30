@@ -121,12 +121,13 @@
           <input matInput (keyup)="context.applyFilter($event)" #input />
         </mat-form-field>
 
-        <div class="modern-table-container">
+        <div class="modern-table-container panel-scroll-container" cdkScrollable>
           <table
             mat-table
             [dataSource]="context.dataSource"
-            class="modern-account-table postings-table"
+            class="modern-account-table postings-table account-postings-drag-boundary"
             cdkDropList
+            [cdkDropListAutoScrollStep]="7"
             [cdkDropListData]="context.accountpostings"
             (cdkDropListDropped)="context.drop($event)"
           >
@@ -184,6 +185,8 @@
               mat-row
               *matRowDef="let row; columns: context.displayedColumns"
               cdkDrag
+              cdkDragLockAxis="y"
+              cdkDragBoundary=".account-postings-drag-boundary"
               style="--drag-accent: #29bf6a"
               appDragReadyFeedback
               [cdkDragData]="row"
@@ -198,8 +201,10 @@
         </div>
 
         <div
-          class="mobile-extract-list postings-mobile-list"
+          class="mobile-extract-list postings-mobile-list panel-scroll-container account-postings-drag-boundary"
+          cdkScrollable
           cdkDropList
+          [cdkDropListAutoScrollStep]="7"
           [cdkDropListData]="context.accountpostings"
           (cdkDropListDropped)="context.drop($event)"
         >
@@ -207,6 +212,8 @@
             class="mobile-extract-row posting-mobile-row"
             *ngFor="let row of context.dataSource.filteredData; let i = index"
             cdkDrag
+            cdkDragLockAxis="y"
+            cdkDragBoundary=".account-postings-drag-boundary"
             style="--drag-accent: #29bf6a"
             appDragReadyFeedback
             [cdkDragData]="row"
@@ -309,7 +316,7 @@
           </button>
         </div>
 
-        <div class="modern-table-container">
+        <div class="modern-table-container panel-scroll-container" cdkScrollable>
           <table mat-table [dataSource]="context.accountApplicationsDataSource" class="modern-account-table applications-table">
             <ng-container matColumnDef="indexApplication">
               <th mat-header-cell *matHeaderCellDef>#</th>
@@ -346,7 +353,7 @@
             <tr mat-footer-row *matFooterRowDef="context.accountApplicationsDisplayedColumns"></tr>
           </table>
         </div>
-        <div class="mobile-extract-list applications-mobile-list">
+        <div class="mobile-extract-list applications-mobile-list panel-scroll-container" cdkScrollable>
           <div
             class="mobile-extract-row application-mobile-row"
             *ngFor="let row of context.accountApplicationsDataSource.filteredData"

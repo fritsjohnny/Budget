@@ -183,6 +183,12 @@
 .modern-report-shell .report-container {
     margin-right: 0; margin-left: 0; padding: 0; overflow: hidden !important;
 }
+.modern-report-shell .modern-panel-scroll-container:not(.financial-health-report-container) {
+    max-height: min(68vh, 720px);
+    overflow: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
 .modern-report-shell .report-container > .col,
 .modern-report-shell .report-container > .col > .col { width: 100%; min-width: 0; padding: 0; }
 

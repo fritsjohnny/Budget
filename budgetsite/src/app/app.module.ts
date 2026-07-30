@@ -13,6 +13,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { LayoutModule } from '@angular/cdk/layout';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DragDropModule, CDK_DRAG_CONFIG } from '@angular/cdk/drag-drop';
 
 import { MatCardModule } from '@angular/material/card';
@@ -217,6 +218,7 @@ registerLocaleData(localePt);
 
     // CDK
     LayoutModule,
+    ScrollingModule,
     DragDropModule,
 
     MatButtonModule,

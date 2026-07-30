@@ -102,7 +102,7 @@
         </mat-form-field>
 
         <div class="desktop-table">
-          <table mat-table [dataSource]="context.dataSource" class="modern-table" cdkDropList
+          <table mat-table [dataSource]="context.dataSource" class="modern-table card-postings-drag-boundary" cdkDropList [cdkDropListAutoScrollStep]="7"
             [cdkDropListDisabled]="!context.cardId || context.cardId <= 0" [cdkDropListData]="context.cardpostings"
             (cdkDropListDropped)="context.drop($event)">
             <ng-container matColumnDef="index"><th mat-header-cell *matHeaderCellDef>#</th><td mat-cell *matCellDef="let row; let i=index">{{ context.cardPostingsLength - i }}</td><td mat-footer-cell *matFooterCellDef>Total</td></ng-container>
@@ -114,7 +114,7 @@
             <tr mat-header-row *matHeaderRowDef="context.displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: context.displayedColumns" (click)="context.handleClickCardPosting(row, $event)"
               [attr.data-card-posting-id]="row.id" [class.card-posting-focus]="row.id === context.focusedCardPostingId" tabindex="-1"
-              cdkDrag style="--drag-accent: #6f87ff" [cdkDragDisabled]="!context.cardId || context.cardId <= 0" [cdkDragData]="row" [cdkDragStartDelay]="300"
+              cdkDrag cdkDragLockAxis="y" cdkDragBoundary=".card-postings-drag-boundary" appDragReadyFeedback style="--drag-accent: #6f87ff" [cdkDragDisabled]="!context.cardId || context.cardId <= 0" [cdkDragData]="row" [cdkDragStartDelay]="300"
               [ngClass]="{
                 'card-yield-checked': (row.isSelected && row.amount >= 0) || (!row.isPaid && (row.overdue || row.duetoday)),
                 'card-yield-checked2': row.isSelected && row.amount < 0,
@@ -127,10 +127,10 @@
           </table>
         </div>
 
-        <div class="mobile-list" cdkDropList [cdkDropListData]="context.cardpostings" (cdkDropListDropped)="context.drop($event)">
+        <div class="mobile-list panel-scroll-container card-postings-drag-boundary" cdkScrollable cdkDropList [cdkDropListAutoScrollStep]="7" [cdkDropListData]="context.cardpostings" (cdkDropListDropped)="context.drop($event)">
           <article class="mobile-posting" *ngFor="let row of postings; let i=index; trackBy: trackById"
             [attr.data-card-posting-id]="row.id" [class.card-posting-focus]="row.id === context.focusedCardPostingId" tabindex="-1"
-            (click)="context.handleClickCardPosting(row, $event)" cdkDrag style="--drag-accent: #6f87ff" [cdkDragData]="row" [cdkDragStartDelay]="300"
+            (click)="context.handleClickCardPosting(row, $event)" cdkDrag cdkDragLockAxis="y" cdkDragBoundary=".card-postings-drag-boundary" appDragReadyFeedback style="--drag-accent: #6f87ff" [cdkDragData]="row" [cdkDragStartDelay]="300"
             [ngClass]="{
               'card-yield-checked': (row.isSelected && row.amount >= 0) || (!row.isPaid && (row.overdue || row.duetoday)),
               'card-yield-checked2': row.isSelected && row.amount < 0,
@@ -152,7 +152,7 @@
       <mat-expansion-panel class="modern-panel people-panel" *ngIf="context.cardpostingspeople?.length > 0" [(expanded)]="context.peoplePanelExpanded"
         (opened)="context.peoplePanelOpened()" (closed)="context.peoplePanelClosed()">
         <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>people</mat-icon></span><span class="panel-copy"><strong>Pessoas</strong><small>Receber <span [class.negative]="context.toReceiveTotalPeople < 0">{{ context.toReceiveTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</span> · Restante <span [class.negative]="context.remainingTotalPeople < 0">{{ context.remainingTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</span></small></span></mat-panel-title></mat-expansion-panel-header>
-        <div class="compact-list">
+        <div class="compact-list panel-scroll-container" cdkScrollable>
           <article class="compact-row" *ngFor="let row of people">
             <div><strong>{{ row.person }}</strong><small>Recebido {{ row.received | currency:'BRL':'symbol':'1.2-2' }}</small></div>
             <div class="compact-values"><small>Receber</small><strong>{{ row.toReceive | currency:'BRL':'symbol':'1.2-2' }}</strong><small>Restante {{ row.remaining | currency:'BRL':'symbol':'1.2-2' }}</small></div>
@@ -164,7 +164,7 @@
       <mat-expansion-panel class="modern-panel categories-panel" [(expanded)]="context.categoryPanelExpanded"
         (opened)="context.categoryPanelOpened()" (closed)="context.categoryPanelClosed()">
         <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>category</mat-icon></span><span class="panel-copy"><strong>Categorias</strong><small><span [class.negative]="context.amountTotalCategory < 0">{{ context.amountTotalCategory | currency:'BRL':'symbol':'1.2-2' }}</span> · {{ context.percTotalCategory | number:'1.2-2' }}%</small></span></mat-panel-title></mat-expansion-panel-header>
-        <div class="modern-table-container">
+        <div class="modern-table-container panel-scroll-container" cdkScrollable>
           <table
             mat-table
             #modernCategoriesSort="matSort"

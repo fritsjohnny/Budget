@@ -147,7 +147,9 @@
                     <table
                         mat-table
                         [dataSource]="dataSource"
+                        class="account-postings-drag-boundary"
                         cdkDropList
+                        [cdkDropListAutoScrollStep]="7"
                         [cdkDropListData]="accountpostings"
                         (cdkDropListDropped)="drop($event)"
                     >
@@ -299,6 +301,8 @@
                             (click)="editOrDelete(row, $event)"
                             *matRowDef="let row; columns: displayedColumns"
                             cdkDrag
+                            cdkDragLockAxis="y"
+                            cdkDragBoundary=".account-postings-drag-boundary"
                             style="--drag-accent: #29bf6a"
                             appDragReadyFeedback
                             [cdkDragData]="row"

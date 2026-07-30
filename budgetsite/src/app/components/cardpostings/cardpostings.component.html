@@ -283,7 +283,9 @@
                     <table
                         mat-table
                         [dataSource]="dataSource"
+                        class="card-postings-drag-boundary"
                         cdkDropList
+                        [cdkDropListAutoScrollStep]="7"
                         [cdkDropListDisabled]="!cardId || cardId <= 0"
                         [cdkDropListData]="cardpostings"
                         (cdkDropListDropped)="drop($event)"
@@ -534,6 +536,8 @@
                             "
                             *matRowDef="let row; columns: displayedColumns"
                             cdkDrag
+                            cdkDragLockAxis="y"
+                            cdkDragBoundary=".card-postings-drag-boundary"
                             [cdkDragDisabled]="!cardId || cardId <= 0"
                             style="--drag-accent: #6f87ff"
                             appDragReadyFeedback

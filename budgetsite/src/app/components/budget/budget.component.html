@@ -553,7 +553,9 @@
                     <table
                         mat-table
                         [dataSource]="expenses"
+                        class="budget-drag-boundary"
                         cdkDropList
+                        [cdkDropListAutoScrollStep]="7"
                         [cdkDropListData]="expenses"
                         (cdkDropListDropped)="dropExpenses($event)"
                     >
@@ -889,6 +891,8 @@
                                 columns: displayedExpensesColumns
                             "
                             cdkDrag
+                            cdkDragLockAxis="y"
+                            cdkDragBoundary=".budget-drag-boundary"
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
@@ -983,7 +987,9 @@
                     <table
                         mat-table
                         [dataSource]="incomes"
+                        class="budget-drag-boundary"
                         cdkDropList
+                        [cdkDropListAutoScrollStep]="7"
                         [cdkDropListData]="incomes"
                         (cdkDropListDropped)="dropIncomes($event)"
                     >
@@ -1168,6 +1174,8 @@
                                 columns: displayedIncomesColumns
                             "
                             cdkDrag
+                            cdkDragLockAxis="y"
+                            cdkDragBoundary=".budget-drag-boundary"
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"

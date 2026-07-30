@@ -485,12 +485,13 @@
                     </mat-menu>
                 </div>
 
-                <div class="modern-table-container">
+                <div class="modern-table-container panel-scroll-container" cdkScrollable>
                     <table
                         mat-table
                         [dataSource]="context.expenses"
-                        class="modern-data-table expense-table"
+                        class="modern-data-table expense-table budget-desktop-table budget-drag-boundary"
                         cdkDropList
+                        [cdkDropListAutoScrollStep]="7"
                         [cdkDropListData]="context.expenses"
                         (cdkDropListDropped)="context.dropExpenses($event)"
                     >
@@ -703,9 +704,12 @@
                                 columns: context.displayedExpensesColumns
                             "
                             cdkDrag
+                            cdkDragLockAxis="y"
+                            cdkDragBoundary=".budget-drag-boundary"
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
+                            
                             style="--drag-accent: #e74c56"
                             [attr.data-expense-id]="row.id"
                             [attr.tabindex]="-1"
@@ -720,13 +724,73 @@
                             (dblclick)="
                                 context.handleDoubleClickExpense(row, $event)
                             "
-                        ></tr>
+                        >
+                        </tr>
                         <tr
                             mat-footer-row
                             *matFooterRowDef="context.displayedExpensesColumns"
                         ></tr>
                     </table>
                 </div>
+
+
+
+                <div class="budget-mobile-table budget-mobile-expense-table">
+                    <div class="budget-mobile-header">
+                        <span>Descrição</span><span>Pagar</span><span>Pago</span><span>Restante</span><span aria-hidden="true"></span>
+                    </div>
+                    <div class="budget-mobile-list panel-scroll-container budget-drag-boundary" cdkScrollable cdkDropList [cdkDropListAutoScrollStep]="7"
+                        [cdkDropListData]="context.expenses" (cdkDropListDropped)="context.dropExpenses($event)">
+                        <article class="budget-mobile-row" *ngFor="let row of context.expenses; trackBy: trackById"
+                            cdkDrag cdkDragLockAxis="y" cdkDragBoundary=".budget-drag-boundary" appDragReadyFeedback [cdkDragData]="row" [cdkDragStartDelay]="300"
+                            style="--drag-accent: #e74c56" [attr.data-expense-id]="row.id" [attr.tabindex]="-1"
+                            [class.budget-entry-focus]="row.id === context.focusedExpenseId"
+                            [class.warning-row]="row.overdue || row.duetoday"
+                            [class.without-category-row]="row.cardId == null && row.categoryId == null"
+                            (click)="context.handleClickExpense(row, $event)"
+                            (dblclick)="context.handleDoubleClickExpense(row, $event)">
+                            <div class="budget-mobile-description">
+                                <div class="entry-description">
+                                    <span>{{ row.description }}<span *ngIf="row.parcels > 1"> ({{ row.parcelNumber }}/{{ row.parcels }})</span></span>
+                                    <mat-icon *ngIf="row.scheduled" class="scheduled-icon">schedule</mat-icon>
+                                </div>
+                                <div class="entry-metadata">
+                                    <span *ngIf="row.dueDate" [class.metadata-alert]="row.overdue || row.duetoday">Venc.: {{ row.dueDate | date: "dd/MM" }}</span>
+                                    <span *ngIf="row.expectedValue" class="metadata-provisioned">Previsto: {{ row.expectedValue | currency: "BRL" : "symbol" : "1.2-2" }}</span>
+                                    <span class="status-chip" [ngClass]="getExpenseStatusClass(row)">
+                                        <mat-icon>{{ getExpenseStatusIcon(row) }}</mat-icon>{{ getExpenseStatus(row) }}
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="budget-mobile-value">{{ row.toPay | currency: "" : "" : "1.2-2" }}</span>
+                            <span class="budget-mobile-value expense-paid">{{ row.paid | currency: "" : "" : "1.2-2" }}</span>
+                            <span class="budget-mobile-value" [class.value-settled]="row.remaining <= 0"
+                                [class.value-pending]="row.remaining > 0">{{ row.remaining | currency: "" : "" : "1.2-2" }}</span>
+                            <div class="budget-mobile-actions">
+                                <button mat-icon-button [matMenuTriggerFor]="expenseMobileMenu" (click)="$event.stopPropagation()" aria-label="Ações da despesa">
+                                    <mat-icon>more_vert</mat-icon>
+                                </button>
+                                <mat-menu #expenseMobileMenu="matMenu" class="modern-menu modern-menu-expenses">
+                                    <button *ngIf="context.showUpcomingExpenses" mat-menu-item (click)="context.removeFromUpcomingFilter(row)"><mat-icon>cancel</mat-icon><span>Remover do filtro</span></button>
+                                    <button mat-menu-item (click)="context.pay(row)" [disabled]="row.remaining <= 0"><mat-icon>price_check</mat-icon><span>Pagar</span></button>
+                                    <button mat-menu-item (click)="context.payWithCard(row)" [disabled]="row.remaining <= 0"><mat-icon>credit_score</mat-icon><span>Pagar com cartão</span></button>
+                                    <button mat-menu-item (click)="context.ajustarDespesaPorCategoria(row)" [disabled]="row.categoryId || row.cardId"><mat-icon>tune</mat-icon><span>Ajustar pelo total da categoria</span></button>
+                                    <button mat-menu-item (click)="context.expenseClone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button>
+                                    <button mat-menu-item class="modern-menu-danger" (click)="context.deleteExpense(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
+                                    <button mat-menu-item (click)="context.addValue(row, 'P')"><mat-icon>add</mat-icon><span>Adicionar valor</span></button>
+                                </mat-menu>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="budget-mobile-footer">
+                        <strong>Total</strong>
+                        <strong>{{ context.toPayTotal | currency: "" : "" : "1.2-2" }}</strong>
+                        <strong class="expense-paid">{{ context.paidTotal | currency: "" : "" : "1.2-2" }}</strong>
+                        <strong class="value-pending">{{ context.expensesRemainingTotal | currency: "" : "" : "1.2-2" }}</strong>
+                        <span aria-hidden="true"></span>
+                    </div>
+                </div>
+
             </mat-expansion-panel>
 
             <mat-expansion-panel
@@ -819,12 +883,13 @@
                     </mat-menu>
                 </div>
 
-                <div class="modern-table-container">
+                <div class="modern-table-container panel-scroll-container" cdkScrollable>
                     <table
                         mat-table
                         [dataSource]="context.incomes"
-                        class="modern-data-table income-table"
+                        class="modern-data-table income-table budget-desktop-table budget-drag-boundary"
                         cdkDropList
+                        [cdkDropListAutoScrollStep]="7"
                         [cdkDropListData]="context.incomes"
                         (cdkDropListDropped)="context.dropIncomes($event)"
                     >
@@ -1007,9 +1072,12 @@
                                 columns: context.displayedIncomesColumns
                             "
                             cdkDrag
+                            cdkDragLockAxis="y"
+                            cdkDragBoundary=".budget-drag-boundary"
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
+                            
                             style="--drag-accent: #4f6fe8"
                             [attr.data-income-id]="row.id"
                             [attr.tabindex]="-1"
@@ -1020,13 +1088,67 @@
                             (dblclick)="
                                 context.handleDoubleClickIncome(row, $event)
                             "
-                        ></tr>
+                        >
+                        </tr>
                         <tr
                             mat-footer-row
                             *matFooterRowDef="context.displayedIncomesColumns"
                         ></tr>
                     </table>
                 </div>
+
+
+
+                <div class="budget-mobile-table budget-mobile-income-table">
+                    <div class="budget-mobile-header">
+                        <span>Descrição</span><span>Receber</span><span>Recebido</span><span>Restante</span><span aria-hidden="true"></span>
+                    </div>
+                    <div class="budget-mobile-list panel-scroll-container budget-drag-boundary" cdkScrollable cdkDropList [cdkDropListAutoScrollStep]="7"
+                        [cdkDropListData]="context.incomes" (cdkDropListDropped)="context.dropIncomes($event)">
+                        <article class="budget-mobile-row" *ngFor="let row of context.incomes; trackBy: trackById"
+                            cdkDrag cdkDragLockAxis="y" cdkDragBoundary=".budget-drag-boundary" appDragReadyFeedback [cdkDragData]="row" [cdkDragStartDelay]="300"
+                            style="--drag-accent: #4f6fe8" [attr.data-income-id]="row.id" [attr.tabindex]="-1"
+                            [class.budget-entry-focus]="row.id === context.focusedIncomeId"
+                            (click)="context.handleClickIncome(row, $event)"
+                            (dblclick)="context.handleDoubleClickIncome(row, $event)">
+                            <div class="budget-mobile-description">
+                                <div class="entry-description">{{ row.description }}<span *ngIf="row.parcels > 1"> ({{ row.parcelNumber }}/{{ row.parcels }})</span></div>
+                                <div class="entry-metadata">
+                                    <span *ngIf="row.type === 'R'" class="metadata-info">Recebimento</span>
+                                    <span *ngIf="row.type === 'C'" class="metadata-provisioned">Troco</span>
+                                    <span *ngIf="row.type === 'Y'" class="metadata-success">Rendimento</span>
+                                    <span *ngIf="row.receiptDate" class="metadata-success">Receb.: {{ row.receiptDate | date: "dd/MM" }}</span>
+                                    <span class="status-chip" [class.status-paid]="row.remaining <= 0" [class.status-pending]="row.remaining > 0">
+                                        <mat-icon>{{ row.remaining <= 0 ? "check_circle_outline" : "schedule" }}</mat-icon>{{ row.remaining <= 0 ? "Recebido" : "Pendente" }}
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="budget-mobile-value">{{ row.toReceive | currency: "" : "" : "1.2-2" }}</span>
+                            <span class="budget-mobile-value income-received">{{ row.received | currency: "" : "" : "1.2-2" }}</span>
+                            <span class="budget-mobile-value" [class.value-settled]="row.remaining <= 0"
+                                [class.income-pending]="row.remaining > 0">{{ row.remaining | currency: "" : "" : "1.2-2" }}</span>
+                            <div class="budget-mobile-actions">
+                                <button mat-icon-button [matMenuTriggerFor]="incomeMobileMenu" (click)="$event.stopPropagation()" aria-label="Ações da receita">
+                                    <mat-icon>more_vert</mat-icon>
+                                </button>
+                                <mat-menu #incomeMobileMenu="matMenu" class="modern-menu modern-menu-incomes">
+                                    <button mat-menu-item (click)="context.receive(row)" [disabled]="row.remaining <= 0"><mat-icon>price_check</mat-icon><span>Receber</span></button>
+                                    <button mat-menu-item (click)="context.incomeClone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button>
+                                    <button mat-menu-item class="modern-menu-danger" (click)="context.deleteIncome(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
+                                    <button mat-menu-item (click)="context.addValue(row, 'R')"><mat-icon>add</mat-icon><span>Adicionar valor</span></button>
+                                </mat-menu>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="budget-mobile-footer">
+                        <strong>Total</strong>
+                        <strong>{{ context.toReceiveTotal | currency: "" : "" : "1.2-2" }}</strong>
+                        <strong class="income-received">{{ context.receivedTotal | currency: "" : "" : "1.2-2" }}</strong>
+                        <strong class="income-pending">{{ context.incomesRemainingTotal | currency: "" : "" : "1.2-2" }}</strong>
+                        <span aria-hidden="true"></span>
+                    </div>
+                </div>
+
             </mat-expansion-panel>
 
             <mat-expansion-panel
@@ -1079,7 +1201,7 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
 
-                <div class="modern-table-container">
+                <div class="modern-table-container panel-scroll-container" cdkScrollable>
                     <table
                         mat-table
                         #modernPeopleSort="matSort"
@@ -1099,7 +1221,6 @@
                                 arrowPosition="after"
                                 start="asc"
                                 sortActionDescription="Ordernar por Pessoa"
-                                style="width: 110px"
                             >
                                 Pessoa
                             </th>
@@ -1461,7 +1582,7 @@
                     </div>
                 </div>
 
-                <div class="modern-table-container">
+                <div class="modern-table-container panel-scroll-container" cdkScrollable>
                     <table
                         mat-table
                         #modernCategoriesSort="matSort"

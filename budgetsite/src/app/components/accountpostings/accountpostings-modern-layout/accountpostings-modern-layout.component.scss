@@ -319,6 +319,13 @@ button.summary-item {
   background: transparent;
 }
 
+.panel-scroll-container {
+  max-height: min(62vh, 620px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
 ::ng-deep .modern-account-table tr,
 ::ng-deep .modern-account-table tr:nth-child(even),
 ::ng-deep .modern-account-table tr:nth-child(odd) {

@@ -714,7 +714,7 @@
 }
 .compact-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto 40px;
+    grid-template-columns: minmax(0, 0.72fr) minmax(112px, 1fr) 40px;
     align-items: center;
     gap: 10px;
     min-width: 0;
@@ -753,6 +753,13 @@
     color: var(--t);
     border-bottom-color: var(--d);
 }
+.panel-scroll-container {
+    max-height: min(62vh, 620px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
 .modern-card-postings ::ng-deep .modern-data-table .mat-header-row,
 .modern-card-postings ::ng-deep .modern-data-table .mat-header-cell {
     background: var(--cat-header) !important;

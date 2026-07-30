@@ -35,8 +35,13 @@ export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
   @Input() showRefreshButton = false;
   @Input() refreshTooltip = 'Atualizar';
   @Input() refreshAriaLabel = 'Atualizar referência';
+  @Input() currentActionLabel = 'Hoje';
+  @Input() customCurrentAction = false;
+  @Input() currentActionActive = false;
+  @Input() currentActionDisabled = false;
 
   @Output() referenceChange = new EventEmitter<string>();
+  @Output() currentActionClick = new EventEmitter<void>();
   @Output() optionsClick = new EventEmitter<void>();
   @Output() refreshClick = new EventEmitter<void>();
 
@@ -134,6 +139,11 @@ export class ModernReferenceSelectorComponent implements OnInit, OnChanges {
   }
 
   setCurrentReference(): void {
+    if (this.customCurrentAction) {
+      this.currentActionClick.emit();
+      return;
+    }
+
     this.date.setValue(moment());
     this.emitReference();
   }

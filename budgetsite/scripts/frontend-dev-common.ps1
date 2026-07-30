@@ -10,7 +10,9 @@ $script:StdoutPath = Join-Path $script:RuntimeRoot 'stdout.log'
 $script:StderrPath = Join-Path $script:RuntimeRoot 'stderr.log'
 $script:HostScriptPath = Join-Path $PSScriptRoot 'frontend-dev-host.ps1'
 $script:Port = 4200
-$script:Url = 'http://localhost:4200/#/budget'
+$script:LocalUrl = 'http://localhost:4200'
+$script:AppUrl = 'http://localhost:4200/#/budget'
+$script:HealthUrl = 'http://127.0.0.1:4200'
 $script:MaxLogCharacters = 8000
 
 function Initialize-BudgetFrontendRuntime {
@@ -30,14 +32,16 @@ function Get-BudgetFrontendState {
 }
 
 function Save-BudgetFrontendState {
-    param([int]$ProcessId, [string]$DeviceId)
+    param([int]$ProcessId, [string]$DeviceId = '', [bool]$ReverseManaged = $false, [string]$StartedAt = '')
     Initialize-BudgetFrontendRuntime
+    if ([string]::IsNullOrWhiteSpace($StartedAt)) { $StartedAt = [DateTimeOffset]::Now.ToString('o') }
     $state = [ordered]@{
         processId = $ProcessId
-        startedAt = [DateTimeOffset]::Now.ToString('o')
+        startedAt = $StartedAt
         port = $script:Port
         frontendRoot = $script:FrontendRoot
         deviceId = $DeviceId
+        reverseManaged = $ReverseManaged
         expectedCommand = 'frontend-dev-host.ps1'
     }
     $temporaryPath = "$($script:StatePath).tmp"
@@ -88,6 +92,35 @@ function Get-BudgetProcessTreeIds {
     return @($result)
 }
 
+function Stop-BudgetFrontendProcessTree {
+    param($State)
+    if (-not (Test-BudgetFrontendOwnedProcess -State $State)) {
+        return [PSCustomObject]@{ Stopped = $false; ProcessIds = @(); RemainingProcessIds = @() }
+    }
+
+    $rootProcessId = [int]$State.processId
+    $processIds = @(Get-BudgetProcessTreeIds -RootProcessId $rootProcessId)
+    $taskkillPath = Join-Path $env:SystemRoot 'System32\taskkill.exe'
+    if (-not (Test-Path -LiteralPath $taskkillPath -PathType Leaf)) {
+        throw 'taskkill.exe não foi encontrado no caminho fixo do Windows.'
+    }
+
+    $output = @(& $taskkillPath /PID $rootProcessId /T /F 2>&1)
+    $taskkillExitCode = $LASTEXITCODE
+    $deadline = [DateTime]::UtcNow.AddSeconds(15)
+    do {
+        $remaining = @($processIds | Where-Object { Get-BudgetProcess -ProcessId $_ })
+        if ($remaining.Count -eq 0) { break }
+        Start-Sleep -Milliseconds 200
+    } while ([DateTime]::UtcNow -lt $deadline)
+
+    if ($remaining.Count -gt 0) {
+        throw "Não foi possível encerrar todos os processos registrados. PIDs restantes: $($remaining -join ', '). taskkill exit code: $taskkillExitCode. $($output -join ' ')"
+    }
+
+    return [PSCustomObject]@{ Stopped = $true; ProcessIds = $processIds; RemainingProcessIds = @() }
+}
+
 function Get-BudgetFrontendListener {
     $listeners = @(Get-NetTCPConnection -LocalPort $script:Port -State Listen -ErrorAction SilentlyContinue)
     if ($listeners.Count -eq 0) { return $null }
@@ -103,7 +136,7 @@ function Test-BudgetListenerOwned {
 
 function Get-BudgetFrontendHttp {
     try {
-        $response = Invoke-WebRequest -Uri $script:Url -UseBasicParsing -TimeoutSec 3
+        $response = Invoke-WebRequest -Uri $script:HealthUrl -UseBasicParsing -TimeoutSec 3
         return [PSCustomObject]@{ Healthy = ($response.StatusCode -ge 200 -and $response.StatusCode -lt 400); StatusCode = [int]$response.StatusCode; Error = '' }
     }
     catch {
@@ -125,36 +158,80 @@ function Get-BudgetLogTail {
     return $value
 }
 
-function Get-BudgetExactlyOneReadyDevice {
-    param([string]$AdbPath)
-    $all = @(Get-BudgetAdbDevices -AdbPath $AdbPath)
-    $ready = @($all | Where-Object { $_.State -eq 'device' })
-    if ($ready.Count -ne 1) {
-        $summary = @($all | ForEach-Object { "$($_.Serial) [$($_.State)] $($_.Model)" })
-        throw "É necessário exatamente um dispositivo Android pronto no ADB; encontrados $($ready.Count). Dispositivos: $($summary -join ', ')"
+function Invoke-BudgetFrontendAdb {
+    param(
+        [string]$AdbPath,
+        [string[]]$Arguments,
+        [int]$TimeoutSeconds = 12
+    )
+    if ($TimeoutSeconds -lt 1 -or $TimeoutSeconds -gt 30) { throw 'Timeout ADB fora do intervalo permitido.' }
+    foreach ($argument in $Arguments) {
+        if ($argument -notmatch '^[A-Za-z0-9._:-]+$') { throw "Argumento ADB interno inválido: $argument" }
     }
-    return $ready[0]
+
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $AdbPath
+    $startInfo.Arguments = ($Arguments -join ' ')
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) { throw 'Não foi possível iniciar o ADB.' }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            try { $process.Kill() } catch {}
+            throw "ADB excedeu o timeout controlado de $TimeoutSeconds segundos."
+        }
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        return [PSCustomObject]@{ ExitCode = $process.ExitCode; Stdout = $stdout; Stderr = $stderr }
+    }
+    finally {
+        $process.Dispose()
+    }
+}
+
+function Get-BudgetFrontendAdbDevices {
+    param([string]$AdbPath)
+    $result = Invoke-BudgetFrontendAdb -AdbPath $AdbPath -Arguments @('devices', '-l')
+    if ($result.ExitCode -ne 0) { throw "Falha ao consultar dispositivos ADB: $($result.Stderr.Trim())" }
+    $devices = @()
+    foreach ($line in ($result.Stdout -split "(`r`n|`n|`r)")) {
+        if ($line -match '^([^\s]+)\s+(device|offline|unauthorized)\b(.*)$') {
+            $serial = $Matches[1]
+            $state = $Matches[2]
+            $details = $Matches[3].Trim()
+            $model = ''
+            if ($details -match '(?:^|\s)model:([^\s]+)') { $model = $Matches[1] }
+            $devices += [PSCustomObject]@{ Serial = $serial; State = $state; Model = $model; Details = $details }
+        }
+    }
+    return $devices
 }
 
 function Test-BudgetReverse {
     param([string]$AdbPath, [string]$DeviceId)
-    $output = @(& $AdbPath -s $DeviceId reverse --list 2>&1)
-    if ($LASTEXITCODE -ne 0) { return $false }
-    return [bool]($output | Where-Object { $_ -match '(?:^|\s)tcp:4200\s+tcp:4200(?:\s|$)' })
+    $result = Invoke-BudgetFrontendAdb -AdbPath $AdbPath -Arguments @('-s', $DeviceId, 'reverse', '--list')
+    if ($result.ExitCode -ne 0) { return $false }
+    return [bool](($result.Stdout -split "(`r`n|`n|`r)") | Where-Object { $_ -match '(?:^|\s)tcp:4200\s+tcp:4200(?:\s|$)' })
 }
 
 function Set-BudgetReverse {
     param([string]$AdbPath, [string]$DeviceId)
-    $output = @(& $AdbPath -s $DeviceId reverse tcp:4200 tcp:4200 2>&1)
-    if ($LASTEXITCODE -ne 0) { throw "Falha ao configurar ADB Reverse: $($output -join ' ')" }
+    $result = Invoke-BudgetFrontendAdb -AdbPath $AdbPath -Arguments @('-s', $DeviceId, 'reverse', 'tcp:4200', 'tcp:4200')
+    if ($result.ExitCode -ne 0) { throw "Falha ao configurar ADB Reverse: $($result.Stderr.Trim())" }
     return (Test-BudgetReverse -AdbPath $AdbPath -DeviceId $DeviceId)
 }
 
 function Remove-BudgetReverse {
     param([string]$AdbPath, [string]$DeviceId)
     if (-not (Test-BudgetReverse -AdbPath $AdbPath -DeviceId $DeviceId)) { return $false }
-    $output = @(& $AdbPath -s $DeviceId reverse --remove tcp:4200 2>&1)
-    if ($LASTEXITCODE -ne 0) { throw "Falha ao remover ADB Reverse: $($output -join ' ')" }
+    $result = Invoke-BudgetFrontendAdb -AdbPath $AdbPath -Arguments @('-s', $DeviceId, 'reverse', '--remove', 'tcp:4200')
+    if ($result.ExitCode -ne 0) { throw "Falha ao remover ADB Reverse: $($result.Stderr.Trim())" }
     return $true
 }
 
@@ -162,4 +239,30 @@ function Write-BudgetJson {
     param($Value)
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     [Console]::Out.WriteLine(($Value | ConvertTo-Json -Depth 8))
+}
+
+function Get-BudgetFrontendAdbSnapshot {
+    $result = [ordered]@{ Available = $false; Devices = @(); Device = $null; Error = ''; AdbPath = '' }
+    try {
+        $result.AdbPath = Get-BudgetAdbPath
+        $result.Available = $true
+        $result.Devices = @(Get-BudgetFrontendAdbDevices -AdbPath $result.AdbPath)
+        $ready = @($result.Devices | Where-Object { $_.State -eq 'device' })
+        if ($ready.Count -eq 1) { $result.Device = $ready[0] }
+        elseif ($ready.Count -gt 1) { $result.Error = "Mais de um dispositivo ADB pronto: $(@($ready | ForEach-Object Serial) -join ', ')." }
+        else { $result.Error = 'Nenhum dispositivo ADB pronto.' }
+    }
+    catch { $result.Error = $_.Exception.Message }
+    return [PSCustomObject]$result
+}
+
+function Get-BudgetActiveIpv4Url {
+    try {
+        $address = Get-NetIPAddress -AddressFamily IPv4 -AddressState Preferred -ErrorAction Stop |
+            Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' -and $_.InterfaceAlias -notmatch 'Loopback|vEthernet|Virtual|VPN' } |
+            Sort-Object InterfaceMetric | Select-Object -First 1 -ExpandProperty IPAddress
+        if ($address) { return "http://${address}:$($script:Port)" }
+    }
+    catch {}
+    return ''
 }

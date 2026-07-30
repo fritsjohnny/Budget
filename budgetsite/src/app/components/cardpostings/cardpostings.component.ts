@@ -32,7 +32,6 @@ import { CardPostingsModernDialog } from './cardpostings-dialog/cardpostings-mod
 import { CardReceiptsDialog } from './cardreceipts-dialog/cardreceipts-dialog';
 import { CardReceiptsModernDialog } from './cardreceipts-dialog/cardreceipts-modern-dialog';
 import { Messenger } from 'src/app/common/messenger';
-import { Expenses } from 'src/app/models/expenses.model';
 import { CardsInvoiceClosing } from 'src/app/models/cardsinvoiceclosing.model';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
 import { forkJoin, of } from 'rxjs';
@@ -74,10 +73,10 @@ export class CardPostingsComponent implements OnInit {
   @Input() reference?: string;
 
   @Output() notificationContextChange = new EventEmitter<CardNotificationContext>();
+  @Output() invoiceClosingRequested = new EventEmitter<void>();
 
   @ViewChild('input') filterInput!: ElementRef;
 
-  expenses!: Expenses[];
   cardpostings!: CardsPostings[];
   cardpostingspeople!: CardsPostingsDTO[];
   expensesByCategories!: ExpensesByCategories[];
@@ -220,8 +219,13 @@ export class CardPostingsComponent implements OnInit {
       error: () => this.finishAuxiliaryLoading(),
     });
 
-    this.cardService.read().subscribe({
+    this.cardService.readAvailable(reference, this.getCurrentLocalDate()).subscribe({
       next: (cards) => {
+        if (this.reference !== reference) {
+          this.finishAuxiliaryLoading();
+          return;
+        }
+
         this.cardsList = cards.sort((a, b) => a.name.localeCompare(b.name));
 
         this.finishAuxiliaryLoading();
@@ -238,20 +242,15 @@ export class CardPostingsComponent implements OnInit {
       error: () => this.finishAuxiliaryLoading(),
     });
 
-    this.expenseService.readComboList(reference!).subscribe({
-      next: (expenses) => {
-        if (this.reference !== reference) {
-          this.finishAuxiliaryLoading();
-          return;
-        }
+  }
 
-        this.expenses = expenses.sort((a, b) =>
-          a.description.localeCompare(b.description));
+  private getCurrentLocalDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
 
-        this.finishAuxiliaryLoading();
-      },
-      error: () => this.finishAuxiliaryLoading(),
-    });
+    return `${year}-${month}-${day}`;
   }
 
   private finishAuxiliaryLoading(): void {
@@ -584,6 +583,12 @@ export class CardPostingsComponent implements OnInit {
       : 0;
   }
 
+  requestInvoiceClosing(): void {
+    if (!this.cardId || this.cardId <= 0 || !this.reference || this.validatingInvoiceClosing) return;
+
+    this.invoiceClosingRequested.emit();
+  }
+
   add(): void {
     if (!this.cardId || this.cardId <= 0) {
       this.messenger.errorHandler('Selecione um cartão específico para incluir um lançamento.');
@@ -611,7 +616,7 @@ export class CardPostingsComponent implements OnInit {
         peopleList: this.peopleList,
         categoriesList: this.categoriesList,
         cardsList: this.cardsList,
-        expensesList: this.expenses,
+        expensesList: [],
         editing: this.editing,
         adding: true,
         provisioned: false,
@@ -672,7 +677,7 @@ export class CardPostingsComponent implements OnInit {
         peopleList: this.peopleList,
         categoriesList: this.categoriesList,
         cardsList: this.cardsList,
-        expensesList: this.expenses,
+        expensesList: [],
         editing: false,
         adding: true,
         deleting: false,
@@ -764,7 +769,7 @@ export class CardPostingsComponent implements OnInit {
         peopleList: this.peopleList,
         categoriesList: this.categoriesList,
         cardsList: this.cardsList,
-        expensesList: this.expenses,
+        expensesList: [],
         editing: this.editing,
         deleting: false,
         fixed: cardPosting.fixed,

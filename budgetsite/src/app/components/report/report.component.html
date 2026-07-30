@@ -227,6 +227,18 @@
                 </div>
             </div>
 
+            <div class="row" *ngIf="selectedReportType === 6">
+                <div class="col mb-2">
+                    <mat-checkbox
+                        color="warn"
+                        [(ngModel)]="showDisabledForecastAccounts"
+                        (ngModelChange)="showDisabledForecastAccountsChanged($event)"
+                    >
+                        Exibir contas desativadas
+                    </mat-checkbox>
+                </div>
+            </div>
+
             <div class="row financial-health-filter-row" *ngIf="selectedReportType === 7">
                 <div class="col">
                     <mat-form-field

@@ -18,6 +18,7 @@ import { Messenger } from 'src/app/common/messenger';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountsPostings } from 'src/app/models/accountspostings.model';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
+import { AccountService } from 'src/app/services/account/account.service';
 import { YieldService } from 'src/app/services/yield/yield.service';
 import {
   ConfirmDialogComponent,
@@ -104,6 +105,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     private cd: ChangeDetectorRef,
     private yieldService: YieldService,
     private accountApplicationsService: AccountApplicationsService,
+    private accountService: AccountService,
     private messenger: Messenger,
 
   ) { }
@@ -111,6 +113,18 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.algorithmTypes = this.algorithmTypes
       .sort((a, b) => a.viewValue.localeCompare(b.viewValue));
+
+    this.accountPosting.accountsList = [...(this.accountPosting.accountsList || [])]
+      .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' }));
+
+    this.accountService.readAvailable(this.accountPosting.reference).subscribe({
+      next: (accounts) => {
+        this.accountPosting.accountsList = [...accounts]
+          .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' }));
+
+        this.refreshTransferAccountsList();
+      },
+    });
 
     const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
 
@@ -482,9 +496,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     const source = this.accountPosting.accountsList || [];
     const origin = this.accountPosting.accountId;
 
-    this.transferAccountsList = origin
+    this.transferAccountsList = (origin
       ? source.filter(a => a.id !== origin)
-      : source.slice(); // se ainda não tem origem, mantém todas
+      : source.slice())
+      .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' }));
 
     if (this.accountPosting.toAccountId && this.accountPosting.toAccountId === origin) {
       this.accountPosting.toAccountId = undefined;
@@ -496,6 +511,18 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   isTransferMode(): boolean {
     return this.accountPosting.type === 'T';
+  }
+
+  useFullAccountBalance(): void {
+    if (!this.isTransferMode()) return;
+
+    const amount = this.round2(Number(this.accountPosting.totalBalance || 0));
+    const grossAmount = this.round2(Number(this.accountPosting.totalGrossBalance ?? amount));
+
+    this.accountPosting.amount = amount;
+    this.accountPosting.grossAmount = grossAmount;
+    this.setControlValue('amountFormControl', amount);
+    this.setControlValue('grossAmountFormControl', grossAmount);
   }
 
   onToAccountChanged(): void {
@@ -606,6 +633,13 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onValorChanged($event: any) {
+    if (this.isTransferMode()) {
+      const amount = this.round2(Number(this.accountPosting.amount || 0));
+      this.accountPosting.grossAmount = amount;
+      this.setControlValue('grossAmountFormControl', amount);
+      return;
+    }
+
     this.calculaSaldoLiquido(true);
   }
 

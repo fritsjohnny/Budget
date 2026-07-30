@@ -1273,11 +1273,29 @@
                                                 trackBy: trackById
                                             "
                                         >
-                                            <div class="detail-copy">
-                                                <span class="detail-title"
-                                                    >{{ item.card?.name }} ·
-                                                    {{ item.description }}</span
-                                                >
+                                            <div class="detail-copy detail-card-copy">
+                                                <div class="detail-card-heading">
+                                                    <span
+                                                        class="detail-card-name"
+                                                        [ngStyle]="{
+                                                            backgroundColor:
+                                                                item.card
+                                                                    ?.background,
+                                                            color: item.card
+                                                                ?.color
+                                                        }"
+                                                        >{{
+                                                            item.card?.name
+                                                        }}</span
+                                                    >
+                                                    <span class="detail-card-date">{{
+                                                        item.date
+                                                            | date: "dd/MM"
+                                                    }}</span>
+                                                </div>
+                                                <span class="detail-title">{{
+                                                    item.description
+                                                }}</span>
                                                 <small
                                                     class="detail-subline"
                                                     *ngIf="item.parcels > 1"
@@ -1576,11 +1594,29 @@
                                                 trackBy: trackById
                                             "
                                         >
-                                            <div class="detail-copy">
-                                                <span class="detail-title"
-                                                    >{{ item.card?.name }} ·
-                                                    {{ item.description }}</span
-                                                >
+                                            <div class="detail-copy detail-card-copy">
+                                                <div class="detail-card-heading">
+                                                    <span
+                                                        class="detail-card-name"
+                                                        [ngStyle]="{
+                                                            backgroundColor:
+                                                                item.card
+                                                                    ?.background,
+                                                            color: item.card
+                                                                ?.color
+                                                        }"
+                                                        >{{
+                                                            item.card?.name
+                                                        }}</span
+                                                    >
+                                                    <span class="detail-card-date">{{
+                                                        item.date
+                                                            | date: "dd/MM"
+                                                    }}</span>
+                                                </div>
+                                                <span class="detail-title">{{
+                                                    item.description
+                                                }}</span>
                                                 <small
                                                     class="detail-subline"
                                                     *ngIf="item.parcels > 1"

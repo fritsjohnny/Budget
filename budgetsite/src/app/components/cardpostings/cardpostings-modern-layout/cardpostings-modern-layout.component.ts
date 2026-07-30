@@ -1,4 +1,4 @@
-import { Component, DoCheck, Input, ViewChild } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { ExpensesByCategories } from 'src/app/models/expensesbycategories';
 
@@ -7,14 +7,21 @@ import { ExpensesByCategories } from 'src/app/models/expensesbycategories';
   templateUrl: './cardpostings-modern-layout.component.html',
   styleUrls: ['./cardpostings-modern-layout.component.scss'],
 })
-export class CardPostingsModernLayoutComponent implements DoCheck {
+export class CardPostingsModernLayoutComponent {
   @Input() context!: any;
 
   private categoriesSort?: MatSort;
+  private peopleSource?: any[];
+  private sortedPeople: any[] = [];
+  private categoriesSource?: any[];
+  private categoryNames = new Map<number, string>();
   private readonly collator = new Intl.Collator('pt-BR', {
     usage: 'sort',
     sensitivity: 'base',
     numeric: true,
+  });
+  private readonly weekdayFormatter = new Intl.DateTimeFormat('pt-BR', {
+    weekday: 'short',
   });
 
   @ViewChild('modernCategoriesSort')
@@ -23,9 +30,6 @@ export class CardPostingsModernLayoutComponent implements DoCheck {
     this.bindCategoriesSort();
   }
 
-  ngDoCheck(): void {
-    this.bindCategoriesSort();
-  }
 
   get activeFilterCount(): number {
     const filters = [
@@ -46,10 +50,27 @@ export class CardPostingsModernLayoutComponent implements DoCheck {
     return this.context?.dataSource?.filteredData ?? this.context?.cardpostings ?? [];
   }
 
+  get selectedCard(): any | undefined {
+    if (!this.context?.cardId || this.context.cardId <= 0) return undefined;
+
+    return this.context?.cardsList?.find((card: any) => card.id === this.context.cardId);
+  }
+
+  get selectedCardExpenseDueDate(): string | Date | undefined {
+    return this.selectedCard?.expenseDueDate;
+  }
+
   get people(): any[] {
-    return [...(this.context?.cardpostingspeople ?? [])].sort((a, b) =>
-      this.collator.compare(a.person ?? '', b.person ?? '')
-    );
+    const source = this.context?.cardpostingspeople ?? [];
+
+    if (source !== this.peopleSource) {
+      this.peopleSource = source;
+      this.sortedPeople = [...source].sort((a, b) =>
+        this.collator.compare(a.person ?? '', b.person ?? '')
+      );
+    }
+
+    return this.sortedPeople;
   }
 
   get totalParcels(): number {
@@ -66,13 +87,20 @@ export class CardPostingsModernLayoutComponent implements DoCheck {
 
     if (posting?.categoryId == null) return '';
 
-    return String(
-      this.context?.categoriesList?.find((category: any) => category.id === posting.categoryId)?.name ?? ''
-    ).trim();
+    const categories = this.context?.categoriesList ?? [];
+
+    if (categories !== this.categoriesSource) {
+      this.categoriesSource = categories;
+      this.categoryNames = new Map(
+        categories.map((category: any) => [category.id, String(category.name ?? '').trim()])
+      );
+    }
+
+    return this.categoryNames.get(posting.categoryId) ?? '';
   }
 
   getWeekday(date: string | Date): string {
-    return new Intl.DateTimeFormat('pt-BR', { weekday: 'short' })
+    return this.weekdayFormatter
       .format(new Date(date))
       .replace('.', '')
       .toLowerCase();

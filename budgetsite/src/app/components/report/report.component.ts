@@ -48,8 +48,10 @@ export class ReportComponent implements OnInit, AfterViewInit {
   groupByCard: boolean = false;
   showCardChart: boolean = false;
 
+  allForecastAccounts: Accounts[] = [];
   forecastAccounts: Accounts[] = [];
   forecastAccountId: number = 0;
+  showDisabledForecastAccounts: boolean = false;
   forecastInitialDateValue: Date | null = null;
   forecastFinalDateValue: Date | null = null;
 
@@ -106,26 +108,12 @@ export class ReportComponent implements OnInit, AfterViewInit {
     });
 
     this.accountService.read().subscribe((accounts) => {
-      this.forecastAccounts = accounts.sort((a, b) => {
-        const positionComparison = (a.position ?? Number.MAX_SAFE_INTEGER) -
-          (b.position ?? Number.MAX_SAFE_INTEGER);
-
-        return positionComparison !== 0
-          ? positionComparison
-          : a.name.localeCompare(b.name);
-      });
+      this.allForecastAccounts = accounts.sort((a, b) => a.name.localeCompare(b.name));
 
       this.forecastAccountId = parseInt(
         localStorage.getItem('lastSelectedForecastAccountReport') || '0'
       );
-
-      if (
-        this.forecastAccountId !== 0 &&
-        !this.forecastAccounts.some(account => account.id === this.forecastAccountId)
-      ) {
-        this.forecastAccountId = 0;
-        localStorage.setItem('lastSelectedForecastAccountReport', '0');
-      }
+      this.refreshForecastAccounts();
     });
 
     const initialDateStr = localStorage.getItem('report4InitialDate');
@@ -154,6 +142,7 @@ export class ReportComponent implements OnInit, AfterViewInit {
     this.showCategoryChart = localStorage.getItem('report3ShowCategoryChart') === 'true';
 
     this.showDisabledCards = localStorage.getItem('report5ShowDisabledCards') === 'true';
+    this.showDisabledForecastAccounts = localStorage.getItem('report6ShowDisabledAccounts') === 'true';
     this.onlyMyCardExpenses = localStorage.getItem('report5OnlyMyCardExpenses') === 'true';
     this.groupByCard = localStorage.getItem('report5GroupByCard') === 'true';
     this.showCardChart = localStorage.getItem('report5ShowCardChart') === 'true';
@@ -348,6 +337,12 @@ export class ReportComponent implements OnInit, AfterViewInit {
     this.refreshCards();
   }
 
+  showDisabledForecastAccountsChanged(showDisabledAccounts: boolean) {
+    this.showDisabledForecastAccounts = showDisabledAccounts;
+    localStorage.setItem('report6ShowDisabledAccounts', this.showDisabledForecastAccounts.toString());
+    this.refreshForecastAccounts();
+  }
+
   onlyMyCardExpensesChanged(onlyMyCardExpenses: boolean) {
     this.onlyMyCardExpenses = onlyMyCardExpenses;
     localStorage.setItem('report5OnlyMyCardExpenses', this.onlyMyCardExpenses.toString());
@@ -407,11 +402,27 @@ export class ReportComponent implements OnInit, AfterViewInit {
   }
 
   private refreshCards() {
-    this.cards = this.allCards.filter((card) => this.showDisabledCards || card.disabled !== true);
+    this.cards = this.allCards
+      .filter((card) => this.showDisabledCards || card.disabled !== true)
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     if (this.cardId !== 0 && !this.cards.some((card) => card.id === this.cardId)) {
       this.cardId = 0;
       localStorage.setItem('lastSelectedCardReport', '0');
+    }
+  }
+
+  private refreshForecastAccounts() {
+    this.forecastAccounts = this.allForecastAccounts
+      .filter((account) => this.showDisabledForecastAccounts || account.disabled !== true)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (
+      this.forecastAccountId !== 0 &&
+      !this.forecastAccounts.some((account) => account.id === this.forecastAccountId)
+    ) {
+      this.forecastAccountId = 0;
+      localStorage.setItem('lastSelectedForecastAccountReport', '0');
     }
   }
 

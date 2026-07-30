@@ -1112,6 +1112,36 @@
   gap: 1px;
 }
 
+.detail-card-copy {
+  gap: 4px;
+}
+
+.detail-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-card-name {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  max-width: 60%;
+  padding: 1px 7px;
+  border-radius: 5px;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-card-date {
+  color: var(--modern-yellow);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .detail-title {
   min-width: 0;
   overflow: hidden;

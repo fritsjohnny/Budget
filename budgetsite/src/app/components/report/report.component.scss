@@ -263,6 +263,66 @@
 ::ng-deep .modern-report-shell .report-container .mat-column-index { width: 42px; min-width: 42px; }
 ::ng-deep .modern-report-shell .report-container .mat-column-value { font-weight: 700; }
 
+/* Mantém no relatório de saldo previsto as mesmas proporções de colunas do leiaute clássico. */
+::ng-deep .modern-report-shell .report-container .account-forecast-table {
+    min-width: 100% !important;
+}
+::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-index {
+    width: auto;
+    min-width: 0;
+}
+::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-description {
+    min-width: 160px;
+}
+::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-amount,
+::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-balance {
+    width: 140px;
+}
+
+/* Preserva no novo leiaute as larguras definidas por cada relatório clássico. */
+::ng-deep .modern-report-shell .report-container :is(
+    .expenses-by-card-table,
+    .expenses-by-category-table,
+    .expenses-by-due-date-table,
+    .fixed-expenses-table,
+    .third-party-expenses-table
+) {
+    min-width: 100% !important;
+}
+
+::ng-deep .modern-report-shell .report-container .expenses-by-card-table .mat-column-description,
+::ng-deep .modern-report-shell .report-container .expenses-by-category-table .mat-column-description,
+::ng-deep .modern-report-shell .report-container .expenses-by-category-table .mat-column-category,
+::ng-deep .modern-report-shell .report-container .third-party-expenses-table .mat-column-description {
+    min-width: 170px;
+}
+
+::ng-deep .modern-report-shell .report-container .expenses-by-card-table .mat-column-card {
+    min-width: 150px;
+}
+
+::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-description {
+    min-width: 160px;
+}
+
+::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-remaining {
+    width: 140px;
+}
+
+::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-index {
+    width: 50px;
+    min-width: 50px;
+}
+
+::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-description,
+::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-category {
+    width: 500px;
+}
+
+::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-value {
+    width: 125px;
+}
+
 /* Remove as superfícies cinzas remanescentes dos componentes internos. */
 ::ng-deep .modern-report-shell .report-container .chart-container,
 ::ng-deep .modern-report-shell .report-container .report-summary,

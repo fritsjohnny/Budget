@@ -15,6 +15,21 @@
         <span class="summary-icon"><mat-icon>account_balance_wallet</mat-icon></span>
         <div><small>Total geral</small><strong>{{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong></div>
       </article>
+      <article class="summary-card summary-card-dates" *ngIf="selectedCard">
+        <span class="summary-icon"><mat-icon>event_available</mat-icon></span>
+        <div class="card-dates">
+          <div
+            class="invoice-closing-link"
+            role="button"
+            tabindex="0"
+            aria-label="Definir início da próxima fatura"
+            (click)="context.requestInvoiceClosing()"
+            (keydown.enter)="context.requestInvoiceClosing()"
+            (keydown.space)="context.requestInvoiceClosing(); $event.preventDefault()"
+          ><small>Melhor dia para compra</small><strong>{{ selectedCard.closingDay ? (selectedCard.closingDay) : '' }}</strong></div>
+          <div><small>Vencimento do cartão</small><strong>{{ selectedCardExpenseDueDate | date: 'dd/MM/yyyy' }}</strong></div>
+        </div>
+      </article>
       <article class="summary-card summary-mine">
         <span class="summary-icon"><mat-icon>person</mat-icon></span>
         <div><small>Meu total</small><strong>{{ context.myTotal | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong><em>{{ context.percMyTotal }}</em></div>

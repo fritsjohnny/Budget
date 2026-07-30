@@ -1,92 +1,129 @@
 <div
-  class="modern-card-shell"
-  [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
-  [class.pull-refreshing]="isPullRefreshing"
-  [style.--pull-distance]="pullDistance + 'px'"
-  (touchstart)="onPullStart($event)"
-  (touchmove)="onPullMove($event)"
-  (touchend)="onPullEnd()"
-  (touchcancel)="onPullCancel()"
+    class="modern-card-shell"
+    [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
+    [class.pull-refreshing]="isPullRefreshing"
+    [style.--pull-distance]="pullDistance + 'px'"
+    (touchstart)="onPullStart($event)"
+    (touchmove)="onPullMove($event)"
+    (touchend)="onPullEnd()"
+    (touchcancel)="onPullCancel()"
 >
-  <div class="pull-refresh-indicator" [class.visible]="pullDistance > 0 || isPullRefreshing" [class.ready]="pullReady">
-    <mat-icon>{{ isPullRefreshing ? 'autorenew' : 'arrow_downward' }}</mat-icon>
-    <span>{{ pullRefreshLabel }}</span>
-  </div>
+    <div
+        class="pull-refresh-indicator"
+        [class.visible]="pullDistance > 0 || isPullRefreshing"
+        [class.ready]="pullReady"
+    >
+        <mat-icon>{{
+            isPullRefreshing ? "autorenew" : "arrow_downward"
+        }}</mat-icon>
+        <span>{{ pullRefreshLabel }}</span>
+    </div>
 
-  <app-modern-reference-selector
-    [reference]="context.reference"
-    storageKey="cardDate"
-    ariaLabel="Referência dos cartões"
-    [showOptionButton]="false"
-    (referenceChange)="onReferenceChange($event)"
-  ></app-modern-reference-selector>
+    <app-modern-reference-selector
+        [reference]="context.reference"
+        storageKey="cardDate"
+        ariaLabel="Referência dos cartões"
+        [showOptionButton]="false"
+        currentActionLabel="Fatura atual"
+        [customCurrentAction]="true"
+        [currentActionActive]="context.isCurrentInvoiceReference"
+        [currentActionDisabled]="
+            !context.cardId || context.validatingInvoiceClosing
+        "
+        (currentActionClick)="context.setCurrentInvoiceReference()"
+        (referenceChange)="onReferenceChange($event)"
+    ></app-modern-reference-selector>
 
-  <div class="modern-loading" *ngIf="isPullRefreshing">
-    <mat-spinner color="accent" [diameter]="48"></mat-spinner>
-    <span>Atualizando cartões...</span>
-  </div>
+    <div class="modern-loading" *ngIf="isPullRefreshing">
+        <mat-spinner color="accent" [diameter]="48"></mat-spinner>
+        <span>Atualizando cartões...</span>
+    </div>
 
-  <ng-container *ngIf="!isPullRefreshing">
-    <section class="card-selector">
-      <div class="selected-card">
-        <div class="selected-card-copy">
-          <span class="selector-icon"><mat-icon>credit_card</mat-icon></span>
-          <div>
-            <small>Cartão selecionado</small>
-            <strong>{{ context.card?.name || 'Selecione um cartão' }}</strong>
-          </div>
-        </div>
-        <div class="selected-card-actions">
-          <button *ngIf="context.card?.appPackageName" mat-icon-button (click)="context.openBankApp()" matTooltip="Abrir aplicativo">
-            <mat-icon>open_in_new</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            class="add-card-button"
-            (click)="context.cardDialog()"
-            matTooltip="Cadastrar ou gerenciar cartões"
-            aria-label="Cadastrar ou gerenciar cartões"
-          >
-            <mat-icon>add_card</mat-icon>
-          </button>
-          <button mat-icon-button (click)="context.refresh()" matTooltip="Atualizar cartões" aria-label="Atualizar cartões">
-            <mat-icon>autorenew</mat-icon>
-          </button>
-          <button
-            *ngIf="context.cardId > 0 && context.reference"
-            mat-icon-button
-            (click)="context.openInvoiceClosing()"
-            matTooltip="Início da próxima fatura"
-            aria-label="Definir início da próxima fatura"
-          >
-            <mat-icon>event_available</mat-icon>
-          </button>
-        </div>
-      </div>
+    <ng-container *ngIf="!isPullRefreshing">
+        <section class="card-selector">
+            <div class="selected-card">
+                <div class="selected-card-copy">
+                    <span class="selector-icon"
+                        ><mat-icon>credit_card</mat-icon></span
+                    >
+                    <div>
+                        <small>Cartão selecionado</small>
+                        <strong>{{
+                            context.card?.name || "Selecione um cartão"
+                        }}</strong>
+                    </div>
+                </div>
+                <div class="selected-card-actions">
+                    <button
+                        mat-icon-button
+                        class="add-card-button"
+                        (click)="context.cardDialog()"
+                        matTooltip="Cadastrar ou gerenciar cartões"
+                        aria-label="Cadastrar ou gerenciar cartões"
+                    >
+                        <mat-icon>add_card</mat-icon>
+                    </button>
+                    <button
+                        mat-icon-button
+                        (click)="context.refresh()"
+                        matTooltip="Atualizar cartões"
+                        aria-label="Atualizar cartões"
+                    >
+                        <mat-icon>autorenew</mat-icon>
+                    </button>
+                    <button
+                        *ngIf="context.cardId > 0 && context.reference"
+                        mat-icon-button
+                        (click)="context.openInvoiceClosing()"
+                        matTooltip="Início da próxima fatura"
+                        aria-label="Definir início da próxima fatura"
+                    >
+                        <mat-icon>event_available</mat-icon>
+                    </button>
+                    <button
+                        *ngIf="context.card?.appPackageName"
+                        mat-icon-button
+                        (click)="context.openBankApp()"
+                        matTooltip="Abrir aplicativo"
+                    >
+                        <mat-icon>open_in_new</mat-icon>
+                    </button>
+                </div>
+            </div>
 
-      <mat-progress-bar mode="query" color="accent" *ngIf="!context.hideProgress"></mat-progress-bar>
+            <mat-progress-bar
+                mode="query"
+                color="accent"
+                *ngIf="!context.hideProgress"
+            ></mat-progress-bar>
 
-      <div class="card-chips">
-        <button
-          mat-button
-          class="card-chip"
-          *ngFor="let card of context.cardsVisible; trackBy: trackById"
-          [class.active]="card.id === context.cardId"
-          [style.--chip-background]="card.background"
-          [style.--chip-color]="card.color"
-          (click)="context.setCard(card)"
-        >
-          <span class="chip-icon"><mat-icon>credit_card</mat-icon></span>
-          <span>{{ card.name }}</span>
-        </button>
-      </div>
-    </section>
+            <div class="card-chips">
+                <button
+                    mat-button
+                    class="card-chip"
+                    *ngFor="
+                        let card of context.cardsVisible;
+                        trackBy: trackById
+                    "
+                    [class.active]="card.id === context.cardId"
+                    [style.--chip-background]="card.background"
+                    [style.--chip-color]="card.color"
+                    (click)="context.setCard(card)"
+                >
+                    <span class="chip-icon"
+                        ><mat-icon>credit_card</mat-icon></span
+                    >
+                    <span>{{ card.name }}</span>
+                </button>
+            </div>
+        </section>
 
-    <app-cardpostings
-      [cardId]="context.cardId"
-      [reference]="context.reference"
-      [modernLayout]="true"
-      (notificationContextChange)="context.setNotificationContext($event)"
-    ></app-cardpostings>
-  </ng-container>
+        <app-cardpostings
+            [cardId]="context.cardId"
+            [reference]="context.reference"
+            [modernLayout]="true"
+            (notificationContextChange)="context.setNotificationContext($event)"
+            (invoiceClosingRequested)="context.openInvoiceClosing()"
+        ></app-cardpostings>
+    </ng-container>
 </div>

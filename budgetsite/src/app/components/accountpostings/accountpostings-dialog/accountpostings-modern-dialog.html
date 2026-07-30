@@ -149,6 +149,17 @@
               autocomplete="off"
               (ngModelChange)="onValorChanged($event)"
             />
+            <button
+              *ngIf="isTransferMode()"
+              mat-icon-button
+              matSuffix
+              type="button"
+              matTooltip="Usar saldo total da conta"
+              aria-label="Usar saldo total da conta"
+              (click)="useFullAccountBalance()"
+            >
+              <mat-icon>account_balance_wallet</mat-icon>
+            </button>
             <mat-error *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')">
               Campo <strong>obrigatório</strong>.
             </mat-error>

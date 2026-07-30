@@ -1,106 +1,132 @@
 <div
-  class="modern-account-shell"
-  [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
-  [class.pull-refreshing]="isPullRefreshing"
-  [style.--pull-distance]="pullDistance + 'px'"
-  (touchstart)="onPullStart($event)"
-  (touchmove)="onPullMove($event)"
-  (touchend)="onPullEnd()"
-  (touchcancel)="onPullCancel()"
+    class="modern-account-shell"
+    [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
+    [class.pull-refreshing]="isPullRefreshing"
+    [style.--pull-distance]="pullDistance + 'px'"
+    (touchstart)="onPullStart($event)"
+    (touchmove)="onPullMove($event)"
+    (touchend)="onPullEnd()"
+    (touchcancel)="onPullCancel()"
 >
-  <div
-    class="pull-refresh-indicator"
-    [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"
-    [class.pull-refresh-ready]="pullReady"
-    aria-live="polite"
-  >
-    <mat-icon>{{ isPullRefreshing ? 'autorenew' : 'arrow_downward' }}</mat-icon>
-    <span>{{ pullRefreshLabel }}</span>
-  </div>
-  <app-modern-reference-selector
-    [reference]="context.reference"
-    storageKey="accountDate"
-    ariaLabel="Referência das contas"
-    [showOptionButton]="false"
-    (referenceChange)="onReferenceChange($event)"
-  ></app-modern-reference-selector>
-
-  <div class="modern-loading" *ngIf="isPullRefreshing" aria-live="polite">
-    <mat-spinner color="accent" [diameter]="48"></mat-spinner>
-    <span>Atualizando contas...</span>
-  </div>
-
-  <ng-container *ngIf="!isPullRefreshing">
-  <section class="account-selector" aria-label="Seleção de conta">
-    <div class="selected-account">
-      <div class="selected-account-copy">
-        <span class="account-selector-icon"><mat-icon>account_balance</mat-icon></span>
-        <div>
-          <small>Conta selecionada</small>
-          <strong>{{ context.account?.name || 'Selecione uma conta' }}</strong>
-        </div>
-      </div>
-
-      <div class="selected-account-actions">
-        <button
-          *ngIf="context.account?.appPackageName"
-          mat-icon-button
-          (click)="context.openBankApp()"
-          matTooltip="Abrir aplicativo do banco"
-          aria-label="Abrir aplicativo do banco"
-        >
-          <mat-icon>open_in_new</mat-icon>
-        </button>
-        <button
-          mat-icon-button
-          class="add-account-button"
-          (click)="context.accountDialog()"
-          matTooltip="Cadastrar ou gerenciar contas"
-          aria-label="Cadastrar ou gerenciar contas"
-        >
-          <span class="add-account-icon" aria-hidden="true">
-            <mat-icon class="add-account-bank">account_balance</mat-icon>
-            <mat-icon class="add-account-plus">add_circle</mat-icon>
-          </span>
-        </button>
-        <button mat-icon-button (click)="context.refresh()" matTooltip="Atualizar contas" aria-label="Atualizar contas">
-          <mat-icon>autorenew</mat-icon>
-        </button>
-      </div>
-    </div>
-
-    <mat-progress-bar mode="query" color="accent" *ngIf="!context.hideProgress"></mat-progress-bar>
-
     <div
-      class="account-chips"
-      cdkDropList
-      cdkDropListOrientation="horizontal"
-      [cdkDropListData]="context.accountsVisible || []"
-      (cdkDropListDropped)="context.drop($event)"
+        class="pull-refresh-indicator"
+        [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"
+        [class.pull-refresh-ready]="pullReady"
+        aria-live="polite"
     >
-      <button
-        mat-button
-        class="account-chip"
-        *ngFor="let account of context.accountsVisible; trackBy: trackById"
-        [class.account-chip-active]="account.id === context.accountId"
-        [style.--account-background]="account.background"
-        [style.--account-color]="account.color"
-        (click)="context.setAccount(account)"
-        cdkDrag
-        [style.--drag-accent]="account.color || '#29bf6a'"
-      >
-        <span class="account-chip-swatch"><mat-icon>account_balance_wallet</mat-icon></span>
-        <span>{{ context.getDescription(account) }}</span>
-      </button>
+        <mat-icon>{{
+            isPullRefreshing ? "autorenew" : "arrow_downward"
+        }}</mat-icon>
+        <span>{{ pullRefreshLabel }}</span>
     </div>
-  </section>
+    <app-modern-reference-selector
+        [reference]="context.reference"
+        storageKey="accountDate"
+        ariaLabel="Referência das contas"
+        [showOptionButton]="false"
+        (referenceChange)="onReferenceChange($event)"
+    ></app-modern-reference-selector>
 
-  <app-accountpostings
-    [accountId]="context.accountId"
-    [reference]="context.reference"
-    [accountsList]="context.accounts"
-    [modernLayout]="true"
-    (accountUpdated)="context.updateAccountFromChild($event)"
-  ></app-accountpostings>
-  </ng-container>
+    <div class="modern-loading" *ngIf="isPullRefreshing" aria-live="polite">
+        <mat-spinner color="accent" [diameter]="48"></mat-spinner>
+        <span>Atualizando contas...</span>
+    </div>
+
+    <ng-container *ngIf="!isPullRefreshing">
+        <section class="account-selector" aria-label="Seleção de conta">
+            <div class="selected-account">
+                <div class="selected-account-copy">
+                    <span class="account-selector-icon"
+                        ><mat-icon>account_balance</mat-icon></span
+                    >
+                    <div>
+                        <small>Conta selecionada</small>
+                        <strong>{{
+                            context.account?.name || "Selecione uma conta"
+                        }}</strong>
+                    </div>
+                </div>
+
+                <div class="selected-account-actions">
+                    <button
+                        mat-icon-button
+                        class="add-account-button"
+                        (click)="context.accountDialog()"
+                        matTooltip="Cadastrar ou gerenciar contas"
+                        aria-label="Cadastrar ou gerenciar contas"
+                    >
+                        <span class="add-account-icon" aria-hidden="true">
+                            <mat-icon class="add-account-bank"
+                                >account_balance</mat-icon
+                            >
+                            <mat-icon class="add-account-plus"
+                                >add_circle</mat-icon
+                            >
+                        </span>
+                    </button>
+                    <button
+                        mat-icon-button
+                        (click)="context.refresh()"
+                        matTooltip="Atualizar contas"
+                        aria-label="Atualizar contas"
+                    >
+                        <mat-icon>autorenew</mat-icon>
+                    </button>
+                    <button
+                        *ngIf="context.account?.appPackageName"
+                        mat-icon-button
+                        (click)="context.openBankApp()"
+                        matTooltip="Abrir aplicativo do banco"
+                        aria-label="Abrir aplicativo do banco"
+                    >
+                        <mat-icon>open_in_new</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <mat-progress-bar
+                mode="query"
+                color="accent"
+                *ngIf="!context.hideProgress"
+            ></mat-progress-bar>
+
+            <div
+                class="account-chips"
+                cdkDropList
+                cdkDropListOrientation="horizontal"
+                [cdkDropListData]="context.accountsVisible || []"
+                (cdkDropListDropped)="context.drop($event)"
+            >
+                <button
+                    mat-button
+                    class="account-chip"
+                    *ngFor="
+                        let account of context.accountsVisible;
+                        trackBy: trackById
+                    "
+                    [class.account-chip-active]="
+                        account.id === context.accountId
+                    "
+                    [style.--account-background]="account.background"
+                    [style.--account-color]="account.color"
+                    (click)="context.setAccount(account)"
+                    cdkDrag
+                    [style.--drag-accent]="account.color || '#29bf6a'"
+                >
+                    <span class="account-chip-swatch"
+                        ><mat-icon>account_balance_wallet</mat-icon></span
+                    >
+                    <span>{{ context.getDescription(account) }}</span>
+                </button>
+            </div>
+        </section>
+
+        <app-accountpostings
+            [accountId]="context.accountId"
+            [reference]="context.reference"
+            [accountsList]="context.accounts"
+            [modernLayout]="true"
+            (accountUpdated)="context.updateAccountFromChild($event)"
+        ></app-accountpostings>
+    </ng-container>
 </div>

@@ -25,6 +25,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private pageScrollTop = 0;
   private focusedEditableElement?: HTMLElement;
   private keyboardScrollTimer?: number;
+  private readonly handleBudgetLayoutChange = (event: Event): void => {
+    const layout = (event as CustomEvent<string>).detail;
+    this.applyBudgetLayoutClass(layout);
+  };
 
   constructor(
     private router: Router,
@@ -50,6 +54,8 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.notificationService.initNotifications();
+    this.applyBudgetLayoutClass(localStorage.getItem('budgetLayout'));
+    window.addEventListener('budget-layout-change', this.handleBudgetLayoutChange);
     this.initializeModernKeyboardScroll();
 
     // só Android puro, sem Ionic Platform
@@ -104,7 +110,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.keyboardViewport?.removeEventListener('scroll', this.handleKeyboardViewportChange);
     document.removeEventListener('focusin', this.handleModernFieldFocus);
     document.removeEventListener('focusout', this.handleModernFieldBlur);
+    window.removeEventListener('budget-layout-change', this.handleBudgetLayoutChange);
+    document.body.classList.remove('modern-layout');
     if (this.keyboardScrollTimer != null) window.clearTimeout(this.keyboardScrollTimer);
+  }
+
+  private applyBudgetLayoutClass(layout: string | null): void {
+    document.body.classList.toggle('modern-layout', layout === 'modern');
   }
 
   private initializeModernKeyboardScroll(): void {

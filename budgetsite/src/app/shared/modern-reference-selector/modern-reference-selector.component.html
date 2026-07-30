@@ -27,11 +27,12 @@
     <button
       mat-stroked-button
       class="modern-reference-today"
-      [class.modern-reference-today-active]="isCurrentReference"
+      [class.modern-reference-today-active]="customCurrentAction ? currentActionActive : isCurrentReference"
+      [disabled]="currentActionDisabled"
       (click)="setCurrentReference()"
     >
       <mat-icon>today</mat-icon>
-      <span>Hoje</span>
+      <span>{{ currentActionLabel }}</span>
     </button>
 
     <button

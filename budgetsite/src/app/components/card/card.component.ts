@@ -49,7 +49,9 @@ export class CardComponent implements OnInit, AfterViewInit {
   hideProgress: boolean = false;
   buttonName: string = "";
   validatingInvoiceClosing = false;
+  currentInvoiceReference?: string;
   private cardRefreshRequestId = 0;
+  private currentInvoiceReferenceRequestId = 0;
 
   constructor(private cardService: CardService,
     private cd: ChangeDetectorRef,
@@ -179,6 +181,7 @@ export class CardComponent implements OnInit, AfterViewInit {
       this.card = card;
 
       localStorage.setItem("cardId", card.id!.toString());
+      this.loadCurrentInvoiceReference();
     }
 
     this.hideProgress = true;
@@ -293,6 +296,72 @@ export class CardComponent implements OnInit, AfterViewInit {
       this.messenger.errorHandler(err);
       console.error('Erro ao abrir o app do cartão:', err);
     }
+  }
+
+  get isCurrentInvoiceReference(): boolean {
+    return !!this.reference && this.reference === this.currentInvoiceReference;
+  }
+
+  setCurrentInvoiceReference(): void {
+    if (!this.cardId || this.cardId <= 0 || this.validatingInvoiceClosing) return;
+
+    const currentReference = this.getCurrentReference();
+    this.validatingInvoiceClosing = true;
+    this.invoiceClosingService.ensure(this.cardId, currentReference).pipe(
+      finalize(() => this.validatingInvoiceClosing = false)
+    ).subscribe({
+      next: closing => {
+        const reference = closing.isClosed
+          ? this.addMonthsToReference(currentReference, 1)
+          : currentReference;
+
+        this.currentInvoiceReference = reference;
+
+        const year = Number(reference.substring(0, 4));
+        const month = Number(reference.substring(4, 6));
+        localStorage.setItem('cardDate', new Date(year, month - 1, 1).toISOString());
+        this.setReference(reference);
+      }
+    });
+  }
+
+  private loadCurrentInvoiceReference(): void {
+    const cardId = this.cardId;
+    const requestId = ++this.currentInvoiceReferenceRequestId;
+
+    if (!cardId || cardId <= 0) {
+      this.currentInvoiceReference = undefined;
+      return;
+    }
+
+    const currentReference = this.getCurrentReference();
+    this.invoiceClosingService.ensure(cardId, currentReference).subscribe({
+      next: closing => {
+        if (requestId !== this.currentInvoiceReferenceRequestId || cardId !== this.cardId) return;
+
+        this.currentInvoiceReference = closing.isClosed
+          ? this.addMonthsToReference(currentReference, 1)
+          : currentReference;
+      },
+      error: () => {
+        if (requestId === this.currentInvoiceReferenceRequestId && cardId === this.cardId) {
+          this.currentInvoiceReference = undefined;
+        }
+      }
+    });
+  }
+
+  private getCurrentReference(): string {
+    const today = new Date();
+    return `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  private addMonthsToReference(reference: string, months: number): string {
+    const year = Number(reference.substring(0, 4));
+    const month = Number(reference.substring(4, 6));
+    const date = new Date(year, month - 1 + months, 1);
+
+    return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
   }
 
   openInvoiceClosing(): void {

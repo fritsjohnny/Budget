@@ -476,7 +476,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
               accountpostings.reference === this.reference &&
               accountpostings.accountId === this.accountId
             ) {
-              this.accountpostings = [...this.accountpostings, accountpostings];
+              this.accountpostings = [accountpostings, ...this.accountpostings]
+                .sort((a, b) => b.position! - a.position!);
 
               this.dataSource = new MatTableDataSource(this.accountpostings);
 

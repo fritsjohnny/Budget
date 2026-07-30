@@ -8,6 +8,7 @@ export interface Cards {
   closingDay?: number;
   dueDay?: number;
   appPackageName?: string;
+  expenseDueDate?: Date;
   editing?: boolean,
   deleting?: boolean;
 }

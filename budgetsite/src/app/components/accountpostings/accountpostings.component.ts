@@ -476,16 +476,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
               accountpostings.reference === this.reference &&
               accountpostings.accountId === this.accountId
             ) {
-              this.accountpostings = [accountpostings, ...this.accountpostings]
-                .sort((a, b) => b.position! - a.position!);
-
-              this.dataSource = new MatTableDataSource(this.accountpostings);
-
-              this.accountPostingsLength = this.accountpostings.length;
-
-              localStorage.setItem(this.IOF_DAYS_STORAGE_KEY, result.iofElapsedDays?.toString());
-              localStorage.setItem(this.IOF_DATE_STORAGE_KEY, accountpostings.date?.toString());
               this.prepareAccountPostingFocus(accountpostings.id);
+              this.refresh();
+
+              return;
             }
 
             this.getTotalAmount();

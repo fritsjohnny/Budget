@@ -18,6 +18,7 @@ import { Messenger } from 'src/app/common/messenger';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountsPostings } from 'src/app/models/accountspostings.model';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
+import { AccountPostingsService } from 'src/app/services/accountpostings/accountpostings.service';
 import { AccountService } from 'src/app/services/account/account.service';
 import { YieldService } from 'src/app/services/yield/yield.service';
 import {
@@ -60,6 +61,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   previousBusinessDayHoliday: boolean = false;
   isCalculating: boolean = true;
   isApplyingSuggestedYield: boolean = false;
+
+  private initialCurrentBalanceForYield: number = 0;
+  private initialCurrentGrossBalanceForYield: number = 0;
+  private dateChangeRequestId: number = 0;
+  private isHistoricalBalanceForYield: boolean = false;
 
   yieldBaseCaptured: boolean = false;
   baseGrossAmount: number = 0;
@@ -105,12 +111,22 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     private cd: ChangeDetectorRef,
     private yieldService: YieldService,
     private accountApplicationsService: AccountApplicationsService,
+    private accountPostingsService: AccountPostingsService,
     private accountService: AccountService,
     private messenger: Messenger,
 
   ) { }
 
   ngOnInit(): void {
+    this.initialCurrentBalanceForYield = Number(
+      this.accountPosting.currentBalanceForYield ?? this.accountPosting.totalBalance ?? 0
+    );
+    this.initialCurrentGrossBalanceForYield = Number(
+      this.accountPosting.currentGrossBalanceForYield
+      ?? this.accountPosting.totalGrossBalance
+      ?? this.initialCurrentBalanceForYield
+    );
+
     this.algorithmTypes = this.algorithmTypes
       .sort((a, b) => a.viewValue.localeCompare(b.viewValue));
 
@@ -139,7 +155,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
       this.accountPosting.iofElapsedDays = days;
 
-      if (!this.accountPosting.editing) {
+      if (!this.accountPosting.editing && !this.isRetroactiveDate()) {
         const accountId = this.accountPosting.accountId;
 
         localStorage.setItem(this.getIofDaysKey(accountId), String(days));
@@ -248,15 +264,43 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.dialogRef.close();
   }
 
-  currentDateChanged(date: Date) {
+  async currentDateChanged(date: Date): Promise<void> {
     date.setHours(0, 0, 0, 0);
     this.accountPosting.date.setHours(0, 0, 0, 0);
 
     let diff = Math.floor((new Date(date).getTime() - new Date(this.accountPosting.date).getTime()) / 86400000);
 
-    this.changeDays(diff);
+    this.changeDays(diff, false, false);
 
     this.accountPosting.date = date;
+
+    const requestId = ++this.dateChangeRequestId;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let balanceForYield = this.initialCurrentBalanceForYield;
+    let grossBalanceForYield = this.initialCurrentGrossBalanceForYield;
+    let isHistoricalBalance = false;
+
+    if (date < today) {
+      const historicalBalance = await firstValueFrom(
+        this.accountPostingsService.getHistoricalBalance(
+          this.accountPosting.accountId,
+          date,
+          this.accountPosting.editing ? this.accountPosting.id : undefined
+        )
+      );
+
+      if (requestId !== this.dateChangeRequestId) return;
+
+      balanceForYield = historicalBalance.balance;
+      grossBalanceForYield = historicalBalance.grossBalance;
+      isHistoricalBalance = true;
+    }
+
+    this.isHistoricalBalanceForYield = isHistoricalBalance;
+    this.accountPosting.currentBalanceForYield = this.round2(balanceForYield);
+    this.accountPosting.currentGrossBalanceForYield = this.round2(grossBalanceForYield);
 
     // recalcula total de rendimentos até a data do lançamento
     this.accountPosting.totalYields = this.accountPosting.accountPostingsYields
@@ -321,12 +365,17 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  changeDays(delta: number): void {
+  changeDays(delta: number, recalculate: boolean = true, persist: boolean = true): void {
     const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
     const value = Number(control?.value || 0);
-    control?.setValue(Math.max(0, value + delta));
-    this.accountPosting.iofElapsedDays = control?.value;
-    this.onTypeChange();
+    const days = Math.max(0, value + delta);
+
+    control?.setValue(days, { emitEvent: persist });
+    this.accountPosting.iofElapsedDays = days;
+
+    if (recalculate) {
+      this.onTypeChange();
+    }
   }
 
   onAccountChanged(): void {
@@ -374,14 +423,13 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
         const referenceBalance = Number(this.accountPosting.totalBalance ?? 0);
         const referenceGrossBalance = Number(this.accountPosting.totalGrossBalance ?? referenceBalance);
-        const originalAmount = this.accountPosting.editing
+        const shouldRemoveOriginalYield = this.accountPosting.editing && !this.isHistoricalBalanceForYield;
+        const originalAmount = shouldRemoveOriginalYield
           ? Number(this.accountPosting.originalAmount ?? 0)
           : 0;
-        const originalGrossAmount = this.accountPosting.editing
+        const originalGrossAmount = shouldRemoveOriginalYield
           ? Number(this.accountPosting.originalGrossAmount ?? this.accountPosting.originalAmount ?? 0)
           : 0;
-        const referenceBalanceBeforeYield = this.round2(referenceBalance - originalAmount);
-        const referenceGrossBalanceBeforeYield = this.round2(referenceGrossBalance - originalGrossAmount);
         const currentBalanceForYield = this.round2(
           Number(this.accountPosting.currentBalanceForYield ?? referenceBalance) - originalAmount
         );
@@ -434,8 +482,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           this.accountPosting.totalIOF = suggestYield.iofTotal;
           this.accountPosting.totalIR = suggestYield.irTotal;
 
-          this.saldoBruto = this.round2(referenceGrossBalanceBeforeYield + suggestYield.grossYield);
-          this.saldoLiquido = this.round2(referenceBalanceBeforeYield + suggestYield.netYield);
+          this.saldoBruto = this.round2(currentGrossBalanceForYield + suggestYield.grossYield);
+          this.saldoLiquido = this.round2(currentBalanceForYield + suggestYield.netYield);
 
           this.captureYieldBaseValues();
 
@@ -549,6 +597,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     if (!accountId) return '';
     const account = this.accountPosting.accountsList?.find(a => a.id === accountId);
     return account?.name ?? '';
+  }
+
+  private isRetroactiveDate(): boolean {
+    const postingDate = new Date(this.accountPosting.date);
+    const today = new Date();
+
+    postingDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return postingDate < today;
   }
 
   private round2(value: number): number {

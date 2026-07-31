@@ -7,6 +7,11 @@ import { catchError, map } from 'rxjs/operators';
 import { Messenger } from 'src/app/common/messenger';
 import { AccountsYieldsDto } from 'src/app/models/accountsyields.model';
 
+export interface AccountHistoricalBalance {
+  balance: number;
+  grossBalance: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -34,6 +39,12 @@ export class AccountPostingsService {
 
     return this.http.put<AccountsPostings>(`${ApiUrls.accountspostings}/${accountPosting.id}`, accountPosting).pipe(
       map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
+  reorderByDate(accountId: number, reference: string): Observable<void> {
+    return this.http.put<void>(`${ApiUrls.accountspostings}/ReorderByDate/${accountId}/${reference}`, null).pipe(
       catchError(e => this.messenger.errorHandler(e))
     );
   }
@@ -75,6 +86,19 @@ export class AccountPostingsService {
       `&peopleId=${peopleId}`;
 
     return this.http.post<number>(url, null).pipe(
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
+  getHistoricalBalance(accountId: number, date: Date, excludePostingId?: number): Observable<AccountHistoricalBalance> {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const excludeParameter = excludePostingId ? `&excludePostingId=${excludePostingId}` : '';
+    const url = `${ApiUrls.accountspostings}/historicalbalance/${accountId}?date=${year}-${month}-${day}${excludeParameter}`;
+
+    return this.http.get<AccountHistoricalBalance>(url).pipe(
+      map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))
     );
   }

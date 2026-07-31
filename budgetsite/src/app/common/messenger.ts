@@ -42,8 +42,28 @@ export class Messenger {
     return ['modern-snackbar', `modern-snackbar-${type}`];
   }
 
-  private getMessageType(message: string): 'success' | 'warning' {
+  private getMessageType(message: string): 'success' | 'warning' | 'error' {
     const normalizedMessage = message.toLocaleLowerCase('pt-BR');
+
+    const errorIndicators = [
+      'erro',
+      'error',
+      'falha',
+      'não foi possível',
+      'nao foi possivel',
+      'selecione',
+      'deve ser diferente',
+      'só é possível',
+      'so e possivel',
+      'não pode',
+      'nao pode',
+      'inválid',
+      'invalid'
+    ];
+
+    if (errorIndicators.some((indicator) => normalizedMessage.includes(indicator))) {
+      return 'error';
+    }
 
     return normalizedMessage.includes('vencid') || normalizedMessage.includes('vencendo')
       ? 'warning'

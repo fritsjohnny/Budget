@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CardPostingsDialog } from '../cardpostings/cardpostings-dialog/cardpostings-dialog';
 import { CardPostingsModernDialog } from '../cardpostings/cardpostings-dialog/cardpostings-modern-dialog';
@@ -10,6 +10,7 @@ import { CardsPostings } from 'src/app/models/cardspostings.model';
 import {
   NotificationPayload,
   NotificationReader,
+  PluginListenerHandle,
 } from 'capacitor-notification-reader/src';
 import { Preferences } from '@capacitor/preferences';
 import { Messenger } from 'src/app/common/messenger';
@@ -31,7 +32,7 @@ export interface CardNotificationContext {
   templateUrl: './cardsnotifications.component.html',
   styleUrls: ['./cardsnotifications.component.scss'],
 })
-export class CardsNotificationsComponent implements OnInit, OnDestroy {
+export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() modernLayout: boolean = false;
 
   @Input() cardId?: number;
@@ -49,10 +50,19 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
   @Output() notificationsCountChange = new EventEmitter<number>();
 
   private readonly STORAGE_KEY = 'persisted_notifications';
+  private readonly PROCESSED_STORAGE_KEY = 'processed_notifications';
 
   notifications = [] as CardNotification[];
 
-  private intervalId?: any;
+  private readonly processedNotificationKeys = new Set<string>();
+  private readonly pendingNotificationKeys = new Set<string>();
+  private readonly knownCardPostingNotes = new Set<string>();
+  private readonly loadingCardPostingRanges = new Map<string, Promise<void>>();
+  private readonly loadedCardPostingRanges = new Set<string>();
+  private intervalId?: ReturnType<typeof setInterval>;
+  private notificationListener?: PluginListenerHandle;
+  private loadingNotifications = false;
+  private initialized = false;
   validatingInvoiceClosing = false;
 
   constructor(
@@ -63,62 +73,127 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    // 1. Recarrega notificações do armazenamento
-    const stored = await Preferences.get({ key: this.STORAGE_KEY });
+    await this.loadProcessedNotifications();
+    await this.restoreNotificationsFromStorage();
+    await this.loadExistingCardPostingNotes(this.notifications);
+    await this.reconcileNotificationsWithCardPostings();
 
-    if (stored.value) {
-      const parsed = JSON.parse(stored.value);
-      this.notifications.push(...parsed);
-      this.sortNotificationsByDate();
-      this.emitNotificationsCount();
-    }
+    this.notificationListener = await NotificationReader.addListener(
+      'notificationReceived',
+      (payload) => {
+        console.log('[DEBUG] Nova notificação recebida:', payload);
+        void this.addNotificationFromPayload(payload);
+      }
+    );
 
-    // 2. Busca notificações ativas do sistema
     await this.loadNotifications();
 
     this.intervalId = setInterval(() => {
-      this.loadNotifications();
+      void this.loadNotifications();
     }, 30000);
 
-    // 3. Registra o listener para notificações futuras
-    NotificationReader.addListener('notificationReceived', async (payload) => {
-      console.log('[DEBUG] Nova notificação recebida:', payload);
+    this.initialized = true;
+    await this.reconcileNotificationsWithCardPostings();
+  }
 
-      const cardPosting = this.parseNotification(payload);
+  private async loadProcessedNotifications(): Promise<void> {
+    const stored = await Preferences.get({ key: this.PROCESSED_STORAGE_KEY });
 
-      if (cardPosting) {
-        this.notifications.unshift(cardPosting);
-        this.sortNotificationsByDate();
-        await this.saveNotificationsToStorage();
-        this.emitNotificationsCount();
+    if (!stored.value) return;
+
+    try {
+      const parsed: unknown = JSON.parse(stored.value);
+
+      if (Array.isArray(parsed)) {
+        for (const key of parsed) {
+          if (typeof key === 'string' && key.trim()) {
+            this.processedNotificationKeys.add(key);
+          }
+        }
       }
-    });
+    } catch (error) {
+      console.error('[DEBUG] Não foi possível restaurar notificações processadas:', error);
+    }
+  }
+
+  private async restoreNotificationsFromStorage(): Promise<void> {
+    const stored = await Preferences.get({ key: this.STORAGE_KEY });
+
+    if (!stored.value) {
+      this.emitNotificationsCount();
+      return;
+    }
+
+    try {
+      const parsed: unknown = JSON.parse(stored.value);
+
+      if (Array.isArray(parsed)) {
+        this.notifications = parsed.filter((notification): notification is CardNotification =>
+          !!notification &&
+          typeof notification === 'object' &&
+          !this.isProcessedNotification(notification as CardNotification) &&
+          !this.isCardPostingDuplicate((notification as CardNotification).note)
+        );
+        this.sortNotificationsByDate();
+      }
+    } catch (error) {
+      console.error('[DEBUG] Não foi possível restaurar notificações persistidas:', error);
+    }
+
+    await this.saveNotificationsToStorage();
+    this.emitNotificationsCount();
   }
 
   private async loadNotifications(): Promise<void> {
+    if (this.loadingNotifications) return;
+
+    this.loadingNotifications = true;
+
     try {
       const result = await NotificationReader.getActiveNotifications();
       console.log('[DEBUG] getActiveNotifications result:', result);
 
       for (const payload of result.notifications) {
-        const cardPosting = this.parseNotification(payload);
-        console.log('[DEBUG] Card posting gerado:', cardPosting);
-
-        if (
-          cardPosting &&
-          !this.isDuplicate(cardPosting.note) &&
-          !this.isCardPostingDuplicate(cardPosting.note)
-        ) {
-          this.notifications.unshift(cardPosting);
-          this.sortNotificationsByDate();
-          await this.saveNotificationsToStorage();
-        }
+        await this.addNotificationFromPayload(payload);
       }
     } catch (error) {
       console.error('[DEBUG] Erro ao buscar notificações ativas:', error);
+    } finally {
+      this.loadingNotifications = false;
+      this.emitNotificationsCount();
+    }
+  }
+
+  private async addNotificationFromPayload(payload: NotificationPayload): Promise<void> {
+    const cardPosting = this.parseNotification(payload);
+    console.log('[DEBUG] Card posting gerado:', cardPosting);
+
+    if (!cardPosting) return;
+
+    await this.loadExistingCardPostingNotes([cardPosting]);
+
+    const notificationKey = this.getNotificationKey(cardPosting);
+
+    if (
+      !notificationKey ||
+      this.isProcessedNotification(cardPosting) ||
+      this.isDuplicate(cardPosting) ||
+      this.isCardPostingDuplicate(cardPosting.note) ||
+      this.pendingNotificationKeys.has(notificationKey)
+    ) {
+      return;
     }
 
-    this.emitNotificationsCount();
+    this.pendingNotificationKeys.add(notificationKey);
+
+    try {
+      this.notifications.unshift(cardPosting);
+      this.sortNotificationsByDate();
+      await this.saveNotificationsToStorage();
+      this.emitNotificationsCount();
+    } finally {
+      this.pendingNotificationKeys.delete(notificationKey);
+    }
   }
 
   private sortNotificationsByDate(): void {
@@ -426,6 +501,12 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
   }
 
   async removeNotification(notification: CardNotification): Promise<void> {
+    const notificationKey = this.getNotificationKey(notification);
+
+    if (notificationKey) {
+      this.processedNotificationKeys.add(notificationKey);
+    }
+
     this.notifications = this.notifications.filter((n) => n !== notification);
     this.emitNotificationsCount();
     await this.saveNotificationsToStorage();
@@ -436,18 +517,144 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
   }
 
   private async saveNotificationsToStorage(): Promise<void> {
-    await Preferences.set({
-      key: this.STORAGE_KEY,
-      value: JSON.stringify(this.notifications),
-    });
+    await Promise.all([
+      Preferences.set({
+        key: this.STORAGE_KEY,
+        value: JSON.stringify(this.notifications),
+      }),
+      Preferences.set({
+        key: this.PROCESSED_STORAGE_KEY,
+        value: JSON.stringify([...this.processedNotificationKeys]),
+      }),
+    ]);
   }
 
-  private isDuplicate(note: string | undefined): boolean {
-    return this.notifications.some((n) => n.note === note);
+  private async loadExistingCardPostingNotes(notifications: CardNotification[]): Promise<void> {
+    this.cardsPostings?.forEach((posting) => {
+      const normalizedNote = this.normalizeNotificationText(posting.note);
+
+      if (normalizedNote) {
+        this.knownCardPostingNotes.add(normalizedNote);
+      }
+    });
+
+    const references = notifications
+      .map(notification => this.getNotificationDate(notification.date))
+      .filter((date): date is Date => !!date)
+      .map(date => this.getNotificationReference(date));
+
+    if (references.length === 0) return;
+
+    const initialReference = references
+      .map(reference => this.shiftReference(reference, 0))
+      .sort()[0];
+    const finalReference = references
+      .map(reference => this.shiftReference(reference, 1))
+      .sort()
+      .pop();
+
+    if (!initialReference || !finalReference) return;
+
+    const rangeKey = `${initialReference}-${finalReference}`;
+    if (this.loadedCardPostingRanges.has(rangeKey)) return;
+
+    const runningRequest = this.loadingCardPostingRanges.get(rangeKey);
+    if (runningRequest) {
+      await runningRequest;
+      return;
+    }
+
+    const request = new Promise<void>((resolve) => {
+      this.cardPostingsService.readByReferences(initialReference, finalReference).subscribe({
+        next: (postings) => {
+          postings.forEach((posting) => {
+            const normalizedNote = this.normalizeNotificationText(posting.note);
+
+            if (normalizedNote) {
+              this.knownCardPostingNotes.add(normalizedNote);
+            }
+          });
+
+          this.loadedCardPostingRanges.add(rangeKey);
+        },
+        error: (error) => {
+          console.error('[DEBUG] Não foi possível consultar lançamentos para deduplicação:', error);
+          resolve();
+        },
+        complete: () => resolve(),
+      });
+    });
+
+    this.loadingCardPostingRanges.set(rangeKey, request);
+
+    try {
+      await request;
+    } finally {
+      this.loadingCardPostingRanges.delete(rangeKey);
+    }
+  }
+
+  private shiftReference(reference: string, months: number): string {
+    const referenceDate = new Date(
+      Number(reference.substring(0, 4)),
+      Number(reference.substring(4, 6)) - 1 + months,
+      1
+    );
+
+    return this.getNotificationReference(referenceDate);
+  }
+
+  private async reconcileNotificationsWithCardPostings(): Promise<void> {
+    const originalLength = this.notifications.length;
+
+    this.notifications = this.notifications.filter((notification) =>
+      !this.isProcessedNotification(notification) &&
+      !this.isCardPostingDuplicate(notification.note)
+    );
+
+    if (this.notifications.length !== originalLength) {
+      await this.saveNotificationsToStorage();
+      this.emitNotificationsCount();
+    }
+  }
+
+  private getNotificationKey(
+    notification: Pick<CardNotification, 'note' | 'sourceAppPackageName'>
+  ): string {
+    const note = this.normalizeNotificationText(notification.note);
+    if (!note) return '';
+
+    const source = notification.sourceAppPackageName?.trim().toLowerCase() ?? '';
+    return `${source}|${note}`;
+  }
+
+  private normalizeNotificationText(value: string | undefined): string {
+    return (value ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  private isProcessedNotification(notification: CardNotification): boolean {
+    const notificationKey = this.getNotificationKey(notification);
+    return !!notificationKey && this.processedNotificationKeys.has(notificationKey);
+  }
+
+  private isDuplicate(notification: CardNotification): boolean {
+    const normalizedNote = this.normalizeNotificationText(notification.note);
+    if (!normalizedNote) return false;
+
+    return this.notifications.some(
+      item => this.normalizeNotificationText(item.note) === normalizedNote
+    );
   }
 
   private isCardPostingDuplicate(note: string | undefined): boolean {
-    return this.cardsPostings?.some(p => p.note === note) ?? false;
+    const normalizedNote = this.normalizeNotificationText(note);
+
+    return !!normalizedNote && (
+      this.knownCardPostingNotes.has(normalizedNote) ||
+      (this.cardsPostings?.some(
+        posting => this.normalizeNotificationText(posting.note) === normalizedNote
+      ) ?? false)
+    );
   }
 
   // Transforma um texto em um padrão regex que aceita versões com e sem acento
@@ -483,9 +690,23 @@ export class CardsNotificationsComponent implements OnInit, OnDestroy {
     return new RegExp(`\\s+(?:${patterns.join('|')})\\b[\\s,.]*$`, 'i');
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.initialized && changes['cardsPostings']) {
+      void this.reconcileNotificationsWithCardPostings();
+    }
+  }
+
   ngOnDestroy(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId);
+    }
+
+    const notificationListener = this.notificationListener;
+
+    if (notificationListener) {
+      void notificationListener.remove().catch((error) => {
+        console.error('[DEBUG] Não foi possível remover o listener de notificações:', error);
+      });
     }
   }
 }

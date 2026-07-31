@@ -186,7 +186,7 @@
 .modern-report-shell .modern-panel-scroll-container:not(.financial-health-report-container) {
     max-height: min(68vh, 720px);
     overflow: auto !important;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
     scrollbar-width: thin;
 }
 .modern-report-shell .report-container > .col,

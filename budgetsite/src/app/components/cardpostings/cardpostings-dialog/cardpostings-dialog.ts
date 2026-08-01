@@ -83,6 +83,8 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   private invoiceClosingRequestId = 0;
   private referenceListsRequestId = 0;
   private descriptionSuggestionLoading = false;
+  recentCategoryIds: number[] = [];
+  selectedRecentCategoryId?: number;
   readonly formatReference = formatReference;
 
   get requiresClosedInvoiceOverride(): boolean {
@@ -551,6 +553,11 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     if (!this.cardPosting.description) return;
     if (this.descriptionSuggestionLoading) return;
 
+    this.recentCategoryIds = [];
+    this.cardPostingsService.getRecentCategoriesByDescription(this.cardPosting.description, 5).subscribe({
+      next: ids => this.recentCategoryIds = ids ?? []
+    });
+
     if (this.cardPosting.categoryId != null && this.cardPosting.peopleId != null) {
       this.suggestExpenseFromCategory();
       return;
@@ -643,8 +650,18 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
 
   onCategorySelected(categoryId?: number): void {
     this.cardPosting.categoryId = categoryId;
+    this.selectedRecentCategoryId = categoryId;
     this.cardPosting.expenseId = undefined;
     this.cardPostingFormGroup.get('expenseIdFormControl')?.reset(null, { emitEvent: false });
     this.suggestExpenseFromCategory(true);
+  }
+
+  selectRecentCategory(categoryId: number): void {
+    this.onCategorySelected(categoryId);
+    this.cardPostingFormGroup.get('categoryIdFormControl')?.setValue(categoryId, { emitEvent: false });
+  }
+
+  getCategoryNameById(categoryId: number): string {
+    return this.cardPosting.categoriesList?.find(category => category.id === categoryId)?.name ?? '';
   }
 }

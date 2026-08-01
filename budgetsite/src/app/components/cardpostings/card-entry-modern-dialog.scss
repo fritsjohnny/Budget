@@ -17,3 +17,9 @@ mat-form-field,app-datepickerinput,app-datepickerreference{width:100%!important;
 @media(max-width:720px){.modern-card-posting-entry-dialog .modern-entry-content{gap:12px}.modern-card-posting-entry-dialog .modern-form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px}.modern-card-posting-entry-dialog .modern-field-full{grid-column:1/-1}.modern-card-values-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 8px}.modern-amount-with-sign{gap:5px}.modern-amount-with-sign button{width:40px;min-width:40px}.modern-amount-action{grid-template-columns:minmax(0,1fr) 92px}.modern-amount-action button{padding:0 8px}.modern-options-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:720px){.modern-receipt-entry-dialog .modern-receipt-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.modern-receipt-entry-dialog .modern-amount-action{grid-template-columns:minmax(0,1fr) 116px}.modern-receipt-entry-dialog .modern-amount-action button{width:100%;min-width:0;padding:0 8px;font-size:13px}}
 @media(max-width:360px){.modern-card-posting-entry-dialog .modern-form-grid,.modern-card-values-grid{grid-template-columns:minmax(0,1fr)}.modern-card-posting-entry-dialog .modern-field-full{grid-column:auto}.modern-amount-with-sign button{width:52px;min-width:52px}}
+
+.recent-category-suggestions{display:block;margin-top:-4px;min-width:0}
+.recent-category-suggestions small{display:block;color:#9eacbb;font-size:10px;margin-bottom:6px}
+.recent-category-buttons{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;min-width:0;overflow-x:auto;overflow-y:hidden;padding-bottom:2px}
+.recent-category-suggestions button{flex:0 0 auto;width:auto;min-width:64px;min-height:36px;padding:0 14px;border-radius:999px;border-color:#f4c430;color:#f4c430;font-size:12px;font-weight:600;white-space:nowrap}
+.recent-category-suggestions button.recent-category-selected{background:#f4c430;color:#17232d;box-shadow:0 0 0 2px rgba(244,196,48,.22)}

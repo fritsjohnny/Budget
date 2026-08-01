@@ -23,6 +23,30 @@
   display: block;
 }
 
+::ng-deep .modern-budget-table th.mat-column-actions,
+::ng-deep .modern-budget-table td.mat-column-actions,
+::ng-deep .budget-table th.mat-column-actions,
+::ng-deep .budget-table td.mat-column-actions,
+::ng-deep .modern-data-table th.mat-column-actions,
+::ng-deep .modern-data-table td.mat-column-actions {
+  width: 30px;
+  min-width: 30px;
+  max-width: 30px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+::ng-deep .modern-menu .menu-suboption {
+  margin-top: -8px !important;
+}
+
+::ng-deep .modern-menu-expenses .menu-checkbox-item {
+  min-height: 36px;
+  height: 36px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 :host-context(.dark-theme) {
   --modern-bg: #0d1621;
   --modern-surface: #111c28;
@@ -584,6 +608,52 @@
   color: var(--modern-red) !important;
 }
 
+.panel-expenses .panel-heading-metrics > small:not(.panel-heading-label-count),
+.panel-expenses .panel-heading-label-count {
+  color: var(--modern-muted);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.panel-expenses .panel-heading-metrics > small:not(.panel-heading-label-count) {
+  display: none;
+}
+
+.panel-expenses .panel-heading-metrics {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 2px;
+}
+
+.panel-expenses .expense-header-metrics {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.panel-expenses .panel-heading-label-count {
+  grid-column: 1;
+  grid-row: 2;
+  margin-top: -3px;
+}
+
+.expense-header-metrics > span:nth-child(1) b,
+.expense-header-metrics > span:nth-child(3) b {
+  color: var(--modern-red);
+}
+
+.expense-header-metrics > span:nth-child(2) b {
+  color: var(--modern-green);
+}
+
+.panel-expenses .expense-header-metrics small {
+  font-size: 9px;
+}
+
+.panel-expenses .expense-header-metrics b {
+  font-size: 10px;
+}
+
 .panel-totals .panel-icon,
 .panel-totals .panel-heading-copy strong {
   color: var(--modern-green);
@@ -603,7 +673,8 @@
 }
 
 .panel-incomes .panel-icon,
-.panel-incomes .panel-heading-copy > strong {
+.panel-incomes .panel-heading-copy > strong,
+.panel-incomes .panel-heading-label > strong {
   color: var(--modern-blue);
 }
 
@@ -612,7 +683,8 @@
 }
 
 .panel-people .panel-icon,
-.panel-people .panel-heading-copy > strong {
+.panel-people .panel-heading-copy > strong,
+.panel-people .panel-heading-label > strong {
   color: var(--modern-pink);
 }
 
@@ -621,7 +693,8 @@
 }
 
 .panel-categories .panel-icon,
-.panel-categories .panel-heading-copy > strong {
+.panel-categories .panel-heading-copy > strong,
+.panel-categories .panel-heading-label > strong {
   color: var(--modern-yellow);
 }
 
@@ -635,6 +708,51 @@
   grid-template-columns: minmax(78px, auto) minmax(0, 1fr);
   align-items: center;
   column-gap: 18px;
+}
+
+.panel-heading-metrics .panel-record-count {
+  grid-column: 1;
+  grid-row: 2;
+  margin-top: -3px;
+  color: var(--modern-muted);
+  font-size: 10px;
+  line-height: 12px;
+  min-height: 12px;
+}
+
+.panel-heading-label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panel-heading-label .panel-record-count {
+  position: static;
+  margin: 0;
+}
+
+
+.panel-categories .panel-record-count {
+  display: block;
+  margin-top: -3px;
+}
+
+.panel-expenses .panel-heading-label-count {
+  margin-top: 0;
+}
+
+.panel-categories .category-heading-copy {
+  min-height: 41px;
+}
+
+.panel-categories .category-heading-copy > small:not(.panel-record-count) {
+  display: none;
+}
+
+.panel-categories .category-heading-copy > strong,
+.panel-categories .category-heading-copy > .panel-record-count {
+  line-height: 13px;
 }
 
 .header-metrics {
@@ -1473,7 +1591,7 @@
   }
 
   .header-metrics b {
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: -0.1px;
   }
 
@@ -1551,6 +1669,13 @@
     min-width: 0;
     padding: 0 3px;
     text-align: center;
+  }
+
+  .budget-mobile-header > span:not(:first-child):not(:last-child),
+  .budget-mobile-value,
+  .budget-mobile-footer > strong:not(:first-child) {
+    padding-right: 8px;
+    text-align: right;
   }
 
   .budget-mobile-header > span:first-child,

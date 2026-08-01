@@ -72,15 +72,16 @@
         <mat-expansion-panel-header>
           <mat-panel-title>
             <span class="panel-icon"><mat-icon>receipt_long</mat-icon></span>
-            <span class="panel-heading-copy">
-              <strong>Lançamentos</strong>
-              <small>
-                {{ context.accountpostings?.length || 0 }} registros ·
-                <span [class.value-negative]="context.total < 0">
-                  {{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}
-                </span>
-                no período
-              </small>
+            <span class="panel-heading-copy panel-heading-metrics">
+              <span class="postings-heading-label">
+                <strong>Lançamentos</strong>
+                <small class="postings-count"># {{ context.accountpostings?.length || 0 }}</small>
+              </span>
+              <span class="header-metrics postings-metrics">
+                <span><b class="postings-summary-entry"><mat-icon>north_east</mat-icon>{{ context.totalEntries | currency: 'BRL' : 'symbol' : '1.2-2' }}</b></span>
+                <span><b class="postings-summary-exit"><mat-icon>south_east</mat-icon>{{ context.totalExits | currency: 'BRL' : 'symbol' : '1.2-2' }}</b></span>
+                <span><b class="postings-summary-balance" [class.value-negative]="context.postingsBalance < 0"><mat-icon>attach_money</mat-icon>{{ context.postingsBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</b></span>
+              </span>
             </span>
           </mat-panel-title>
         </mat-expansion-panel-header>
@@ -295,7 +296,7 @@
             <span class="panel-heading-copy">
               <strong>Aplicações</strong>
               <small>
-                {{ context.accountApplications?.length || 0 }} registros ·
+                #{{ context.accountApplications?.length || 0 }} ·
                 <span [class.value-negative]="context.totalApplications < 0">
                   {{ context.totalApplications | currency: 'BRL' : 'symbol' : '1.2-2' }}
                 </span>

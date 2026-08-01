@@ -90,6 +90,7 @@ export class CardPostingsComponent implements OnInit {
   ];
   displayedCategoriesColumns = ['category', 'amount', 'perc'];
   total: number = 0;
+
   toReceiveTotalPeople: number = 0;
   receivedTotalPeople: number = 0;
   remainingTotalPeople: number = 0;
@@ -157,6 +158,7 @@ export class CardPostingsComponent implements OnInit {
     reference: string;
   };
   focusedCardPostingId?: number;
+  currentInvoiceClosing?: CardsInvoiceClosing;
   validatingInvoiceClosing = false;
   savingCardPosting = false;
   detectedPurchasesCount = 0;
@@ -264,6 +266,13 @@ export class CardPostingsComponent implements OnInit {
   }
 
   refresh() {
+    this.currentInvoiceClosing = undefined;
+    if (this.cardId && this.cardId > 0 && this.reference) {
+      this.invoiceClosingService.ensure(this.cardId, this.reference).subscribe({
+        next: closing => this.currentInvoiceClosing = closing,
+      });
+    }
+
     this.getLists();
 
     if (this.cardId! >= 0 && this.reference) {

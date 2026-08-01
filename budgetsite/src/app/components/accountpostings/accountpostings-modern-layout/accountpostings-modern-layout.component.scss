@@ -16,6 +16,83 @@
   display: block;
 }
 
+.postings-count {
+  color: var(--posting-muted);
+}
+
+.modern-account-panel .panel-heading-metrics {
+  width: 100%;
+  display: grid;
+  align-items: center;
+  grid-template-columns: 42px minmax(0, 1fr);
+  column-gap: 2px;
+}
+
+.postings-heading-label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modern-account-panel .postings-metrics {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  width: calc(100% + 25px);
+  margin-left: -25px;
+  margin-bottom: 1px;
+}
+
+.modern-account-panel .postings-count {
+  display: block;
+}
+
+.postings-metrics > span {
+  display: grid;
+  gap: 1px;
+  align-items: center;
+  padding: 0;
+}
+
+.postings-metrics {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+}
+
+.postings-metrics > span + span {
+  border-left: 1px solid var(--posting-divider);
+}
+
+.postings-metrics b {
+  gap: 1px;
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.postings-metrics mat-icon {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  font-size: 12px;
+  line-height: 12px;
+}
+
+.postings-metrics b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.postings-summary-entry { color: var(--posting-blue); }
+.postings-summary-exit { color: var(--posting-red); }
+.postings-summary-balance { color: var(--posting-green); }
+.postings-summary-balance.value-negative { color: var(--posting-red); }
+
 :host-context(.dark-theme) {
   --posting-surface: #111c28;
   --posting-surface-soft: #162330;
@@ -216,6 +293,12 @@ button.summary-item {
   color: var(--posting-green);
 }
 
+.panel-icon .mat-icon {
+  width: 21px;
+  height: 21px;
+  font-size: 21px;
+}
+
 .applications-panel .panel-icon {
   background: var(--posting-purple-soft);
   color: var(--posting-purple);
@@ -235,7 +318,7 @@ button.summary-item {
 }
 
 .panel-heading-copy strong {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .modern-account-panel .panel-heading-copy strong {
@@ -250,7 +333,7 @@ button.summary-item {
   margin-top: 4px;
   overflow: hidden;
   color: var(--posting-muted);
-  font-size: 11px;
+  font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -266,6 +349,10 @@ button.summary-item {
 
 .filter-button,
 .panel-options-button {
+  color: var(--posting-muted);
+}
+
+::ng-deep .modern-account-panel .mat-expansion-indicator::after {
   color: var(--posting-muted);
 }
 
@@ -448,19 +535,23 @@ button.summary-item {
 
   .mobile-extract-list {
     display: grid;
-    gap: 7px;
+    gap: 5px;
     width: 100%;
     padding: 7px 0 1px;
+  }
+
+  .posting-mobile-row {
+    column-gap: 7px;
   }
 
   .mobile-extract-row {
     display: grid;
     grid-template-columns: 30px 45px minmax(0, 1fr) auto;
     align-items: center;
-    gap: 7px;
+    gap: 5px;
     min-width: 0;
-    min-height: 48px;
-    padding: 3px 7px;
+    min-height: 44px;
+    padding: 2px 7px;
     border: 1px solid var(--posting-divider);
     border-radius: 11px;
     background: var(--posting-surface-soft);
@@ -549,7 +640,7 @@ button.summary-item {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    min-height: 44px;
+    min-height: 38px;
     padding: 0 12px;
     border: 1px solid var(--posting-divider);
     border-radius: 11px;
@@ -654,7 +745,16 @@ button.summary-item {
   }
 
   .panel-icon {
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
     margin-right: 10px;
+  }
+
+  .panel-icon .mat-icon {
+    width: 21px;
+    height: 21px;
+    font-size: 21px;
   }
 
   .panel-heading-copy strong {

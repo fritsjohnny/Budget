@@ -235,4 +235,10 @@ export class CardPostingsService {
         catchError((e) => this.messenger.errorHandler(e))
       );
   }
+
+  getRecentCategoriesByDescription(description: string, take = 3): Observable<number[]> {
+    return this.http.get<number[]>(`${ApiUrls.cardspostings}/RecentCategoriesByDescription`, {
+      params: { description, take: String(take) }
+    }).pipe(catchError((e) => this.messenger.errorHandler(e)));
+  }
 }

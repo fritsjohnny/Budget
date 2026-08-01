@@ -115,6 +115,18 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   minBalance: number = 0;
   accountPostingsLength: number = 0;
 
+  get totalEntries(): number {
+    return (this.accountpostings ?? []).filter(posting => posting.amount > 0).reduce((total, posting) => total + posting.amount, 0);
+  }
+
+  get totalExits(): number {
+    return (this.accountpostings ?? []).filter(posting => posting.amount < 0).reduce((total, posting) => total + Math.abs(posting.amount), 0);
+  }
+
+  get postingsBalance(): number {
+    return this.totalEntries - this.totalExits;
+  }
+
   filterOpend: boolean = false;
   dataSource = new MatTableDataSource(this.accountpostings);
   accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);

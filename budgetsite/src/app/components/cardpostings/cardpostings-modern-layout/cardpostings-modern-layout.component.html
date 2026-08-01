@@ -26,7 +26,7 @@
             (click)="context.requestInvoiceClosing()"
             (keydown.enter)="context.requestInvoiceClosing()"
             (keydown.space)="context.requestInvoiceClosing(); $event.preventDefault()"
-          ><small>Melhor dia para compra</small><strong>{{ selectedCard.closingDay ? (selectedCard.closingDay) : '' }}</strong></div>
+          ><small>Melhor dia para compra</small><strong>{{ selectedCardBestPurchaseDay ?? '' }}</strong></div>
           <div><small>Vencimento do cartão</small><strong>{{ selectedCardExpenseDueDate | date: 'dd/MM/yyyy' }}</strong></div>
         </div>
       </article>
@@ -56,13 +56,17 @@
         <mat-expansion-panel-header>
           <mat-panel-title>
             <span class="panel-icon"><mat-icon>credit_score</mat-icon></span>
-            <span class="panel-copy"><strong>Lançamentos</strong><small>{{ context.cardPostingsLength }} registros · <span [class.negative]="context.total < 0">{{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}</span></small></span>
+            <span class="panel-copy card-info-heading"><span class="card-info-label"><strong>Lançamentos</strong><small>#{{ context.cardPostingsLength }}</small></span><span class="card-info-metrics"><span><small>Total</small><b [class.negative]="context.total < 0">{{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}</b></span></span></span>
           </mat-panel-title>
         </mat-expansion-panel-header>
 
         <div class="panel-toolbar">
           <button mat-icon-button class="sort-button" (click)="context.sort()" [disabled]="context.cardId <= 0" matTooltip="Ordenar lançamentos">
             <mat-icon>sort_by_alpha</mat-icon>
+          </button>
+
+          <button mat-icon-button class="filter-button posting-search-button" (click)="context.openFilter()" matTooltip="Buscar lançamentos">
+            <mat-icon>search</mat-icon>
           </button>
 
           <button mat-button class="modern-add-button postings-add-button" (click)="context.add()">
@@ -79,8 +83,15 @@
               <mat-icon>tune</mat-icon>
               <span class="filter-count-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
             </button>
+            <button mat-icon-button class="panel-options-button" [matMenuTriggerFor]="postingsActionsMenu" matTooltip="Mais ações" aria-label="Mais ações de lançamentos">
+              <mat-icon>more_vert</mat-icon>
+            </button>
           </div>
         </div>
+
+        <mat-menu #postingsActionsMenu="matMenu" class="modern-menu modern-card-posting-actions-menu">
+          <button mat-menu-item (click)="context.refresh()"><mat-icon>autorenew</mat-icon><span>Atualizar lançamentos</span></button>
+        </mat-menu>
 
         <mat-menu #optionsMenu="matMenu" class="modern-menu modern-card-filters-menu">
           <div class="options-menu" (click)="$event.stopPropagation()"><div class="options-menu-title"><mat-icon>filter_alt</mat-icon><div><strong>Filtros</strong><small>Refine os lançamentos exibidos</small></div></div>
@@ -120,6 +131,7 @@
                 'card-yield-checked2': row.isSelected && row.amount < 0,
                 'selected-posting': row.isSelected,
                 'overdue-posting': !row.isPaid && (row.overdue || row.duetoday),
+                'future-posting': isFuturePosting(row.date),
                 'card-posting-ignored': context.isCardPostingIgnored(row),
                 'highlighted-posting': row.parcels > 1 || !!row.peopleId
               }"></tr>
@@ -136,6 +148,7 @@
               'card-yield-checked2': row.isSelected && row.amount < 0,
               'selected-posting': row.isSelected,
                 'overdue-posting': !row.isPaid && (row.overdue || row.duetoday),
+              'future-posting': isFuturePosting(row.date),
                 'card-posting-ignored': context.isCardPostingIgnored(row),
               'highlighted-posting': row.parcels > 1 || !!row.peopleId
             }">
@@ -151,7 +164,7 @@
 
       <mat-expansion-panel class="modern-panel people-panel" *ngIf="context.cardpostingspeople?.length > 0" [(expanded)]="context.peoplePanelExpanded"
         (opened)="context.peoplePanelOpened()" (closed)="context.peoplePanelClosed()">
-        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>people</mat-icon></span><span class="panel-copy"><strong>Pessoas</strong><small>Receber <span [class.negative]="context.toReceiveTotalPeople < 0">{{ context.toReceiveTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</span> · Restante <span [class.negative]="context.remainingTotalPeople < 0">{{ context.remainingTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</span></small></span></mat-panel-title></mat-expansion-panel-header>
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>people</mat-icon></span><span class="panel-copy card-info-heading"><span class="card-info-label"><strong>Pessoas</strong><small>#{{ context.cardpostingspeople?.length || 0 }}</small></span><span class="card-info-metrics"><span><small>Receber</small><b class="people-receive">{{ context.toReceiveTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</b></span><span><small>Restante</small><b class="people-remaining">{{ context.remainingTotalPeople | currency:'BRL':'symbol':'1.2-2' }}</b></span></span></span></mat-panel-title></mat-expansion-panel-header>
         <div class="compact-list panel-scroll-container" cdkScrollable>
           <article class="compact-row" *ngFor="let row of people">
             <div><strong>{{ row.person }}</strong><small>Recebido {{ row.received | currency:'BRL':'symbol':'1.2-2' }}</small></div>
@@ -163,7 +176,7 @@
 
       <mat-expansion-panel class="modern-panel categories-panel" [(expanded)]="context.categoryPanelExpanded"
         (opened)="context.categoryPanelOpened()" (closed)="context.categoryPanelClosed()">
-        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>category</mat-icon></span><span class="panel-copy"><strong>Categorias</strong><small><span [class.negative]="context.amountTotalCategory < 0">{{ context.amountTotalCategory | currency:'BRL':'symbol':'1.2-2' }}</span> · {{ context.percTotalCategory | number:'1.2-2' }}%</small></span></mat-panel-title></mat-expansion-panel-header>
+        <mat-expansion-panel-header><mat-panel-title><span class="panel-icon"><mat-icon>category</mat-icon></span><span class="panel-copy card-info-heading"><span class="card-info-label"><strong>Categorias</strong><small>#{{ context.expensesByCategories?.length || 0 }}</small></span></span></mat-panel-title></mat-expansion-panel-header>
         <div class="modern-table-container panel-scroll-container" cdkScrollable>
           <table
             mat-table

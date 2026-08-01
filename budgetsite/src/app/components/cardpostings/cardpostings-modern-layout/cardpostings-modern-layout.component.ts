@@ -56,6 +56,16 @@ export class CardPostingsModernLayoutComponent {
     return this.context?.cardsList?.find((card: any) => card.id === this.context.cardId);
   }
 
+  get selectedCardBestPurchaseDay(): number | string | undefined {
+    const invoiceStartDate = this.context?.currentInvoiceClosing?.closingDate;
+    if (invoiceStartDate) {
+      const date = new Date(invoiceStartDate);
+      if (!Number.isNaN(date.getTime())) return date.getDate();
+    }
+
+    return this.selectedCard?.closingDay;
+  }
+
   get selectedCardExpenseDueDate(): string | Date | undefined {
     return this.selectedCard?.expenseDueDate;
   }
@@ -104,6 +114,14 @@ export class CardPostingsModernLayoutComponent {
       .format(new Date(date))
       .replace('.', '')
       .toLowerCase();
+  }
+
+  isFuturePosting(date: string | Date): boolean {
+    const postingDate = new Date(date);
+    const today = new Date();
+    postingDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return postingDate.getTime() > today.getTime();
   }
 
   trackById(index: number, item: any): number {

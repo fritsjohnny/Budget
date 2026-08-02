@@ -75,7 +75,6 @@
     }
 }
 
-
 /* Novo leiaute */
 .modern-report-shell {
     --report-surface: #ffffff;
@@ -104,13 +103,18 @@
     --report-table-header: #1b344a;
     --report-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
 }
-.modern-report-catalog, .modern-report-shell .mat-panel-report, .modern-report-shell .report-container {
+.modern-report-catalog,
+.modern-report-shell .mat-panel-report,
+.modern-report-shell .report-container {
     border: 1px solid var(--report-border);
     border-radius: 16px;
     background: var(--report-surface);
     box-shadow: var(--report-shadow);
 }
-.modern-report-catalog { margin-bottom: 14px; overflow: hidden; }
+.modern-report-catalog {
+    margin-bottom: 14px;
+    overflow: hidden;
+}
 .modern-report-shell > mat-accordion:first-child {
     display: block;
     margin-bottom: 14px;
@@ -120,77 +124,209 @@
 }
 
 ::ng-deep .modern-report-catalog .mat-expansion-panel-header {
-    min-height: 76px; padding: 0 18px; background: var(--report-surface);
+    min-height: 76px;
+    padding: 0 18px;
+    background: var(--report-surface);
 }
-::ng-deep .modern-report-catalog .mat-expansion-panel-body { padding: 0 18px 18px; }
-::ng-deep .modern-report-catalog .mat-expansion-indicator::after { color: var(--report-muted); }
-.modern-report-heading, .report-panel-title { display: flex; align-items: center; gap: 12px; }
-.modern-report-heading { margin: 0; }
-.modern-report-heading-icon, .report-panel-icon {
-    display: inline-flex; align-items: center; justify-content: center;
-    flex: 0 0 44px; width: 44px; height: 44px; border-radius: 13px;
-    background: var(--report-primary-soft); color: var(--report-primary);
+::ng-deep .modern-report-catalog .mat-expansion-panel-body {
+    padding: 0 18px 18px;
 }
-.modern-report-heading h1 { margin: 0; font-size: 19px; line-height: 1.2; }
-.modern-report-heading p, .report-panel-title small {
-    display: block; margin: 3px 0 0; color: var(--report-muted); font-size: 12px; line-height: 1.3;
+::ng-deep .modern-report-catalog .mat-expansion-indicator::after {
+    color: var(--report-muted);
 }
-.modern-report-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.modern-report-heading,
+.report-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.modern-report-heading {
+    margin: 0;
+}
+.modern-report-heading-icon,
+.report-panel-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    background: var(--report-primary-soft);
+    color: var(--report-primary);
+}
+.modern-report-heading h1 {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.2;
+}
+.modern-report-heading p,
+.report-panel-title small {
+    display: block;
+    margin: 3px 0 0;
+    color: var(--report-muted);
+    font-size: 12px;
+    line-height: 1.3;
+}
+.modern-report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
 .modern-report-card {
-    --card-accent: #4f6fe8; --card-soft: rgba(79, 111, 232, 0.12);
-    display: grid; grid-template-columns: 42px minmax(0, 1fr) 24px; align-items: center; gap: 11px;
-    min-height: 82px; padding: 12px; border: 1px solid var(--report-border); border-radius: 13px;
-    background: var(--report-surface-soft); color: var(--report-text); text-align: left; cursor: pointer;
-    transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+    --card-accent: #4f6fe8;
+    --card-soft: rgba(79, 111, 232, 0.12);
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 24px;
+    align-items: center;
+    gap: 11px;
+    min-height: 82px;
+    padding: 12px;
+    border: 1px solid var(--report-border);
+    border-radius: 13px;
+    background: var(--report-surface-soft);
+    color: var(--report-text);
+    text-align: left;
+    cursor: pointer;
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        transform 150ms ease;
 }
-.modern-report-card:hover { border-color: var(--card-accent); transform: translateY(-1px); }
-.modern-report-card[data-color='purple'] { --card-accent: #9b7cff; --card-soft: rgba(155, 124, 255, 0.14); }
-.modern-report-card[data-color='orange'] { --card-accent: #f0a23a; --card-soft: rgba(240, 162, 58, 0.14); }
-.modern-report-card[data-color='red'] { --card-accent: #ef5b63; --card-soft: rgba(239, 91, 99, 0.14); }
-.modern-report-card[data-color='cyan'] { --card-accent: #31b8cf; --card-soft: rgba(49, 184, 207, 0.14); }
-.modern-report-card[data-color='green'] { --card-accent: #38bd68; --card-soft: rgba(56, 189, 104, 0.14); }
-.modern-report-card[data-color='pink'] { --card-accent: #e56aa6; --card-soft: rgba(229, 106, 166, 0.14); }
+.modern-report-card:hover {
+    border-color: var(--card-accent);
+    transform: translateY(-1px);
+}
+.modern-report-card[data-color="purple"] {
+    --card-accent: #9b7cff;
+    --card-soft: rgba(155, 124, 255, 0.14);
+}
+.modern-report-card[data-color="orange"] {
+    --card-accent: #f0a23a;
+    --card-soft: rgba(240, 162, 58, 0.14);
+}
+.modern-report-card[data-color="red"] {
+    --card-accent: #ef5b63;
+    --card-soft: rgba(239, 91, 99, 0.14);
+}
+.modern-report-card[data-color="cyan"] {
+    --card-accent: #31b8cf;
+    --card-soft: rgba(49, 184, 207, 0.14);
+}
+.modern-report-card[data-color="green"] {
+    --card-accent: #38bd68;
+    --card-soft: rgba(56, 189, 104, 0.14);
+}
+.modern-report-card[data-color="pink"] {
+    --card-accent: #e56aa6;
+    --card-soft: rgba(229, 106, 166, 0.14);
+}
 .modern-report-card-active {
     border-color: var(--card-accent);
-    box-shadow: inset 0 0 0 1px var(--card-accent), 0 7px 18px var(--card-soft);
+    box-shadow:
+        inset 0 0 0 1px var(--card-accent),
+        0 7px 18px var(--card-soft);
 }
 .modern-report-card-icon {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 42px; height: 42px; border-radius: 12px; background: var(--card-soft); color: var(--card-accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--card-soft);
+    color: var(--card-accent);
 }
-.modern-report-card-copy { min-width: 0; }
-.modern-report-card-copy strong, .modern-report-card-copy small { display: block; }
-.modern-report-card-copy strong { font-size: 14px; line-height: 1.25; }
-.modern-report-card-copy small { margin-top: 4px; color: var(--report-muted); font-size: 10px; line-height: 1.35; }
-.modern-report-card-check { color: var(--card-accent); }
-.modern-report-shell .mat-panel-report { margin-top: 0 !important; overflow: hidden; }
+.modern-report-card-copy {
+    min-width: 0;
+}
+.modern-report-card-copy strong,
+.modern-report-card-copy small {
+    display: block;
+}
+.modern-report-card-copy strong {
+    font-size: 14px;
+    line-height: 1.25;
+}
+.modern-report-card-copy small {
+    margin-top: 4px;
+    color: var(--report-muted);
+    font-size: 10px;
+    line-height: 1.35;
+}
+.modern-report-card-check {
+    color: var(--card-accent);
+}
+.modern-report-shell .mat-panel-report {
+    margin-top: 0 !important;
+    overflow: hidden;
+}
 ::ng-deep .modern-report-shell .mat-panel-report .mat-expansion-panel-header {
-    min-height: 68px; padding: 0 18px; background: var(--report-surface);
+    min-height: 68px;
+    padding: 0 18px;
+    background: var(--report-surface);
 }
 ::ng-deep .modern-report-shell .mat-panel-report .mat-expansion-panel-body {
-    padding: 4px 18px 18px; color: var(--report-text);
+    padding: 4px 18px 18px;
+    color: var(--report-text);
 }
-::ng-deep .modern-report-shell .mat-panel-report .mat-expansion-indicator::after { color: var(--report-muted); }
-.report-panel-title strong { display: block; font-size: 15px; }
-.report-panel-icon { flex-basis: 38px; width: 38px; height: 38px; border-radius: 11px; }
+::ng-deep
+    .modern-report-shell
+    .mat-panel-report
+    .mat-expansion-indicator::after {
+    color: var(--report-muted);
+}
+.report-panel-title strong {
+    display: block;
+    font-size: 15px;
+}
+.report-panel-icon {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+}
 .modern-report-shell .generate-report-button {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    min-width: 190px; min-height: 46px; padding: 0 22px; border: 0; border-radius: 12px;
-    background: var(--report-primary); color: #fff; font-weight: 700; cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 190px;
+    min-height: 46px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--report-primary);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
 }
-.modern-report-shell .generate-report-button:disabled { opacity: 0.45; cursor: default; }
-.modern-report-shell .generate-report-button .mat-icon { color: inherit !important; }
+.modern-report-shell .generate-report-button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+.modern-report-shell .generate-report-button .mat-icon {
+    color: inherit !important;
+}
 .modern-report-shell .report-container {
-    margin-right: 0; margin-left: 0; padding: 0; overflow: hidden !important;
+    margin-right: 0;
+    margin-left: 0;
+    padding: 0;
+    overflow: hidden !important;
 }
-.modern-report-shell .modern-panel-scroll-container:not(.financial-health-report-container) {
+.modern-report-shell
+    .modern-panel-scroll-container:not(.financial-health-report-container) {
     max-height: min(68vh, 720px);
     overflow: auto !important;
     overscroll-behavior: auto;
     scrollbar-width: thin;
 }
 .modern-report-shell .report-container > .col,
-.modern-report-shell .report-container > .col > .col { width: 100%; min-width: 0; padding: 0; }
+.modern-report-shell .report-container > .col > .col {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+}
 
 /* Os relatórios antigos usam rows Bootstrap com margem negativa. Dentro da
    superfície moderna isso deslocava e cortava o início do resultado. */
@@ -208,7 +344,7 @@
     margin-left: 0 !important;
 }
 ::ng-deep .modern-report-shell .report-container .row > .col,
-::ng-deep .modern-report-shell .report-container .row > [class*='col-'] {
+::ng-deep .modern-report-shell .report-container .row > [class*="col-"] {
     min-width: 0;
     padding-right: 0;
     padding-left: 0;
@@ -264,68 +400,141 @@
     font-weight: 700;
 }
 ::ng-deep .modern-report-shell .report-container .mat-cell,
-::ng-deep .modern-report-shell .report-container .mat-footer-cell { font-size: 13px; }
-::ng-deep .modern-report-shell .report-container .mat-column-description { min-width: 150px; white-space: normal; }
-::ng-deep .modern-report-shell .report-container .mat-column-index { width: 42px; min-width: 42px; }
-::ng-deep .modern-report-shell .report-container .mat-column-value { font-weight: 700; }
+::ng-deep .modern-report-shell .report-container .mat-footer-cell {
+    font-size: 13px;
+}
+::ng-deep .modern-report-shell .report-container .mat-column-description {
+    min-width: 150px;
+    white-space: normal;
+}
+::ng-deep .modern-report-shell .report-container .mat-column-index {
+    width: 42px;
+    min-width: 42px;
+}
+::ng-deep .modern-report-shell .report-container .mat-column-value {
+    font-weight: 700;
+}
 
 /* Mantém no relatório de saldo previsto as mesmas proporções de colunas do leiaute clássico. */
 ::ng-deep .modern-report-shell .report-container .account-forecast-table {
     min-width: 100% !important;
 }
-::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-index {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .account-forecast-table
+    .mat-column-index {
     width: auto;
     min-width: 0;
 }
-::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-description {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .account-forecast-table
+    .mat-column-description {
     min-width: 160px;
 }
-::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-amount,
-::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-balance {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .account-forecast-table
+    .mat-column-amount,
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .account-forecast-table
+    .mat-column-balance {
     width: 140px;
 }
 
 /* Preserva no novo leiaute as larguras definidas por cada relatório clássico. */
-::ng-deep .modern-report-shell .report-container :is(
-    .expenses-by-card-table,
-    .expenses-by-category-table,
-    .expenses-by-due-date-table,
-    .fixed-expenses-table,
-    .third-party-expenses-table
-) {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    :is(
+        .expenses-by-card-table,
+        .expenses-by-category-table,
+        .expenses-by-due-date-table,
+        .fixed-expenses-table,
+        .third-party-expenses-table
+    ) {
     min-width: 100% !important;
 }
 
-::ng-deep .modern-report-shell .report-container .expenses-by-card-table .mat-column-description,
-::ng-deep .modern-report-shell .report-container .expenses-by-category-table .mat-column-description,
-::ng-deep .modern-report-shell .report-container .expenses-by-category-table .mat-column-category,
-::ng-deep .modern-report-shell .report-container .third-party-expenses-table .mat-column-description {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .expenses-by-card-table
+    .mat-column-description,
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .expenses-by-category-table
+    .mat-column-description,
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .expenses-by-category-table
+    .mat-column-category,
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .third-party-expenses-table
+    .mat-column-description {
     min-width: 170px;
 }
 
-::ng-deep .modern-report-shell .report-container .expenses-by-card-table .mat-column-card {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .expenses-by-card-table
+    .mat-column-card {
     min-width: 150px;
 }
 
-::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-description {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .expenses-by-due-date-table
+    .mat-column-description {
     min-width: 160px;
 }
 
-::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-remaining {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .expenses-by-due-date-table
+    .mat-column-remaining {
     width: 140px;
 }
 
-::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-index {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .fixed-expenses-table
+    .mat-column-index {
     width: 50px;
     min-width: 50px;
 }
 
-::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-description,
-::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-category {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .fixed-expenses-table
+    .mat-column-description,
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .fixed-expenses-table
+    .mat-column-category {
     width: 500px;
 }
 
-::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-value {
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .fixed-expenses-table
+    .mat-column-value {
     width: 125px;
 }
 
@@ -345,34 +554,105 @@
 }
 
 @media (max-width: 700px) {
-    .modern-report-shell { width: 100%; padding: 10px 10px 104px; overflow-x: hidden; }
-    .modern-report-shell.container { max-width: none; }
-    .modern-report-catalog { border-radius: 13px; margin-bottom: 10px; }
-    ::ng-deep .modern-report-catalog .mat-expansion-panel-header { min-height: 66px; padding: 0 12px; }
-    ::ng-deep .modern-report-catalog .mat-expansion-panel-body { padding: 0 10px 10px; }
-    .modern-report-heading { gap: 9px; }
-    .modern-report-heading-icon { flex-basis: 38px; width: 38px; height: 38px; }
-    .modern-report-heading h1 { font-size: 16px; }
-    .modern-report-heading p { font-size: 10px; }
-    .modern-report-grid { grid-template-columns: minmax(0, 1fr); gap: 7px; }
-    .modern-report-card {
-        grid-template-columns: 38px minmax(0, 1fr) 20px; min-height: 66px;
-        gap: 9px; padding: 9px 10px; border-radius: 11px;
+    .modern-report-shell {
+        width: 100%;
+        padding: 10px 10px 104px;
+        overflow-x: hidden;
     }
-    .modern-report-card-icon { width: 38px; height: 38px; border-radius: 10px; }
-    .modern-report-card-copy strong { font-size: 13px; }
-    .modern-report-card-copy small { margin-top: 2px; font-size: 9px; }
-    ::ng-deep .modern-report-shell .mat-panel-report .mat-expansion-panel-header { min-height: 62px; padding: 0 12px; }
-    ::ng-deep .modern-report-shell .mat-panel-report .mat-expansion-panel-body { padding: 2px 12px 12px; }
-    .modern-report-shell .generate-report-button { width: 100%; }
-    .modern-report-shell .report-container { width: 100%; margin-top: 12px !important; padding: 0; border-radius: 13px; }
-    ::ng-deep .modern-report-shell .report-container .table-container { overflow-x: auto; overflow-y: visible; overscroll-behavior-x: contain; }
-    ::ng-deep .modern-report-shell .report-container table.mat-table { min-width: 600px; }
-    ::ng-deep .modern-report-shell .report-container .mat-column-index { width: 36px; min-width: 36px; padding-left: 10px; padding-right: 6px; }
+    .modern-report-shell.container {
+        max-width: none;
+    }
+    .modern-report-catalog {
+        border-radius: 13px;
+        margin-bottom: 10px;
+    }
+    ::ng-deep .modern-report-catalog .mat-expansion-panel-header {
+        min-height: 66px;
+        padding: 0 12px;
+    }
+    ::ng-deep .modern-report-catalog .mat-expansion-panel-body {
+        padding: 0 10px 10px;
+    }
+    .modern-report-heading {
+        gap: 9px;
+    }
+    .modern-report-heading-icon {
+        flex-basis: 38px;
+        width: 38px;
+        height: 38px;
+    }
+    .modern-report-heading h1 {
+        font-size: 16px;
+    }
+    .modern-report-heading p {
+        font-size: 10px;
+    }
+    .modern-report-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 7px;
+    }
+    .modern-report-card {
+        grid-template-columns: 38px minmax(0, 1fr) 20px;
+        min-height: 66px;
+        gap: 9px;
+        padding: 9px 10px;
+        border-radius: 11px;
+    }
+    .modern-report-card-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+    }
+    .modern-report-card-copy strong {
+        font-size: 13px;
+    }
+    .modern-report-card-copy small {
+        margin-top: 2px;
+        font-size: 9px;
+    }
+    ::ng-deep
+        .modern-report-shell
+        .mat-panel-report
+        .mat-expansion-panel-header {
+        min-height: 62px;
+        padding: 0 12px;
+    }
+    ::ng-deep .modern-report-shell .mat-panel-report .mat-expansion-panel-body {
+        padding: 2px 12px 12px;
+    }
+    .modern-report-shell .generate-report-button {
+        width: 100%;
+    }
+    .modern-report-shell .report-container {
+        width: 100%;
+        margin-top: 12px !important;
+        padding: 0;
+        border-radius: 13px;
+    }
+    ::ng-deep .modern-report-shell .report-container .table-container {
+        overflow-x: auto;
+        overflow-y: visible;
+        overscroll-behavior-x: contain;
+    }
+    ::ng-deep .modern-report-shell .report-container table.mat-table {
+        min-width: 600px;
+    }
+    ::ng-deep .modern-report-shell .report-container .mat-column-index {
+        width: 36px;
+        min-width: 36px;
+        padding-left: 10px;
+        padding-right: 6px;
+    }
     ::ng-deep .modern-report-shell .report-container .mat-header-cell,
     ::ng-deep .modern-report-shell .report-container .mat-cell,
-    ::ng-deep .modern-report-shell .report-container .mat-footer-cell { padding: 0 9px; }
-    ::ng-deep .modern-report-shell .report-container .mat-header-cell { font-size: 11px; }
+    ::ng-deep .modern-report-shell .report-container .mat-footer-cell {
+        padding: 0 9px;
+    }
+    ::ng-deep .modern-report-shell .report-container .mat-header-cell {
+        font-size: 11px;
+    }
     ::ng-deep .modern-report-shell .report-container .mat-cell,
-    ::ng-deep .modern-report-shell .report-container .mat-footer-cell { font-size: 12px; }
+    ::ng-deep .modern-report-shell .report-container .mat-footer-cell {
+        font-size: 12px;
+    }
 }

@@ -1627,10 +1627,10 @@
                             >
                                 Total
                             </th>
-                            <td mat-cell *matCellDef="let row">
+                            <td mat-cell *matCellDef="let row" [class.budget-positive]="row.amount >= 0" [class.budget-negative]="row.amount < 0">
                                 {{ row.amount | currency: "" : "" : "1.2-2" }}
                             </td>
-                            <td mat-footer-cell *matFooterCellDef>
+                            <td mat-footer-cell *matFooterCellDef [class.budget-positive]="context.amountTotalCategory >= 0" [class.budget-negative]="context.amountTotalCategory < 0">
                                 {{
                                     context.amountTotalCategory
                                         | currency: "" : "" : "1.2-2"
@@ -1649,10 +1649,10 @@
                             >
                                 %
                             </th>
-                            <td mat-cell *matCellDef="let row">
+                            <td mat-cell *matCellDef="let row" [class.budget-positive]="row.perc >= 0" [class.budget-negative]="row.perc < 0">
                                 {{ row.perc | number: "1.2-2" }}%
                             </td>
-                            <td mat-footer-cell *matFooterCellDef>
+                            <td mat-footer-cell *matFooterCellDef [class.budget-positive]="context.percTotalCategory >= 0" [class.budget-negative]="context.percTotalCategory < 0">
                                 {{
                                     context.percTotalCategory | number: "1.2-2"
                                 }}%

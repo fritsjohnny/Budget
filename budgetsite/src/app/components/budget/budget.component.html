@@ -2151,10 +2151,10 @@
                             >
                                 Total
                             </th>
-                            <td mat-cell *matCellDef="let row">
+                            <td mat-cell *matCellDef="let row" [class.budget-positive]="row.amount >= 0" [class.budget-negative]="row.amount < 0">
                                 {{ row.amount | currency: "" : "" }}
                             </td>
-                            <td mat-footer-cell *matFooterCellDef>
+                            <td mat-footer-cell *matFooterCellDef [class.budget-positive]="amountTotalCategory >= 0" [class.budget-negative]="amountTotalCategory < 0">
                                 {{ amountTotalCategory | currency: "" : "" }}
                             </td>
                         </ng-container>
@@ -2171,10 +2171,10 @@
                             >
                                 %
                             </th>
-                            <td mat-cell *matCellDef="let row">
+                            <td mat-cell *matCellDef="let row" [class.budget-positive]="row.perc >= 0" [class.budget-negative]="row.perc < 0">
                                 {{ row.perc | currency: "" : "" }}%
                             </td>
-                            <td mat-footer-cell *matFooterCellDef>
+                            <td mat-footer-cell *matFooterCellDef [class.budget-positive]="percTotalCategory >= 0" [class.budget-negative]="percTotalCategory < 0">
                                 {{ percTotalCategory | currency: "" : "" }}%
                             </td>
                         </ng-container>

@@ -256,3 +256,10 @@ tr.height-detail-row {
     line-height: 13px;
     text-align: center;
 }
+.budget-positive {
+    color: var(--yellow) !important;
+}
+
+.budget-negative {
+    color: var(--red-color) !important;
+}

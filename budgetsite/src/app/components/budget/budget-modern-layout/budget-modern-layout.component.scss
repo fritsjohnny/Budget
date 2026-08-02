@@ -995,6 +995,14 @@
   --table-accent: var(--modern-yellow);
 }
 
+::ng-deep .categories-table .budget-positive {
+  color: var(--modern-yellow) !important;
+}
+
+::ng-deep .categories-table .budget-negative {
+  color: var(--modern-red) !important;
+}
+
 ::ng-deep .modern-data-table .mat-header-cell,
 ::ng-deep .modern-data-table .mat-cell,
 ::ng-deep .modern-data-table .mat-footer-cell {
@@ -1601,10 +1609,9 @@
   }
 
   .category-chip {
-    max-width: 145px;
-    height: 21px;
+    height: 25px;
     padding: 0 7px;
-    font-size: 9px;
+    font-size: 10px;
   }
 
   .totals-grid {

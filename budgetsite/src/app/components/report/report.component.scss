@@ -84,6 +84,9 @@
     --report-muted: #687286;
     --report-primary: #4f6fe8;
     --report-primary-soft: rgba(79, 111, 232, 0.12);
+    --report-positive: #4f6fe8;
+    --report-negative: #d94f68;
+    --report-green: #2e9d63;
     --report-table-header: #e7edfb;
     --report-shadow: 0 6px 18px rgba(28, 39, 60, 0.08);
     width: min(100%, 1180px);
@@ -100,6 +103,9 @@
     --report-muted: #a8b2c1;
     --report-primary: #7392ff;
     --report-primary-soft: rgba(71, 102, 217, 0.17);
+    --report-positive: #8ea8ff;
+    --report-negative: #ff788f;
+    --report-green: #72d6a0;
     --report-table-header: #1b344a;
     --report-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
 }
@@ -301,6 +307,28 @@
     font-weight: 700;
     cursor: pointer;
 }
+
+/* Cores semânticas do leiaute moderno para o relatório de saldo previsto. */
+::ng-deep .modern-report-shell .account-forecast-table .primary,
+::ng-deep .modern-report-shell .account-forecast-table .positive {
+    color: var(--report-positive) !important;
+}
+
+::ng-deep .modern-report-shell .account-forecast-table .negative {
+    color: var(--report-negative) !important;
+}
+
+::ng-deep .modern-report-shell .account-forecast-table .green {
+    color: var(--report-green) !important;
+}
+
+::ng-deep .modern-report-shell .account-forecast-summary .positive {
+    color: var(--report-positive) !important;
+}
+
+::ng-deep .modern-report-shell .account-forecast-summary .negative {
+    color: var(--report-negative) !important;
+}
 .modern-report-shell .generate-report-button:disabled {
     opacity: 0.45;
     cursor: default;
@@ -362,7 +390,6 @@
 }
 ::ng-deep .modern-report-shell .report-container table.mat-table {
     width: 100%;
-    min-width: 640px;
     margin: 0;
     background: transparent;
 }
@@ -387,7 +414,7 @@
 ::ng-deep .modern-report-shell .report-container .mat-header-cell,
 ::ng-deep .modern-report-shell .report-container .mat-cell,
 ::ng-deep .modern-report-shell .report-container .mat-footer-cell {
-    padding: 0 12px;
+    // padding: 0 12px;
     color: var(--report-text);
     border-color: var(--report-border);
     white-space: nowrap;
@@ -406,10 +433,6 @@
 ::ng-deep .modern-report-shell .report-container .mat-column-description {
     min-width: 150px;
     white-space: normal;
-}
-::ng-deep .modern-report-shell .report-container .mat-column-index {
-    width: 42px;
-    min-width: 42px;
 }
 ::ng-deep .modern-report-shell .report-container .mat-column-value {
     font-weight: 700;
@@ -536,6 +559,7 @@
     .fixed-expenses-table
     .mat-column-value {
     width: 125px;
+    font-weight: 400;
 }
 
 /* Remove as superfícies cinzas remanescentes dos componentes internos. */
@@ -634,25 +658,133 @@
         overflow-y: visible;
         overscroll-behavior-x: contain;
     }
-    ::ng-deep .modern-report-shell .report-container table.mat-table {
-        min-width: 600px;
-    }
-    ::ng-deep .modern-report-shell .report-container .mat-column-index {
-        width: 36px;
-        min-width: 36px;
-        padding-left: 10px;
-        padding-right: 6px;
-    }
-    ::ng-deep .modern-report-shell .report-container .mat-header-cell,
-    ::ng-deep .modern-report-shell .report-container .mat-cell,
-    ::ng-deep .modern-report-shell .report-container .mat-footer-cell {
-        padding: 0 9px;
-    }
+    // ::ng-deep .modern-report-shell .report-container .mat-header-cell,
+    // ::ng-deep .modern-report-shell .report-container .mat-cell,
+    // ::ng-deep .modern-report-shell .report-container .mat-footer-cell {
+    //     padding: 0 9px;
+    // }
     ::ng-deep .modern-report-shell .report-container .mat-header-cell {
         font-size: 11px;
     }
     ::ng-deep .modern-report-shell .report-container .mat-cell,
     ::ng-deep .modern-report-shell .report-container .mat-footer-cell {
-        font-size: 12px;
+        font-size: 14px;
     }
+
+    /* O leiaute clássico não aplica o mesmo padding horizontal a todas as
+       colunas. Reproduzimos essa distribuição apenas neste relatório. */
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-header-cell,
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-cell,
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-footer-cell {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-index,
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-description,
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-category {
+        padding-left: 10px;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-remaining,
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-category {
+        padding-right: 10px;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-header-cell,
+    ::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-cell,
+    ::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-footer-cell {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-index {
+        padding-left: 10px;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-category {
+        padding-left: 10px;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-value {
+        padding-right: 5px;
+    }
+
+    ::ng-deep .modern-report-shell .report-container :is(
+        .expenses-by-card-table,
+        .expenses-by-category-table,
+        .expenses-by-due-date-table,
+        .fixed-expenses-table,
+        .third-party-expenses-table,
+        .account-forecast-table
+    ) .mat-header-cell,
+    ::ng-deep .modern-report-shell .report-container :is(
+        .expenses-by-card-table,
+        .expenses-by-category-table,
+        .expenses-by-due-date-table,
+        .fixed-expenses-table,
+        .third-party-expenses-table,
+        .account-forecast-table
+    ) .mat-cell,
+    ::ng-deep .modern-report-shell .report-container :is(
+        .expenses-by-card-table,
+        .expenses-by-category-table,
+        .expenses-by-due-date-table,
+        .fixed-expenses-table,
+        .third-party-expenses-table,
+        .account-forecast-table
+    ) .mat-footer-cell {
+        padding: 0 !important;
+    }
+
+    ::ng-deep .modern-report-shell .report-container :is(
+        .expenses-by-card-table,
+        .expenses-by-category-table,
+        .expenses-by-due-date-table,
+        .fixed-expenses-table,
+        .third-party-expenses-table,
+        .account-forecast-table
+    ) .mat-column-index {
+        padding-left: 10px !important;
+    }
+
+    ::ng-deep .modern-report-shell .report-container :is(
+        .expenses-by-card-table,
+        .expenses-by-category-table,
+        .third-party-expenses-table
+    ) .mat-column-date,
+    ::ng-deep .modern-report-shell .report-container :is(
+        .expenses-by-card-table,
+        .expenses-by-category-table,
+        .third-party-expenses-table
+    ) .mat-column-reference,
+    ::ng-deep .modern-report-shell .report-container :is(
+        .expenses-by-card-table,
+        .expenses-by-category-table,
+        .third-party-expenses-table
+    ) .mat-column-value {
+        padding-right: 10px !important;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-amount,
+    ::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-balance,
+    ::ng-deep .modern-report-shell .report-container .account-forecast-table .mat-column-reference {
+        padding-right: 10px !important;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-description,
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-category,
+    ::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-category {
+        padding-left: 10px !important;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-remaining,
+    ::ng-deep .modern-report-shell .report-container .expenses-by-due-date-table .mat-column-category {
+        padding-right: 10px !important;
+    }
+
+    ::ng-deep .modern-report-shell .report-container .fixed-expenses-table .mat-column-value {
+        padding-right: 5px !important;
+    }
+
 }

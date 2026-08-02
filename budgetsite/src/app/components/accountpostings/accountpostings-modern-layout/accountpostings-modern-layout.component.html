@@ -251,7 +251,6 @@
               >
                 {{ row.amount | currency: 'BRL' : 'symbol' : '1.2-2' }}
               </strong>
-              <small>Saldo</small>
               <span [class.value-negative]="row.runningAmount < 0">
                 {{ row.runningAmount | currency: 'BRL' : 'symbol' : '1.2-2' }}
               </span>
@@ -269,12 +268,12 @@
 
           <div class="mobile-extract-total">
             <strong>Total no período</strong>
-            <span
+            <strong
               [class.value-negative]="context.total < 0"
               [class.value-positive]="context.total >= 0"
             >
               {{ context.total | currency: 'BRL' : 'symbol' : '1.2-2' }}
-            </span>
+            </strong>
           </div>
         </div>
 

@@ -228,8 +228,9 @@ export class CardPostingsService {
   }
 
   getCategoryByDescription(description: string): Observable<any> {
+    const params = new HttpParams().set('description', description);
     return this.http
-      .get<any>(`${ApiUrls.cardspostings}/ByDescription`, { params: { description } })
+      .get<any>(`${ApiUrls.cardspostings}/ByDescription`, { params })
       .pipe(
         map((obj) => obj),
         catchError((e) => this.messenger.errorHandler(e))
@@ -237,8 +238,9 @@ export class CardPostingsService {
   }
 
   getRecentCategoriesByDescription(description: string, take = 3): Observable<number[]> {
+    let params = new HttpParams().set('description', description).set('take', String(take));
     return this.http.get<number[]>(`${ApiUrls.cardspostings}/RecentCategoriesByDescription`, {
-      params: { description, take: String(take) }
+      params
     }).pipe(catchError((e) => this.messenger.errorHandler(e)));
   }
 }

@@ -319,7 +319,7 @@
             <div
                 class="row d-flex"
                 [class.financial-health-date-row]="selectedReportType === 7"
-                *ngIf="selectedReportType !== 4 && selectedReportType !== 6"
+                *ngIf="selectedReportType !== 4 && selectedReportType !== 6 && selectedReportType !== 8"
             >
                 <div class="col mb-2">
                     <div>
@@ -436,6 +436,26 @@
                     </mat-form-field>
                 </div>
             </div>
+            <div class="investment-filter-grid" *ngIf="selectedReportType === 8">
+                <div class="col">
+                    <mat-form-field appearance="fill" style="width:100%">
+                    <mat-label>Conta principal</mat-label>
+                    <mat-select [(ngModel)]="investmentAccountId" (selectionChange)="investmentAccountChanged($event.value)">
+                        <mat-option [value]="0">-- Selecione --</mat-option>
+                        <mat-option *ngFor="let account of investmentAccounts" [value]="account.id">{{account.name}}</mat-option>
+                    </mat-select>
+                    </mat-form-field></div>
+                    <div class="col">
+                        <mat-form-field appearance="fill" style="width:100%">
+                            <mat-label>Reserva operacional mínima</mat-label>
+                            <input matInput type="number" min="0" [(ngModel)]="investmentReserve" (ngModelChange)="investmentReserveChanged($event)">
+                            <mat-hint>{{ investmentReserve === null ? 'Será usada a reserva sugerida' : 'Reserva personalizada' }}</mat-hint>
+                        </mat-form-field>
+                        </div>
+                    </div>
+            <div class="row d-flex" *ngIf="selectedReportType === 8">
+                <div class="col"><mat-form-field appearance="fill" style="width:100%">
+                    <mat-label>Data inicial</mat-label><input matInput [matDatepicker]="investmentStart" [(ngModel)]="investmentInitialDateValue" (dateChange)="investmentInitialDateChanged($event.value)"><mat-datepicker-toggle matSuffix [for]="investmentStart"></mat-datepicker-toggle><mat-datepicker #investmentStart></mat-datepicker></mat-form-field></div><div class="col"><mat-form-field appearance="fill" style="width:100%"><mat-label>Data final</mat-label><input matInput [matDatepicker]="investmentEnd" [(ngModel)]="investmentFinalDateValue" (dateChange)="investmentFinalDateChanged($event.value)"><mat-datepicker-toggle matSuffix [for]="investmentEnd"></mat-datepicker-toggle><mat-datepicker #investmentEnd></mat-datepicker></mat-form-field></div></div>
         </mat-expansion-panel>
     </mat-accordion>
 
@@ -544,6 +564,7 @@
                     [includeCurrentMonth]="financialHealthIncludeCurrentMonth"
                 ></app-financial-health-report>
             </div>
+            <div class="col" *ngIf="reportType === 8 && showReport"><app-investment-strategy-report [accountId]="investmentAccountId" [initialDate]="investmentInitialDateValue" [finalDate]="investmentFinalDateValue" [reserve]="investmentReserve"></app-investment-strategy-report></div>
         </div>
     </div>
 </div>

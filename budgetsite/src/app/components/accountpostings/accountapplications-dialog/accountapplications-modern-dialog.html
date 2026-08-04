@@ -57,6 +57,13 @@
             </mat-form-field>
 
             <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>Valor máximo da aplicação</mat-label>
+              <input matInput inputmode="numeric" currencyMask formControlName="maximumAmountFormControl" [(ngModel)]="accountApplication.maximumAmount" placeholder="Opcional" autocomplete="off" />
+              <mat-error *ngIf="accountApplicationFormGroup.get('maximumAmountFormControl')?.hasError('min')">O valor máximo deve ser maior que zero.</mat-error>
+              <mat-error *ngIf="accountApplicationFormGroup.get('maximumAmountFormControl')?.hasError('invalidMaximum')">Informe um valor máximo válido.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" floatLabel="always">
               <mat-label>Taxa fixa (a.a.)</mat-label>
               <input matInput inputmode="decimal" formControlName="fixedRateFormControl" [(ngModel)]="accountApplication.fixedRate" placeholder="Opcional" autocomplete="off" />
             </mat-form-field>
@@ -86,7 +93,7 @@
       <button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancel()">Cancelar</button>
       <button *ngIf="accountApplication.editing" mat-stroked-button type="button" class="modern-delete-action" (click)="delete()">
         <mat-icon>delete</mat-icon>
-        Excluir
+        Desabilitar aplicação
       </button>
       <button mat-flat-button type="button" class="modern-save-action" [disabled]="!accountApplicationFormGroup.valid" (click)="save()">
         <mat-icon>save</mat-icon>

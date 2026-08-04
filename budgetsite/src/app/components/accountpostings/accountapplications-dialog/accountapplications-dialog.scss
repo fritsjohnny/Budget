@@ -7,3 +7,9 @@
 .full {
   grid-column: 1 / -1;
 }
+
+/* Mantém a ordem legada mesmo com o campo de limite inserido no formulário. */
+@media (max-width: 600px) {
+  mat-dialog-content .col-6,
+  mat-dialog-content .col-12 { flex: 0 0 100%; max-width: 100%; }
+}

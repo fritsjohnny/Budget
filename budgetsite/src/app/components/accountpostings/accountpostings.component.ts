@@ -96,6 +96,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     'indexApplication',
     'dateApplication',
     'amountApplication',
+    'maximumApplication',
+    'availableApplication',
     'cdiApplication',
     'dueDateApplication',
   ];
@@ -407,6 +409,33 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         .map((t) => t.amountApplied)
         .reduce((acc, value) => acc + value, 0)
       : 0;
+  }
+
+  get applicationsCapacitySummary() {
+    const active = (this.accountApplications ?? []).filter(a => !a.disabled);
+    const limits = [...new Set(active.map(a => a.maximumAmount).filter((v): v is number => v !== null && Number.isFinite(v)))];
+    const conditions = [...new Set(active.map(a => `${a.cdiPercent === null || a.cdiPercent === undefined ? '' : (a.cdiPercent > 2 ? a.cdiPercent : a.cdiPercent * 100).toFixed(6)}|${a.fixedRate ?? ''}`))];
+    const conflict = limits.length > 1 || conditions.length > 1;
+    const maximum = limits.length === 1 ? limits[0] : null;
+    const occupied = active.reduce((sum, a) => sum + (Number(a.amountApplied) || 0), 0);
+    return { maximum, occupied, available: !conflict && maximum !== null ? Math.max(0, maximum - occupied) : null, conflict };
+  }
+
+  applicationMaximumLabel(row: AccountsApplications): string {
+    return row.maximumAmount === null || !Number.isFinite(row.maximumAmount) ? 'Não informado' : row.maximumAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  applicationAvailableLabel(): string {
+    const summary = this.applicationsCapacitySummary;
+    if (summary.conflict) return 'Verificar cadastro';
+    if (summary.available === null) return 'Não calculável';
+    return summary.available.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  applicationRateLabel(row: AccountsApplications): string {
+    const cdi = row.cdiPercent === null || row.cdiPercent === undefined ? '' : `${(row.cdiPercent > 2 ? row.cdiPercent : row.cdiPercent * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% CDI`;
+    const fixed = row.fixedRate ? `${row.fixedRate.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% a.a.` : '';
+    return [cdi, fixed].filter(Boolean).join(' · ') || 'Não informado';
   }
 
   getFilteredTotalAmount() {
@@ -737,6 +766,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
                   t.dateApplied = result.dateApplied;
                   t.accountId = result.accountId;
                   t.amountApplied = result.amountApplied;
+                  t.maximumAmount = result.maximumAmount;
+                  t.disabled = result.disabled;
                   t.cdiPercent = result.cdiPercent;
                   t.fixedRate = result.fixedRate;
                   t.maturityDate = result.maturityDate;

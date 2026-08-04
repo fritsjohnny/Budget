@@ -113,6 +113,7 @@ import { YieldsComponent } from './components/yields/yields.component';
 import { ExpensesByDueDateReportComponent } from './components/reports/expenses-by-due-date-report/expenses-by-due-date-report.component';
 import { AccountForecastBalanceReportComponent } from './components/reports/account-forecast-balance-report/account-forecast-balance-report.component';
 import { FinancialHealthReportComponent } from './components/reports/financial-health-report/financial-health-report.component';
+import { InvestmentStrategyReportComponent } from './components/reports/investment-strategy-report/investment-strategy-report.component';
 import { GenerateCardReceiptDialog } from './components/accountpostings/generate-cardreceipt-dialog/generate-cardreceipt-dialog';
 import { AnnualSavingsComponent } from './components/annual-savings/annual-savings.component';
 import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
@@ -196,6 +197,7 @@ registerLocaleData(localePt);
     ExpensesByDueDateReportComponent,
     AccountForecastBalanceReportComponent,
     FinancialHealthReportComponent,
+    InvestmentStrategyReportComponent,
     GenerateCardReceiptDialog,
     AnnualSavingsComponent,
     AnnualSavingsViewComponent,

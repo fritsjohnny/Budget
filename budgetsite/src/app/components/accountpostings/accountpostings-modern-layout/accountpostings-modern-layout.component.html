@@ -336,15 +336,27 @@
               <td mat-footer-cell *matFooterCellDef class="application-value">{{ context.totalApplications | currency: '' : '' : '1.2-2' }}</td>
             </ng-container>
 
+            <ng-container matColumnDef="maximumApplication">
+              <th mat-header-cell *matHeaderCellDef>Máximo</th>
+              <td mat-cell *matCellDef="let row">{{ context.applicationMaximumLabel(row) }}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
+            <ng-container matColumnDef="availableApplication">
+              <th mat-header-cell *matHeaderCellDef>Disponível</th>
+              <td mat-cell *matCellDef="let row">{{ context.applicationAvailableLabel() }}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
             <ng-container matColumnDef="cdiApplication">
-              <th mat-header-cell *matHeaderCellDef>CDI</th>
-              <td mat-cell *matCellDef="let row">{{ row.cdiPercent * 100 | number: '1.0-2' }}%</td>
+              <th mat-header-cell *matHeaderCellDef>Rendimento</th>
+              <td mat-cell *matCellDef="let row">{{ context.applicationRateLabel(row) }}</td>
               <td mat-footer-cell *matFooterCellDef></td>
             </ng-container>
 
             <ng-container matColumnDef="dueDateApplication">
               <th mat-header-cell *matHeaderCellDef>Vencimento</th>
-              <td mat-cell *matCellDef="let row">{{ row.maturityDate | date: 'dd/MM/yyyy' }}</td>
+              <td mat-cell *matCellDef="let row">{{ row.maturityDate ? (row.maturityDate | date: 'dd/MM/yyyy') : 'Sem vencimento' }}</td>
               <td mat-footer-cell *matFooterCellDef></td>
             </ng-container>
 
@@ -364,11 +376,12 @@
             <span class="mobile-row-copy">
               <strong>{{ row.dateApplied | date: 'dd/MM/yyyy' }}</strong>
               <small>
-                CDI {{ row.cdiPercent * 100 | number: '1.0-2' }}%
+                {{ context.applicationRateLabel(row) }}
                 <ng-container *ngIf="row.maturityDate">
                   · vence {{ row.maturityDate | date: 'dd/MM/yyyy' }}
                 </ng-container>
               </small>
+              <small>Aplicado: {{ row.amountApplied | currency: 'BRL' : 'symbol' : '1.2-2' }} · Máximo: {{ context.applicationMaximumLabel(row) }}</small>
             </span>
 
             <span class="mobile-row-values application-mobile-value">

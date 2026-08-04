@@ -1,0 +1,31 @@
+<div class="state" *ngIf="loading">Calculando estratégia…</div>
+<div class="state error" *ngIf="error">{{ error }}</div>
+<div class="strategy" *ngIf="!loading && report as r">
+  <section class="hero" [class.no-action]="r.recommendedInvestment === 0">
+    <div><span class="eyebrow">Estratégia de Investimentos</span><h2>{{ r.recommendedInvestment === 0 ? 'Mantenha o valor na conta principal' : (recommendations(r).length > 1 ? 'Transferências recomendadas' : 'Transferência recomendada') }}</h2>
+      <p *ngIf="r.recommendedInvestment === 0">{{ r.safeSurplus > 0 ? 'Existe um excedente seguro de ' + money(r.safeSurplus) + ', mas nenhum destino elegível possui capacidade com rendimento líquido superior.' : 'O fluxo projetado não apresenta excedente seguro acima da reserva.' }}</p>
+      <p *ngIf="recommendations(r).length === 1">Transferir {{ money(recommendations(r)[0].recommendedAmount) }} da conta selecionada para {{ recommendations(r)[0].accountName }}.</p>
+      <strong>{{ money(r.recommendedInvestment) }}</strong>
+    </div><div class="critical">Menor saldo projetado <b>{{ money(r.lowestBalance) }}</b><small>{{ r.criticalDate ? date(r.criticalDate) : 'Sem movimentações' }}</small></div>
+  </section>
+
+  <div class="metrics">
+    <div>Saldo atual<b>{{ money(r.currentBalance) }}</b></div><div>Menor saldo projetado<b>{{ money(r.lowestBalance) }}</b></div><div>Reserva operacional<b>{{ money(r.reserve) }}</b></div><div>Excedente seguro<b>{{ money(r.safeSurplus) }}</b></div>
+    <div>Transferência recomendada<b>{{ money(r.recommendedInvestment) }}</b></div><div>Excedente sem destino<b>{{ money(r.safeSurplusWithoutDestination) }}</b></div><div>Valor mantido na conta principal<b>{{ money(r.keptInMainAccount) }}</b></div><div>Saldo final projetado<b>{{ money(r.finalBalance) }}</b></div>
+  </div>
+
+  <section class="reserve"><h3>Reserva operacional</h3><strong>{{ money(r.suggestedReserve) }}</strong><p>{{ r.reserveExplanation }}</p><div *ngIf="r.historicalDays > 0">{{ money(r.historicalPaidAmount) }} pagos em {{ r.historicalDays }} dias · média diária {{ money(r.historicalDailyExpenseAverage) }} · cobertura de {{ r.reserveCoverageDays }} dias · {{ date(r.historicalStartDate) }} a {{ date(r.historicalEndDate) }}</div></section>
+
+  <section><h3>{{ recommendations(r).length ? 'Detalhamento das recomendações' : 'Recomendações' }}</h3><div class="recommendations" *ngIf="recommendations(r).length; else empty">
+    <article class="recommendation" *ngFor="let x of recommendations(r)"><header><div><b>{{ x.accountName }}</b><small>{{ range(x) }}</small></div><strong>{{ money(x.recommendedAmount) }}</strong></header>
+      <p>{{ x.reason }}</p><div class="details"><span>Saldo antes<b>{{ money(x.destinationBalanceBefore) }}</b></span><span>Saldo depois<b>{{ money(x.destinationBalanceAfter) }}</b></span><span>Limite máximo<b>{{ optionalMoney(x.maximumAmount) }}</b></span><span>Ocupado<b>{{ money(x.occupiedAmount) }}</b></span><span>Capacidade antes<b>{{ optionalMoney(x.applicationCapacityBefore) }}</b></span><span>Capacidade depois<b>{{ optionalMoney(x.applicationCapacityAfter) }}</b></span><span>Faixa antes<b>{{ capacity(x.rangeCapacityBefore) }}</b></span><span>Faixa depois<b>{{ capacity(x.rangeCapacityAfter) }}</b></span><span>Destino bruto ({{ x.destinationYieldIndex }})<b>{{ percent(x.destinationGrossYield) }}</b></span><span>Destino líquido<b>{{ percent(x.destinationNetYield) }}</b></span><span>Origem bruta ({{ x.sourceYieldIndex }})<b>{{ percent(x.sourceGrossYield) }}</b></span><span>Origem líquida<b>{{ percent(x.sourceNetYield) }}</b></span><span>Vantagem líquida<b>{{ percent(x.advantagePercent) }}</b></span><span>Tributação<b>{{ tax(x) }}</b></span></div><small>Base: {{ x.capacityBasis }}</small></article>
+  </div><ng-template #empty><p>Nenhum destino elegível possui capacidade com rendimento líquido superior.</p></ng-template></section>
+
+  <section *ngIf="(r.exclusions ?? []).length"><h3>Contas não elegíveis</h3><p class="item" *ngFor="let x of (r.exclusions ?? [])"><b>{{ x.accountName }}:</b> {{ x.reason }}</p></section>
+  <section *ngIf="(r.warnings ?? []).length"><h3>Avisos</h3><p class="notice" *ngFor="let x of (r.warnings ?? [])">{{ x }}</p></section>
+  <section *ngIf="(r.limitations ?? []).length"><h3>Limitações</h3><p class="item" *ngFor="let x of (r.limitations ?? [])">{{ x }}</p></section>
+
+  <section><h3>Linha do tempo</h3><div class="timeline"><div *ngFor="let x of (r.timeline ?? [])" [class.critical-row]="x.isCritical" [class.negative]="x.reserveMargin < 0"><b>{{ date(x.date) }}</b><span>Receitas<b>{{ money(x.income) }}</b></span><span>Despesas<b>{{ money(x.expense) }}</b></span><span>Saldo sem estratégia<b>{{ money(x.baseBalance) }}</b></span><span>Após estratégia<b>{{ money(x.strategyBalance) }}</b></span><span>Margem sobre reserva<b>{{ money(x.reserveMargin) }}</b></span></div></div></section>
+
+  <section class="copy-analysis"><button type="button" (click)="copyAnalysis()">Copiar toda a análise em texto</button></section>
+</div>

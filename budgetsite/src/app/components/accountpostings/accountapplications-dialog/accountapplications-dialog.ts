@@ -1,5 +1,5 @@
 import { Component, OnInit, AfterViewInit, ViewChild, Inject } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { AbstractControl, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 
@@ -20,12 +20,20 @@ export class AccountApplicationsDialog implements OnInit, AfterViewInit {
     accountApplicationFormGroup = new FormGroup({
         accountIdFormControl: new FormControl('', Validators.required),
         amountAppliedFormControl: new FormControl('', Validators.required),
+        maximumAmountFormControl: new FormControl('', [Validators.min(0.01), this.maximumAmountValidator]),
         cdiPercentFormControl: new FormControl('', Validators.required),
         fixedRateFormControl: new FormControl(''),
         maturityDateFormControl: new FormControl(''),
     });
 
     accountApplication: AccountsApplications;
+
+    private maximumAmountValidator(control: AbstractControl) {
+        const value = control.value;
+        if (value === '' || value === null || value === undefined) return null;
+        const numeric = Number(value);
+        return Number.isFinite(numeric) && numeric > 0 ? null : { invalidMaximum: true };
+    }
 
     constructor(
         public dialog: MatDialog,
@@ -41,6 +49,7 @@ export class AccountApplicationsDialog implements OnInit, AfterViewInit {
 
         this.accountApplicationFormGroup.get('accountIdFormControl')?.setValue(this.accountApplication.accountId || '');
         this.accountApplicationFormGroup.get('amountAppliedFormControl')?.setValue(this.accountApplication.amountApplied || '');
+        this.accountApplicationFormGroup.get('maximumAmountFormControl')?.setValue(this.accountApplication.maximumAmount ?? '');
         this.accountApplicationFormGroup.get('cdiPercentFormControl')?.setValue(this.accountApplication.cdiPercent || '');
         this.accountApplicationFormGroup.get('fixedRateFormControl')?.setValue(this.accountApplication.fixedRate || '');
         this.accountApplicationFormGroup.get('maturityDateFormControl')?.setValue(this.accountApplication.maturityDate || '');
@@ -63,10 +72,19 @@ export class AccountApplicationsDialog implements OnInit, AfterViewInit {
     }
 
     save(): void {
+        if (this.accountApplicationFormGroup.invalid) {
+            this.accountApplicationFormGroup.markAllAsTouched();
+            return;
+        }
         if (this.datepickerinput?.date?.value?._d) this.accountApplication.dateApplied = this.datepickerinput.date.value._d;
 
         this.accountApplication.accountId = Number(this.accountApplication.accountId);
         this.accountApplication.amountApplied = Number(this.accountApplication.amountApplied);
+        const maximumAmountRaw: any = this.accountApplicationFormGroup.get('maximumAmountFormControl')?.value;
+        const maximumAmount = Number(maximumAmountRaw);
+        this.accountApplication.maximumAmount = maximumAmountRaw === '' || maximumAmountRaw === null || maximumAmountRaw === undefined || !Number.isFinite(maximumAmount)
+            ? null
+            : maximumAmount;
         this.accountApplication.cdiPercent = Number(this.accountApplication.cdiPercent);
 
         if (this.accountApplication.fixedRate === null || this.accountApplication.fixedRate === undefined || this.accountApplication.fixedRate == 0) {
@@ -85,9 +103,9 @@ export class AccountApplicationsDialog implements OnInit, AfterViewInit {
                 ? 'modern-confirm-dialog-panel'
                 : undefined,
             data: <ConfirmDialogData>{
-                title: 'Excluir aplicação',
-                message: `Confirma a EXCLUSÃO da aplicação de ${this.accountApplication.amountApplied.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}?`,
-                confirmText: 'Excluir',
+                title: 'Desabilitar aplicação',
+                message: `Deseja desabilitar esta aplicação?\n\nEla deixará de participar dos cálculos e relatórios, mas seu histórico continuará armazenado.`,
+                confirmText: 'Desabilitar',
                 cancelText: 'Cancelar',
             },
         });

@@ -1486,11 +1486,27 @@
                                                 trackBy: trackById
                                             "
                                         >
-                                            <div class="detail-copy">
-                                                <span class="detail-title"
-                                                    >{{ item.account?.name }} ·
-                                                    {{ item.description }}</span
-                                                >
+                                            <div class="detail-copy detail-account-copy">
+                                                <div class="detail-account-heading">
+                                                    <span
+                                                        class="detail-account-name"
+                                                        [ngStyle]="{
+                                                            backgroundColor:
+                                                                item.account
+                                                                    ?.background,
+                                                            color: item.account
+                                                                ?.color
+                                                        }"
+                                                        >{{
+                                                            item.account?.name
+                                                        }}</span>
+                                                    <span class="detail-account-date">{{
+                                                        item.date | date: "dd/MM"
+                                                    }}</span>
+                                                </div>
+                                                <span class="detail-title">{{
+                                                    item.description
+                                                }}</span>
                                             </div>
                                             <strong>{{
                                                 item.amount

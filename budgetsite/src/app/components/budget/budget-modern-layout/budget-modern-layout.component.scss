@@ -1279,6 +1279,36 @@
   white-space: nowrap;
 }
 
+.detail-account-copy {
+  gap: 4px;
+}
+
+.detail-account-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-account-name {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  max-width: 60%;
+  padding: 1px 7px;
+  border-radius: 5px;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-account-date {
+  color: var(--modern-yellow);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .detail-title {
   min-width: 0;
   overflow: hidden;
@@ -1562,6 +1592,30 @@
 
   ::ng-deep .modern-panel .mat-expansion-panel-body {
     padding: 0 3px 8px !important;
+  }
+
+  /* Impede que as linhas expandidas ultrapassem a largura do painel no mobile. */
+  ::ng-deep .modern-data-table,
+  ::ng-deep .modern-data-table .mat-row,
+  ::ng-deep .modern-data-table .mat-cell,
+  ::ng-deep .modern-data-table .detail-cell {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .row-detail {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .detail-group,
+  .detail-line {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .panel-icon {

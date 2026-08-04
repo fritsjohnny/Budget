@@ -30,6 +30,7 @@ export class ReportComponent implements OnInit, AfterViewInit {
     { id: 5, name: 'Despesas por Cartão', description: 'Consolide gastos e compare seus cartões.', icon: 'credit_card', color: 'cyan' },
     { id: 6, name: 'Saldo Previsto em Conta', description: 'Projete a evolução do saldo de uma conta.', icon: 'account_balance', color: 'green' },
     { id: 7, name: 'Saúde Financeira', description: 'Avalie reserva, compromissos e projeções.', icon: 'monitor_heart', color: 'pink' },
+    { id: 8, name: 'Estratégia de Investimentos', description: 'Encontre o excedente seguro e melhores faixas.', icon: 'trending_up', color: 'teal' },
   ];
   showReport: boolean = false;
   categories: Categories[] = [];
@@ -54,6 +55,18 @@ export class ReportComponent implements OnInit, AfterViewInit {
   showDisabledForecastAccounts: boolean = false;
   forecastInitialDateValue: Date | null = null;
   forecastFinalDateValue: Date | null = null;
+  investmentAccountId = 0;
+  investmentInitialDateValue: Date | null = new Date();
+  investmentFinalDateValue: Date | null = new Date();
+  investmentReserve: number | null = localStorage.getItem('investmentReserve') === null ? null : Number(localStorage.getItem('investmentReserve'));
+  investmentSuggestedReserve: number | null = null;
+  investmentReserveExplanation = '';
+  useSuggestedInvestmentReserve() { if (this.investmentSuggestedReserve !== null) this.investmentReserveChanged(this.investmentSuggestedReserve); }
+  get investmentAccounts(): Accounts[] { return this.allForecastAccounts.filter(account => account.disabled !== true); }
+  investmentReserveChanged(value: number | null) { this.investmentReserve = value === null || value === undefined || Number.isNaN(Number(value)) ? null : Number(value); if (this.investmentReserve === null) localStorage.removeItem('investmentReserve'); else localStorage.setItem('investmentReserve', this.investmentReserve.toString()); }
+  investmentAccountChanged(value: number) { this.investmentAccountId = Number(value) || 0; localStorage.setItem('investmentAccountId', this.investmentAccountId.toString()); }
+  investmentInitialDateChanged(value: Date | null) { this.investmentInitialDateValue = value; this.persistDate('investmentInitialDate', value); }
+  investmentFinalDateChanged(value: Date | null) { this.investmentFinalDateValue = value; this.persistDate('investmentFinalDate', value); }
 
   financialHealthReserveTargetMonths: number = 9;
   financialHealthFutureMonths: number = 12;
@@ -92,6 +105,10 @@ export class ReportComponent implements OnInit, AfterViewInit {
     this.selectedReportType = parseInt(
       localStorage.getItem('lastSelectedReport')!
     );
+    const today = new Date();
+    this.investmentInitialDateValue = this.readStoredDate('investmentInitialDate') ?? new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    this.investmentFinalDateValue = this.readStoredDate('investmentFinalDate') ?? new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    this.investmentAccountId = Number(localStorage.getItem('investmentAccountId') || 0);
 
     this.categoryService.read().subscribe((categories) => {
       this.categories = categories.sort((a, b) => a.name.localeCompare(b.name));
@@ -114,6 +131,7 @@ export class ReportComponent implements OnInit, AfterViewInit {
         localStorage.getItem('lastSelectedForecastAccountReport') || '0'
       );
       this.refreshForecastAccounts();
+      if (this.investmentAccountId && !accounts.some(account => account.id === this.investmentAccountId && account.disabled !== true)) { this.investmentAccountId = 0; localStorage.removeItem('investmentAccountId'); }
     });
 
     const initialDateStr = localStorage.getItem('report4InitialDate');
@@ -214,7 +232,7 @@ export class ReportComponent implements OnInit, AfterViewInit {
   }
 
   get reportInvalid(): boolean {
-    return this.forecastReportInvalid || this.financialHealthReportInvalid;
+    return this.forecastReportInvalid || this.financialHealthReportInvalid || (this.selectedReportType === 8 && (!this.investmentAccountId || !this.investmentInitialDateValue || !this.investmentFinalDateValue || this.investmentInitialDateValue > this.investmentFinalDateValue));
   }
 
   initialReferenceChanges(reference: string) {
@@ -433,6 +451,13 @@ export class ReportComponent implements OnInit, AfterViewInit {
     }
 
     localStorage.setItem(key, new Date(date as any).toISOString());
+  }
+
+  private readStoredDate(key: string): Date | null {
+    const value = localStorage.getItem(key);
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 
   private toReference(date: Date): string {

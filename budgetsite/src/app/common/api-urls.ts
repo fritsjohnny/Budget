@@ -4,6 +4,7 @@ export class ApiUrls {
   public static baseUrl = environment.baseUrl;
 
   public static accounts                 = ApiUrls.baseUrl + 'accounts';
+  public static investmentStrategy       = ApiUrls.accounts + '/investmentstrategyreport';
   public static accountsapplications     = ApiUrls.baseUrl + 'accountsapplications';
   public static accountyieldranges       = ApiUrls.baseUrl + 'accountyieldranges';
   public static accounttotals            = ApiUrls.baseUrl + 'accounts/totals?';

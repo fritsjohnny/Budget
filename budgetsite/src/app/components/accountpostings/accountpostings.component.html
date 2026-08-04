@@ -421,11 +421,23 @@
                             </td>
                         </ng-container>
 
+                        <ng-container matColumnDef="maximumApplication">
+                            <th mat-header-cell *matHeaderCellDef>Máximo</th>
+                            <td mat-cell *matCellDef="let row" class="primary">{{ applicationMaximumLabel(row) }}</td>
+                            <td mat-footer-cell *matFooterCellDef></td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="availableApplication">
+                            <th mat-header-cell *matHeaderCellDef>Disponível</th>
+                            <td mat-cell *matCellDef="let row" class="primary">{{ applicationAvailableLabel() }}</td>
+                            <td mat-footer-cell *matFooterCellDef></td>
+                        </ng-container>
+
                         <!-- CDI Column -->
                         <ng-container matColumnDef="cdiApplication">
-                            <th mat-header-cell *matHeaderCellDef>CDI</th>
+                            <th mat-header-cell *matHeaderCellDef>Rendimento</th>
                             <td mat-cell *matCellDef="let row" class="primary">
-                                {{ row.cdiPercent * 100 | number: "1.0-2" }}%
+                                {{ applicationRateLabel(row) }}
                             </td>
                             <td mat-footer-cell *matFooterCellDef></td>
                         </ng-container>
@@ -436,7 +448,7 @@
                                 Vencimento
                             </th>
                             <td mat-cell *matCellDef="let row" class="primary">
-                                {{ row.maturityDate | date: "dd/MM/yyyy" }}
+                                {{ row.maturityDate ? (row.maturityDate | date: "dd/MM/yyyy") : "Sem vencimento" }}
                             </td>
                             <td mat-footer-cell *matFooterCellDef></td>
                         </ng-container>

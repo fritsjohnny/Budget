@@ -308,6 +308,15 @@
     cursor: pointer;
 }
 
+.investment-filter-grid { display: grid; grid-template-columns: minmax(180px, 1.4fr) repeat(3, minmax(150px, 1fr)); gap: 12px; align-items: center; }
+.investment-filter-grid mat-form-field { width: 100%; min-width: 0; }
+.investment-filter-grid ::ng-deep .mat-form-field-flex { border-radius: 10px 10px 0 0; background: #f4f7fb !important; }
+.investment-filter-grid ::ng-deep input.mat-input-element { background: transparent !important; }
+:host-context(.dark-theme) .investment-filter-grid ::ng-deep .mat-form-field-flex { background: #182634 !important; }
+.investment-reserve-summary { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:8px 0 4px; padding:14px; border-radius:12px; background:var(--report-surface-soft,#f8f9fc); }
+.investment-reserve-summary b,.investment-reserve-summary small { display:block; }
+.investment-reserve-summary b { font-size:1.25rem; margin:4px 0; }
+
 /* Cores semânticas do leiaute moderno para o relatório de saldo previsto. */
 ::ng-deep .modern-report-shell .account-forecast-table .primary,
 ::ng-deep .modern-report-shell .account-forecast-table .positive {
@@ -578,6 +587,7 @@
 }
 
 @media (max-width: 700px) {
+    .investment-filter-grid { grid-template-columns: minmax(0, 1fr); gap: 4px; }
     .modern-report-shell {
         width: 100%;
         padding: 10px 10px 104px;

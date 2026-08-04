@@ -105,7 +105,7 @@
             </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="fill" floatLabel="always" *ngIf="accountPosting.type !== 'Y'">
+          <mat-form-field appearance="fill" floatLabel="always" *ngIf="accountPosting.type !== 'Y' && !isTransferMode() && accountPosting.type !== 'C'">
             <mat-label>Receita</mat-label>
             <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="accountPosting.incomeId" formControlName="incomeIdFormControl">
               <mat-option>-- Nenhuma --</mat-option>
@@ -113,7 +113,7 @@
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="fill" floatLabel="always" *ngIf="accountPosting.type !== 'Y'">
+          <mat-form-field appearance="fill" floatLabel="always" *ngIf="accountPosting.type !== 'Y' && !isTransferMode() && accountPosting.type !== 'C'">
             <mat-label>Despesa</mat-label>
             <mat-select mat-input panelClass="modern-select-panel" [(ngModel)]="accountPosting.expenseId" formControlName="expenseIdFormControl">
               <mat-option>-- Nenhuma --</mat-option>
@@ -134,7 +134,7 @@
           <span>Valores</span>
         </div>
 
-        <div class="modern-form-grid" *ngIf="accountPosting.type !== 'Y'">
+        <div class="modern-form-grid" *ngIf="accountPosting.type !== 'Y' && !isTransferMode() && accountPosting.type !== 'C'">
           <mat-form-field appearance="fill" floatLabel="always" class="modern-field-full">
             <mat-label>Valor</mat-label>
             <input

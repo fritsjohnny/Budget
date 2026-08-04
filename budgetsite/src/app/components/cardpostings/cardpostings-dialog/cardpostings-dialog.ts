@@ -135,7 +135,6 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       originalParcels > 1;
 
     this.disableCheck =
-      isCloning ||
       this.hasExistingParcelSequence ||
       originalParcels <= 1;
 
@@ -176,8 +175,6 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
         this.atualizarParcelamento(this.cardPosting.parcels!);
         this.calculateAmount();
       }
-    } else {
-      this.cardPosting.generateParcels = false;
     }
   }
 

@@ -5,6 +5,8 @@ export interface AccountsApplications {
   accountId: number;
   dateApplied: Date;
   amountApplied: number;
+  maximumAmount: number | null;
+  disabled?: boolean;
   cdiPercent: number | null;
   fixedRate: number | null;
   maturityDate: Date | null;

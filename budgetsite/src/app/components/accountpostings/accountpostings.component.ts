@@ -395,6 +395,13 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       });
   }
 
+  isTransferPosting(posting: AccountsPostings): boolean {
+    return posting.type !== 'Y'
+      && (posting.type === 'P' || posting.type === 'R')
+      && posting.relatedId != null
+      && posting.toAccountId != null;
+  }
+
   getTotalAmount() {
     this.total = this.accountpostings
       ? this.accountpostings

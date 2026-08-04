@@ -118,6 +118,7 @@ import { GenerateCardReceiptDialog } from './components/accountpostings/generate
 import { AnnualSavingsComponent } from './components/annual-savings/annual-savings.component';
 import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
 import { CardsInvoiceClosingDialog } from './components/card/cards-invoice-closing-dialog/cards-invoice-closing-dialog';
+import { LoadSpinnerComponent } from './shared/load-spinner/load-spinner.component';
 
 import { NgChartsModule } from 'ng2-charts';
 
@@ -202,6 +203,7 @@ registerLocaleData(localePt);
     AnnualSavingsComponent,
     AnnualSavingsViewComponent,
     CardsInvoiceClosingDialog,
+    LoadSpinnerComponent,
   ],
   imports: [
     BrowserModule,

@@ -1187,8 +1187,16 @@ export class CardPostingsComponent implements OnInit {
     }
 
     this.focusedCardPostingId = pendingFocus.id;
+    let attempts = 0;
 
-    setTimeout(() => {
+    const focusRow = (): void => {
+      if (!this.pendingCardPostingFocus || attempts >= 12) {
+        this.pendingCardPostingFocus = undefined;
+        return;
+      }
+
+      attempts++;
+
       const rows = Array.from(
         this.elementRef.nativeElement.querySelectorAll(
           `[data-card-posting-id="${pendingFocus.id}"]`
@@ -1197,27 +1205,23 @@ export class CardPostingsComponent implements OnInit {
       const row = rows.find(element => element.getClientRects().length > 0) ?? null;
 
       if (!row) {
-        this.pendingCardPostingFocus = undefined;
-
-        if (this.focusedCardPostingId === pendingFocus.id) {
-          this.focusedCardPostingId = undefined;
-          this.cd.detectChanges();
-        }
-
+        window.requestAnimationFrame(focusRow);
         return;
       }
 
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
       row.focus();
       this.pendingCardPostingFocus = undefined;
 
-      setTimeout(() => {
+      window.setTimeout(() => {
         if (this.focusedCardPostingId !== pendingFocus.id) return;
 
         this.focusedCardPostingId = undefined;
         this.cd.detectChanges();
       }, 2500);
-    });
+    };
+
+    window.requestAnimationFrame(() => window.requestAnimationFrame(focusRow));
   }
 
   private toggleCardPostingCheck(cardPosting: CardsPostings): void {

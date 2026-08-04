@@ -1,5 +1,5 @@
 <div class="card-posting-saving-overlay" *ngIf="savingCardPosting">
-    <mat-spinner color="warn" [diameter]="52"></mat-spinner>
+    <app-load-spinner [loading]="true"></app-load-spinner>
     <span>Salvando lançamento...</span>
 </div>
 
@@ -69,7 +69,7 @@
     <!-- SPINNER -->
     <div class="row center" style="margin-top: 10px">
         <div class="row justify-content-center">
-            <mat-spinner color="accent" *ngIf="isBudgetLoading"></mat-spinner>
+            <app-load-spinner [loading]="isBudgetLoading"></app-load-spinner>
         </div>
     </div>
     <div class="row center" *ngIf="isBudgetLoaded">

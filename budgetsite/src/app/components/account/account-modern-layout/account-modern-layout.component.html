@@ -27,10 +27,7 @@
         (referenceChange)="onReferenceChange($event)"
     ></app-modern-reference-selector>
 
-    <div class="modern-loading" *ngIf="isPullRefreshing" aria-live="polite">
-        <mat-spinner color="accent" [diameter]="48"></mat-spinner>
-        <span>Atualizando contas...</span>
-    </div>
+    <app-load-spinner [loading]="isPullRefreshing"></app-load-spinner>
 
     <ng-container *ngIf="!isPullRefreshing">
         <section class="account-selector" aria-label="Seleção de conta">

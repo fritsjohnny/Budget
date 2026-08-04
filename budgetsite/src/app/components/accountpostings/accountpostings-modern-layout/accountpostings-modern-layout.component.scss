@@ -547,11 +547,11 @@ button.summary-item {
   .mobile-extract-row {
     display: grid;
     grid-template-columns: 30px 35px minmax(0, 1fr) auto;
-    align-items: center;
+    align-items: start;
     gap: 5px;
     min-width: 0;
     min-height: 44px;
-    padding: 2px 7px;
+    padding: 6px 7px;
     border: 1px solid var(--posting-divider);
     border-radius: 11px;
     background: var(--posting-surface-soft);
@@ -605,9 +605,11 @@ button.summary-item {
 
   .mobile-row-copy strong,
   .mobile-row-copy small {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .mobile-row-copy strong {

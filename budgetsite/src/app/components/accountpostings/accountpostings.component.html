@@ -4,7 +4,7 @@
 ></app-accountpostings-modern-layout>
 
 <div class="center" *ngIf="!modernLayout">
-    <mat-spinner color="accent" *ngIf="!hideProgress"></mat-spinner>
+    <app-load-spinner [loading]="!hideProgress"></app-load-spinner>
 </div>
 <div class="row center" *ngIf="!modernLayout">
     <div

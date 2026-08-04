@@ -1820,3 +1820,9 @@ tr.cdk-drag-preview > td.mat-cell:last-child {
 }
 
 @import "./modern-material-overlays";
+
+/* Loader global: impede rolagem da página enquanto uma operação bloqueante está ativa. */
+body:has(app-load-spinner .load-spinner-overlay) {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}

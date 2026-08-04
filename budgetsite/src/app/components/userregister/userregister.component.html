@@ -50,7 +50,7 @@
       </button>
       <div class="row center">
         <div class="row justify-content-center">
-          <mat-spinner color="accent" strokeWidth="7" diameter="50" *ngIf="!hideProgress"></mat-spinner>
+          <app-load-spinner [loading]="!hideProgress"></app-load-spinner>
         </div>
       </div>
     </div>

@@ -27,7 +27,7 @@
   ></app-modern-reference-selector>
 
   <div class="modern-loading" *ngIf="isLoading">
-    <mat-spinner color="accent" [diameter]="48"></mat-spinner>
+    <app-load-spinner [loading]="true"></app-load-spinner>
     <span>Atualizando saldos...</span>
   </div>
 

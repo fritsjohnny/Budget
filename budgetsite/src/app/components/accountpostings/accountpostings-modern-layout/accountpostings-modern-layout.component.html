@@ -1,8 +1,5 @@
 <div class="modern-account-postings">
-  <div class="modern-loading" *ngIf="!context.hideProgress">
-    <mat-spinner color="accent" [diameter]="44"></mat-spinner>
-    <span>Atualizando conta...</span>
-  </div>
+  <app-load-spinner [loading]="!context.hideProgress"></app-load-spinner>
 
   <ng-container *ngIf="context.hideProgress">
     <section class="account-summary" aria-label="Resumo da conta">
@@ -239,7 +236,7 @@
               >{{ row.description }}</strong>
               <small *ngIf="row.note">{{ row.note }}</small>
               <small *ngIf="!row.note">
-                {{ row.type === 'Y' ? 'Rendimento' : row.amount < 0 ? 'Pagamento' : 'Recebimento' }}
+                {{ row.type === 'Y' ? 'Rendimento' : context.isTransferPosting(row) ? 'Transferência' : row.amount < 0 ? 'Pagamento' : 'Recebimento' }}
               </small>
             </span>
 

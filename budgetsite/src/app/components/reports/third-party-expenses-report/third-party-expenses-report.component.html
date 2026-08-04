@@ -131,6 +131,6 @@
 <!-- SPINNER -->
 <div class="row center" style="margin-top: 10px">
     <div class="row justify-content-center">
-        <mat-spinner color="accent" *ngIf="showReportProgress"> </mat-spinner>
+        <app-load-spinner [loading]="showReportProgress"></app-load-spinner>
     </div>
 </div>

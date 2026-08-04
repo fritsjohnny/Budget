@@ -60,7 +60,7 @@
         class="modern-loading"
         *ngIf="context.isBudgetLoading && !context.isBudgetLoaded"
     >
-        <mat-spinner color="accent" [diameter]="48"></mat-spinner>
+        <app-load-spinner [loading]="true"></app-load-spinner>
         <span>Atualizando orçamento...</span>
     </div>
 

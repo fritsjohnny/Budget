@@ -1,11 +1,11 @@
 <div class="modern-card-postings">
   <div class="saving-overlay" *ngIf="context.savingCardPosting">
-    <mat-spinner color="accent" [diameter]="52"></mat-spinner>
+    <app-load-spinner [loading]="true"></app-load-spinner>
     <span>Salvando lançamento...</span>
   </div>
 
   <div class="modern-loading" *ngIf="!context.hideProgress">
-    <mat-spinner color="accent" [diameter]="46"></mat-spinner>
+    <app-load-spinner [loading]="true"></app-load-spinner>
     <span>Carregando cartões...</span>
   </div>
 

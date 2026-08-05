@@ -34,11 +34,6 @@
         (referenceChange)="onReferenceChange($event)"
     ></app-modern-reference-selector>
 
-    <div class="modern-loading" *ngIf="isPullRefreshing">
-        <app-load-spinner [loading]="true"></app-load-spinner>
-        <span>Atualizando cartões...</span>
-    </div>
-
     <ng-container *ngIf="!isPullRefreshing">
         <section class="card-selector">
             <div class="selected-card">
@@ -90,12 +85,6 @@
                     </button>
                 </div>
             </div>
-
-            <mat-progress-bar
-                mode="query"
-                color="accent"
-                *ngIf="!context.hideProgress"
-            ></mat-progress-bar>
 
             <div class="card-chips">
                 <button

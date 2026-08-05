@@ -47,6 +47,7 @@ export class CardComponent implements OnInit, AfterViewInit {
   referenceHead?: string;
   card!: Cards;
   hideProgress: boolean = false;
+  loadingMessage: string = 'Carregando cartões...';
   buttonName: string = "";
   validatingInvoiceClosing = false;
   currentInvoiceReference?: string;

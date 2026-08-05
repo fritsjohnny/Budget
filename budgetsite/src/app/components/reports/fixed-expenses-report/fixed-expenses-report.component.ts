@@ -26,6 +26,7 @@ export class FixedExpensesReportComponent implements OnInit, AfterViewInit {
   @ViewChild('sortReport') sortReport!: MatSort;
 
   showReportProgress = false;
+  loadingMessage: string = 'Gerando relatório de despesas fixas...';
   data!: any[];
   total: number = 0;
   displayedDataColumns = ['index', 'description', 'value', 'category'];

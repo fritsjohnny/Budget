@@ -1,31 +1,41 @@
 :host {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: block;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: block;
+    width: 100vw;
+    height: 100dvh;
+    pointer-events: none;
+    contain: strict;
 }
 
 .load-spinner-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  overscroll-behavior: none;
-  touch-action: none;
-  background-color: rgb(0 0 0 / 38%);
-  pointer-events: all;
-  user-select: none;
-  cursor: wait;
+    position: fixed;
+    inset: 0;
+    z-index: 2147483001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100vw;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+    background-color: rgb(0 0 0 / 38%);
+    pointer-events: auto;
+    user-select: none;
+    cursor: wait;
+    isolation: isolate;
+}
+
+.load-spinner-overlay,
+.load-spinner-overlay * {
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 :host-context(.dark-theme) .load-spinner-overlay {
-  background-color: rgb(0 0 0 / 52%);
+    background-color: rgb(0 0 0 / 52%);
 }

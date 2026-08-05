@@ -18,6 +18,7 @@ export class AnnualSavingsComponent implements OnInit {
   consolidated: AnnualSavingsConsolidated[] = [];
   annualSavingsPanelExpanded: boolean = false;
   showProgress: boolean = false;
+  loadingMessage: string = 'Carregando economias anuais...';
   lastUpdated?: Date;
   includeCurrentMonth: boolean = true;
   includeNextMonths: boolean = false;

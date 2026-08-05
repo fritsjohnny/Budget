@@ -18,6 +18,7 @@ export class UserRegisterComponent implements OnInit {
 
   hide = true;
   hideProgress: boolean = true;
+  loadingMessage: string = 'Criando usuário...';
 
   theme = localStorage.getItem('theme') ?? 'light-theme';
 

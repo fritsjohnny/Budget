@@ -26,6 +26,7 @@ export class ThirdPartyExpensesReportComponent implements OnInit {
   @ViewChild('sortReport') sortReport!: MatSort;
 
   showReportProgress = false;
+  loadingMessage: string = 'Gerando relatório de despesas de terceiros...';
   data!: any[];
   total: number = 0;
   displayedDataColumns = ['index', 'date', 'description', 'value', 'reference', 'card'];

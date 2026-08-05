@@ -14,6 +14,7 @@ export class UserComponent implements OnInit {
 
   hide = true;
   hideProgress: boolean = true;
+  loadingMessage: string = 'Salvando usuário...';
 
   userFormGroup = new FormGroup(
     {

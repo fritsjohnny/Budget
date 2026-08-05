@@ -113,6 +113,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   totalYields?: number = 0;
   totalForYieldsDialog?: number = 0;
   hideProgress: boolean = true;
+  loadingMessage: string = 'Carregando lançamentos...';
   maxBalance: number = 0;
   minBalance: number = 0;
   accountPostingsLength: number = 0;

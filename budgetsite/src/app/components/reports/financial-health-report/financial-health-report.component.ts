@@ -42,6 +42,7 @@ export class FinancialHealthReportComponent implements AfterViewInit {
   @Input() includeCurrentMonth: boolean = false;
 
   showProgress = false;
+  loadingMessage: string = 'Gerando relatório de saúde financeira...';
   report: FinancialHealthReport | null = null;
 
   scoreChartType: any = 'doughnut';

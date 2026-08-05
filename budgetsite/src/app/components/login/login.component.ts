@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit {
   _password!: string;
   hide = true;
   hideProgress: boolean = true;
+  loadingMessage: string = 'Entrando...';
 
   theme = localStorage.getItem('theme') ?? 'light-theme';
 

@@ -56,13 +56,7 @@
         </div>
     </app-modern-reference-selector>
 
-    <div
-        class="modern-loading"
-        *ngIf="context.isBudgetLoading && !context.isBudgetLoaded"
-    >
-        <app-load-spinner [loading]="true"></app-load-spinner>
-        <span>Atualizando orçamento...</span>
-    </div>
+    
 
     <ng-container *ngIf="context.isBudgetLoaded">
         <section class="summary-grid" aria-label="Resumo financeiro">
@@ -101,7 +95,9 @@
                     <div>
                         <span class="summary-label">Saldo previsto</span>
                         <strong
-                            [class.metric-negative]="context.expectedBalance < 0"
+                            [class.metric-negative]="
+                                context.expectedBalance < 0
+                            "
                             >{{
                                 context.expectedBalance
                                     | currency: "BRL" : "symbol" : "1.2-2"
@@ -145,7 +141,8 @@
                                 context.getExpectedBalanceWithoutYields() >= 0
                             "
                             [class.metric-negative]="
-                                context.getExpectedBalanceWithoutYieldsPerc() < 0
+                                context.getExpectedBalanceWithoutYieldsPerc() <
+                                0
                             "
                             >{{
                                 context.getExpectedBalanceWithoutYieldsPerc()
@@ -165,7 +162,8 @@
                                 context.expectedBalance >= 0
                             "
                             [class.metric-negative]="
-                                context.getExpectedBalanceCoveredByYieldsPerc() < 0
+                                context.getExpectedBalanceCoveredByYieldsPerc() <
+                                0
                             "
                             >{{
                                 context.getExpectedBalanceCoveredByYieldsPerc()
@@ -199,7 +197,8 @@
                                 context.getExpectedBalanceWithoutYields() >= 0
                             "
                             [class.metric-negative]="
-                                context.getExpectedBalanceYieldsCompositionPerc() < 0
+                                context.getExpectedBalanceYieldsCompositionPerc() <
+                                0
                             "
                             >{{
                                 context.getExpectedBalanceYieldsCompositionPerc()
@@ -212,7 +211,8 @@
                                 context.expectedBalance < 0
                             "
                             [class.metric-negative]="
-                                context.getExpectedBalanceDeficitReductionPerc() < 0
+                                context.getExpectedBalanceDeficitReductionPerc() <
+                                0
                             "
                             >↓{{
                                 context.getExpectedBalanceDeficitReductionPerc()
@@ -225,7 +225,8 @@
                                 context.expectedBalance >= 0
                             "
                             [class.metric-negative]="
-                                context.getExpectedBalancePositiveFromYieldsPerc() < 0
+                                context.getExpectedBalancePositiveFromYieldsPerc() <
+                                0
                             "
                             >{{
                                 context.getExpectedBalancePositiveFromYieldsPerc()
@@ -367,28 +368,70 @@
                             ><mat-icon>money_off</mat-icon></span
                         >
                         <span class="panel-heading-copy panel-heading-metrics">
-                            <span class="panel-heading-label"><strong>Despesas</strong><span class="panel-heading-label-count">#{{ context.expenses?.length || 0 }}</span></span>
+                            <span class="panel-heading-label"
+                                ><strong>Despesas</strong
+                                ><span class="panel-heading-label-count"
+                                    >#{{ context.expenses?.length || 0 }}</span
+                                ></span
+                            >
                             <span class="header-metrics expense-header-metrics">
-                                <span><small>Pagar</small><b>{{ context.toPayTotal | currency: "BRL" : "symbol" : "1.2-2" }}</b></span>
-                                <span><small>Pago</small><b>{{ context.paidTotal | currency: "BRL" : "symbol" : "1.2-2" }}</b></span>
-                                <span><small>Pendente</small><b>{{ context.expensesRemainingTotal | currency: "BRL" : "symbol" : "1.2-2" }}</b></span>
+                                <span
+                                    ><small>Pagar</small
+                                    ><b>{{
+                                        context.toPayTotal
+                                            | currency
+                                                : "BRL"
+                                                : "symbol"
+                                                : "1.2-2"
+                                    }}</b></span
+                                >
+                                <span
+                                    ><small>Pago</small
+                                    ><b>{{
+                                        context.paidTotal
+                                            | currency
+                                                : "BRL"
+                                                : "symbol"
+                                                : "1.2-2"
+                                    }}</b></span
+                                >
+                                <span
+                                    ><small>Pendente</small
+                                    ><b>{{
+                                        context.expensesRemainingTotal
+                                            | currency
+                                                : "BRL"
+                                                : "symbol"
+                                                : "1.2-2"
+                                    }}</b></span
+                                >
                             </span>
                             <small
                                 ><span
-                                    [class.panel-negative-value]="context.toPayTotal < 0"
+                                    [class.panel-negative-value]="
+                                        context.toPayTotal < 0
+                                    "
                                     >{{
                                         context.toPayTotal
-                                            | currency: "BRL" : "symbol" : "1.2-2"
+                                            | currency
+                                                : "BRL"
+                                                : "symbol"
+                                                : "1.2-2"
                                     }}</span
                                 >
                                 ·
                                 {{ context.expenses?.length || 0 }} lançamentos
                                 ·
                                 <span
-                                    [class.panel-negative-value]="context.expensesRemainingTotal < 0"
+                                    [class.panel-negative-value]="
+                                        context.expensesRemainingTotal < 0
+                                    "
                                     >{{
                                         context.expensesRemainingTotal
-                                            | currency: "BRL" : "symbol" : "1.2-2"
+                                            | currency
+                                                : "BRL"
+                                                : "symbol"
+                                                : "1.2-2"
                                     }}</span
                                 >
                                 pendente</small
@@ -490,7 +533,10 @@
                     </mat-menu>
                 </div>
 
-                <div class="modern-table-container panel-scroll-container" cdkScrollable>
+                <div
+                    class="modern-table-container panel-scroll-container"
+                    cdkScrollable
+                >
                     <table
                         mat-table
                         [dataSource]="context.expenses"
@@ -714,7 +760,53 @@
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
-                            
+                            style="--drag-accent: #e74c56"
+                            [attr.data-expense-id]="row.id"
+                            [attr.tabindex]="-1"
+                            [class.budget-entry-focus]="
+                                row.id === context.focusedExpenseId
+                            "
+                            [class.warning-row]="row.overdue || row.duetoday"
+                            [class.without-category-row]="
+                                row.cardId == null && row.categoryId == null
+                            "
+                            (click)="context.handleClickExpense(row, $event)"
+                            (dblclick)="
+                                context.handleDoubleClickExpense(row, $event)
+                            "
+                        ></tr>
+                        <tr
+                            mat-footer-row
+                            *matFooterRowDef="context.displayedExpensesColumns"
+                        ></tr>
+                    </table>
+                </div>
+
+                <div class="budget-mobile-table budget-mobile-expense-table">
+                    <div class="budget-mobile-header">
+                        <span>Descrição</span><span>Pagar</span><span>Pago</span
+                        ><span>Restante</span><span aria-hidden="true"></span>
+                    </div>
+                    <div
+                        class="budget-mobile-list panel-scroll-container budget-drag-boundary"
+                        cdkScrollable
+                        cdkDropList
+                        [cdkDropListAutoScrollStep]="7"
+                        [cdkDropListData]="context.expenses"
+                        (cdkDropListDropped)="context.dropExpenses($event)"
+                    >
+                        <article
+                            class="budget-mobile-row"
+                            *ngFor="
+                                let row of context.expenses;
+                                trackBy: trackById
+                            "
+                            cdkDrag
+                            cdkDragLockAxis="y"
+                            cdkDragBoundary=".budget-drag-boundary"
+                            appDragReadyFeedback
+                            [cdkDragData]="row"
+                            [cdkDragStartDelay]="300"
                             style="--drag-accent: #e74c56"
                             [attr.data-expense-id]="row.id"
                             [attr.tabindex]="-1"
@@ -730,72 +822,167 @@
                                 context.handleDoubleClickExpense(row, $event)
                             "
                         >
-                        </tr>
-                        <tr
-                            mat-footer-row
-                            *matFooterRowDef="context.displayedExpensesColumns"
-                        ></tr>
-                    </table>
-                </div>
-
-
-
-                <div class="budget-mobile-table budget-mobile-expense-table">
-                    <div class="budget-mobile-header">
-                        <span>Descrição</span><span>Pagar</span><span>Pago</span><span>Restante</span><span aria-hidden="true"></span>
-                    </div>
-                    <div class="budget-mobile-list panel-scroll-container budget-drag-boundary" cdkScrollable cdkDropList [cdkDropListAutoScrollStep]="7"
-                        [cdkDropListData]="context.expenses" (cdkDropListDropped)="context.dropExpenses($event)">
-                        <article class="budget-mobile-row" *ngFor="let row of context.expenses; trackBy: trackById"
-                            cdkDrag cdkDragLockAxis="y" cdkDragBoundary=".budget-drag-boundary" appDragReadyFeedback [cdkDragData]="row" [cdkDragStartDelay]="300"
-                            style="--drag-accent: #e74c56" [attr.data-expense-id]="row.id" [attr.tabindex]="-1"
-                            [class.budget-entry-focus]="row.id === context.focusedExpenseId"
-                            [class.warning-row]="row.overdue || row.duetoday"
-                            [class.without-category-row]="row.cardId == null && row.categoryId == null"
-                            (click)="context.handleClickExpense(row, $event)"
-                            (dblclick)="context.handleDoubleClickExpense(row, $event)">
                             <div class="budget-mobile-description">
                                 <div class="entry-description">
-                                    <span>{{ row.description }}<span *ngIf="row.parcels > 1"> ({{ row.parcelNumber }}/{{ row.parcels }})</span></span>
-                                    <mat-icon *ngIf="row.scheduled" class="scheduled-icon">schedule</mat-icon>
+                                    <span
+                                        >{{ row.description
+                                        }}<span *ngIf="row.parcels > 1">
+                                            ({{ row.parcelNumber }}/{{
+                                                row.parcels
+                                            }})</span
+                                        ></span
+                                    >
+                                    <mat-icon
+                                        *ngIf="row.scheduled"
+                                        class="scheduled-icon"
+                                        >schedule</mat-icon
+                                    >
                                 </div>
                                 <div class="entry-metadata">
-                                    <span *ngIf="row.dueDate" [class.metadata-alert]="row.overdue || row.duetoday">Venc.: {{ row.dueDate | date: "dd/MM" }}</span>
-                                    <span *ngIf="row.expectedValue" class="metadata-provisioned">Previsto: {{ row.expectedValue | currency: "BRL" : "symbol" : "1.2-2" }}</span>
-                                    <span class="status-chip" [ngClass]="getExpenseStatusClass(row)">
-                                        <mat-icon>{{ getExpenseStatusIcon(row) }}</mat-icon>{{ getExpenseStatus(row) }}
+                                    <span
+                                        *ngIf="row.dueDate"
+                                        [class.metadata-alert]="
+                                            row.overdue || row.duetoday
+                                        "
+                                        >Venc.:
+                                        {{ row.dueDate | date: "dd/MM" }}</span
+                                    >
+                                    <span
+                                        *ngIf="row.expectedValue"
+                                        class="metadata-provisioned"
+                                        >Previsto:
+                                        {{
+                                            row.expectedValue
+                                                | currency
+                                                    : "BRL"
+                                                    : "symbol"
+                                                    : "1.2-2"
+                                        }}</span
+                                    >
+                                    <span
+                                        class="status-chip"
+                                        [ngClass]="getExpenseStatusClass(row)"
+                                    >
+                                        <mat-icon>{{
+                                            getExpenseStatusIcon(row)
+                                        }}</mat-icon
+                                        >{{ getExpenseStatus(row) }}
                                     </span>
                                 </div>
                             </div>
-                            <span class="budget-mobile-value">{{ row.toPay | currency: "" : "" : "1.2-2" }}</span>
-                            <span class="budget-mobile-value expense-paid">{{ row.paid | currency: "" : "" : "1.2-2" }}</span>
-                            <span class="budget-mobile-value" [class.value-settled]="row.remaining <= 0"
-                                [class.value-pending]="row.remaining > 0">{{ row.remaining | currency: "" : "" : "1.2-2" }}</span>
+                            <span class="budget-mobile-value">{{
+                                row.toPay | currency: "" : "" : "1.2-2"
+                            }}</span>
+                            <span class="budget-mobile-value expense-paid">{{
+                                row.paid | currency: "" : "" : "1.2-2"
+                            }}</span>
+                            <span
+                                class="budget-mobile-value"
+                                [class.value-settled]="row.remaining <= 0"
+                                [class.value-pending]="row.remaining > 0"
+                                >{{
+                                    row.remaining | currency: "" : "" : "1.2-2"
+                                }}</span
+                            >
                             <div class="budget-mobile-actions">
-                                <button mat-icon-button [matMenuTriggerFor]="expenseMobileMenu" (click)="$event.stopPropagation()" aria-label="Ações da despesa">
+                                <button
+                                    mat-icon-button
+                                    [matMenuTriggerFor]="expenseMobileMenu"
+                                    (click)="$event.stopPropagation()"
+                                    aria-label="Ações da despesa"
+                                >
                                     <mat-icon>more_vert</mat-icon>
                                 </button>
-                                <mat-menu #expenseMobileMenu="matMenu" class="modern-menu modern-menu-expenses">
-                                    <button *ngIf="context.showUpcomingExpenses" mat-menu-item (click)="context.removeFromUpcomingFilter(row)"><mat-icon>cancel</mat-icon><span>Remover do filtro</span></button>
-                                    <button mat-menu-item (click)="context.pay(row)" [disabled]="row.remaining <= 0"><mat-icon>price_check</mat-icon><span>Pagar</span></button>
-                                    <button mat-menu-item (click)="context.payWithCard(row)" [disabled]="row.remaining <= 0"><mat-icon>credit_score</mat-icon><span>Pagar com cartão</span></button>
-                                    <button mat-menu-item (click)="context.ajustarDespesaPorCategoria(row)" [disabled]="row.categoryId || row.cardId"><mat-icon>tune</mat-icon><span>Ajustar pelo total da categoria</span></button>
-                                    <button mat-menu-item (click)="context.expenseClone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button>
-                                    <button mat-menu-item class="modern-menu-danger" (click)="context.deleteExpense(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
-                                    <button mat-menu-item (click)="context.addValue(row, 'P')"><mat-icon>add</mat-icon><span>Adicionar valor</span></button>
+                                <mat-menu
+                                    #expenseMobileMenu="matMenu"
+                                    class="modern-menu modern-menu-expenses"
+                                >
+                                    <button
+                                        *ngIf="context.showUpcomingExpenses"
+                                        mat-menu-item
+                                        (click)="
+                                            context.removeFromUpcomingFilter(
+                                                row
+                                            )
+                                        "
+                                    >
+                                        <mat-icon>cancel</mat-icon
+                                        ><span>Remover do filtro</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        (click)="context.pay(row)"
+                                        [disabled]="row.remaining <= 0"
+                                    >
+                                        <mat-icon>price_check</mat-icon
+                                        ><span>Pagar</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        (click)="context.payWithCard(row)"
+                                        [disabled]="row.remaining <= 0"
+                                    >
+                                        <mat-icon>credit_score</mat-icon
+                                        ><span>Pagar com cartão</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        (click)="
+                                            context.ajustarDespesaPorCategoria(
+                                                row
+                                            )
+                                        "
+                                        [disabled]="
+                                            row.categoryId || row.cardId
+                                        "
+                                    >
+                                        <mat-icon>tune</mat-icon
+                                        ><span
+                                            >Ajustar pelo total da
+                                            categoria</span
+                                        >
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        (click)="context.expenseClone(row)"
+                                    >
+                                        <mat-icon>content_copy</mat-icon
+                                        ><span>Clonar</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        class="modern-menu-danger"
+                                        (click)="context.deleteExpense(row)"
+                                    >
+                                        <mat-icon>delete</mat-icon
+                                        ><span>Excluir</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        (click)="context.addValue(row, 'P')"
+                                    >
+                                        <mat-icon>add</mat-icon
+                                        ><span>Adicionar valor</span>
+                                    </button>
                                 </mat-menu>
                             </div>
                         </article>
                     </div>
                     <div class="budget-mobile-footer">
                         <strong>Total</strong>
-                        <strong>{{ context.toPayTotal | currency: "" : "" : "1.2-2" }}</strong>
-                        <strong class="expense-paid">{{ context.paidTotal | currency: "" : "" : "1.2-2" }}</strong>
-                        <strong class="value-pending">{{ context.expensesRemainingTotal | currency: "" : "" : "1.2-2" }}</strong>
+                        <strong>{{
+                            context.toPayTotal | currency: "" : "" : "1.2-2"
+                        }}</strong>
+                        <strong class="expense-paid">{{
+                            context.paidTotal | currency: "" : "" : "1.2-2"
+                        }}</strong>
+                        <strong class="value-pending">{{
+                            context.expensesRemainingTotal
+                                | currency: "" : "" : "1.2-2"
+                        }}</strong>
                         <span aria-hidden="true"></span>
                     </div>
                 </div>
-
             </mat-expansion-panel>
 
             <mat-expansion-panel
@@ -811,37 +998,57 @@
                             ><mat-icon>attach_money</mat-icon></span
                         >
                         <span class="panel-heading-copy panel-heading-metrics">
-                            <span class="panel-heading-label"><strong>Receitas</strong><small class="panel-record-count">#{{ context.incomes?.length || 0 }}</small></span>
+                            <span class="panel-heading-label"
+                                ><strong>Receitas</strong
+                                ><small class="panel-record-count"
+                                    >#{{ context.incomes?.length || 0 }}</small
+                                ></span
+                            >
                             <span class="header-metrics">
                                 <span
                                     ><small>Receber</small
-                                    ><b [class.panel-negative-value]="context.toReceiveTotal < 0">{{
-                                        context.toReceiveTotal
-                                            | currency
-                                                : "BRL"
-                                                : "symbol"
-                                                : "1.2-2"
-                                    }}</b></span
+                                    ><b
+                                        [class.panel-negative-value]="
+                                            context.toReceiveTotal < 0
+                                        "
+                                        >{{
+                                            context.toReceiveTotal
+                                                | currency
+                                                    : "BRL"
+                                                    : "symbol"
+                                                    : "1.2-2"
+                                        }}</b
+                                    ></span
                                 >
                                 <span
                                     ><small>Recebido</small
-                                    ><b [class.panel-negative-value]="context.receivedTotal < 0">{{
-                                        context.receivedTotal
-                                            | currency
-                                                : "BRL"
-                                                : "symbol"
-                                                : "1.2-2"
-                                    }}</b></span
+                                    ><b
+                                        [class.panel-negative-value]="
+                                            context.receivedTotal < 0
+                                        "
+                                        >{{
+                                            context.receivedTotal
+                                                | currency
+                                                    : "BRL"
+                                                    : "symbol"
+                                                    : "1.2-2"
+                                        }}</b
+                                    ></span
                                 >
                                 <span
                                     ><small>Pendente</small
-                                    ><b [class.panel-negative-value]="context.incomesRemainingTotal < 0">{{
-                                        context.incomesRemainingTotal
-                                            | currency
-                                                : "BRL"
-                                                : "symbol"
-                                                : "1.2-2"
-                                    }}</b></span
+                                    ><b
+                                        [class.panel-negative-value]="
+                                            context.incomesRemainingTotal < 0
+                                        "
+                                        >{{
+                                            context.incomesRemainingTotal
+                                                | currency
+                                                    : "BRL"
+                                                    : "symbol"
+                                                    : "1.2-2"
+                                        }}</b
+                                    ></span
                                 >
                             </span>
                         </span>
@@ -888,7 +1095,10 @@
                     </mat-menu>
                 </div>
 
-                <div class="modern-table-container panel-scroll-container" cdkScrollable>
+                <div
+                    class="modern-table-container panel-scroll-container"
+                    cdkScrollable
+                >
                     <table
                         mat-table
                         [dataSource]="context.incomes"
@@ -1082,7 +1292,50 @@
                             appDragReadyFeedback
                             [cdkDragData]="row"
                             [cdkDragStartDelay]="300"
-                            
+                            style="--drag-accent: #4f6fe8"
+                            [attr.data-income-id]="row.id"
+                            [attr.tabindex]="-1"
+                            [class.budget-entry-focus]="
+                                row.id === context.focusedIncomeId
+                            "
+                            (click)="context.handleClickIncome(row, $event)"
+                            (dblclick)="
+                                context.handleDoubleClickIncome(row, $event)
+                            "
+                        ></tr>
+                        <tr
+                            mat-footer-row
+                            *matFooterRowDef="context.displayedIncomesColumns"
+                        ></tr>
+                    </table>
+                </div>
+
+                <div class="budget-mobile-table budget-mobile-income-table">
+                    <div class="budget-mobile-header">
+                        <span>Descrição</span><span>Receber</span
+                        ><span>Recebido</span><span>Restante</span
+                        ><span aria-hidden="true"></span>
+                    </div>
+                    <div
+                        class="budget-mobile-list panel-scroll-container budget-drag-boundary"
+                        cdkScrollable
+                        cdkDropList
+                        [cdkDropListAutoScrollStep]="7"
+                        [cdkDropListData]="context.incomes"
+                        (cdkDropListDropped)="context.dropIncomes($event)"
+                    >
+                        <article
+                            class="budget-mobile-row"
+                            *ngFor="
+                                let row of context.incomes;
+                                trackBy: trackById
+                            "
+                            cdkDrag
+                            cdkDragLockAxis="y"
+                            cdkDragBoundary=".budget-drag-boundary"
+                            appDragReadyFeedback
+                            [cdkDragData]="row"
+                            [cdkDragStartDelay]="300"
                             style="--drag-accent: #4f6fe8"
                             [attr.data-income-id]="row.id"
                             [attr.tabindex]="-1"
@@ -1094,66 +1347,135 @@
                                 context.handleDoubleClickIncome(row, $event)
                             "
                         >
-                        </tr>
-                        <tr
-                            mat-footer-row
-                            *matFooterRowDef="context.displayedIncomesColumns"
-                        ></tr>
-                    </table>
-                </div>
-
-
-
-                <div class="budget-mobile-table budget-mobile-income-table">
-                    <div class="budget-mobile-header">
-                        <span>Descrição</span><span>Receber</span><span>Recebido</span><span>Restante</span><span aria-hidden="true"></span>
-                    </div>
-                    <div class="budget-mobile-list panel-scroll-container budget-drag-boundary" cdkScrollable cdkDropList [cdkDropListAutoScrollStep]="7"
-                        [cdkDropListData]="context.incomes" (cdkDropListDropped)="context.dropIncomes($event)">
-                        <article class="budget-mobile-row" *ngFor="let row of context.incomes; trackBy: trackById"
-                            cdkDrag cdkDragLockAxis="y" cdkDragBoundary=".budget-drag-boundary" appDragReadyFeedback [cdkDragData]="row" [cdkDragStartDelay]="300"
-                            style="--drag-accent: #4f6fe8" [attr.data-income-id]="row.id" [attr.tabindex]="-1"
-                            [class.budget-entry-focus]="row.id === context.focusedIncomeId"
-                            (click)="context.handleClickIncome(row, $event)"
-                            (dblclick)="context.handleDoubleClickIncome(row, $event)">
                             <div class="budget-mobile-description">
-                                <div class="entry-description">{{ row.description }}<span *ngIf="row.parcels > 1"> ({{ row.parcelNumber }}/{{ row.parcels }})</span></div>
+                                <div class="entry-description">
+                                    {{ row.description
+                                    }}<span *ngIf="row.parcels > 1">
+                                        ({{ row.parcelNumber }}/{{
+                                            row.parcels
+                                        }})</span
+                                    >
+                                </div>
                                 <div class="entry-metadata">
-                                    <span *ngIf="row.type === 'R'" class="metadata-info">Recebimento</span>
-                                    <span *ngIf="row.type === 'C'" class="metadata-provisioned">Troco</span>
-                                    <span *ngIf="row.type === 'Y'" class="metadata-success">Rendimento</span>
-                                    <span *ngIf="row.receiptDate" class="metadata-success">Receb.: {{ row.receiptDate | date: "dd/MM" }}</span>
-                                    <span class="status-chip" [class.status-paid]="row.remaining <= 0" [class.status-pending]="row.remaining > 0">
-                                        <mat-icon>{{ row.remaining <= 0 ? "check_circle_outline" : "schedule" }}</mat-icon>{{ row.remaining <= 0 ? "Recebido" : "Pendente" }}
+                                    <span
+                                        *ngIf="row.type === 'R'"
+                                        class="metadata-info"
+                                        >Recebimento</span
+                                    >
+                                    <span
+                                        *ngIf="row.type === 'C'"
+                                        class="metadata-provisioned"
+                                        >Troco</span
+                                    >
+                                    <span
+                                        *ngIf="row.type === 'Y'"
+                                        class="metadata-success"
+                                        >Rendimento</span
+                                    >
+                                    <span
+                                        *ngIf="row.receiptDate"
+                                        class="metadata-success"
+                                        >Receb.:
+                                        {{
+                                            row.receiptDate | date: "dd/MM"
+                                        }}</span
+                                    >
+                                    <span
+                                        class="status-chip"
+                                        [class.status-paid]="row.remaining <= 0"
+                                        [class.status-pending]="
+                                            row.remaining > 0
+                                        "
+                                    >
+                                        <mat-icon>{{
+                                            row.remaining <= 0
+                                                ? "check_circle_outline"
+                                                : "schedule"
+                                        }}</mat-icon
+                                        >{{
+                                            row.remaining <= 0
+                                                ? "Recebido"
+                                                : "Pendente"
+                                        }}
                                     </span>
                                 </div>
                             </div>
-                            <span class="budget-mobile-value">{{ row.toReceive | currency: "" : "" : "1.2-2" }}</span>
-                            <span class="budget-mobile-value income-received">{{ row.received | currency: "" : "" : "1.2-2" }}</span>
-                            <span class="budget-mobile-value" [class.value-settled]="row.remaining <= 0"
-                                [class.income-pending]="row.remaining > 0">{{ row.remaining | currency: "" : "" : "1.2-2" }}</span>
+                            <span class="budget-mobile-value">{{
+                                row.toReceive | currency: "" : "" : "1.2-2"
+                            }}</span>
+                            <span class="budget-mobile-value income-received">{{
+                                row.received | currency: "" : "" : "1.2-2"
+                            }}</span>
+                            <span
+                                class="budget-mobile-value"
+                                [class.value-settled]="row.remaining <= 0"
+                                [class.income-pending]="row.remaining > 0"
+                                >{{
+                                    row.remaining | currency: "" : "" : "1.2-2"
+                                }}</span
+                            >
                             <div class="budget-mobile-actions">
-                                <button mat-icon-button [matMenuTriggerFor]="incomeMobileMenu" (click)="$event.stopPropagation()" aria-label="Ações da receita">
+                                <button
+                                    mat-icon-button
+                                    [matMenuTriggerFor]="incomeMobileMenu"
+                                    (click)="$event.stopPropagation()"
+                                    aria-label="Ações da receita"
+                                >
                                     <mat-icon>more_vert</mat-icon>
                                 </button>
-                                <mat-menu #incomeMobileMenu="matMenu" class="modern-menu modern-menu-incomes">
-                                    <button mat-menu-item (click)="context.receive(row)" [disabled]="row.remaining <= 0"><mat-icon>price_check</mat-icon><span>Receber</span></button>
-                                    <button mat-menu-item (click)="context.incomeClone(row)"><mat-icon>content_copy</mat-icon><span>Clonar</span></button>
-                                    <button mat-menu-item class="modern-menu-danger" (click)="context.deleteIncome(row)"><mat-icon>delete</mat-icon><span>Excluir</span></button>
-                                    <button mat-menu-item (click)="context.addValue(row, 'R')"><mat-icon>add</mat-icon><span>Adicionar valor</span></button>
+                                <mat-menu
+                                    #incomeMobileMenu="matMenu"
+                                    class="modern-menu modern-menu-incomes"
+                                >
+                                    <button
+                                        mat-menu-item
+                                        (click)="context.receive(row)"
+                                        [disabled]="row.remaining <= 0"
+                                    >
+                                        <mat-icon>price_check</mat-icon
+                                        ><span>Receber</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        (click)="context.incomeClone(row)"
+                                    >
+                                        <mat-icon>content_copy</mat-icon
+                                        ><span>Clonar</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        class="modern-menu-danger"
+                                        (click)="context.deleteIncome(row)"
+                                    >
+                                        <mat-icon>delete</mat-icon
+                                        ><span>Excluir</span>
+                                    </button>
+                                    <button
+                                        mat-menu-item
+                                        (click)="context.addValue(row, 'R')"
+                                    >
+                                        <mat-icon>add</mat-icon
+                                        ><span>Adicionar valor</span>
+                                    </button>
                                 </mat-menu>
                             </div>
                         </article>
                     </div>
                     <div class="budget-mobile-footer">
                         <strong>Total</strong>
-                        <strong>{{ context.toReceiveTotal | currency: "" : "" : "1.2-2" }}</strong>
-                        <strong class="income-received">{{ context.receivedTotal | currency: "" : "" : "1.2-2" }}</strong>
-                        <strong class="income-pending">{{ context.incomesRemainingTotal | currency: "" : "" : "1.2-2" }}</strong>
+                        <strong>{{
+                            context.toReceiveTotal | currency: "" : "" : "1.2-2"
+                        }}</strong>
+                        <strong class="income-received">{{
+                            context.receivedTotal | currency: "" : "" : "1.2-2"
+                        }}</strong>
+                        <strong class="income-pending">{{
+                            context.incomesRemainingTotal
+                                | currency: "" : "" : "1.2-2"
+                        }}</strong>
                         <span aria-hidden="true"></span>
                     </div>
                 </div>
-
             </mat-expansion-panel>
 
             <mat-expansion-panel
@@ -1169,44 +1491,69 @@
                             ><mat-icon>people</mat-icon></span
                         >
                         <span class="panel-heading-copy panel-heading-metrics">
-                            <span class="panel-heading-label"><strong>Pessoas</strong><small class="panel-record-count">#{{ context.cardpostingspeople?.length || 0 }}</small></span>
+                            <span class="panel-heading-label"
+                                ><strong>Pessoas</strong
+                                ><small class="panel-record-count"
+                                    >#{{
+                                        context.cardpostingspeople?.length || 0
+                                    }}</small
+                                ></span
+                            >
                             <span class="header-metrics">
                                 <span
                                     ><small>Receber</small
-                                    ><b [class.panel-negative-value]="context.toReceiveTotalPeople < 0">{{
-                                        context.toReceiveTotalPeople
-                                            | currency
-                                                : "BRL"
-                                                : "symbol"
-                                                : "1.2-2"
-                                    }}</b></span
+                                    ><b
+                                        [class.panel-negative-value]="
+                                            context.toReceiveTotalPeople < 0
+                                        "
+                                        >{{
+                                            context.toReceiveTotalPeople
+                                                | currency
+                                                    : "BRL"
+                                                    : "symbol"
+                                                    : "1.2-2"
+                                        }}</b
+                                    ></span
                                 >
                                 <span
                                     ><small>Recebido</small
-                                    ><b [class.panel-negative-value]="context.receivedTotalPeople < 0">{{
-                                        context.receivedTotalPeople
-                                            | currency
-                                                : "BRL"
-                                                : "symbol"
-                                                : "1.2-2"
-                                    }}</b></span
+                                    ><b
+                                        [class.panel-negative-value]="
+                                            context.receivedTotalPeople < 0
+                                        "
+                                        >{{
+                                            context.receivedTotalPeople
+                                                | currency
+                                                    : "BRL"
+                                                    : "symbol"
+                                                    : "1.2-2"
+                                        }}</b
+                                    ></span
                                 >
                                 <span
                                     ><small>Pendente</small
-                                    ><b [class.panel-negative-value]="context.remainingTotalPeople < 0">{{
-                                        context.remainingTotalPeople
-                                            | currency
-                                                : "BRL"
-                                                : "symbol"
-                                                : "1.2-2"
-                                    }}</b></span
+                                    ><b
+                                        [class.panel-negative-value]="
+                                            context.remainingTotalPeople < 0
+                                        "
+                                        >{{
+                                            context.remainingTotalPeople
+                                                | currency
+                                                    : "BRL"
+                                                    : "symbol"
+                                                    : "1.2-2"
+                                        }}</b
+                                    ></span
                                 >
                             </span>
                         </span>
                     </mat-panel-title>
                 </mat-expansion-panel-header>
 
-                <div class="modern-table-container panel-scroll-container" cdkScrollable>
+                <div
+                    class="modern-table-container panel-scroll-container"
+                    cdkScrollable
+                >
                     <table
                         mat-table
                         #modernPeopleSort="matSort"
@@ -1400,7 +1747,9 @@
                                             "
                                         >
                                             <div class="detail-card-grid">
-                                                <div class="detail-card-heading">
+                                                <div
+                                                    class="detail-card-heading"
+                                                >
                                                     <span
                                                         class="detail-card-name"
                                                         [ngStyle]="{
@@ -1414,18 +1763,24 @@
                                                             item.card?.name
                                                         }}</span
                                                     >
-                                                    <span class="detail-card-date">{{
-                                                        item.date
-                                                            | date: "dd/MM"
-                                                    }}</span>
+                                                    <span
+                                                        class="detail-card-date"
+                                                        >{{
+                                                            item.date
+                                                                | date: "dd/MM"
+                                                        }}</span
+                                                    >
                                                 </div>
-                                                <strong class="detail-card-amount">{{
-                                                    item.amount
-                                                        | currency
-                                                            : "BRL"
-                                                            : "symbol"
-                                                            : "1.2-2"
-                                                }}</strong>
+                                                <strong
+                                                    class="detail-card-amount"
+                                                    >{{
+                                                        item.amount
+                                                            | currency
+                                                                : "BRL"
+                                                                : "symbol"
+                                                                : "1.2-2"
+                                                    }}</strong
+                                                >
                                                 <span class="detail-title">{{
                                                     item.description
                                                 }}</span>
@@ -1486,8 +1841,12 @@
                                                 trackBy: trackById
                                             "
                                         >
-                                            <div class="detail-copy detail-account-copy">
-                                                <div class="detail-account-heading">
+                                            <div
+                                                class="detail-copy detail-account-copy"
+                                            >
+                                                <div
+                                                    class="detail-account-heading"
+                                                >
                                                     <span
                                                         class="detail-account-name"
                                                         [ngStyle]="{
@@ -1499,10 +1858,15 @@
                                                         }"
                                                         >{{
                                                             item.account?.name
-                                                        }}</span>
-                                                    <span class="detail-account-date">{{
-                                                        item.date | date: "dd/MM"
-                                                    }}</span>
+                                                        }}</span
+                                                    >
+                                                    <span
+                                                        class="detail-account-date"
+                                                        >{{
+                                                            item.date
+                                                                | date: "dd/MM"
+                                                        }}</span
+                                                    >
                                                 </div>
                                                 <span class="detail-title">{{
                                                     item.description
@@ -1561,8 +1925,15 @@
                         <span class="panel-icon"
                             ><mat-icon>category</mat-icon></span
                         >
-                        <span class="panel-heading-copy panel-heading-metrics category-heading-copy">
-                            <span class="panel-heading-label"><strong>Categorias</strong><small class="panel-record-count">#{{ provisionedCategories.length }}</small></span>
+                        <span
+                            class="panel-heading-copy panel-heading-metrics category-heading-copy"
+                        >
+                            <span class="panel-heading-label"
+                                ><strong>Categorias</strong
+                                ><small class="panel-record-count"
+                                    >#{{ provisionedCategories.length }}</small
+                                ></span
+                            >
                             <!-- <small *ngIf="provisionedCategories.length > 0"
                                 >{{ provisionedCategories.length }}
                                 {{
@@ -1603,7 +1974,10 @@
                     </div>
                 </div>
 
-                <div class="modern-table-container panel-scroll-container" cdkScrollable>
+                <div
+                    class="modern-table-container panel-scroll-container"
+                    cdkScrollable
+                >
                     <table
                         mat-table
                         #modernCategoriesSort="matSort"
@@ -1643,10 +2017,24 @@
                             >
                                 Total
                             </th>
-                            <td mat-cell *matCellDef="let row" [class.budget-positive]="row.amount >= 0" [class.budget-negative]="row.amount < 0">
+                            <td
+                                mat-cell
+                                *matCellDef="let row"
+                                [class.budget-positive]="row.amount >= 0"
+                                [class.budget-negative]="row.amount < 0"
+                            >
                                 {{ row.amount | currency: "" : "" : "1.2-2" }}
                             </td>
-                            <td mat-footer-cell *matFooterCellDef [class.budget-positive]="context.amountTotalCategory >= 0" [class.budget-negative]="context.amountTotalCategory < 0">
+                            <td
+                                mat-footer-cell
+                                *matFooterCellDef
+                                [class.budget-positive]="
+                                    context.amountTotalCategory >= 0
+                                "
+                                [class.budget-negative]="
+                                    context.amountTotalCategory < 0
+                                "
+                            >
                                 {{
                                     context.amountTotalCategory
                                         | currency: "" : "" : "1.2-2"
@@ -1665,10 +2053,24 @@
                             >
                                 %
                             </th>
-                            <td mat-cell *matCellDef="let row" [class.budget-positive]="row.perc >= 0" [class.budget-negative]="row.perc < 0">
+                            <td
+                                mat-cell
+                                *matCellDef="let row"
+                                [class.budget-positive]="row.perc >= 0"
+                                [class.budget-negative]="row.perc < 0"
+                            >
                                 {{ row.perc | number: "1.2-2" }}%
                             </td>
-                            <td mat-footer-cell *matFooterCellDef [class.budget-positive]="context.percTotalCategory >= 0" [class.budget-negative]="context.percTotalCategory < 0">
+                            <td
+                                mat-footer-cell
+                                *matFooterCellDef
+                                [class.budget-positive]="
+                                    context.percTotalCategory >= 0
+                                "
+                                [class.budget-negative]="
+                                    context.percTotalCategory < 0
+                                "
+                            >
                                 {{
                                     context.percTotalCategory | number: "1.2-2"
                                 }}%
@@ -1737,7 +2139,9 @@
                                             "
                                         >
                                             <div class="detail-card-grid">
-                                                <div class="detail-card-heading">
+                                                <div
+                                                    class="detail-card-heading"
+                                                >
                                                     <span
                                                         class="detail-card-name"
                                                         [ngStyle]="{
@@ -1751,18 +2155,24 @@
                                                             item.card?.name
                                                         }}</span
                                                     >
-                                                    <span class="detail-card-date">{{
-                                                        item.date
-                                                            | date: "dd/MM"
-                                                    }}</span>
+                                                    <span
+                                                        class="detail-card-date"
+                                                        >{{
+                                                            item.date
+                                                                | date: "dd/MM"
+                                                        }}</span
+                                                    >
                                                 </div>
-                                                <strong class="detail-card-amount">{{
-                                                    item.amount
-                                                        | currency
-                                                            : "BRL"
-                                                            : "symbol"
-                                                            : "1.2-2"
-                                                }}</strong>
+                                                <strong
+                                                    class="detail-card-amount"
+                                                    >{{
+                                                        item.amount
+                                                            | currency
+                                                                : "BRL"
+                                                                : "symbol"
+                                                                : "1.2-2"
+                                                    }}</strong
+                                                >
                                                 <span class="detail-title">{{
                                                     item.description
                                                 }}</span>

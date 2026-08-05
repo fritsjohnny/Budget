@@ -27,8 +27,6 @@
         (referenceChange)="onReferenceChange($event)"
     ></app-modern-reference-selector>
 
-    <app-load-spinner [loading]="isPullRefreshing"></app-load-spinner>
-
     <ng-container *ngIf="!isPullRefreshing">
         <section class="account-selector" aria-label="Seleção de conta">
             <div class="selected-account">
@@ -80,12 +78,6 @@
                     </button>
                 </div>
             </div>
-
-            <mat-progress-bar
-                mode="query"
-                color="accent"
-                *ngIf="!context.hideProgress"
-            ></mat-progress-bar>
 
             <div
                 class="account-chips account-drag-boundary"

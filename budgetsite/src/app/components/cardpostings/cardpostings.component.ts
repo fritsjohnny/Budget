@@ -105,6 +105,7 @@ export class CardPostingsComponent implements OnInit {
   percInTheCycleTotal: string = '0,00%';
   percOutTheCycleTotal: string = '0,00%';
   hideProgress: boolean = true;
+  loadingMessage: string = 'Carregando lançamentos do cartão...';
   editing: boolean = false;
   peopleList?: People[];
   categoriesList?: Categories[];
@@ -161,6 +162,7 @@ export class CardPostingsComponent implements OnInit {
   currentInvoiceClosing?: CardsInvoiceClosing;
   validatingInvoiceClosing = false;
   savingCardPosting = false;
+  
   detectedPurchasesCount = 0;
 
   constructor(
@@ -636,7 +638,8 @@ export class CardPostingsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.savingCardPosting = true;
+        this.loadingMessage = 'Salvando lançamento...';
+      this.savingCardPosting = true;
 
         const payload = prepareApiDates(result, ['date', 'dueDate']);
         this.cardPostingsService.create(payload).subscribe({
@@ -709,6 +712,7 @@ export class CardPostingsComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result: CardsPostings | undefined) => {
       if (!result) return;
 
+      this.loadingMessage = 'Salvando lançamento...';
       this.savingCardPosting = true;
 
       result.id = undefined;
@@ -803,7 +807,8 @@ export class CardPostingsComponent implements OnInit {
             },
           });
         } else {
-          this.savingCardPosting = true;
+          this.loadingMessage = 'Salvando lançamento...';
+      this.savingCardPosting = true;
 
           const payload = prepareApiDates(result, ['date', 'dueDate']);
           this.cardPostingsService.update(payload).subscribe({

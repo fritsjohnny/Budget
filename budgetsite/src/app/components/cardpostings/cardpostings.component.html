@@ -1,13 +1,18 @@
-<app-cardpostings-modern-layout *ngIf="modernLayout" [context]="modernLayoutContext"></app-cardpostings-modern-layout>
+<app-load-spinner
+    [loading]="savingCardPosting"
+    [message]="loadingMessage"
+></app-load-spinner>
 
-<div class="card-posting-saving-overlay" *ngIf="savingCardPosting">
-    <app-load-spinner [loading]="!hideProgress"></app-load-spinner>
-    <span>Salvando lançamento...</span>
-</div>
+
+
+<app-cardpostings-modern-layout
+    *ngIf="modernLayout"
+    [context]="modernLayoutContext"
+></app-cardpostings-modern-layout>
 
 <div class="row center">
     <div class="row justify-content-center">
-        <app-load-spinner [loading]="!hideProgress"></app-load-spinner>
+        
     </div>
 </div>
 
@@ -545,7 +550,9 @@
                             [cdkDragStartDelay]="300"
                             [attr.data-card-posting-id]="row.id"
                             [attr.tabindex]="-1"
-                            [class.card-posting-focus]="row.id === focusedCardPostingId"
+                            [class.card-posting-focus]="
+                                row.id === focusedCardPostingId
+                            "
                             [ngClass]="{
                                 'card-yield-checked':
                                     (row.isSelected && row.amount >= 0) ||

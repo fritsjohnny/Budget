@@ -1,7 +1,7 @@
-<div class="spinner-container" *ngIf="showProgress">
-    <app-load-spinner [loading]="true"></app-load-spinner>
-    <span>Calculando o diagnóstico financeiro...</span>
-</div>
+<app-load-spinner
+    [loading]="showProgress"
+    [message]="loadingMessage"
+></app-load-spinner>
 
 <ng-container *ngIf="!showProgress && report as currentReport">
     <section class="health-hero mat-elevation-z3">
@@ -62,14 +62,18 @@
                 <h3>Insights e alertas</h3>
             </div>
             <span class="section-caption">
-                {{ currentReport.insights.length }} análises geradas a partir dos dados
+                {{ currentReport.insights.length }} análises geradas a partir
+                dos dados
             </span>
         </div>
 
         <div class="insights-grid">
             <article
                 class="insight-card"
-                *ngFor="let insight of currentReport.insights; trackBy: trackInsight"
+                *ngFor="
+                    let insight of currentReport.insights;
+                    trackBy: trackInsight
+                "
                 [ngClass]="getInsightClass(insight)"
             >
                 <mat-icon>{{ insight.icon }}</mat-icon>
@@ -94,74 +98,119 @@
         <div class="kpi-grid">
             <mat-card class="kpi-card">
                 <span>Saldo líquido atual</span>
-                <strong [ngClass]="getValueClass(currentReport.summary.liquidBalance)">
+                <strong
+                    [ngClass]="
+                        getValueClass(currentReport.summary.liquidBalance)
+                    "
+                >
                     {{ formatCurrency(currentReport.summary.liquidBalance) }}
                 </strong>
                 <small>
-                    Bruto: {{ formatCurrency(currentReport.summary.grossBalance) }}
+                    Bruto:
+                    {{ formatCurrency(currentReport.summary.grossBalance) }}
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card">
                 <span>Renda média</span>
-                <strong>{{ formatCurrency(currentReport.summary.averageIncome) }}</strong>
+                <strong>{{
+                    formatCurrency(currentReport.summary.averageIncome)
+                }}</strong>
                 <small>
-                    Mediana: {{ formatCurrency(currentReport.summary.medianIncome) }}
+                    Mediana:
+                    {{ formatCurrency(currentReport.summary.medianIncome) }}
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card">
                 <span>Despesa média</span>
-                <strong>{{ formatCurrency(currentReport.summary.averageExpenses) }}</strong>
+                <strong>{{
+                    formatCurrency(currentReport.summary.averageExpenses)
+                }}</strong>
                 <small>
-                    Mediana: {{ formatCurrency(currentReport.summary.medianExpenses) }}
+                    Mediana:
+                    {{ formatCurrency(currentReport.summary.medianExpenses) }}
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card">
                 <span>Sobra média</span>
-                <strong [ngClass]="getValueClass(currentReport.summary.averageSurplus)">
+                <strong
+                    [ngClass]="
+                        getValueClass(currentReport.summary.averageSurplus)
+                    "
+                >
                     {{ formatCurrency(currentReport.summary.averageSurplus) }}
                 </strong>
                 <small>
-                    Total: {{ formatCurrency(currentReport.summary.totalSurplus) }}
+                    Total:
+                    {{ formatCurrency(currentReport.summary.totalSurplus) }}
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card">
                 <span>Taxa de poupança</span>
-                <strong [ngClass]="getValueClass(currentReport.summary.savingsRate)">
+                <strong
+                    [ngClass]="getValueClass(currentReport.summary.savingsRate)"
+                >
                     {{ formatPercent(currentReport.summary.savingsRate) }}
                 </strong>
                 <small>
                     Sem rendimentos:
-                    {{ formatPercent(currentReport.summary.savingsRateWithoutYields) }}
+                    {{
+                        formatPercent(
+                            currentReport.summary.savingsRateWithoutYields
+                        )
+                    }}
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card emphasized">
                 <span>Poupança normalizada</span>
-                <strong [ngClass]="getValueClass(currentReport.summary.normalizedSavingsRate)">
-                    {{ formatPercent(currentReport.summary.normalizedSavingsRate) }}
+                <strong
+                    [ngClass]="
+                        getValueClass(
+                            currentReport.summary.normalizedSavingsRate
+                        )
+                    "
+                >
+                    {{
+                        formatPercent(
+                            currentReport.summary.normalizedSavingsRate
+                        )
+                    }}
                 </strong>
                 <small>
-                    {{ formatCurrency(currentReport.summary.normalizedAverageSurplus) }}
-                    por mês em {{ currentReport.summary.normalizedMonths }} meses
+                    {{
+                        formatCurrency(
+                            currentReport.summary.normalizedAverageSurplus
+                        )
+                    }}
+                    por mês em
+                    {{ currentReport.summary.normalizedMonths }} meses
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card">
                 <span>Rendimentos</span>
-                <strong>{{ formatCurrency(currentReport.summary.totalYields) }}</strong>
+                <strong>{{
+                    formatCurrency(currentReport.summary.totalYields)
+                }}</strong>
                 <small>
-                    {{ formatPercent(currentReport.summary.yieldShareOfSurplus) }}
+                    {{
+                        formatPercent(currentReport.summary.yieldShareOfSurplus)
+                    }}
                     da sobra
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card">
                 <span>Variação real de caixa</span>
-                <strong [ngClass]="getValueClass(currentReport.summary.netCashChange)">
+                <strong
+                    [ngClass]="
+                        getValueClass(currentReport.summary.netCashChange)
+                    "
+                >
                     {{ formatCurrency(currentReport.summary.netCashChange) }}
                 </strong>
                 <small>Soma dos lançamentos reais das contas</small>
@@ -170,7 +219,10 @@
             <mat-card class="kpi-card">
                 <span>Cobertura da reserva</span>
                 <strong>
-                    {{ currentReport.summary.reserveCoverageMonths | number: "1.2-2" }}
+                    {{
+                        currentReport.summary.reserveCoverageMonths
+                            | number: "1.2-2"
+                    }}
                     meses
                 </strong>
                 <small>
@@ -184,42 +236,66 @@
                     {{ formatCurrency(currentReport.summary.reserveGap) }}
                 </strong>
                 <small>
-                    Alvo: {{ formatCurrency(currentReport.summary.reserveTargetValue) }}
+                    Alvo:
+                    {{
+                        formatCurrency(currentReport.summary.reserveTargetValue)
+                    }}
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card">
                 <span>Parcelas futuras</span>
                 <strong>
-                    {{ formatCurrency(currentReport.summary.futureInstallments) }}
+                    {{
+                        formatCurrency(currentReport.summary.futureInstallments)
+                    }}
                 </strong>
                 <small>
-                    {{ formatPercent(currentReport.summary.installmentPressurePercent) }}
+                    {{
+                        formatPercent(
+                            currentReport.summary.installmentPressurePercent
+                        )
+                    }}
                     do saldo líquido
                 </small>
             </mat-card>
 
             <mat-card class="kpi-card">
                 <span>Maior concentração</span>
-                <strong>{{ currentReport.summary.topInstitutionName || "-" }}</strong>
+                <strong>{{
+                    currentReport.summary.topInstitutionName || "-"
+                }}</strong>
                 <small>
-                    {{ formatPercent(currentReport.summary.topInstitutionShare) }}
+                    {{
+                        formatPercent(currentReport.summary.topInstitutionShare)
+                    }}
                     do saldo
                 </small>
             </mat-card>
         </div>
     </section>
 
-    <section class="section-block comparison-section" *ngIf="currentReport.comparison.hasPreviousData">
+    <section
+        class="section-block comparison-section"
+        *ngIf="currentReport.comparison.hasPreviousData"
+    >
         <div class="section-title">
             <div>
                 <span class="eyebrow">Comparação automática</span>
                 <h3>Período anterior equivalente</h3>
             </div>
             <span class="section-caption">
-                {{ formatReference(currentReport.comparison.previousInitialReference) }}
+                {{
+                    formatReference(
+                        currentReport.comparison.previousInitialReference
+                    )
+                }}
                 a
-                {{ formatReference(currentReport.comparison.previousFinalReference) }}
+                {{
+                    formatReference(
+                        currentReport.comparison.previousFinalReference
+                    )
+                }}
             </span>
         </div>
 
@@ -227,52 +303,101 @@
             <div class="comparison-card">
                 <span>Renda média</span>
                 <strong
-                    [ngClass]="getChangeClass(currentReport.comparison.incomeChangePercent)"
+                    [ngClass]="
+                        getChangeClass(
+                            currentReport.comparison.incomeChangePercent
+                        )
+                    "
                 >
-                    {{ formatSignedPercent(currentReport.comparison.incomeChangePercent) }}
+                    {{
+                        formatSignedPercent(
+                            currentReport.comparison.incomeChangePercent
+                        )
+                    }}
                 </strong>
                 <small>
                     Anterior:
-                    {{ formatCurrency(currentReport.comparison.previousAverageIncome) }}
+                    {{
+                        formatCurrency(
+                            currentReport.comparison.previousAverageIncome
+                        )
+                    }}
                 </small>
             </div>
 
             <div class="comparison-card">
                 <span>Despesa média</span>
                 <strong
-                    [ngClass]="getChangeClass(currentReport.comparison.expensesChangePercent, true)"
+                    [ngClass]="
+                        getChangeClass(
+                            currentReport.comparison.expensesChangePercent,
+                            true
+                        )
+                    "
                 >
-                    {{ formatSignedPercent(currentReport.comparison.expensesChangePercent) }}
+                    {{
+                        formatSignedPercent(
+                            currentReport.comparison.expensesChangePercent
+                        )
+                    }}
                 </strong>
                 <small>
                     Anterior:
-                    {{ formatCurrency(currentReport.comparison.previousAverageExpenses) }}
+                    {{
+                        formatCurrency(
+                            currentReport.comparison.previousAverageExpenses
+                        )
+                    }}
                 </small>
             </div>
 
             <div class="comparison-card">
                 <span>Sobra média</span>
                 <strong
-                    [ngClass]="getChangeClass(currentReport.comparison.surplusChangePercent)"
+                    [ngClass]="
+                        getChangeClass(
+                            currentReport.comparison.surplusChangePercent
+                        )
+                    "
                 >
-                    {{ formatSignedPercent(currentReport.comparison.surplusChangePercent) }}
+                    {{
+                        formatSignedPercent(
+                            currentReport.comparison.surplusChangePercent
+                        )
+                    }}
                 </strong>
                 <small>
                     Anterior:
-                    {{ formatCurrency(currentReport.comparison.previousAverageSurplus) }}
+                    {{
+                        formatCurrency(
+                            currentReport.comparison.previousAverageSurplus
+                        )
+                    }}
                 </small>
             </div>
 
             <div class="comparison-card">
                 <span>Taxa de poupança</span>
                 <strong
-                    [ngClass]="getChangeClass(currentReport.comparison.savingsRateChangePoints)"
+                    [ngClass]="
+                        getChangeClass(
+                            currentReport.comparison.savingsRateChangePoints
+                        )
+                    "
                 >
-                    {{ formatSignedPoints(currentReport.comparison.savingsRateChangePoints) }}
+                    {{
+                        formatSignedPoints(
+                            currentReport.comparison.savingsRateChangePoints
+                        )
+                    }}
                 </strong>
                 <small>
                     Anterior:
-                    {{ formatPercent(currentReport.comparison.previousSavingsRate) }}
+                    {{
+                        formatPercent(
+                            currentReport.comparison.previousSavingsRate
+                        )
+                    }}
                 </small>
             </div>
         </div>
@@ -289,13 +414,16 @@
         <div class="score-components">
             <div
                 class="score-component"
-                *ngFor="let component of currentReport.scoreComponents; trackBy: trackScore"
+                *ngFor="
+                    let component of currentReport.scoreComponents;
+                    trackBy: trackScore
+                "
             >
                 <div class="score-component-header">
                     <strong>{{ component.name }}</strong>
                     <span>
-                        {{ component.score | number: "1.0-0" }}/100
-                        · peso {{ component.weight | number: "1.0-0" }}%
+                        {{ component.score | number: "1.0-0" }}/100 · peso
+                        {{ component.weight | number: "1.0-0" }}%
                     </span>
                 </div>
 
@@ -321,7 +449,8 @@
             <mat-card class="chart-card">
                 <mat-card-title>Receitas, despesas e resultado</mat-card-title>
                 <mat-card-subtitle>
-                    Meses marcados como atípicos são retirados da média normalizada
+                    Meses marcados como atípicos são retirados da média
+                    normalizada
                 </mat-card-subtitle>
 
                 <div class="chart-wrapper chart-large">
@@ -335,7 +464,9 @@
             </mat-card>
 
             <mat-card class="chart-card">
-                <mat-card-title>Saldo acumulado e variação de caixa</mat-card-title>
+                <mat-card-title
+                    >Saldo acumulado e variação de caixa</mat-card-title
+                >
                 <mat-card-subtitle>
                     O saldo acumulado considera os lançamentos reais das contas
                 </mat-card-subtitle>
@@ -370,32 +501,63 @@
 
                 <tbody>
                     <tr
-                        *ngFor="let month of currentReport.monthlyEvolution; trackBy: trackMonthly"
+                        *ngFor="
+                            let month of currentReport.monthlyEvolution;
+                            trackBy: trackMonthly
+                        "
                         [class.outlier-row]="month.isOutlier"
                     >
                         <td class="mobile-primary-cell" data-label="Referência">
                             <strong>{{ month.label }}</strong>
-                            <span class="status-badge warning-badge" *ngIf="month.isOutlier">
+                            <span
+                                class="status-badge warning-badge"
+                                *ngIf="month.isOutlier"
+                            >
                                 atípico
                             </span>
                         </td>
-                        <td data-label="Receitas">{{ formatCurrency(month.income) }}</td>
-                        <td data-label="Despesas">{{ formatCurrency(month.expenses) }}</td>
-                        <td data-label="Rendimentos">{{ formatCurrency(month.yields) }}</td>
-                        <td data-label="Resultado" [ngClass]="getValueClass(month.surplus)">
+                        <td data-label="Receitas">
+                            {{ formatCurrency(month.income) }}
+                        </td>
+                        <td data-label="Despesas">
+                            {{ formatCurrency(month.expenses) }}
+                        </td>
+                        <td data-label="Rendimentos">
+                            {{ formatCurrency(month.yields) }}
+                        </td>
+                        <td
+                            data-label="Resultado"
+                            [ngClass]="getValueClass(month.surplus)"
+                        >
                             {{ formatCurrency(month.surplus) }}
                         </td>
-                        <td data-label="Sem rendimentos" [ngClass]="getValueClass(month.surplusWithoutYields)">
+                        <td
+                            data-label="Sem rendimentos"
+                            [ngClass]="
+                                getValueClass(month.surplusWithoutYields)
+                            "
+                        >
                             {{ formatCurrency(month.surplusWithoutYields) }}
                         </td>
-                        <td data-label="Taxa" [ngClass]="getValueClass(month.savingsRate)">
+                        <td
+                            data-label="Taxa"
+                            [ngClass]="getValueClass(month.savingsRate)"
+                        >
                             {{ formatPercent(month.savingsRate) }}
                         </td>
-                        <td data-label="Fixos">{{ formatCurrency(month.fixedCommitments) }}</td>
-                        <td data-label="Caixa real" [ngClass]="getValueClass(month.netCashChange)">
+                        <td data-label="Fixos">
+                            {{ formatCurrency(month.fixedCommitments) }}
+                        </td>
+                        <td
+                            data-label="Caixa real"
+                            [ngClass]="getValueClass(month.netCashChange)"
+                        >
                             {{ formatCurrency(month.netCashChange) }}
                         </td>
-                        <td data-label="Saldo" [ngClass]="getValueClass(month.closingBalance)">
+                        <td
+                            data-label="Saldo"
+                            [ngClass]="getValueClass(month.closingBalance)"
+                        >
                             {{ formatCurrency(month.closingBalance) }}
                         </td>
                     </tr>
@@ -417,19 +579,29 @@
                 <div>
                     <span>Cobertura atual</span>
                     <strong>
-                        {{ currentReport.summary.reserveCoverageMonths | number: "1.2-2" }}
+                        {{
+                            currentReport.summary.reserveCoverageMonths
+                                | number: "1.2-2"
+                        }}
                         meses
                     </strong>
                 </div>
 
                 <div>
                     <span>Meta configurada</span>
-                    <strong>{{ currentReport.summary.reserveTargetMonths }} meses</strong>
+                    <strong
+                        >{{
+                            currentReport.summary.reserveTargetMonths
+                        }}
+                        meses</strong
+                    >
                 </div>
 
                 <div>
                     <span>Valor-alvo</span>
-                    <strong>{{ formatCurrency(currentReport.summary.reserveTargetValue) }}</strong>
+                    <strong>{{
+                        formatCurrency(currentReport.summary.reserveTargetValue)
+                    }}</strong>
                 </div>
             </div>
 
@@ -441,7 +613,11 @@
             <p>
                 A média de compromissos fixos utilizada foi
                 <strong>
-                    {{ formatCurrency(currentReport.summary.averageFixedCommitments) }}
+                    {{
+                        formatCurrency(
+                            currentReport.summary.averageFixedCommitments
+                        )
+                    }}
                 </strong>
                 por mês.
             </p>
@@ -482,22 +658,44 @@
 
                 <tbody>
                     <tr
-                        *ngFor="let account of currentReport.accounts; trackBy: trackAccount"
+                        *ngFor="
+                            let account of currentReport.accounts;
+                            trackBy: trackAccount
+                        "
                     >
-                        <td class="mobile-primary-cell" data-label="Conta"><strong>{{ account.name }}</strong></td>
-                        <td data-label="Instituição">{{ account.institution }}</td>
-                        <td data-label="Saldo líquido">{{ formatCurrency(account.balance) }}</td>
-                        <td data-label="Saldo bruto">{{ formatCurrency(account.grossBalance) }}</td>
-                        <td data-label="Diferença">{{ formatCurrency(account.grossDifference) }}</td>
-                        <td data-label="Participação">{{ formatPercent(account.share) }}</td>
+                        <td class="mobile-primary-cell" data-label="Conta">
+                            <strong>{{ account.name }}</strong>
+                        </td>
+                        <td data-label="Instituição">
+                            {{ account.institution }}
+                        </td>
+                        <td data-label="Saldo líquido">
+                            {{ formatCurrency(account.balance) }}
+                        </td>
+                        <td data-label="Saldo bruto">
+                            {{ formatCurrency(account.grossBalance) }}
+                        </td>
+                        <td data-label="Diferença">
+                            {{ formatCurrency(account.grossDifference) }}
+                        </td>
+                        <td data-label="Participação">
+                            {{ formatPercent(account.share) }}
+                        </td>
                         <td data-label="Rendimento">
-                            <ng-container *ngIf="account.yieldPercent !== null; else noYield">
+                            <ng-container
+                                *ngIf="
+                                    account.yieldPercent !== null;
+                                    else noYield
+                                "
+                            >
                                 {{ formatPercent(account.yieldPercent) }}
                                 {{ account.yieldIndex }}
                             </ng-container>
                             <ng-template #noYield>-</ng-template>
                         </td>
-                        <td data-label="Vencimento">{{ formatDate(account.maturityDate) }}</td>
+                        <td data-label="Vencimento">
+                            {{ formatDate(account.maturityDate) }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -547,18 +745,36 @@
                 <tbody>
                     <tr
                         *ngFor="
-                            let category of currentReport.categories | slice: 0:15;
+                            let category of currentReport.categories
+                                | slice: 0 : 15;
                             let index = index;
                             trackBy: trackCategory
                         "
                     >
-                        <td class="mobile-hide" data-label="#">{{ index + 1 }}</td>
-                        <td class="mobile-primary-cell" data-label="Categoria"><strong>{{ category.name }}</strong></td>
-                        <td data-label="Total">{{ formatCurrency(category.amount) }}</td>
-                        <td data-label="Média mensal">{{ formatCurrency(category.average) }}</td>
-                        <td data-label="Participação">{{ formatPercent(category.share) }}</td>
-                        <td data-label="Período anterior">{{ formatCurrency(category.previousAmount) }}</td>
-                        <td data-label="Variação" [ngClass]="getChangeClass(category.changePercent, true)">
+                        <td class="mobile-hide" data-label="#">
+                            {{ index + 1 }}
+                        </td>
+                        <td class="mobile-primary-cell" data-label="Categoria">
+                            <strong>{{ category.name }}</strong>
+                        </td>
+                        <td data-label="Total">
+                            {{ formatCurrency(category.amount) }}
+                        </td>
+                        <td data-label="Média mensal">
+                            {{ formatCurrency(category.average) }}
+                        </td>
+                        <td data-label="Participação">
+                            {{ formatPercent(category.share) }}
+                        </td>
+                        <td data-label="Período anterior">
+                            {{ formatCurrency(category.previousAmount) }}
+                        </td>
+                        <td
+                            data-label="Variação"
+                            [ngClass]="
+                                getChangeClass(category.changePercent, true)
+                            "
+                        >
                             {{ formatSignedPercent(category.changePercent) }}
                             <small class="cell-note">
                                 {{ formatCurrency(category.changeAmount) }}
@@ -573,7 +789,9 @@
     <section class="section-block">
         <div class="section-title">
             <div>
-                <span class="eyebrow">Próximos {{ currentReport.futureMonths }} meses</span>
+                <span class="eyebrow"
+                    >Próximos {{ currentReport.futureMonths }} meses</span
+                >
                 <h3>Projeção e pressão de parcelas</h3>
             </div>
         </div>
@@ -629,17 +847,35 @@
 
                 <tbody>
                     <tr
-                        *ngFor="let month of currentReport.futureProjection; trackBy: trackFuture"
+                        *ngFor="
+                            let month of currentReport.futureProjection;
+                            trackBy: trackFuture
+                        "
                     >
-                        <td class="mobile-primary-cell" data-label="Referência"><strong>{{ month.label }}</strong></td>
-                        <td data-label="Receitas">{{ formatCurrency(month.income) }}</td>
-                        <td data-label="Despesas">{{ formatCurrency(month.expenses) }}</td>
-                        <td data-label="Resultado" [ngClass]="getValueClass(month.surplus)">
+                        <td class="mobile-primary-cell" data-label="Referência">
+                            <strong>{{ month.label }}</strong>
+                        </td>
+                        <td data-label="Receitas">
+                            {{ formatCurrency(month.income) }}
+                        </td>
+                        <td data-label="Despesas">
+                            {{ formatCurrency(month.expenses) }}
+                        </td>
+                        <td
+                            data-label="Resultado"
+                            [ngClass]="getValueClass(month.surplus)"
+                        >
                             {{ formatCurrency(month.surplus) }}
                         </td>
-                        <td data-label="Parcelas em cartões">{{ formatCurrency(month.cardInstallments) }}</td>
-                        <td data-label="Parcelas diretas">{{ formatCurrency(month.directInstallments) }}</td>
-                        <td data-label="Total parcelado">{{ formatCurrency(month.totalInstallments) }}</td>
+                        <td data-label="Parcelas em cartões">
+                            {{ formatCurrency(month.cardInstallments) }}
+                        </td>
+                        <td data-label="Parcelas diretas">
+                            {{ formatCurrency(month.directInstallments) }}
+                        </td>
+                        <td data-label="Total parcelado">
+                            {{ formatCurrency(month.totalInstallments) }}
+                        </td>
                         <td data-label="Qualidade">
                             <span
                                 class="status-badge"
@@ -670,7 +906,8 @@
             <div
                 class="installment-category-row"
                 *ngFor="
-                    let category of currentReport.futureInstallmentCategories | slice: 0:10
+                    let category of currentReport.futureInstallmentCategories
+                        | slice: 0 : 10
                 "
             >
                 <span>{{ category.name }}</span>
@@ -692,45 +929,65 @@
             <div class="quality-grid">
                 <div>
                     <span>Grupos possivelmente duplicados</span>
-                    <strong>{{ currentReport.dataQuality.potentialDuplicateGroups }}</strong>
+                    <strong>{{
+                        currentReport.dataQuality.potentialDuplicateGroups
+                    }}</strong>
                 </div>
 
                 <div>
                     <span>Registros extras estimados</span>
-                    <strong>{{ currentReport.dataQuality.potentialDuplicateRows }}</strong>
+                    <strong>{{
+                        currentReport.dataQuality.potentialDuplicateRows
+                    }}</strong>
                 </div>
 
                 <div>
                     <span>Valor potencialmente duplicado</span>
                     <strong>
-                        {{ formatCurrency(currentReport.dataQuality.potentialDuplicateAmount) }}
+                        {{
+                            formatCurrency(
+                                currentReport.dataQuality
+                                    .potentialDuplicateAmount
+                            )
+                        }}
                     </strong>
                 </div>
 
                 <div>
                     <span>Despesas sem categoria</span>
-                    <strong>{{ currentReport.dataQuality.expensesWithoutCategory }}</strong>
+                    <strong>{{
+                        currentReport.dataQuality.expensesWithoutCategory
+                    }}</strong>
                 </div>
 
                 <div>
                     <span>Cartões sem categoria</span>
-                    <strong>{{ currentReport.dataQuality.cardPostingsWithoutCategory }}</strong>
+                    <strong>{{
+                        currentReport.dataQuality.cardPostingsWithoutCategory
+                    }}</strong>
                 </div>
 
                 <div>
                     <span>Despesas sem vencimento</span>
-                    <strong>{{ currentReport.dataQuality.expensesWithoutDueDate }}</strong>
+                    <strong>{{
+                        currentReport.dataQuality.expensesWithoutDueDate
+                    }}</strong>
                 </div>
 
                 <div>
                     <span>Receitas sem recebimento</span>
-                    <strong>{{ currentReport.dataQuality.incomesWithoutReceiptDate }}</strong>
+                    <strong>{{
+                        currentReport.dataQuality.incomesWithoutReceiptDate
+                    }}</strong>
                 </div>
 
                 <div>
                     <span>Meses futuros possivelmente incompletos</span>
                     <strong>
-                        {{ currentReport.dataQuality.futureMonthsPossiblyIncomplete }}
+                        {{
+                            currentReport.dataQuality
+                                .futureMonthsPossiblyIncomplete
+                        }}
                     </strong>
                 </div>
             </div>
@@ -755,17 +1012,33 @@
                     <tbody>
                         <tr
                             *ngFor="
-                                let duplicate of currentReport.dataQuality.potentialDuplicates;
+                                let duplicate of currentReport.dataQuality
+                                    .potentialDuplicates;
                                 trackBy: trackDuplicate
                             "
                         >
                             <td data-label="Origem">{{ duplicate.source }}</td>
-                            <td data-label="Referência">{{ formatReference(duplicate.reference) }}</td>
-                            <td class="mobile-primary-cell" data-label="Descrição">{{ duplicate.description }}</td>
-                            <td data-label="Data">{{ formatDate(duplicate.date) }}</td>
-                            <td data-label="Valor">{{ formatCurrency(duplicate.amount) }}</td>
-                            <td data-label="Ocorrências">{{ duplicate.count }}</td>
-                            <td data-label="Excesso estimado">{{ formatCurrency(duplicate.extraAmount) }}</td>
+                            <td data-label="Referência">
+                                {{ formatReference(duplicate.reference) }}
+                            </td>
+                            <td
+                                class="mobile-primary-cell"
+                                data-label="Descrição"
+                            >
+                                {{ duplicate.description }}
+                            </td>
+                            <td data-label="Data">
+                                {{ formatDate(duplicate.date) }}
+                            </td>
+                            <td data-label="Valor">
+                                {{ formatCurrency(duplicate.amount) }}
+                            </td>
+                            <td data-label="Ocorrências">
+                                {{ duplicate.count }}
+                            </td>
+                            <td data-label="Excesso estimado">
+                                {{ formatCurrency(duplicate.extraAmount) }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -773,7 +1046,9 @@
 
             <p
                 class="empty-state"
-                *ngIf="currentReport.dataQuality.potentialDuplicates.length === 0"
+                *ngIf="
+                    currentReport.dataQuality.potentialDuplicates.length === 0
+                "
             >
                 Nenhuma duplicidade exata foi encontrada no período analisado e
                 nos meses futuros considerados.
@@ -790,7 +1065,10 @@
 
             <div class="legend-grid">
                 <article
-                    *ngFor="let legend of currentReport.legends; trackBy: trackLegend"
+                    *ngFor="
+                        let legend of currentReport.legends;
+                        trackBy: trackLegend
+                    "
                 >
                     <strong>{{ legend.title }}</strong>
                     <p>{{ legend.text }}</p>

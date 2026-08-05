@@ -102,6 +102,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   isBudgetLoading = false;
   isBudgetLoaded = false;
   savingCardPosting = false;
+  loadingMessage: string = 'Carregando...';
   private budgetRefreshRequestId = 0;
   focusedExpenseId?: number;
   focusedIncomeId?: number;
@@ -389,6 +390,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     const requestId = ++this.budgetRefreshRequestId;
 
+    this.loadingMessage = 'Carregando orçamento...';
     this.isBudgetLoading = true;
 
     if (!this.savingCardPosting) {
@@ -1351,6 +1353,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.loadingMessage = 'Salvando lançamento...';
         this.savingCardPosting = true;
 
         const payload = prepareApiDates(result, ['date', 'dueDate']);

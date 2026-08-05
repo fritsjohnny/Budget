@@ -31,6 +31,7 @@ export class ExpensesByCategoryReportComponent implements OnInit, AfterViewInit 
   @ViewChild(BaseChartDirective) categoryChart?: BaseChartDirective;
 
   showReportProgress = false;
+  loadingMessage: string = 'Gerando relatório de despesas por categoria...';
   data!: any[];
   total: number = 0;
   readonly detailedDataColumns = ['index', 'date', 'description', 'value', 'reference', 'card'];

@@ -1,169 +1,346 @@
 <div
-  class="modern-summary-shell"
-  [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
-  [class.pull-refreshing]="isPullRefreshing"
-  [style.--pull-distance]="pullDistance + 'px'"
-  (touchstart)="onPullStart($event)"
-  (touchmove)="onPullMove($event)"
-  (touchend)="onPullEnd()"
-  (touchcancel)="onPullCancel()"
+    class="modern-summary-shell"
+    [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
+    [class.pull-refreshing]="isPullRefreshing"
+    [style.--pull-distance]="pullDistance + 'px'"
+    (touchstart)="onPullStart($event)"
+    (touchmove)="onPullMove($event)"
+    (touchend)="onPullEnd()"
+    (touchcancel)="onPullCancel()"
 >
-  <div
-    class="pull-refresh-indicator"
-    [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"
-    [class.pull-refresh-ready]="pullReady"
-    aria-live="polite"
-  >
-    <mat-icon>{{ isPullRefreshing ? 'autorenew' : 'arrow_downward' }}</mat-icon>
-    <span>{{ pullRefreshLabel }}</span>
-  </div>
-
-  <app-modern-reference-selector
-    [reference]="context.reference"
-    storageKey="summaryDate"
-    ariaLabel="Referência dos saldos"
-    [showOptionButton]="false"
-    (referenceChange)="onReferenceChange($event)"
-  ></app-modern-reference-selector>
-
-  <div class="modern-loading" *ngIf="isLoading">
-    <app-load-spinner [loading]="true"></app-load-spinner>
-    <span>Atualizando saldos...</span>
-  </div>
-
-  <ng-container *ngIf="!isLoading && context.totalsAccountsSummary">
-    <div class="refresh-row">
-      <button mat-fab color="warn" class="summary-refresh" (click)="context.refresh()" matTooltip="Atualizar saldos" aria-label="Atualizar saldos">
-        <mat-icon>autorenew</mat-icon>
-      </button>
+    <div
+        class="pull-refresh-indicator"
+        [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"
+        [class.pull-refresh-ready]="pullReady"
+        aria-live="polite"
+    >
+        <mat-icon>{{
+            isPullRefreshing ? "autorenew" : "arrow_downward"
+        }}</mat-icon>
+        <span>{{ pullRefreshLabel }}</span>
     </div>
 
-    <section class="overview-card" aria-label="Panorama dos saldos">
-      <header class="section-heading">
-        <span class="section-icon"><mat-icon>donut_large</mat-icon></span>
-        <div>
-          <h2>Panorama dos saldos</h2>
-          <p>Visão geral das previsões, pendências e movimentações do mês</p>
+    <app-modern-reference-selector
+        [reference]="context.reference"
+        storageKey="summaryDate"
+        ariaLabel="Referência dos saldos"
+        [showOptionButton]="false"
+        (referenceChange)="onReferenceChange($event)"
+    ></app-modern-reference-selector>
+
+
+
+    <ng-container *ngIf="!isLoading && context.totalsAccountsSummary">
+        <div class="refresh-row">
+            <button
+                mat-fab
+                color="warn"
+                class="summary-refresh"
+                (click)="context.refresh()"
+                matTooltip="Atualizar saldos"
+                aria-label="Atualizar saldos"
+            >
+                <mat-icon>autorenew</mat-icon>
+            </button>
         </div>
-      </header>
 
-      <div class="metrics-grid">
-        <article class="metric-card metric-blue">
-          <span class="metric-icon"><mat-icon>track_changes</mat-icon></span>
-          <div class="metric-copy">
-            <h3>Saldo previsto do mês</h3>
-            <p>Projeção considerando lançamentos e pendências</p>
-            <strong>{{ context.totalsAccountsSummary.forecastBalance | currency:'BRL':'symbol':'1.2-2' }}</strong>
-          </div>
-        </article>
+        <section class="overview-card" aria-label="Panorama dos saldos">
+            <header class="section-heading">
+                <span class="section-icon"
+                    ><mat-icon>donut_large</mat-icon></span
+                >
+                <div>
+                    <h2>Panorama dos saldos</h2>
+                    <p>
+                        Visão geral das previsões, pendências e movimentações do
+                        mês
+                    </p>
+                </div>
+            </header>
 
-        <article class="metric-card metric-green">
-          <span class="metric-icon"><mat-icon>account_balance_wallet</mat-icon></span>
-          <div class="metric-copy">
-            <h3>Saldo disponível agora</h3>
-            <p>Valor disponível atualmente nas contas</p>
-            <strong>{{ context.totalsAccountsSummary.availableBalance | currency:'BRL':'symbol':'1.2-2' }}</strong>
-          </div>
-        </article>
+            <div class="metrics-grid">
+                <article class="metric-card metric-blue">
+                    <span class="metric-icon"
+                        ><mat-icon>track_changes</mat-icon></span
+                    >
+                    <div class="metric-copy">
+                        <h3>Saldo previsto do mês</h3>
+                        <p>Projeção considerando lançamentos e pendências</p>
+                        <strong>{{
+                            context.totalsAccountsSummary.forecastBalance
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong>
+                    </div>
+                </article>
 
-        <article class="metric-card" [class.metric-green]="realForecastBalance >= 0" [class.metric-red]="realForecastBalance < 0">
-          <span class="metric-icon"><mat-icon>calculate</mat-icon></span>
-          <div class="metric-copy">
-            <h3>Saldo real após o mês</h3>
-            <p>Disponível somado ao que falta receber e pagar</p>
-            <strong>{{ realForecastBalance | currency:'BRL':'symbol':'1.2-2' }}</strong>
-          </div>
-        </article>
+                <article class="metric-card metric-green">
+                    <span class="metric-icon"
+                        ><mat-icon>account_balance_wallet</mat-icon></span
+                    >
+                    <div class="metric-copy">
+                        <h3>Saldo disponível agora</h3>
+                        <p>Valor disponível atualmente nas contas</p>
+                        <strong>{{
+                            context.totalsAccountsSummary.availableBalance
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong>
+                    </div>
+                </article>
 
-        <article class="metric-card metric-dual-card">
-          <span class="metric-icon metric-green-icon"><mat-icon>savings</mat-icon></span>
-          <div class="metric-copy">
-            <h3>Valor poupado no mês</h3>
-            <p>Diferença em relação ao saldo do mês anterior</p>
-            <div class="metric-dual-values">
-              <span class="metric-green-text"><small>Previsto</small><b>{{ context.totalsAccountsSummary.forecastSpared | currency:'BRL':'symbol':'1.2-2' }}</b></span>
-              <span class="metric-green-text"><small>Disponível</small><b>{{ context.totalsAccountsSummary.availableSpared | currency:'BRL':'symbol':'1.2-2' }}</b></span>
+                <article
+                    class="metric-card"
+                    [class.metric-green]="realForecastBalance >= 0"
+                    [class.metric-red]="realForecastBalance < 0"
+                >
+                    <span class="metric-icon"
+                        ><mat-icon>calculate</mat-icon></span
+                    >
+                    <div class="metric-copy">
+                        <h3>Saldo real após o mês</h3>
+                        <p>Disponível somado ao que falta receber e pagar</p>
+                        <strong>{{
+                            realForecastBalance
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong>
+                    </div>
+                </article>
+
+                <article class="metric-card metric-dual-card">
+                    <span class="metric-icon metric-green-icon"
+                        ><mat-icon>savings</mat-icon></span
+                    >
+                    <div class="metric-copy">
+                        <h3>Valor poupado no mês</h3>
+                        <p>Diferença em relação ao saldo do mês anterior</p>
+                        <div class="metric-dual-values">
+                            <span class="metric-green-text"
+                                ><small>Previsto</small
+                                ><b>{{
+                                    context.totalsAccountsSummary.forecastSpared
+                                        | currency: "BRL" : "symbol" : "1.2-2"
+                                }}</b></span
+                            >
+                            <span class="metric-green-text"
+                                ><small>Disponível</small
+                                ><b>{{
+                                    context.totalsAccountsSummary
+                                        .availableSpared
+                                        | currency: "BRL" : "symbol" : "1.2-2"
+                                }}</b></span
+                            >
+                        </div>
+                    </div>
+                </article>
+
+                <article class="metric-card metric-dual-card">
+                    <span class="metric-icon metric-purple-icon"
+                        ><mat-icon>pending_actions</mat-icon></span
+                    >
+                    <div class="metric-copy">
+                        <h3>Pendências anteriores</h3>
+                        <p>Valores trazidos de referências anteriores</p>
+                        <div class="metric-dual-values">
+                            <span class="metric-blue-text"
+                                ><small>Receber</small
+                                ><b>{{
+                                    context.totalsAccountsSummary
+                                        .previousToReceive
+                                        | currency: "BRL" : "symbol" : "1.2-2"
+                                }}</b></span
+                            >
+                            <span class="metric-red-text"
+                                ><small>Pagar</small
+                                ><b>{{
+                                    previousToPayDisplay
+                                        | currency: "BRL" : "symbol" : "1.2-2"
+                                }}</b></span
+                            >
+                        </div>
+                    </div>
+                </article>
+
+                <article class="metric-card metric-dual-card">
+                    <span class="metric-icon metric-red-icon"
+                        ><mat-icon>outbox</mat-icon></span
+                    >
+                    <div class="metric-copy">
+                        <h3>Impacto das retiradas</h3>
+                        <p>Movimentações manuais e saldo sem essas retiradas</p>
+                        <div class="metric-dual-values">
+                            <span class="metric-red-text"
+                                ><small>Sacado</small
+                                ><b>{{
+                                    context.totalsAccountsSummary.drawnBalance
+                                        | currency: "BRL" : "symbol" : "1.2-2"
+                                }}</b></span
+                            >
+                            <span
+                                [class.metric-green-text]="
+                                    context.totalsAccountsSummary
+                                        .withoutDrawnBalance >= 0
+                                "
+                                [class.metric-red-text]="
+                                    context.totalsAccountsSummary
+                                        .withoutDrawnBalance < 0
+                                "
+                                ><small>Sem sacado</small
+                                ><b>{{
+                                    context.totalsAccountsSummary
+                                        .withoutDrawnBalance
+                                        | currency: "BRL" : "symbol" : "1.2-2"
+                                }}</b></span
+                            >
+                        </div>
+                    </div>
+                </article>
             </div>
-          </div>
-        </article>
 
-        <article class="metric-card metric-dual-card">
-          <span class="metric-icon metric-purple-icon"><mat-icon>pending_actions</mat-icon></span>
-          <div class="metric-copy">
-            <h3>Pendências anteriores</h3>
-            <p>Valores trazidos de referências anteriores</p>
-            <div class="metric-dual-values">
-              <span class="metric-blue-text"><small>Receber</small><b>{{ context.totalsAccountsSummary.previousToReceive | currency:'BRL':'symbol':'1.2-2' }}</b></span>
-              <span class="metric-red-text"><small>Pagar</small><b>{{ previousToPayDisplay | currency:'BRL':'symbol':'1.2-2' }}</b></span>
+            <mat-expansion-panel
+                class="balance-help-panel"
+                [expanded]="context.saldosLegendExpanded"
+                (opened)="context.saldosLegendOpened()"
+                (closed)="context.saldosLegendClosed()"
+            >
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <mat-icon>info_outline</mat-icon>
+                        <span>Entenda seus saldos</span>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+
+                <div
+                    class="balance-help"
+                    *ngIf="context.saldosLegend as legend"
+                >
+                    <div>
+                        <strong>Saldo previsto:</strong
+                        ><span
+                            >projeção de
+                            {{
+                                legend.forecastBalance
+                                    | currency: "BRL" : "symbol" : "1.2-2"
+                            }}
+                            considerando lançamentos previstos e pendências
+                            acumuladas.</span
+                        >
+                    </div>
+                    <div>
+                        <strong>Saldo disponível:</strong
+                        ><span
+                            >valor disponível nas contas até a referência atual:
+                            {{
+                                legend.availableBalance
+                                    | currency: "BRL" : "symbol" : "1.2-2"
+                            }}.</span
+                        >
+                    </div>
+                    <div>
+                        <strong>Saldo real após o mês:</strong
+                        ><span
+                            >disponível + valores a receber − valores a pagar =
+                            {{
+                                legend.realForecastBalance
+                                    | currency: "BRL" : "symbol" : "1.2-2"
+                            }}.</span
+                        >
+                    </div>
+                    <div>
+                        <strong>Poupado:</strong
+                        ><span
+                            >diferença entre os saldos atuais e os saldos de
+                            {{ legend.previousReferenceHead }}.</span
+                        >
+                    </div>
+                    <div>
+                        <strong>Sacado:</strong
+                        ><span
+                            >movimentações manuais fora de despesas, receitas ou
+                            recebimentos de cartão.</span
+                        >
+                    </div>
+                    <div>
+                        <strong>Sem sacado:</strong
+                        ><span
+                            >quanto teria sido poupado sem considerar as
+                            retiradas manuais.</span
+                        >
+                    </div>
+                </div>
+            </mat-expansion-panel>
+        </section>
+
+        <section class="composition-card" aria-label="Composição dos saldos">
+            <header class="section-heading composition-heading">
+                <span class="section-icon"><mat-icon>layers</mat-icon></span>
+                <div>
+                    <h2>Composição dos saldos</h2>
+                    <p>Detalhamento por conta, pendência e movimentação</p>
+                </div>
+            </header>
+
+            <div class="composition-table">
+                <div class="composition-table-header">
+                    <span>Descrição</span>
+                    <span>Previsto</span>
+                    <span>Disponível</span>
+                </div>
+
+                <div
+                    class="composition-row"
+                    *ngFor="
+                        let row of context.accountsSummary;
+                        trackBy: trackByPosition
+                    "
+                >
+                    <span class="composition-description">{{
+                        row.description
+                    }}</span>
+                    <strong
+                        [class.value-positive]="row.forecastBalance >= 0"
+                        [class.value-negative]="row.forecastBalance < 0"
+                        >{{
+                            row.forecastBalance
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong
+                    >
+                    <strong
+                        [class.value-positive]="row.availableBalance >= 0"
+                        [class.value-negative]="row.availableBalance < 0"
+                        >{{
+                            row.availableBalance
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong
+                    >
+                </div>
+
+                <div class="composition-total">
+                    <strong>Total geral</strong>
+                    <strong
+                        [class.value-positive]="
+                            context.forecastBalanceTotal >= 0
+                        "
+                        [class.value-negative]="
+                            context.forecastBalanceTotal < 0
+                        "
+                        >{{
+                            context.forecastBalanceTotal
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong
+                    >
+                    <strong
+                        [class.value-positive]="
+                            context.availableBalanceTotal >= 0
+                        "
+                        [class.value-negative]="
+                            context.availableBalanceTotal < 0
+                        "
+                        >{{
+                            context.availableBalanceTotal
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong
+                    >
+                </div>
             </div>
-          </div>
-        </article>
-
-        <article class="metric-card metric-dual-card">
-          <span class="metric-icon metric-red-icon"><mat-icon>outbox</mat-icon></span>
-          <div class="metric-copy">
-            <h3>Impacto das retiradas</h3>
-            <p>Movimentações manuais e saldo sem essas retiradas</p>
-            <div class="metric-dual-values">
-              <span class="metric-red-text"><small>Sacado</small><b>{{ context.totalsAccountsSummary.drawnBalance | currency:'BRL':'symbol':'1.2-2' }}</b></span>
-              <span [class.metric-green-text]="context.totalsAccountsSummary.withoutDrawnBalance >= 0" [class.metric-red-text]="context.totalsAccountsSummary.withoutDrawnBalance < 0"><small>Sem sacado</small><b>{{ context.totalsAccountsSummary.withoutDrawnBalance | currency:'BRL':'symbol':'1.2-2' }}</b></span>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <mat-expansion-panel
-        class="balance-help-panel"
-        [expanded]="context.saldosLegendExpanded"
-        (opened)="context.saldosLegendOpened()"
-        (closed)="context.saldosLegendClosed()"
-      >
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            <mat-icon>info_outline</mat-icon>
-            <span>Entenda seus saldos</span>
-          </mat-panel-title>
-        </mat-expansion-panel-header>
-
-        <div class="balance-help" *ngIf="context.saldosLegend as legend">
-          <div><strong>Saldo previsto:</strong><span>projeção de {{ legend.forecastBalance | currency:'BRL':'symbol':'1.2-2' }} considerando lançamentos previstos e pendências acumuladas.</span></div>
-          <div><strong>Saldo disponível:</strong><span>valor disponível nas contas até a referência atual: {{ legend.availableBalance | currency:'BRL':'symbol':'1.2-2' }}.</span></div>
-          <div><strong>Saldo real após o mês:</strong><span>disponível + valores a receber − valores a pagar = {{ legend.realForecastBalance | currency:'BRL':'symbol':'1.2-2' }}.</span></div>
-          <div><strong>Poupado:</strong><span>diferença entre os saldos atuais e os saldos de {{ legend.previousReferenceHead }}.</span></div>
-          <div><strong>Sacado:</strong><span>movimentações manuais fora de despesas, receitas ou recebimentos de cartão.</span></div>
-          <div><strong>Sem sacado:</strong><span>quanto teria sido poupado sem considerar as retiradas manuais.</span></div>
-        </div>
-      </mat-expansion-panel>
-    </section>
-
-    <section class="composition-card" aria-label="Composição dos saldos">
-      <header class="section-heading composition-heading">
-        <span class="section-icon"><mat-icon>layers</mat-icon></span>
-        <div>
-          <h2>Composição dos saldos</h2>
-          <p>Detalhamento por conta, pendência e movimentação</p>
-        </div>
-      </header>
-
-      <div class="composition-table">
-        <div class="composition-table-header">
-          <span>Descrição</span>
-          <span>Previsto</span>
-          <span>Disponível</span>
-        </div>
-
-        <div class="composition-row" *ngFor="let row of context.accountsSummary; trackBy: trackByPosition">
-          <span class="composition-description">{{ row.description }}</span>
-          <strong [class.value-positive]="row.forecastBalance >= 0" [class.value-negative]="row.forecastBalance < 0">{{ row.forecastBalance | currency:'BRL':'symbol':'1.2-2' }}</strong>
-          <strong [class.value-positive]="row.availableBalance >= 0" [class.value-negative]="row.availableBalance < 0">{{ row.availableBalance | currency:'BRL':'symbol':'1.2-2' }}</strong>
-        </div>
-
-        <div class="composition-total">
-          <strong>Total geral</strong>
-          <strong [class.value-positive]="context.forecastBalanceTotal >= 0" [class.value-negative]="context.forecastBalanceTotal < 0">{{ context.forecastBalanceTotal | currency:'BRL':'symbol':'1.2-2' }}</strong>
-          <strong [class.value-positive]="context.availableBalanceTotal >= 0" [class.value-negative]="context.availableBalanceTotal < 0">{{ context.availableBalanceTotal | currency:'BRL':'symbol':'1.2-2' }}</strong>
-        </div>
-      </div>
-    </section>
-  </ng-container>
+        </section>
+    </ng-container>
 </div>

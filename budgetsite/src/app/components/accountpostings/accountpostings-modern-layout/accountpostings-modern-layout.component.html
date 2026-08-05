@@ -1,5 +1,5 @@
 <div class="modern-account-postings">
-  <app-load-spinner [loading]="!context.hideProgress"></app-load-spinner>
+  <app-load-spinner [loading]="!context.hideProgress" [message]="context.loadingMessage"></app-load-spinner>
 
   <ng-container *ngIf="context.hideProgress">
     <section class="account-summary" aria-label="Resumo da conta">

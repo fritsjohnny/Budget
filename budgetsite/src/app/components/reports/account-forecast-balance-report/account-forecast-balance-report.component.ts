@@ -26,6 +26,7 @@ export class AccountForecastBalanceReportComponent implements AfterViewInit {
   @ViewChild('sortReport') sortReport!: MatSort;
 
   showReportProgress = false;
+  loadingMessage: string = 'Carregando relatório de saldo previsto...';
   report: AccountForecastBalanceReport | null = null;
   displayedDataColumns = ['index', 'date', 'description', 'amount', 'balance', 'reference'];
   dataSourceReport = new MatTableDataSource<AccountForecastBalanceReportTableRow>([]);

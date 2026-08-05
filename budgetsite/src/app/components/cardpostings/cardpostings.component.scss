@@ -1,97 +1,72 @@
-.card-posting-saving-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(1px);
-  pointer-events: auto;
-}
-
-.card-posting-saving-overlay ::ng-deep .mat-progress-spinner circle,
-.card-posting-saving-overlay ::ng-deep .mat-spinner circle {
-  stroke: var(--yellow) !important;
-}
-
-.card-posting-saving-overlay span {
-  color: var(--yellow);
-  font-size: 14px;
-  font-weight: 500;
-}
-
 :host ::ng-deep .card-posting-ignored,
 :host ::ng-deep .card-posting-ignored td.mat-cell {
-  background-color: #8f1d2c !important;
-  color: #fff !important;
+    background-color: #8f1d2c !important;
+    color: #fff !important;
 }
 
 :host ::ng-deep .card-posting-ignored td.mat-cell .mat-icon {
-  color: #fff !important;
+    color: #fff !important;
 }
 
 tr.card-posting-focus {
-  position: relative;
-  z-index: 1;
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--yellow);
+    position: relative;
+    z-index: 1;
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--yellow);
 }
 
 :host.modern-layout-active > :not(app-cardpostings-modern-layout) {
-  display: none !important;
+    display: none !important;
 }
 
 .table-container {
-  width: 100%;
-  height: 520px;
-  overflow: auto;
+    width: 100%;
+    height: 520px;
+    overflow: auto;
 }
 
 table {
-  width: 100%;
+    width: 100%;
 }
 
 .mat-column-index {
-  width: 40px;
+    width: 40px;
 }
 
 .mat-column-date {
-  width: 50px;
-  // padding-right: 10px;
+    width: 50px;
+    // padding-right: 10px;
 }
 
 .mat-column-card {
-  padding-right: 5px;
-  padding-left: 5px;
+    padding-right: 5px;
+    padding-left: 5px;
 }
 
 .mat-column-description {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .mat-column-amount {
-  width: 50px;
-  text-align: right;
+    width: 50px;
+    text-align: right;
 }
 
 .mat-column-actions {
-  width: 5px;
-  padding-right: 0px !important;
-  text-align: right;
+    width: 5px;
+    padding-right: 0px !important;
+    text-align: right;
 }
 
 tr.mat-footer-row {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .mat-panel-cards {
-  margin-top: 10px !important;
-  padding-bottom: -50px !important;
+    margin-top: 10px !important;
+    padding-bottom: -50px !important;
 }
 
 .mat-column-amount,
@@ -100,17 +75,17 @@ tr.mat-footer-row {
 .mat-column-received,
 .mat-column-remaining,
 .mat-column-actions {
-  text-align: right;
+    text-align: right;
 }
 
 .mat-column-actions {
-  width: 5px;
-  padding-right: 0px !important;
+    width: 5px;
+    padding-right: 0px !important;
 }
 
 .button-pn {
-  font-size: 20px;
-  font-weight: bold;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .parcels-value {
@@ -124,13 +99,13 @@ tr.mat-footer-row {
     width: 170px;
 }
 .invoice-fields-blocked {
-  pointer-events: none;
+    pointer-events: none;
 }
 
 .invoice-fields-blocked .card-selection-enabled.invoice-context-enabled {
-  pointer-events: auto;
+    pointer-events: auto;
 }
 
 .invoice-fields-blocked .reference-selection-enabled {
-  pointer-events: auto;
+    pointer-events: auto;
 }

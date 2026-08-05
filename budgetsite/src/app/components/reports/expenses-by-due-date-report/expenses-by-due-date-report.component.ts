@@ -30,6 +30,7 @@ export class ExpensesByDueDateReportComponent implements OnInit, AfterViewInit {
   @ViewChild('sortReport') sortReport!: MatSort;
 
   showReportProgress = false;
+  loadingMessage: string = 'Gerando relatório de despesas por vencimento...';
 
   data: ExpensesDueDateReportRow[] = [];
   total: number = 0;

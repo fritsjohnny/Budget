@@ -11,7 +11,7 @@
             </mat-expansion-panel-header>
             <app-datepicker style="margin-top: -75px !important" (referenceChange)="setReference($event)" [cardId]="cardId" [reference]="reference"></app-datepicker>
             <div>
-                <mat-progress-bar mode="query" color="accent" *ngIf="!hideProgress"></mat-progress-bar>
+                
                 <button class="card-button" [ngClass]="{ line: buttonName === card.name }" mat-button *ngFor="let card of cardsVisible"
                     [ngStyle]="{ backgroundColor: card.background, color: card.color }" (click)="setCard(card)">{{ card.name }}</button>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-right: 5px">

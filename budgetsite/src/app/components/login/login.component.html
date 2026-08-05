@@ -1,4 +1,5 @@
 <div class="row">
+    <app-load-spinner [loading]="!hideProgress" [message]="loadingMessage"></app-load-spinner>
     <mat-card class="container">
         <mat-card-header>
             <mat-card-title>
@@ -88,12 +89,6 @@
             </button>
             <div class="row center">
                 <div class="row justify-content-center">
-                    <mat-spinner
-                        color="accent"
-                        strokeWidth="7"
-                        diameter="50"
-                        *ngIf="!hideProgress"
-                    ></mat-spinner>
                 </div>
             </div>
         </div>

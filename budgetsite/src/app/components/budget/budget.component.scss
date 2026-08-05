@@ -1,28 +1,3 @@
-.card-posting-saving-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    background: rgba(0, 0, 0, 0.42);
-    backdrop-filter: blur(1px);
-    pointer-events: auto;
-}
-
-.card-posting-saving-overlay ::ng-deep .mat-progress-spinner circle,
-.card-posting-saving-overlay ::ng-deep .mat-spinner circle {
-    stroke: var(--yellow) !important;
-}
-
-.card-posting-saving-overlay span {
-    color: var(--yellow);
-    font-size: 14px;
-    font-weight: 500;
-}
-
 tr.budget-entry-focus {
     position: relative;
     z-index: 1;

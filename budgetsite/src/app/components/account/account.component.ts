@@ -23,6 +23,7 @@ export class AccountComponent implements OnInit {
   referenceHead?: string;
   account: Accounts | undefined;
   hideProgress: boolean = false;
+  loadingMessage: string = 'Carregando contas...';
   buttonName: string = '';
 
   get useModernLayout(): boolean {

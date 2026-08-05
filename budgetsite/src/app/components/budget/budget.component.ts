@@ -455,8 +455,13 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
           this.accountsList = accounts;
 
-          this.expenses = expenses;
-          this.expensesNoFilter = expenses;
+          this.expenses = expenses.map((expense) => {
+            expense.remaining = +(expense.toPay - (expense.paid ?? 0)).toFixed(2);
+            expense.overdue = this.overDue(expense);
+            expense.duetoday = this.dueToday(expense);
+            return expense;
+          });
+          this.expensesNoFilter = this.expenses;
 
           if (this.justToPay) {
             this.expenses = this.expensesNoFilter.filter((e) => e.remaining > 0);
@@ -1833,7 +1838,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   dueToday(expense: Expenses) {
-    if (!(expense.dueDate && expense.paid < expense.toPay)) {
+    if (!(expense.dueDate && expense.remaining > 0)) {
       return false;
     }
 
@@ -1851,7 +1856,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   overDue(expense: Expenses) {
-    if (!(expense.dueDate && expense.paid < expense.toPay)) {
+    if (!(expense.dueDate && expense.remaining > 0)) {
       return false;
     }
 

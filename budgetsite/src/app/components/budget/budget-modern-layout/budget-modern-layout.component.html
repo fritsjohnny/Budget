@@ -1399,7 +1399,7 @@
                                                 trackBy: trackById
                                             "
                                         >
-                                            <div class="detail-copy detail-card-copy">
+                                            <div class="detail-card-grid">
                                                 <div class="detail-card-heading">
                                                     <span
                                                         class="detail-card-name"
@@ -1419,24 +1419,24 @@
                                                             | date: "dd/MM"
                                                     }}</span>
                                                 </div>
+                                                <strong class="detail-card-amount">{{
+                                                    item.amount
+                                                        | currency
+                                                            : "BRL"
+                                                            : "symbol"
+                                                            : "1.2-2"
+                                                }}</strong>
                                                 <span class="detail-title">{{
                                                     item.description
                                                 }}</span>
                                                 <small
-                                                    class="detail-subline"
+                                                    class="detail-subline detail-card-installment"
                                                     *ngIf="item.parcels > 1"
                                                     >({{ item.parcelNumber }}/{{
                                                         item.parcels
                                                     }})</small
                                                 >
                                             </div>
-                                            <strong>{{
-                                                item.amount
-                                                    | currency
-                                                        : "BRL"
-                                                        : "symbol"
-                                                        : "1.2-2"
-                                            }}</strong>
                                         </div>
                                     </section>
 
@@ -1736,7 +1736,7 @@
                                                 trackBy: trackById
                                             "
                                         >
-                                            <div class="detail-copy detail-card-copy">
+                                            <div class="detail-card-grid">
                                                 <div class="detail-card-heading">
                                                     <span
                                                         class="detail-card-name"
@@ -1756,24 +1756,24 @@
                                                             | date: "dd/MM"
                                                     }}</span>
                                                 </div>
+                                                <strong class="detail-card-amount">{{
+                                                    item.amount
+                                                        | currency
+                                                            : "BRL"
+                                                            : "symbol"
+                                                            : "1.2-2"
+                                                }}</strong>
                                                 <span class="detail-title">{{
                                                     item.description
                                                 }}</span>
                                                 <small
-                                                    class="detail-subline"
+                                                    class="detail-subline detail-card-installment"
                                                     *ngIf="item.parcels > 1"
                                                     >({{ item.parcelNumber }}/{{
                                                         item.parcels
                                                     }})</small
                                                 >
                                             </div>
-                                            <strong>{{
-                                                item.amount
-                                                    | currency
-                                                        : "BRL"
-                                                        : "symbol"
-                                                        : "1.2-2"
-                                            }}</strong>
                                         </div>
                                     </section>
                                 </div>

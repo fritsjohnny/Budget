@@ -661,6 +661,16 @@
     color: var(--m);
     font-size: 10px;
 }
+.amount-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    text-align: right;
+}
+.amount-installment {
+    line-height: 1.1;
+}
 .posting-category {
     color: var(--yellow) !important;
     font-weight: 700;
@@ -1219,6 +1229,19 @@
     }
     .posting-value {
         font-size: 12px;
+        white-space: nowrap;
+    }
+    .posting-value-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+        min-width: 0;
+        text-align: right;
+    }
+    .posting-value-installment {
+        font-size: 9px;
+        line-height: 1.1;
         white-space: nowrap;
     }
     .empty {

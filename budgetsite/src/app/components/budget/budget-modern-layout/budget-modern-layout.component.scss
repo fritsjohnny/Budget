@@ -1253,6 +1253,53 @@
   gap: 4px;
 }
 
+.detail-card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "heading amount"
+    "title installment";
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.detail-card-grid .detail-card-heading {
+  grid-area: heading;
+}
+
+.detail-card-grid > .detail-title {
+  grid-area: title;
+}
+
+.detail-card-amount {
+  grid-area: amount;
+  justify-self: end;
+}
+
+.detail-card-installment {
+  grid-area: installment;
+  justify-self: end;
+  text-align: right;
+}
+
+.categories-table .detail-card-grid {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "heading title amount"
+    ". . installment";
+  column-gap: 8px;
+  row-gap: 2px;
+}
+
+.categories-table .detail-card-grid .detail-card-heading,
+.categories-table .detail-card-grid > .detail-title,
+.categories-table .detail-card-amount {
+  min-width: 0;
+}
+
 .detail-card-heading {
   display: flex;
   align-items: center;

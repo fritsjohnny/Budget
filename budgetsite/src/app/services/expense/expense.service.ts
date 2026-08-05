@@ -6,6 +6,7 @@ import { ApiUrls } from 'src/app/common/api-urls';
 import { catchError, map } from 'rxjs/operators';
 import { Messenger } from 'src/app/common/messenger';
 import { Expenses, ExpensesDueDateReportRow } from 'src/app/models/expenses.model';
+import { ExpenseNotificationReference } from 'src/app/models/expense-notification-reference.model';
 import { prepareApiDates } from 'src/app/utils/api-date.util';
 
 @Injectable({
@@ -186,9 +187,9 @@ export class ExpenseService {
       );
   }
 
-  getUpcomingOrOverdueExpenseReferences(): Observable<string[]> {
+  getUpcomingOrOverdueExpenseReferences(): Observable<ExpenseNotificationReference[]> {
     return this.http
-      .get<string[]>(`${ApiUrls.expenses}/Notify`)
+       .get<ExpenseNotificationReference[]>(`${ApiUrls.expenses}/Notify`)
       .pipe(
         map((obj) => obj),
         catchError((e) => this.messenger.errorHandler(e))

@@ -1,0 +1,43 @@
+:host {
+  display: block;
+  width: min(460px, calc(100vw - 28px));
+  pointer-events: auto;
+}
+.budget-notification-bubble {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 40px;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 64px;
+  padding: 8px 10px 8px 12px;
+  border: 1px solid #ffc107;
+  border-left: 5px solid #ffc107;
+  border-radius: 18px;
+  background: #292715;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
+  color: #f7f7f7;
+}
+.budget-notification-bubble-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255, 193, 7, 0.22);
+  color: #ffc107;
+  font-size: 20px;
+}
+.budget-notification-bubble-content {
+  padding: 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.budget-notification-bubble-close { color: #ffc107; }
+@media (max-width: 600px) {
+  :host { width: min(360px, calc(100vw - 20px)); }
+  .budget-notification-bubble-content { font-size: 15px; }
+}

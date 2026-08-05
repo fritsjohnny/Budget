@@ -15,6 +15,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LayoutModule } from '@angular/cdk/layout';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DragDropModule, CDK_DRAG_CONFIG } from '@angular/cdk/drag-drop';
+import { OverlayModule } from '@angular/cdk/overlay';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -46,6 +47,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { ClipboardModule } from 'ngx-clipboard';
 
 import { NavComponent } from './components/template/nav/nav.component';
+import { NotificationBubbleComponent } from './components/notification-bubble/notification-bubble.component';
 import { AccountViewComponent } from './views/account-view/account-view.component';
 import { AccountComponent } from './components/account/account.component';
 import { AccountModernLayoutComponent } from './components/account/account-modern-layout/account-modern-layout.component';
@@ -137,6 +139,7 @@ registerLocaleData(localePt);
 @NgModule({
   declarations: [
     AppComponent,
+    NotificationBubbleComponent,
     NavComponent,
     AccountComponent,
     AccountModernLayoutComponent,
@@ -224,6 +227,7 @@ registerLocaleData(localePt);
     LayoutModule,
     ScrollingModule,
     DragDropModule,
+    OverlayModule,
 
     MatButtonModule,
     MatDatepickerModule,

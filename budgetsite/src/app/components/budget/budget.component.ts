@@ -26,6 +26,7 @@ import { Incomes } from 'src/app/models/incomes.model';
 import { AccountService } from 'src/app/services/account/account.service';
 import { CardService } from 'src/app/services/card/card.service';
 import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
+import { ExpenseNotificationReference } from 'src/app/models/expense-notification-reference.model';
 import { ExpenseService } from 'src/app/services/expense/expense.service';
 import { IncomeService } from 'src/app/services/income/income.service';
 import { AccountPostingsService } from 'src/app/services/accountpostings/accountpostings.service';
@@ -451,7 +452,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           this.peopleList = people.sort((a, b) =>
             this.portugueseCollator.compare(a.name ?? '', b.name ?? '')
           );
-          
+
           this.accountsList = accounts;
 
           this.expenses = expenses;
@@ -512,31 +513,32 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   private checkExpensesWarnings(): void {
-    if (this.justMyValues) return;
-
     this.notifyUpcomingOrOverdueExpenses();
   }
 
   private notifyUpcomingOrOverdueExpenses(): void {
     this.expenseService.getUpcomingOrOverdueExpenseReferences().subscribe({
-      next: (references: string[]) => {
+      next: (references: ExpenseNotificationReference[]) => {
         if (!references || references.length === 0) return;
 
-        const externalReferences = references
-          .filter(reference => reference !== this.reference)
-          .sort();
+        const messages: string[] = [];
 
-        let notificationMessage = 'Há lançamentos vencidos ou vencendo hoje!';
+        references
+          .sort((a, b) => a.reference.localeCompare(b.reference))
+          .forEach(item => {
+            const formattedReference = `${item.reference.substring(4, 6)}/${item.reference.substring(0, 4)}`;
+            const referenceSuffix = item.reference === this.reference ? '' : ` na referência ${formattedReference}`;
 
-        if (externalReferences.length > 0) {
-          const formattedReferences = externalReferences
-            .map(reference => `${reference.substring(4, 6)}/${reference.substring(0, 4)}`)
-            .join(', ');
+            if (item.hasDueToday) {
+              messages.push(`Há lançamento vencendo hoje${referenceSuffix}.`);
+            }
 
-          notificationMessage += ` Referência(s): ${formattedReferences}.`;
-        }
+            if (item.hasOverdue) {
+              messages.push(`Há lançamento vencido${referenceSuffix}.`);
+            }
+          });
 
-        this.messenger.message(notificationMessage);
+        this.messenger.messageBubbles(messages);
       }
     });
   }

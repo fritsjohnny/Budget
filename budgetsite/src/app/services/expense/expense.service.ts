@@ -186,15 +186,14 @@ export class ExpenseService {
       );
   }
 
-  getUpcomingOrOverdueExpenses(daysAhead: number = 1): Observable<Expenses[]> {
+  getUpcomingOrOverdueExpenseReferences(): Observable<string[]> {
     return this.http
-      .get<Expenses[]>(`${ApiUrls.expenses}/Notify?daysAhead=${daysAhead}`)
+      .get<string[]>(`${ApiUrls.expenses}/Notify`)
       .pipe(
         map((obj) => obj),
         catchError((e) => this.messenger.errorHandler(e))
       );
   }
-
   public ajustarPorCategoria(id: number): Observable<any> {
     return this.http.post(`${ApiUrls.expenses}/AjustarPorCategoria/${id}`, null);
   }

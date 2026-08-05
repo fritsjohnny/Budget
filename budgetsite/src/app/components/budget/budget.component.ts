@@ -514,36 +514,32 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   private checkExpensesWarnings(): void {
     if (this.justMyValues) return;
 
-    let overdue = false;
-    let duetoday = false;
-
-    this.expenses.forEach((expense) => {
-      if (expense.dueDate && expense.paid < expense.toPay) {
-        if (this.dueToday(expense)) {
-          duetoday = true;
-        } else if (this.overDue(expense)) {
-          overdue = true;
-        }
-      }
-    });
-
-    let message = '';
-
-    if (duetoday && overdue) {
-      message = 'Há lançamentos vencidos e vencendo hoje!';
-    } else if (duetoday) {
-      message = 'Há lançamentos vencendo hoje!';
-    } else if (overdue) {
-      message = 'Há lançamentos vencidos!';
-    }
-
-        this.notifyUpcomingOrOverdueExpenses();
-
-if (message && false) {
-      this.notifyUpcomingOrOverdueExpenses();
-    }
+    this.notifyUpcomingOrOverdueExpenses();
   }
 
+  private notifyUpcomingOrOverdueExpenses(): void {
+    this.expenseService.getUpcomingOrOverdueExpenseReferences().subscribe({
+      next: (references: string[]) => {
+        if (!references || references.length === 0) return;
+
+        const externalReferences = references
+          .filter(reference => reference !== this.reference)
+          .sort();
+
+        let notificationMessage = 'Há lançamentos vencidos ou vencendo hoje!';
+
+        if (externalReferences.length > 0) {
+          const formattedReferences = externalReferences
+            .map(reference => `${reference.substring(4, 6)}/${reference.substring(0, 4)}`)
+            .join(', ');
+
+          notificationMessage += ` Referência(s): ${formattedReferences}.`;
+        }
+
+        this.messenger.message(notificationMessage);
+      }
+    });
+  }
   private loadPanelState(): void {
     this.budgetPanelExpanded = localStorage.getItem('budgetPanelExpanded') === 'true';
     this.expensesPanelExpanded = localStorage.getItem('expensesPanelExpanded') === 'true';
@@ -1852,26 +1848,411 @@ if (message && false) {
     return expense.duetoday;
   }
 
-  private notifyUpcomingOrOverdueExpenses(): void {
-    this.expenseService.getUpcomingOrOverdueExpenseReferences().subscribe({
-      next: (references: string[]) => {
-        if (!references || references.length === 0) return;
+  overDue(expense: Expenses) {
+    if (!(expense.dueDate && expense.paid < expense.toPay)) {
+      return false;
+    }
 
-        const externalReferences = references
-          .filter(reference => reference !== this.reference)
-          .sort();
+    let today = new Date();
 
-        let notificationMessage = 'Há lançamentos vencidos ou vencendo hoje!';
+    today.setHours(0, 0, 0, 0);
 
-        if (externalReferences.length > 0) {
-          const formattedReferences = externalReferences
-            .map(reference => `${reference.substring(4, 6)}/${reference.substring(0, 4)}`)
-            .join(', ');
+    let dueDate = new Date(expense.dueDate!);
 
-          notificationMessage += ` Referência(s): ${formattedReferences}.`;
+    dueDate.setHours(0, 0, 0, 0);
+
+    expense.overdue = today.getTime() > dueDate.getTime();
+
+    return expense.overdue;
+  }
+
+  filterUpcomingExpenses(): void {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const nextDate = new Date(now);
+    nextDate.setDate(now.getDate() + this.upcomingDays);
+
+    this.expenses = this.showUpcomingExpenses
+      ? this.expensesNoFilter.filter((e) => {
+        if (!e.dueDate) return false;
+
+        const due = new Date(e.dueDate);
+        due.setHours(0, 0, 0, 0);
+
+        const isWithinRange = due >= now && due <= nextDate;
+        const isPending =
+          !this.onlyPendingExpenses || (e.remaining && e.remaining > 0);
+
+        return isWithinRange && isPending;
+      })
+      : [...this.expensesNoFilter];
+
+    this.getExpensesTotals();
+  }
+
+  removeFromUpcomingFilter(row: any): void {
+    this.expenses = this.expenses.filter((e) => e !== row);
+    this.getExpensesTotals();
+  }
+
+  orderByDueDate(): void {
+    this.isOrderingByDueDate = true;
+
+    // Ordena a lista original (sem filtro aplicado)
+    const sorted = [...this.expensesNoFilter].sort((a, b) => {
+      const dateA = a.dueDate ? new Date(a.dueDate) : null;
+      const dateB = b.dueDate ? new Date(b.dueDate) : null;
+
+      if (this.creditCardsFirst) {
+        const isCardA = !!a.cardId;
+        const isCardB = !!b.cardId;
+
+        if (isCardA !== isCardB) {
+          return isCardA ? -1 : 1;
         }
+      }
 
-        this.messenger.message(notificationMessage);
+      if (dateA && dateB) {
+        return dateA.getTime() - dateB.getTime();
+      } else if (dateA) {
+        return -1;
+      } else if (dateB) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    // Atualiza posições e persiste
+    sorted.forEach((expense, index) => {
+      expense.position = index + 1;
+      this.expenseService.update(expense).subscribe(); // grava no backend
+    });
+
+    this.expenses = sorted;
+    this.getExpensesTotals();
+  }
+
+  ajustarDespesaPorCategoria(expense: any): void {
+    if (!expense?.id) return;
+
+    this.expenseService.ajustarPorCategoria(expense.id).subscribe({
+      next: (res) => {
+        this.messenger.message('Despesa ajustada com sucesso');
+
+        Object.assign(expense, res);
+
+        this.refreshExpenses();
+      },
+      error: (err) => {
+        this.messenger.errorHandler(err);
       }
     });
   }
+
+  handleClickExpense(expense: Expenses, event: MouseEvent): void {
+    if (this.isMergingExpenses) {
+      event.stopPropagation();
+
+      if (!this.canSelectExpenseToMerge(expense)) {
+        this.messenger.message('Só é possível mesclar despesas manuais simples.');
+        return;
+      }
+
+      this.toggleExpenseToMerge(expense);
+      return;
+    }
+
+    this.editOrDeleteExpense(expense, event);
+  }
+
+  handleDoubleClickExpense(expense: Expenses, event: MouseEvent): void {
+    if (this.isMergingExpenses) {
+      event.stopPropagation();
+      return;
+    }
+
+    this.updateExpense(expense);
+  }
+
+  updateExpense(expense: Expenses): void {
+    this.expenseService.readById(expense.id).subscribe({
+      next: (res: Expenses) => {
+        Object.assign(expense, res);
+        this.refreshExpenses();
+      },
+      error: (err) => {
+        this.messenger.errorHandler(err);
+      }
+    });
+  }
+
+  handleClickIncome(income: Incomes, event: MouseEvent): void {
+    this.editOrDeleteIncome(income, event);
+
+    // const now = new Date().getTime();
+    // const timeSinceLast = now - this.lastClickTime;
+
+    // this.lastClickTime = now;
+
+    // if (timeSinceLast < 300) {
+    //   return;
+    // }
+
+    // this.clickTimer = setTimeout(() => {
+    //   const since = new Date().getTime() - this.lastClickTime;
+
+    //   if (since >= 300) {
+    //     this.editOrDeleteIncome(income, event);
+    //   }
+    // }, 300);
+  }
+
+  handleDoubleClickIncome(income: Incomes, event: MouseEvent): void {
+    // clearTimeout(this.clickTimer);
+    this.updateIncome(income);
+  }
+
+  updateIncome(income: Incomes): void {
+    this.incomeService.readById(income.id).subscribe({
+      next: (res: Incomes) => {
+        Object.assign(income, res);
+        this.refreshIncomes();
+      },
+      error: (err) => {
+        this.messenger.errorHandler(err);
+      }
+    });
+  }
+
+  getExpectedBalanceWithoutYields(): number {
+    return this.expectedBalance - (this.budgetTotals?.myYields || 0);
+  }
+
+  getExpectedBalanceWithoutYieldsPerc(): number {
+    if (this.expectedBalance <= 0) return 0;
+
+    return this.getExpectedBalanceWithoutYields() / this.expectedBalance * 100;
+  }
+
+  getExpectedBalanceYieldsCompositionPerc(): number {
+    const yields = this.budgetTotals?.myYields || 0;
+
+    if (this.expectedBalance <= 0) return 0;
+
+    return yields / this.expectedBalance * 100;
+  }
+
+  getExpectedBalanceDeficitReductionPerc(): number {
+    const yields = this.budgetTotals?.myYields || 0;
+    const originalDeficit = Math.abs(this.getExpectedBalanceWithoutYields());
+
+    if (originalDeficit === 0) return 0;
+
+    return yields / originalDeficit * 100;
+  }
+
+  getExpectedBalanceCoveredByYieldsPerc(): number {
+    const yields = this.budgetTotals?.myYields || 0;
+    const originalDeficit = Math.abs(this.getExpectedBalanceWithoutYields());
+
+    if (yields === 0) return 0;
+
+    return originalDeficit / yields * 100;
+  }
+
+  getExpectedBalancePositiveFromYieldsPerc(): number {
+    const yields = this.budgetTotals?.myYields || 0;
+
+    if (yields === 0) return 0;
+
+    return this.expectedBalance / yields * 100;
+  }
+
+  openExpectedBalanceInfo(): void {
+    const withoutYields = this.getExpectedBalanceWithoutYields();
+    const yields = this.budgetTotals?.myYields ?? 0;
+    const expectedBalance = this.expectedBalance;
+
+    const incomePerc = this.getExpectedBalanceIncomePerc();
+    const withoutYieldsIncomePerc = this.getExpectedBalanceWithoutYieldsIncomePerc();
+
+    const withoutYieldsFormatted = this.formatCurrencyValue(withoutYields);
+    const yieldsFormatted = this.formatCurrencyValue(yields);
+    const expectedBalanceFormatted = this.formatCurrencyValue(expectedBalance);
+
+    const incomePercFormatted =
+      incomePerc === null
+        ? 'Não calculado'
+        : incomePerc.toFixed(2).replace('.', ',') + '%';
+
+    const withoutYieldsIncomePercFormatted =
+      withoutYieldsIncomePerc === null
+        ? 'Não calculado'
+        : withoutYieldsIncomePerc.toFixed(2).replace('.', ',') + '%';
+
+    let compositionMessage = '';
+
+    if (withoutYields >= 0 && expectedBalance > 0) {
+      const withoutYieldsPerc = this
+        .getExpectedBalanceWithoutYieldsPerc()
+        .toFixed(2)
+        .replace('.', ',');
+
+      const yieldsPerc = this
+        .getExpectedBalanceYieldsCompositionPerc()
+        .toFixed(2)
+        .replace('.', ',');
+
+      compositionMessage =
+        'Composição do saldo\n' +
+        'Sem rendimentos: ' +
+        withoutYieldsFormatted +
+        ' (' +
+        withoutYieldsPerc +
+        '% do saldo final)\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        ' (' +
+        yieldsPerc +
+        '% do saldo final)\n\n' +
+        'Linha inferior da tela\n' +
+        withoutYieldsPerc +
+        '%: parte do saldo formada sem rendimentos.\n' +
+        yieldsPerc +
+        '%: parte do saldo formada pelos rendimentos.';
+    } else if (withoutYields >= 0 && expectedBalance === 0) {
+      compositionMessage =
+        'Composição do saldo\n' +
+        'Sem rendimentos: ' +
+        withoutYieldsFormatted +
+        '\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        '\n\n' +
+        'Resultado\n' +
+        'O saldo previsto final ficou zerado.';
+    } else if (expectedBalance < 0) {
+      const reductionPerc = this
+        .getExpectedBalanceDeficitReductionPerc()
+        .toFixed(2)
+        .replace('.', ',');
+
+      compositionMessage =
+        'Composição do déficit\n' +
+        'Saldo sem rendimentos: ' +
+        withoutYieldsFormatted +
+        '\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        '\n\n' +
+        'Impacto dos rendimentos\n' +
+        'Os rendimentos reduziram o déficit original em ' +
+        reductionPerc +
+        '%, mas o saldo final permaneceu negativo.\n\n' +
+        'Linha inferior da tela\n' +
+        '100%: déficit original sem rendimentos.\n' +
+        '↓' +
+        reductionPerc +
+        '%: redução do déficit causada pelos rendimentos.';
+    } else if (expectedBalance === 0) {
+      compositionMessage =
+        'Composição do saldo\n' +
+        'Saldo sem rendimentos: ' +
+        withoutYieldsFormatted +
+        '\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        '\n\n' +
+        'Impacto dos rendimentos\n' +
+        'Os rendimentos cobriram exatamente todo o déficit original.\n\n' +
+        'Linha inferior da tela\n' +
+        'O percentual esquerdo, 100%, indica que todo o rendimento foi necessário para zerar o déficit. ' +
+        'O percentual direito fica em 0%, pois não restou saldo positivo.';
+    } else {
+      const coveredPerc = this
+        .getExpectedBalanceCoveredByYieldsPerc()
+        .toFixed(2)
+        .replace('.', ',');
+
+      const positivePerc = this
+        .getExpectedBalancePositiveFromYieldsPerc()
+        .toFixed(2)
+        .replace('.', ',');
+
+      compositionMessage =
+        'Composição do saldo\n' +
+        'Saldo sem rendimentos: ' +
+        withoutYieldsFormatted +
+        '\n' +
+        'Rendimentos: ' +
+        yieldsFormatted +
+        '\n\n' +
+        'Uso dos rendimentos\n' +
+        coveredPerc +
+        '% dos rendimentos cobriu o déficit original.\n' +
+        positivePerc +
+        '% permaneceu como saldo positivo.\n\n' +
+        'Linha inferior da tela\n' +
+        coveredPerc +
+        '%: parte dos rendimentos usada para eliminar o déficit.\n' +
+        positivePerc +
+        '%: parte dos rendimentos que permaneceu no saldo final.';
+    }
+
+    const message =
+      'Saldo previsto final\n' +
+      expectedBalanceFormatted +
+      '\n\n' +
+      'Percentuais principais\n' +
+      withoutYieldsIncomePercFormatted +
+      ': economia ou déficit em relação às minhas receitas, desconsiderando os rendimentos.\n' +
+      incomePercFormatted +
+      ': saldo previsto total, incluindo rendimentos, em relação às minhas receitas totais.\n\n' +
+      compositionMessage;
+
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      panelClass: this.useModernLayout ? 'modern-confirm-dialog-panel' : undefined,
+      data: <ConfirmDialogData>{
+        title: 'Cálculo do Saldo Previsto',
+        message: message,
+        confirmText: 'Entendi',
+        cancelText: ''
+      },
+    });
+  }
+
+  formatCurrencyValue(value: number): string {
+    return value.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  getExpectedBalanceIncomePerc(): number | null {
+    const myIncomes = Math.abs(this.budgetTotals?.myIncomes ?? 0);
+
+    if (myIncomes === 0) return null;
+
+    return this.expectedBalance / myIncomes * 100;
+  }
+
+  getExpectedBalanceWithoutYieldsIncomePerc(): number | null {
+    const incomesWithoutYields =
+      this.budgetTotals?.myIncomesWithoutYields ?? 0;
+
+    const myExpenses =
+      this.budgetTotals?.myExpenses ?? 0;
+
+    if (incomesWithoutYields === 0) return null;
+
+    const balanceWithoutYields =
+      incomesWithoutYields - myExpenses;
+
+    return balanceWithoutYields /
+      Math.abs(incomesWithoutYields) *
+      100;
+  }
+}

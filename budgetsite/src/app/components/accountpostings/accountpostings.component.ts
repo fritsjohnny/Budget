@@ -627,6 +627,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         totalIOF: accountPosting.totalIOF,
         totalIR: accountPosting.totalIR,
         iofElapsedDays: accountPosting.iofElapsedDays,
+        applicationDetails: accountPosting.applicationDetails?.map(detail => ({ ...detail })),
         totalYields: this.totalForYieldsDialog,
         lastYield: this.getLastYield(),
         totalPreviousYield: this.totalPreviousYield,

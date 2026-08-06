@@ -1,4 +1,4 @@
-<div class="">
+﻿<div class="">
     <form [formGroup]="accountPostingFormGroup">
         <div class="cancel">
             <button
@@ -131,7 +131,7 @@
                         floatLabel="always"
                         style="width: 100% !important"
                     >
-                        <mat-label>Descrição</mat-label>
+                            <mat-label>Descrição</mat-label>
                         <input
                             type="text"
                             id="descriptionFormControl"
@@ -144,7 +144,7 @@
                         <mat-error
                             *ngIf="accountPostingFormGroup.get('descriptionFormControl')?.hasError('required')"
                         >
-                            Campo <strong>obrigatório</strong>.
+                                Campo <strong>obrigatório</strong>.
                         </mat-error>
                     </mat-form-field>
                 </div>
@@ -171,8 +171,90 @@
                 </div>
             </div>
 
+            <div class="yield-application-details" *ngIf="accountPosting.type == 'Y' && hasMultipleApplications">
+                <h3>Rendimento por aplicação</h3>
+                <ng-container *ngFor="let detail of applicationDetails">
+                    <strong>{{ applicationLabel(detail.accountApplicationId) }}</strong>
+
+                    <div class="row">
+                        <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                            <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                                <mat-label>Valor Bruto</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.grossAmount" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationGrossAmountChanged(detail)" />
+                            </mat-form-field>
+                        </div>
+                        <div class="col-6">
+                            <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                                <mat-label>Valor líquido</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.amount" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationAmountChanged(detail)" />
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                            <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                                <mat-label>Saldo líquido</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalBalance" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalBalanceChanged(detail)" />
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                            <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                                <mat-label>Saldo Bruto</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalGrossBalance" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalGrossBalanceChanged(detail)" />
+                            </mat-form-field>
+                        </div>
+                        <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                            <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                                <mat-label>Desconto de IOF</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIOF" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIOFChanged(detail)" />
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                            <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                                <mat-label>Desconto de IR</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIR" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIRChanged(detail)" />
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="row mb-1">
+                        <div class="col-12">
+                            <label>Dias corridos para cálculo do IOF:</label>
+                            <button type="button" style="border-radius: 2px; margin-left: 2px" (click)="changeApplicationDays(detail, -1)">−</button>
+                            <input readonly type="number" inputmode="numeric" style="width: 40px !important; border-radius: 4px 4px 0 0; margin: 0px 2px 0 2px; text-align: center;" min="0" [(ngModel)]="detail.iofElapsedDays" [ngModelOptions]="{ standalone: true }" />
+                            <button type="button" style="border-radius: 2px" (click)="changeApplicationDays(detail, 1)">+</button>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <div class="row" *ngIf="accountPosting.type == 'Y' && hasMultipleApplications">
+                    <div class="col-12">
+                        <mat-checkbox
+                            [(ngModel)]="noRecalculate"
+                            formControlName="noRecalculateFormControl"
+                            >Não calcular valores relacionados</mat-checkbox
+                        >
+                    </div>
+                </div>
+
+                <div class="yield-consolidated-summary">
+                    <h3>Total consolidado</h3>
+                    <span>Bruto: {{ consolidatedGross | currency:'BRL' }}</span>
+                    <span>IOF: {{ consolidatedIOF | currency:'BRL' }}</span>
+                    <span>IR: {{ consolidatedIR | currency:'BRL' }}</span>
+                    <strong>Líquido: {{ consolidatedAmount | currency:'BRL' }}</strong>
+                </div>
+            </div>
+
             <!-- VALOR BRUTO -->
-            <div class="row">
+            <div class="row" *ngIf="!hasMultipleApplications">
                 <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                     <mat-form-field
                         appearance="fill"
@@ -220,7 +302,7 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row" *ngIf="!hasMultipleApplications">
                 <!-- SALDO BRUTO -->
                 <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                     <mat-form-field
@@ -264,17 +346,18 @@
                 </div>
             </div>
 
-            <div class="row">
-                <!-- DESCONTO DE IOF -->
-                <div class="col-6" *ngIf="accountPosting.type == 'Y'">
-                    <mat-form-field
-                        appearance="fill"
-                        floatLabel="always"
-                        style="width: 100% !important"
-                    >
-                        <mat-label>Desconto de IOF</mat-label>
-                        <input
-                            matInput
+
+                <div class="row" *ngIf="!hasMultipleApplications">
+                    <!-- DESCONTO DE IOF -->
+                    <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                        <mat-form-field
+                            appearance="fill"
+                            floatLabel="always"
+                            style="width: 100% !important"
+                        >
+                            <mat-label>Desconto de IOF</mat-label>
+                            <input
+                                matInput
                             inputmode="numeric"
                             currencyMask
                             formControlName="iofTotalFormControl"
@@ -308,7 +391,7 @@
                 </div>
             </div>
 
-            <div class="row mb-1" *ngIf="accountPosting.type == 'Y'">
+            <div class="row mb-1" *ngIf="accountPosting.type == 'Y' && !hasMultipleApplications">
                 <div class="col-12">
                     <label>Dias corridos para cálculo do IOF:</label>
                     <button
@@ -340,6 +423,16 @@
                     </button>
                 </div>
             </div>
+            <div class="row" *ngIf="accountPosting.type == 'Y' && !hasMultipleApplications">
+                <div class="col-6">
+                    <mat-checkbox
+                        [(ngModel)]="noRecalculate"
+                        formControlName="noRecalculateFormControl"
+                        >Não calcular valores relacionados</mat-checkbox
+                    >
+                </div>
+                <p></p>
+            </div>
             <div
                 class="row"
                 *ngIf="accountPosting.type == 'Y' && accountPosting.algorithmType === '3'"
@@ -353,17 +446,6 @@
                         bruto</mat-checkbox
                     >
                 </div>
-            </div>
-
-            <div class="row" *ngIf="accountPosting.type == 'Y'">
-                <div class="col-6">
-                    <mat-checkbox
-                        [(ngModel)]="noRecalculate"
-                        formControlName="noRecalculateFormControl"
-                        >Não calcular valores relacionados</mat-checkbox
-                    >
-                </div>
-                <p></p>
             </div>
 
             <div class="row" *ngIf="accountPosting.type !== 'Y' && !isTransferMode() && accountPosting.type !== 'C'">
@@ -450,3 +532,4 @@
         </div>
     </form>
 </div>
+

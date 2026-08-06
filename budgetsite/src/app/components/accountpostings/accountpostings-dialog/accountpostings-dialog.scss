@@ -4,3 +4,46 @@
     row-gap: 5px;
     column-gap: 24px;
 }
+
+.yield-application-details {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+}
+
+.yield-application-details > h3 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+.yield-consolidated-summary {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(79, 111, 232, 0.34);
+    border-radius: 12px;
+    background: rgba(79, 111, 232, 0.12);
+}
+
+.yield-consolidated-summary h3 {
+    grid-column: 1 / -1;
+    margin: 0 0 2px;
+    font-size: 15px;
+}
+
+.yield-consolidated-summary span,
+.yield-consolidated-summary strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.yield-consolidated-summary strong {
+    color: #3658d4;
+}
+
+:host-context(.dark-theme) .yield-consolidated-summary strong {
+    color: #8aa4ff;
+}

@@ -4,6 +4,7 @@ import { Messenger } from 'src/app/common/messenger';
 import { Accounts } from 'src/app/models/accounts.model';
 import { AccountApplicationsService } from '../accountapplications/accountapplications.service';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
+import { AccountsPostingApplicationDetail } from 'src/app/models/accountspostings.model';
 import { AccountYieldRange } from 'src/app/models/accountyieldrange.model';
 import { firstValueFrom } from 'rxjs';
 import { AccountYieldRangeService } from '../accountyieldrange/accountyieldrange.service';
@@ -187,6 +188,15 @@ export class YieldService {
     return this.IOF_TABLE[daysCorridos] ?? 0;
   }
 
+  iofRateFromApplicationTable(daysElapsed: number): number {
+    const days = Math.trunc(Number(daysElapsed || 0));
+
+    if (days <= 0 || days >= 30) return 0;
+
+    // A tabela começa em D+1 no índice zero.
+    return this.IOF_TABLE[days - 1] ?? 0;
+  }
+
   // Helpers de dia útil (sem feriados; se quiser, injete um calendário depois)
   isWeekend(d: Date): boolean {
     const w = d.getDay();
@@ -207,7 +217,13 @@ export class YieldService {
     return applications.filter(app => {
       const amountApplied = Number(app.amountApplied || 0);
 
-      if (amountApplied <= 0) {
+      if (app.disabled || amountApplied <= 0) {
+        return false;
+      }
+
+      const appliedDate = new Date(app.dateApplied);
+      appliedDate.setHours(0, 0, 0, 0);
+      if (appliedDate > referenceDate) {
         return false;
       }
 
@@ -802,6 +818,100 @@ export class YieldService {
       iofTotal,
       irTotal,
       totalAplicado: principalTotal,
+    };
+  }
+
+  async suggestYieldMultipleApplications(
+    account: Accounts,
+    applications: Array<{
+      application: AccountsApplications;
+      grossBalanceBefore: number;
+      netBalanceBefore: number;
+      iofElapsedDays: number;
+    }>
+  ): Promise<{
+    applicationDetails: AccountsPostingApplicationDetail[];
+    grossYield: number;
+    netYield: number;
+    totalGross: number;
+    totalNet: number;
+    iofTotal: number;
+    irTotal: number;
+  }> {
+    const round2 = (value: number): number =>
+      Math.round((value + Number.EPSILON) * 100) / 100;
+
+    const irPercent = Number(account.irPercent ?? 22.5);
+    const isTaxExempt = account.isTaxExempt ?? false;
+
+    let cdiDailyPercent = 0;
+
+    try {
+      const targetDate = this.resolveCdiTargetDate(account);
+      cdiDailyPercent = await this.getCdiDiarioPercent(targetDate);
+    } catch {
+      cdiDailyPercent = 0;
+    }
+
+    const normalizeCdiFactor = (value: number | null | undefined, fallback: number): number => {
+      const numericValue = Number(value ?? fallback ?? 0);
+      return numericValue > 2 ? numericValue / 100 : numericValue;
+    };
+
+    const details = applications.map(item => {
+      const application = item.application;
+      const grossBalanceBefore = round2(Math.max(0, Number(item.grossBalanceBefore || 0)));
+      const netBalanceBefore = round2(Math.max(0, Number(item.netBalanceBefore || 0)));
+      const principal = round2(Math.max(0, Number(application.amountApplied || 0)));
+      const days = Math.max(0, Math.trunc(Number(item.iofElapsedDays || 0)));
+
+      const fixedRate = Number(application.fixedRate ?? 0);
+      let dailyRate = 0;
+
+      if (fixedRate > 0) {
+        const annualRate = fixedRate > 1 ? fixedRate / 100 : fixedRate;
+        dailyRate = annualRate / 365;
+      } else {
+        const cdiFactor = normalizeCdiFactor(
+          application.cdiPercent,
+          Number(account.yieldPercent ?? 0)
+        );
+        dailyRate = (cdiDailyPercent / 100) * cdiFactor;
+      }
+
+      const grossAmount = round2(grossBalanceBefore * dailyRate);
+      const totalGrossBalance = round2(grossBalanceBefore + grossAmount);
+      const accumulatedGrossYield = round2(
+        Math.max(0, totalGrossBalance - principal)
+      );
+      const iof = round2(
+        accumulatedGrossYield * this.iofRateFromApplicationTable(days)
+      );
+      const irBase = round2(Math.max(0, accumulatedGrossYield - iof));
+      const ir = isTaxExempt ? 0 : round2(irBase * irPercent / 100);
+      const totalBalance = round2(totalGrossBalance - iof - ir);
+      const amount = round2(totalBalance - netBalanceBefore);
+
+      return {
+        accountApplicationId: application.id!,
+        amount,
+        grossAmount,
+        totalGrossBalance,
+        totalBalance,
+        totalIOF: iof,
+        totalIR: ir,
+        iofElapsedDays: days,
+      };
+    });
+
+    return {
+      applicationDetails: details,
+      grossYield: round2(details.reduce((sum, detail) => sum + Number(detail.grossAmount ?? 0), 0)),
+      netYield: round2(details.reduce((sum, detail) => sum + Number(detail.amount ?? 0), 0)),
+      totalGross: round2(details.reduce((sum, detail) => sum + Number(detail.totalGrossBalance ?? 0), 0)),
+      totalNet: round2(details.reduce((sum, detail) => sum + Number(detail.totalBalance ?? 0), 0)),
+      iofTotal: round2(details.reduce((sum, detail) => sum + Number(detail.totalIOF ?? 0), 0)),
+      irTotal: round2(details.reduce((sum, detail) => sum + Number(detail.totalIR ?? 0), 0)),
     };
   }
 

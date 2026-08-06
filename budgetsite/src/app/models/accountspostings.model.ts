@@ -3,6 +3,20 @@ import { CardsReceipts } from "./cardsreceipts.model";
 import { Expenses } from "./expenses.model";
 import { Incomes } from "./incomes.model";
 
+export interface AccountsPostingApplicationDetail {
+  id?: number;
+  accountPostingId?: number;
+  accountApplicationId: number;
+  amount: number;
+  grossAmount?: number | null;
+  totalGrossBalance?: number | null;
+  totalBalance?: number | null;
+  totalIOF?: number | null;
+  totalIR?: number | null;
+  iofElapsedDays?: number | null;
+  createdAt?: Date;
+}
+
 export interface AccountsPostings {
   id?: number;
   accountId: number;
@@ -43,4 +57,5 @@ export interface AccountsPostings {
   relatedId?: number;
   toAccountId?: number;
   totalPreviousYield?: number;
+  applicationDetails?: AccountsPostingApplicationDetail[];
 }

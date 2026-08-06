@@ -16,7 +16,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { Messenger } from 'src/app/common/messenger';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
-import { AccountsPostings } from 'src/app/models/accountspostings.model';
+import { AccountsPostings, AccountsPostingApplicationDetail } from 'src/app/models/accountspostings.model';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
 import { AccountPostingsService } from 'src/app/services/accountpostings/accountpostings.service';
 import { AccountService } from 'src/app/services/account/account.service';
@@ -26,6 +26,7 @@ import {
   ConfirmDialogData,
 } from 'src/app/shared/confirm-dialog/confirm-dialog.component';
 import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepickerinput.component';
+import { Accounts } from 'src/app/models/accounts.model';
 
 @Component({
   selector: 'accountpostings-dialog',
@@ -77,6 +78,353 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   iofDaysSub: any;
   accountApplications?: AccountsApplications[];
+  applicationDetails: AccountsPostingApplicationDetail[] = [];
+
+  get hasMultipleApplications(): boolean {
+    return this.getYieldApplications().length > 1;
+  }
+
+  private getYieldApplications(): AccountsApplications[] {
+    const launchDate = new Date(this.accountPosting.date);
+    launchDate.setHours(0, 0, 0, 0);
+
+    return (this.accountApplications ?? [])
+      .filter(application => {
+        if (application.disabled || !application.id || Number(application.amountApplied || 0) <= 0) return false;
+
+        const appliedDate = new Date(application.dateApplied);
+        appliedDate.setHours(0, 0, 0, 0);
+        if (appliedDate > launchDate) return false;
+        if (!application.maturityDate) return true;
+        const maturityDate = new Date(application.maturityDate);
+        maturityDate.setHours(0, 0, 0, 0);
+        return maturityDate >= launchDate;
+      })
+      .sort((a, b) => new Date(a.dateApplied).getTime() - new Date(b.dateApplied).getTime());
+  }
+
+  private applicationDetailsLoadedFromServer = false;
+  private applicationBaseValues = new Map<number, {
+    grossAmount: number;
+    amount: number;
+    totalGrossBalance: number;
+    totalBalance: number;
+    totalIOF: number;
+    totalIR: number;
+  }>();
+
+  get consolidatedGross(): number {
+    return this.round2(this.applicationDetails.reduce((sum, detail) => sum + Number(detail.grossAmount ?? 0), 0));
+  }
+
+  get consolidatedIOF(): number {
+    return this.round2(this.applicationDetails.reduce((sum, detail) => sum + Number(detail.totalIOF ?? 0), 0));
+  }
+
+  get consolidatedIR(): number {
+    return this.round2(this.applicationDetails.reduce((sum, detail) => sum + Number(detail.totalIR ?? 0), 0));
+  }
+
+  get consolidatedAmount(): number {
+    return this.round2(this.applicationDetails.reduce((sum, detail) => sum + Number(detail.amount ?? 0), 0));
+  }
+
+  get consolidatedNetBalance(): number {
+    return this.round2(this.applicationDetails.reduce((sum, detail) => sum + Number(detail.totalBalance ?? 0), 0));
+  }
+
+  applicationLabel(id: number): string {
+    const app = this.accountApplications?.find(x => x.id === id);
+    if (!app) return 'Aplicação ' + id;
+    return new Date(app.dateApplied).toLocaleDateString('pt-BR') + ' - ' +
+      Number(app.amountApplied).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  recalculateApplicationTotals(): void {
+    if (this.applicationDetails.length === 0) return;
+
+    const consolidatedGrossBalance = this.round2(
+      this.applicationDetails.reduce((sum, detail) => sum + Number(detail.totalGrossBalance ?? 0), 0)
+    );
+    const consolidatedNetBalance = this.consolidatedNetBalance;
+
+    this.accountPosting.amount = this.consolidatedAmount;
+    this.accountPosting.grossAmount = this.consolidatedGross;
+    this.accountPosting.totalIOF = this.consolidatedIOF;
+    this.accountPosting.totalIR = this.consolidatedIR;
+    this.accountPosting.totalGrossBalance = consolidatedGrossBalance;
+    this.accountPosting.totalBalance = consolidatedNetBalance;
+
+    this.saldoBruto = consolidatedGrossBalance;
+    this.saldoLiquido = consolidatedNetBalance;
+  }
+  private captureApplicationBaseValues(): void {
+    this.applicationBaseValues.clear();
+
+    for (const detail of this.applicationDetails) {
+      this.applicationBaseValues.set(detail.accountApplicationId, {
+        grossAmount: this.round2(Number(detail.grossAmount ?? 0)),
+        amount: this.round2(Number(detail.amount ?? 0)),
+        totalGrossBalance: this.round2(Number(detail.totalGrossBalance ?? 0)),
+        totalBalance: this.round2(Number(detail.totalBalance ?? 0)),
+        totalIOF: this.round2(Number(detail.totalIOF ?? 0)),
+        totalIR: this.round2(Number(detail.totalIR ?? 0)),
+      });
+    }
+  }
+
+  private recalculateApplicationDetail(
+    detail: AccountsPostingApplicationDetail,
+    changedField: 'grossAmount' | 'amount' | 'totalGrossBalance' | 'totalBalance' | 'totalIOF' | 'totalIR'
+  ): void {
+    const base = this.applicationBaseValues.get(detail.accountApplicationId);
+    if (!base) {
+      this.captureApplicationBaseValues();
+      return;
+    }
+
+    const currentGrossAmount = this.round2(Number(detail.grossAmount ?? 0));
+    const currentAmount = this.round2(Number(detail.amount ?? 0));
+    const currentGrossBalance = this.round2(Number(detail.totalGrossBalance ?? 0));
+    const currentBalance = this.round2(Number(detail.totalBalance ?? 0));
+    const currentIOF = this.round2(Number(detail.totalIOF ?? 0));
+    const currentIR = this.round2(Number(detail.totalIR ?? 0));
+
+    let grossDelta = this.round2(currentGrossAmount - base.grossAmount);
+
+    if (changedField === 'totalGrossBalance') {
+      grossDelta = this.round2(currentGrossBalance - base.totalGrossBalance);
+      detail.grossAmount = this.round2(base.grossAmount + grossDelta);
+    }
+    else if (changedField === 'grossAmount') {
+      detail.totalGrossBalance = this.round2(base.totalGrossBalance + grossDelta);
+    }
+
+    let calculatedBalance: number;
+    if (changedField === 'amount') {
+      calculatedBalance = this.round2(base.totalBalance + currentAmount - base.amount);
+    }
+    else if (changedField === 'totalBalance') {
+      calculatedBalance = currentBalance;
+    }
+    else {
+      calculatedBalance = this.round2(
+        base.totalBalance
+        + grossDelta
+        - (currentIOF - base.totalIOF)
+        - (currentIR - base.totalIR)
+      );
+      detail.totalBalance = calculatedBalance;
+    }
+
+    if (changedField === 'amount') {
+      detail.totalBalance = calculatedBalance;
+    }
+    else if (changedField === 'totalBalance') {
+      detail.amount = this.round2(base.amount + calculatedBalance - base.totalBalance);
+    }
+    else {
+      detail.amount = this.round2(base.amount + calculatedBalance - base.totalBalance);
+    }
+
+    this.recalculateApplicationTotals();
+  }
+
+  onApplicationGrossAmountChanged(detail: AccountsPostingApplicationDetail): void {
+    if (this.noRecalculate) {
+      this.recalculateApplicationTotals();
+      return;
+    }
+
+    this.recalculateApplicationDetail(detail, 'grossAmount');
+  }
+
+  onApplicationAmountChanged(detail: AccountsPostingApplicationDetail): void {
+    if (this.noRecalculate) {
+      this.recalculateApplicationTotals();
+      return;
+    }
+
+    this.recalculateApplicationDetail(detail, 'amount');
+  }
+
+  onApplicationTotalGrossBalanceChanged(detail: AccountsPostingApplicationDetail): void {
+    if (this.noRecalculate) {
+      this.recalculateApplicationTotals();
+      return;
+    }
+
+    this.recalculateApplicationDetail(detail, 'totalGrossBalance');
+  }
+
+  onApplicationTotalBalanceChanged(detail: AccountsPostingApplicationDetail): void {
+    if (this.noRecalculate) {
+      this.recalculateApplicationTotals();
+      return;
+    }
+
+    this.recalculateApplicationDetail(detail, 'totalBalance');
+  }
+
+  onApplicationTotalIOFChanged(detail: AccountsPostingApplicationDetail): void {
+    if (this.noRecalculate) {
+      this.recalculateApplicationTotals();
+      return;
+    }
+
+    this.recalculateApplicationDetail(detail, 'totalIOF');
+  }
+
+  onApplicationTotalIRChanged(detail: AccountsPostingApplicationDetail): void {
+    if (this.noRecalculate) {
+      this.recalculateApplicationTotals();
+      return;
+    }
+
+    this.recalculateApplicationDetail(detail, 'totalIR');
+  }
+
+  changeApplicationDays(detail: AccountsPostingApplicationDetail, delta: number): void {
+    const previousNetBalance = Number(detail.totalBalance ?? 0);
+    detail.iofElapsedDays = Math.max(0, Number(detail.iofElapsedDays ?? 0) + delta);
+
+    const application = this.accountApplications?.find(item => item.id === detail.accountApplicationId);
+    if (application) {
+      const accumulatedGrossYield = Math.max(
+        0,
+        this.round2(Number(detail.totalGrossBalance ?? 0) - Number(application.amountApplied || 0))
+      );
+      const iof = this.round2(
+        accumulatedGrossYield * this.yieldService.iofRateFromApplicationTable(Number(detail.iofElapsedDays || 0))
+      );
+      const irBase = Math.max(0, this.round2(accumulatedGrossYield - iof));
+      const account = this.accountPosting.accountsList?.find(
+        item => item.id === this.accountPosting.accountId
+      );
+      const irPercent = Number(account?.irPercent ?? 22.5);
+      const ir = account?.isTaxExempt ? 0 : this.round2(irBase * irPercent / 100);
+      const newNetBalance = this.round2(Number(detail.totalGrossBalance ?? 0) - iof - ir);
+
+      detail.totalIOF = iof;
+      detail.totalIR = ir;
+      detail.totalBalance = newNetBalance;
+      detail.amount = this.round2(Number(detail.amount ?? 0) + newNetBalance - previousNetBalance);
+    }
+
+    this.persistApplicationIofDays(detail);
+    this.recalculateApplicationTotals();
+  }
+
+  private prepareApplicationDetails(): void {
+    const applications = this.getYieldApplications();
+    if (applications.length <= 1) return;
+    const saved = this.accountPosting.applicationDetails ?? [];
+    if (saved.length > 0) {
+      this.applicationDetails = saved.map(detail => ({ ...detail }));
+      this.applicationDetailsLoadedFromServer = true;
+      this.captureApplicationBaseValues();
+      this.recalculateApplicationTotals();
+      return;
+    }
+    this.applicationDetailsLoadedFromServer = false;
+    if (this.applicationDetails.length === 0) {
+      this.applicationDetails = applications.map(application => ({
+        accountApplicationId: application.id!,
+        amount: 0,
+        grossAmount: 0,
+        totalGrossBalance: Number(application.amountApplied || 0),
+        totalBalance: Number(application.amountApplied || 0),
+        totalIOF: 0,
+        totalIR: 0,
+        iofElapsedDays: this.getApplicationIofDays(application, new Date(this.accountPosting.date)),
+      }));
+      this.captureApplicationBaseValues();
+    }
+  }
+
+  private getApplicationGrossBalanceBefore(application: AccountsApplications, launchDate: Date): number {
+    const applicationAmount = this.round2(Number(application.amountApplied || 0));
+    const yields = (this.accountPosting.accountPostingsYields ?? [])
+      .filter(yieldPosting => {
+        if (yieldPosting.id && this.accountPosting.id && yieldPosting.id === this.accountPosting.id) return false;
+        const yieldDate = new Date(yieldPosting.date);
+        yieldDate.setHours(0, 0, 0, 0);
+        return yieldDate < launchDate;
+      })
+      .sort((a, b) => {
+        const dateDifference = new Date(a.date).getTime() - new Date(b.date).getTime();
+        return dateDifference || Number(a.id || 0) - Number(b.id || 0);
+      });
+
+    let balance = applicationAmount;
+
+    for (const yieldPosting of yields) {
+      const detail = yieldPosting.applicationDetails?.find(
+        item => item.accountApplicationId === application.id
+      );
+
+      if (detail?.totalGrossBalance !== undefined && detail.totalGrossBalance !== null) {
+        balance = this.round2(Number(detail.totalGrossBalance));
+      }
+    }
+
+    return balance;
+  }
+
+  private getApplicationNetBalanceBefore(application: AccountsApplications, launchDate: Date): number {
+    const applicationAmount = this.round2(Number(application.amountApplied || 0));
+    const yields = (this.accountPosting.accountPostingsYields ?? [])
+      .filter(yieldPosting => {
+        if (yieldPosting.id && this.accountPosting.id && yieldPosting.id === this.accountPosting.id) return false;
+        const yieldDate = new Date(yieldPosting.date);
+        yieldDate.setHours(0, 0, 0, 0);
+        return yieldDate < launchDate;
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    let balance = applicationAmount;
+
+    for (const yieldPosting of yields) {
+      const detail = yieldPosting.applicationDetails?.find(
+        item => item.accountApplicationId === application.id
+      );
+
+      if (detail?.totalBalance !== undefined && detail.totalBalance !== null) {
+        balance = this.round2(Number(detail.totalBalance));
+      }
+    }
+
+    return balance;
+  }
+
+  private async calculateApplicationDetails(account: Accounts): Promise<void> {
+    const applications = this.getYieldApplications();
+    if (applications.length <= 1 || this.applicationDetailsLoadedFromServer) return;
+
+    const launchDate = new Date(this.accountPosting.date);
+    launchDate.setHours(0, 0, 0, 0);
+
+    const calculation = await this.yieldService.suggestYieldMultipleApplications(
+      account,
+      applications.map(application => ({
+        application,
+        grossBalanceBefore: this.getApplicationGrossBalanceBefore(application, launchDate),
+        netBalanceBefore: this.getApplicationNetBalanceBefore(application, launchDate),
+        iofElapsedDays: this.toNonNegativeInt(
+          this.applicationDetails.find(
+            detail => detail.accountApplicationId === application.id
+          )?.iofElapsedDays
+          ?? this.getApplicationIofDays(application, launchDate)
+        ),
+      }))
+    );
+
+    this.applicationDetails = calculation.applicationDetails;
+    this.recalculateApplicationTotals();
+    this.captureApplicationBaseValues();
+
+  }
+
 
   algorithmTypes = [
     { value: '1', viewValue: 'Nubank' },
@@ -90,16 +438,97 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   readonly IOF_DATE_STORAGE_KEY = 'budget.iofElapsedDate';
   readonly ALGORITHM_STORAGE_KEY = 'budget.algorithmType';
 
-  private getIofDaysKey(accountId?: number) {
+  private getIofDaysKey(accountId?: number): string {
     return `${this.IOF_DAYS_STORAGE_KEY}.${accountId ?? 0}`;
   }
 
-  private getIofDateKey(accountId?: number) {
+  private getIofDateKey(accountId?: number): string {
     return `${this.IOF_DATE_STORAGE_KEY}.${accountId ?? 0}`;
   }
 
-  private getAlgorithmKey(accountId?: number) {
+  private getLegacyIofDaysKey(): string {
+    return this.IOF_DAYS_STORAGE_KEY;
+  }
+
+  private getLegacyIofDateKey(): string {
+    return this.IOF_DATE_STORAGE_KEY;
+  }
+
+  private getApplicationIofDaysKey(accountId?: number, applicationId?: number): string {
+    return `${this.IOF_DAYS_STORAGE_KEY}.${accountId ?? 0}.${applicationId ?? 0}`;
+  }
+
+  private getApplicationIofDateKey(accountId?: number, applicationId?: number): string {
+    return `${this.IOF_DATE_STORAGE_KEY}.${accountId ?? 0}.${applicationId ?? 0}`;
+  }
+
+  private getAlgorithmKey(accountId?: number): string {
     return `${this.ALGORITHM_STORAGE_KEY}.${accountId ?? 0}`;
+  }
+
+  private getStoredIofValue(daysKey: string, dateKey: string, fallbackDays: number): number {
+    const storedValue = localStorage.getItem(daysKey);
+    if (storedValue === null) return fallbackDays;
+
+    const storedDays = this.toNonNegativeInt(Number(storedValue));
+    const storedDateText = localStorage.getItem(dateKey);
+    if (!storedDateText) return storedDays;
+
+    const storedDate = new Date(storedDateText);
+    const today = new Date();
+    storedDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const elapsedDays = Math.max(
+      0,
+      Math.floor((today.getTime() - storedDate.getTime()) / 86400000)
+    );
+
+    return storedDays + elapsedDays;
+  }
+
+  private getApplicationIofDays(application: AccountsApplications, referenceDate: Date): number {
+    const appliedDate = new Date(application.dateApplied);
+    const normalizedReferenceDate = new Date(referenceDate);
+    appliedDate.setHours(0, 0, 0, 0);
+    normalizedReferenceDate.setHours(0, 0, 0, 0);
+
+    const calculatedDays = Math.max(
+      0,
+      Math.floor((normalizedReferenceDate.getTime() - appliedDate.getTime()) / 86400000)
+    );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (normalizedReferenceDate < today) return calculatedDays;
+
+    const storedApplicationDays = this.getStoredIofValue(
+      this.getApplicationIofDaysKey(this.accountPosting.accountId, application.id),
+      this.getApplicationIofDateKey(this.accountPosting.accountId, application.id),
+      calculatedDays
+    );
+
+    return Math.max(calculatedDays, storedApplicationDays);
+  }
+
+  private persistApplicationIofDays(detail: AccountsPostingApplicationDetail): void {
+    if (
+      this.accountPosting.editing
+      || this.isRetroactiveDate()
+      || !this.accountPosting.accountId
+      || !detail.accountApplicationId
+    ) {
+      return;
+    }
+
+    localStorage.setItem(
+      this.getApplicationIofDaysKey(this.accountPosting.accountId, detail.accountApplicationId),
+      String(this.toNonNegativeInt(detail.iofElapsedDays))
+    );
+    localStorage.setItem(
+      this.getApplicationIofDateKey(this.accountPosting.accountId, detail.accountApplicationId),
+      new Date().toISOString()
+    );
   }
 
   transferAccountsList: any[] = [];
@@ -139,6 +568,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' }));
 
         this.refreshTransferAccountsList();
+        if (this.accountPosting.accountId) {
+          this.accountApplicationsService.readByAccount(this.accountPosting.accountId).subscribe(apps => {
+            this.accountApplications = apps.filter(x => !x.disabled);
+            if (this.accountPosting.type === 'Y') this.prepareApplicationDetails();
+          });
+        }
       },
     });
 
@@ -155,7 +590,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
       this.accountPosting.iofElapsedDays = days;
 
-      if (!this.accountPosting.editing && !this.isRetroactiveDate()) {
+      if (
+        !this.accountPosting.editing
+        && !this.isRetroactiveDate()
+        && (!this.accountApplications || this.getYieldApplications().length <= 1)
+      ) {
         const accountId = this.accountPosting.accountId;
 
         localStorage.setItem(this.getIofDaysKey(accountId), String(days));
@@ -210,29 +649,22 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // 1) localStorage
-    const stored = localStorage.getItem(this.getIofDaysKey(account?.id)
-    );
+    // 1) localStorage legado: conta e, se necessário, a chave global antiga.
+    const accountDaysKey = this.getIofDaysKey(account?.id);
+    const accountDateKey = this.getIofDateKey(account?.id);
+    const stored = localStorage.getItem(accountDaysKey);
+    const legacyStored = stored === null
+      ? localStorage.getItem(this.getLegacyIofDaysKey())
+      : stored;
+    const storedDaysKey = stored === null
+      ? this.getLegacyIofDaysKey()
+      : accountDaysKey;
+    const storedDateKey = stored === null
+      ? this.getLegacyIofDateKey()
+      : accountDateKey;
 
-    if (stored !== null) {
-      const baseDays = this.toNonNegativeInt(Number(stored));
-
-      const storedDateStr = localStorage.getItem(this.getIofDateKey(account?.id)
-      );
-
-      if (!storedDateStr) {
-        finish(baseDays);
-        return;
-      }
-
-      const storedDate = new Date(storedDateStr);
-      const today = new Date();
-
-      today.setHours(0, 0, 0, 0);
-      storedDate.setHours(0, 0, 0, 0);
-
-      const diff = Math.floor((today.getTime() - storedDate.getTime()) / 86400000);
-      finish(baseDays + Math.max(0, diff));
+    if (legacyStored !== null) {
+      finish(this.getStoredIofValue(storedDaysKey, storedDateKey, 0));
       return;
     }
 
@@ -246,6 +678,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       .then(apps => {
         if (apps?.length && apps[0]?.dateApplied) {
           this.accountApplications = apps;
+          this.prepareApplicationDetails();
 
           const today = new Date();
           const applied = new Date(apps[0].dateApplied);
@@ -317,7 +750,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       if (!this.validateTransferMode(true)) return;
     }
 
-    this.accountPosting.totalGrossBalance = this.saldoBruto;
+    this.prepareApplicationDetails();
+    if (this.hasMultipleApplications) {
+      this.recalculateApplicationTotals();
+      this.accountPosting.applicationDetails = this.applicationDetails.map(x => ({ ...x }));
+    } else this.accountPosting.totalGrossBalance = this.saldoBruto;
 
     this.dialogRef.close(this.accountPosting);
   }
@@ -421,71 +858,149 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         const selectedAccount = this.accountPosting.accountsList?.find((a) => a.id === this.accountPosting.accountId);
         const account = selectedAccount ? { ...selectedAccount } : undefined;
 
+        if (account?.id && !this.accountApplications) {
+          try {
+            this.accountApplications = await firstValueFrom(this.accountApplicationsService.readByAccount(account.id));
+          } catch {
+            this.accountApplications = [];
+          }
+        }
+
+        // Em edição retroativa, obtém a base anterior ao próprio rendimento.
+        // Assim, um TotalGrossBalance salvo incorretamente não é reutilizado.
+        let historicalBalanceForEditing: { balance: number; grossBalance: number } | undefined;
+        if (firstLoad && account?.id && this.isRetroactiveDate()) {
+          historicalBalanceForEditing = await firstValueFrom(
+            this.accountPostingsService.getHistoricalBalance(
+              account.id,
+              new Date(this.accountPosting.date),
+              this.accountPosting.id
+            )
+          );
+        }
+
+        const hasHistoricalBase = historicalBalanceForEditing !== undefined;
         const referenceBalance = Number(this.accountPosting.totalBalance ?? 0);
         const referenceGrossBalance = Number(this.accountPosting.totalGrossBalance ?? referenceBalance);
-        const shouldRemoveOriginalYield = this.accountPosting.editing && !this.isHistoricalBalanceForYield;
+        const shouldRemoveOriginalYield = this.accountPosting.editing && !this.isHistoricalBalanceForYield && !hasHistoricalBase;
         const originalAmount = shouldRemoveOriginalYield
           ? Number(this.accountPosting.originalAmount ?? 0)
           : 0;
         const originalGrossAmount = shouldRemoveOriginalYield
           ? Number(this.accountPosting.originalGrossAmount ?? this.accountPosting.originalAmount ?? 0)
           : 0;
-        const currentBalanceForYield = this.round2(
-          Number(this.accountPosting.currentBalanceForYield ?? referenceBalance) - originalAmount
+        let currentBalanceForYield = this.round2(
+          historicalBalanceForEditing?.balance ?? Number(this.accountPosting.currentBalanceForYield ?? referenceBalance) - originalAmount
         );
-        const currentGrossBalanceForYield = this.round2(
-          Number(this.accountPosting.currentGrossBalanceForYield ?? referenceGrossBalance) - originalGrossAmount
+        let currentGrossBalanceForYield = this.round2(
+          historicalBalanceForEditing?.grossBalance ?? Number(this.accountPosting.currentGrossBalanceForYield ?? referenceGrossBalance) - originalGrossAmount
         );
 
-        account!.totalBalance = currentBalanceForYield;
+                 const applicationsForYield = this.getYieldApplications();
+         if (applicationsForYield.length > 0) {
+           const launchDateForApplications = new Date(this.accountPosting.date);
+           launchDateForApplications.setHours(0, 0, 0, 0);
+           currentGrossBalanceForYield = this.round2(applicationsForYield.reduce(
+             (sum, application) => sum + this.getApplicationGrossBalanceBefore(application, launchDateForApplications),
+             0
+           ));
+           currentBalanceForYield = this.round2(applicationsForYield.reduce(
+             (sum, application) => sum + this.getApplicationNetBalanceBefore(application, launchDateForApplications),
+             0
+           ));
+         }
+
+account!.totalBalance = currentBalanceForYield;
         account!.totalBalanceGross = currentGrossBalanceForYield;
 
-        this.saldoBruto = referenceGrossBalance;
-        this.saldoLiquido = referenceBalance;
+        this.saldoBruto = this.round2(currentGrossBalanceForYield + Number(this.accountPosting.grossAmount ?? 0));
+        this.saldoLiquido = this.round2(currentBalanceForYield + Number(this.accountPosting.amount ?? 0));
 
         if (firstLoad && this.accountPosting.editing) {
+          if (hasHistoricalBase) {
+            const currentGrossAmount = this.round2(Number(this.accountPosting.grossAmount ?? 0));
+            const currentNetAmount = this.round2(Number(this.accountPosting.amount ?? 0));
+
+            this.saldoBruto = this.round2(currentGrossBalanceForYield + currentGrossAmount);
+            this.saldoLiquido = this.round2(currentBalanceForYield + currentNetAmount);
+            this.accountPosting.totalGrossBalance = this.saldoBruto;
+            this.accountPosting.totalBalance = this.saldoLiquido;
+          }
+
+          this.prepareApplicationDetails();
+
+          if (!this.noRecalculate && this.getYieldApplications().length > 0) {
+            this.applicationDetailsLoadedFromServer = false;
+            await this.calculateApplicationDetails(account!);
+          }
+
           this.captureYieldBaseValues();
           return;
         }
 
-        let suggestYield = {
-          grossYield: 0, netYield: 0, totalGross: 0, totalNet: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0
-        };
-
-        if (this.accountPosting.algorithmType === '1') { // Nubank
-          suggestYield = await this.yieldService.suggestYield1(account!);
-        }
-        else if (this.accountPosting.algorithmType === '2') { // Neon
-          suggestYield = await this.yieldService.suggestYield2(account!);
-        }
-        else if (this.accountPosting.algorithmType === '3') { // Mercado Pago
-          suggestYield = await this.yieldService.suggestYield3(
-            account!,
-            this.accountPosting.date,
-            this.accountPosting.iofElapsedDays!,
-            this.accountPosting.totalPreviousYield!,
-            this.previousBusinessDayHoliday
-          );
-        }
-        else if (this.accountPosting.algorithmType === '4') { // PicPay
-          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.iofElapsedDays!, this.accountPosting.totalPreviousYield!);
-        }
-        else if (this.accountPosting.algorithmType === '5') { // PagBank
-          suggestYield = await this.yieldService.suggestYield4(account!, this.accountPosting.date, this.accountPosting.iofElapsedDays!, this.accountPosting.totalPreviousYield!);
-        }
-
+        this.prepareApplicationDetails();
         this.isApplyingSuggestedYield = true;
 
         try {
-          this.accountPosting.grossAmount = suggestYield.grossYield;
-          this.accountPosting.amount = suggestYield.netYield;
-          this.accountPosting.totalIOF = suggestYield.iofTotal;
-          this.accountPosting.totalIR = suggestYield.irTotal;
+          if (this.hasMultipleApplications) {
+            // Múltiplas aplicações usam exclusivamente o cálculo individual.
+            this.accountPosting.grossAmount = 0;
+            this.accountPosting.amount = 0;
+            this.accountPosting.totalIOF = 0;
+            this.accountPosting.totalIR = 0;
 
-          this.saldoBruto = this.round2(currentGrossBalanceForYield + suggestYield.grossYield);
-          this.saldoLiquido = this.round2(currentBalanceForYield + suggestYield.netYield);
+            await this.calculateApplicationDetails(account!);
+            this.recalculateApplicationTotals();
+          } else {
+            let suggestYield = {
+              grossYield: 0,
+              netYield: 0,
+              totalGross: 0,
+              totalNet: 0,
+              iofTotal: 0,
+              irTotal: 0,
+              totalAplicado: 0
+            };
 
-          this.captureYieldBaseValues();
+            if (this.accountPosting.algorithmType === '1') {
+              suggestYield = await this.yieldService.suggestYield1(account!);
+            }
+            else if (this.accountPosting.algorithmType === '2') {
+              suggestYield = await this.yieldService.suggestYield2(account!);
+            }
+            else if (this.accountPosting.algorithmType === '3') {
+              suggestYield = await this.yieldService.suggestYield3(
+                account!,
+                this.accountPosting.date,
+                this.accountPosting.iofElapsedDays!,
+                this.accountPosting.totalPreviousYield!,
+                this.previousBusinessDayHoliday
+              );
+            }
+            else if (this.accountPosting.algorithmType === '4' || this.accountPosting.algorithmType === '5') {
+              suggestYield = await this.yieldService.suggestYield4(
+                account!,
+                this.accountPosting.date,
+                this.accountPosting.iofElapsedDays!,
+                this.accountPosting.totalPreviousYield!
+              );
+            }
+
+            this.accountPosting.grossAmount = suggestYield.grossYield;
+            this.accountPosting.amount = suggestYield.netYield;
+            this.accountPosting.totalIOF = suggestYield.iofTotal;
+            this.accountPosting.totalIR = suggestYield.irTotal;
+            this.accountPosting.totalGrossBalance = this.round2(
+              currentGrossBalanceForYield + suggestYield.grossYield
+            );
+            this.accountPosting.totalBalance = this.round2(
+              currentBalanceForYield + suggestYield.netYield
+            );
+
+            this.saldoBruto = this.accountPosting.totalGrossBalance;
+            this.saldoLiquido = this.accountPosting.totalBalance;
+            this.captureYieldBaseValues();
+          }
 
           this.cd.detectChanges();
         } finally {

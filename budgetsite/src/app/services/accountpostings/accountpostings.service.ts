@@ -103,6 +103,20 @@ export class AccountPostingsService {
     );
   }
 
+
+  getHistoricalApplicationBalance(accountApplicationId: number, date: Date, excludePostingId?: number): Observable<AccountHistoricalBalance> {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const excludeParameter = excludePostingId ? `&excludePostingId=${excludePostingId}` : '';
+    const url = `${ApiUrls.accountspostings}/historicalapplicationbalance/${accountApplicationId}?date=${year}-${month}-${day}${excludeParameter}`;
+
+    return this.http.get<AccountHistoricalBalance>(url).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
   getPreviousYield(accountId: number, reference: string): Observable<number> {
     return this.http.get<number>(`${ApiUrls.accountspostings}/previousyield/${accountId}/${reference}`).pipe(
       map(obj => obj),

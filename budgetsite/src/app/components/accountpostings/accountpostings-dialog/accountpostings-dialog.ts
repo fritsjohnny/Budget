@@ -100,7 +100,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         maturityDate.setHours(0, 0, 0, 0);
         return maturityDate >= launchDate;
       })
-      .sort((a, b) => new Date(a.dateApplied).getTime() - new Date(b.dateApplied).getTime());
+      .sort((a, b) => new Date(a.dateApplied).getTime() - new Date(b.dateApplied).getTime())
+      .filter((application, index, applicationsList) =>
+        applicationsList.findIndex(item => item.id === application.id) === index
+      );
   }
 
   private applicationDetailsLoadedFromServer = false;

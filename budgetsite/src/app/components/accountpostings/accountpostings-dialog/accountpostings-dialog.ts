@@ -81,7 +81,9 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   applicationDetails: AccountsPostingApplicationDetail[] = [];
 
   get hasMultipleApplications(): boolean {
-    return this.getYieldApplications().length > 1;
+    return this.applicationDetails.length > 1
+      || (this.accountPosting.applicationDetails?.length ?? 0) > 1
+      || this.getYieldApplications().length > 1;
   }
 
   private getYieldApplications(): AccountsApplications[] {
@@ -319,8 +321,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private prepareApplicationDetails(): void {
-    const applications = this.getYieldApplications();
-    if (applications.length <= 1) return;
+    if (this.applicationDetailsLoadedFromServer && this.applicationDetails.length > 0) return;
+
     const saved = this.accountPosting.applicationDetails ?? [];
     if (saved.length > 0) {
       this.applicationDetails = saved.map(detail => ({ ...detail }));
@@ -329,6 +331,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       this.recalculateApplicationTotals();
       return;
     }
+
+    const applications = this.getYieldApplications();
+    if (applications.length === 0) return;
+
     this.applicationDetailsLoadedFromServer = false;
     if (this.applicationDetails.length === 0) {
       this.applicationDetails = applications.map(application => ({
@@ -809,13 +815,13 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       const application = this.getYieldApplications()[0];
       const detail = application
         ? this.applicationDetails.find(item => item.accountApplicationId === application.id)
-        : undefined;
+        : (this.applicationDetails.length === 1 ? this.applicationDetails[0] : undefined);
 
       if (detail) {
         detail.amount = this.round2(Number(this.accountPosting.amount ?? 0));
         detail.grossAmount = this.round2(Number(this.accountPosting.grossAmount ?? 0));
         detail.totalGrossBalance = this.round2(Number(this.accountPosting.totalGrossBalance ?? this.saldoBruto));
-        detail.totalBalance = this.round2(Number(this.accountPosting.totalBalance ?? this.saldoLiquido));
+        detail.totalBalance = this.round2(Number(this.saldoLiquido));
         detail.totalIOF = this.round2(Number(this.accountPosting.totalIOF ?? 0));
         detail.totalIR = this.round2(Number(this.accountPosting.totalIR ?? 0));
         detail.iofElapsedDays = this.toNonNegativeInt(this.accountPosting.iofElapsedDays);
@@ -823,6 +829,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
       this.accountPosting.applicationDetails = this.applicationDetails.map(x => ({ ...x }));
       this.accountPosting.totalGrossBalance = this.saldoBruto;
+      this.accountPosting.totalBalance = this.saldoLiquido;
     }
 
     this.dialogRef.close(this.accountPosting);
@@ -1004,8 +1011,7 @@ account!.totalBalance = currentBalanceForYield;
 
           this.prepareApplicationDetails();
 
-          if (!this.noRecalculate && this.getYieldApplications().length > 0) {
-            this.applicationDetailsLoadedFromServer = false;
+          if (!this.noRecalculate && this.getYieldApplications().length > 1 && !this.applicationDetailsLoadedFromServer) {
             await this.calculateApplicationDetails(account!);
           }
 
@@ -1292,6 +1298,7 @@ account!.totalBalance = currentBalanceForYield;
   }
 
   onSaldoLiquidoChanged($event: any) {
+    this.accountPosting.totalBalance = this.round2(Number(this.saldoLiquido ?? 0));
     this.calculaValor();
   }
 

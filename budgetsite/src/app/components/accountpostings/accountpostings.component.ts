@@ -593,6 +593,11 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    const applicationDetails = accountPosting.applicationDetails ?? [];
+    const applicationTotalBalance = applicationDetails.length > 0 && applicationDetails.every(detail => detail.totalBalance != null)
+      ? Number(applicationDetails.reduce((total, detail) => total + Number(detail.totalBalance), 0).toFixed(2))
+      : undefined;
+
     const dialogRef = this.dialog.open(this.accountPostingsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
@@ -608,6 +613,14 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         grossAmount: accountPosting.grossAmount,
         originalAmount: accountPosting.amount,
         originalGrossAmount: accountPosting.grossAmount,
+        totalBalance: accountPosting.type === 'Y'
+          ? (accountPosting.totalBalance
+            ?? applicationTotalBalance
+            ?? (accountPosting.totalGrossBalance != null
+              ? accountPosting.totalGrossBalance - (accountPosting.totalIOF ?? 0) - (accountPosting.totalIR ?? 0)
+              : this.totalBalance))
+          : this.totalBalance,
+
         note: accountPosting.note,
         editing: true,
         accountsList: this.accountsList,
@@ -618,7 +631,6 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         incomeId: accountPosting.incomeId,
         incomesList: this.incomes,
         expensesList: this.expenses,
-        totalBalance: this.totalBalance,
         currentBalanceForYield: this.currentBalance,
         currentGrossBalanceForYield: this.currentGrossBalance,
         totalGrossBalance: accountPosting.type === 'Y'
@@ -676,6 +688,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
                   t.amount = result.amount;
                   t.grossAmount = result.grossAmount;
                   t.totalGrossBalance = result.totalGrossBalance;
+                  t.totalBalance = result.totalBalance;
+                  t.applicationDetails = result.applicationDetails?.map((detail: any) => ({ ...detail }));
                   t.totalIOF = result.totalIOF;
                   t.totalIR = result.totalIR;
                   t.iofElapsedDays = result.iofElapsedDays;

@@ -39,7 +39,7 @@ export interface AccountsPostings {
   deleting?: boolean;
   account?: Accounts;
   cardReceipt?: CardsReceipts;
-  totalBalance: number;
+  totalBalance?: number | null;
   currentBalanceForYield?: number;
   currentGrossBalanceForYield?: number;
   totalGrossBalance: number;

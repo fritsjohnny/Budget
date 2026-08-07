@@ -352,7 +352,18 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         if (yieldPosting.id && this.accountPosting.id && yieldPosting.id === this.accountPosting.id) return false;
         const yieldDate = new Date(yieldPosting.date);
         yieldDate.setHours(0, 0, 0, 0);
-        return yieldDate < launchDate;
+        if (yieldDate < launchDate) return true;
+        if (yieldDate > launchDate) return false;
+
+        if (!this.accountPosting.editing || !this.accountPosting.id) return true;
+        if (yieldPosting.id === this.accountPosting.id) return false;
+
+        const currentPosition = Number(this.accountPosting.position ?? Number.MAX_SAFE_INTEGER);
+        const yieldPosition = Number(yieldPosting.position ?? Number.MAX_SAFE_INTEGER);
+
+        return yieldPosition < currentPosition ||
+          (yieldPosition === currentPosition &&
+           Number(yieldPosting.id ?? 0) < Number(this.accountPosting.id));
       })
       .sort((a, b) => {
         const dateDifference = new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -392,7 +403,18 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         if (yieldPosting.id && this.accountPosting.id && yieldPosting.id === this.accountPosting.id) return false;
         const yieldDate = new Date(yieldPosting.date);
         yieldDate.setHours(0, 0, 0, 0);
-        return yieldDate < launchDate;
+        if (yieldDate < launchDate) return true;
+        if (yieldDate > launchDate) return false;
+
+        if (!this.accountPosting.editing || !this.accountPosting.id) return true;
+        if (yieldPosting.id === this.accountPosting.id) return false;
+
+        const currentPosition = Number(this.accountPosting.position ?? Number.MAX_SAFE_INTEGER);
+        const yieldPosition = Number(yieldPosting.position ?? Number.MAX_SAFE_INTEGER);
+
+        return yieldPosition < currentPosition ||
+          (yieldPosition === currentPosition &&
+           Number(yieldPosting.id ?? 0) < Number(this.accountPosting.id));
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -783,7 +805,25 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     if (this.hasMultipleApplications) {
       this.recalculateApplicationTotals();
       this.accountPosting.applicationDetails = this.applicationDetails.map(x => ({ ...x }));
-    } else this.accountPosting.totalGrossBalance = this.saldoBruto;
+    } else {
+      const application = this.getYieldApplications()[0];
+      const detail = application
+        ? this.applicationDetails.find(item => item.accountApplicationId === application.id)
+        : undefined;
+
+      if (detail) {
+        detail.amount = this.round2(Number(this.accountPosting.amount ?? 0));
+        detail.grossAmount = this.round2(Number(this.accountPosting.grossAmount ?? 0));
+        detail.totalGrossBalance = this.round2(Number(this.accountPosting.totalGrossBalance ?? this.saldoBruto));
+        detail.totalBalance = this.round2(Number(this.accountPosting.totalBalance ?? this.saldoLiquido));
+        detail.totalIOF = this.round2(Number(this.accountPosting.totalIOF ?? 0));
+        detail.totalIR = this.round2(Number(this.accountPosting.totalIR ?? 0));
+        detail.iofElapsedDays = this.toNonNegativeInt(this.accountPosting.iofElapsedDays);
+      }
+
+      this.accountPosting.applicationDetails = this.applicationDetails.map(x => ({ ...x }));
+      this.accountPosting.totalGrossBalance = this.saldoBruto;
+    }
 
     this.dialogRef.close(this.accountPosting);
   }

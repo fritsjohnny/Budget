@@ -1,32 +1,39 @@
-<app-card-modern-layout *ngIf="useModernLayout" [context]="modernLayoutContext"></app-card-modern-layout>
+<div class="card-page-container page-loading-container">
+    <app-load-spinner
+        [loading]="!hideProgress"
+        [message]="loadingMessage"
+    ></app-load-spinner>
 
-<div class="container default-margin-bottom" *ngIf="!useModernLayout">
-    <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
-        <mat-expansion-panel style="margin-top: 10px !important; padding-bottom: -50px" [hideToggle]="false">
-            <mat-expansion-panel-header>
-                <span class="material-icons center">calendar_month</span>
-                <span class="center">{{ referenceHead }}</span>
-                <span class="material-icons center" style="padding-left: 10px">credit_card</span>
-                <button mat-button class="center" [ngStyle]="{ backgroundColor: card?.background, color: card?.color }">{{ card?.name }}</button>
-            </mat-expansion-panel-header>
-            <app-datepicker style="margin-top: -75px !important" (referenceChange)="setReference($event)" [cardId]="cardId" [reference]="reference"></app-datepicker>
-            <div>
-                
-                <button class="card-button" [ngClass]="{ line: buttonName === card.name }" mat-button *ngFor="let card of cardsVisible"
-                    [ngStyle]="{ backgroundColor: card.background, color: card.color }" (click)="setCard(card)">{{ card.name }}</button>
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-right: 5px">
-                    <span class="material-icons add-card" matTooltip="Incluir/Editar Cartões" matTooltipPosition="above" (click)="cardDialog()">format_list_bulleted</span>
-                    <span class="material-icons add-card" matTooltip="Atualizar" matTooltipPosition="above" (click)="refresh()">autorenew</span>
-                    <span *ngIf="cardId && cardId > 0 && reference" class="material-icons add-card" matTooltip="Início da próxima fatura"
-                        [class.disabled]="validatingInvoiceClosing" (click)="openInvoiceClosing()">event_available</span>
-                    <span *ngIf="card?.appPackageName" class="material-icons add-card" matTooltip="Abrir App do Banco"
-                        matTooltipPosition="above" (click)="openBankApp()" style="cursor: pointer">open_in_new</span>
+    <app-card-modern-layout *ngIf="useModernLayout" [context]="modernLayoutContext"></app-card-modern-layout>
+
+    <div class="container default-margin-bottom" *ngIf="!useModernLayout">
+        <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
+            <mat-expansion-panel style="margin-top: 10px !important; padding-bottom: -50px" [hideToggle]="false">
+                <mat-expansion-panel-header>
+                    <span class="material-icons center">calendar_month</span>
+                    <span class="center">{{ referenceHead }}</span>
+                    <span class="material-icons center" style="padding-left: 10px">credit_card</span>
+                    <button mat-button class="center" [ngStyle]="{ backgroundColor: card?.background, color: card?.color }">{{ card?.name }}</button>
+                </mat-expansion-panel-header>
+                <app-datepicker style="margin-top: -75px !important" (referenceChange)="setReference($event)" [cardId]="cardId" [reference]="reference"></app-datepicker>
+                <div>
+                    
+                    <button class="card-button" [ngClass]="{ line: buttonName === card.name }" mat-button *ngFor="let card of cardsVisible"
+                        [ngStyle]="{ backgroundColor: card.background, color: card.color }" (click)="setCard(card)">{{ card.name }}</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-right: 5px">
+                        <span class="material-icons add-card" matTooltip="Incluir/Editar Cartões" matTooltipPosition="above" (click)="cardDialog()">format_list_bulleted</span>
+                        <span class="material-icons add-card" matTooltip="Atualizar" matTooltipPosition="above" (click)="refresh()">autorenew</span>
+                        <span *ngIf="cardId && cardId > 0 && reference" class="material-icons add-card" matTooltip="Início da próxima fatura"
+                            [class.disabled]="validatingInvoiceClosing" (click)="openInvoiceClosing()">event_available</span>
+                        <span *ngIf="card?.appPackageName" class="material-icons add-card" matTooltip="Abrir App do Banco"
+                            matTooltipPosition="above" (click)="openBankApp()" style="cursor: pointer">open_in_new</span>
+                    </div>
                 </div>
-            </div>
-        </mat-expansion-panel>
-    </mat-accordion>
-    <div style="margin-top: 10px">
-        <app-cardpostings [cardId]="cardId" [reference]="reference"
-            (notificationContextChange)="setNotificationContext($event)"></app-cardpostings>
+            </mat-expansion-panel>
+        </mat-accordion>
+        <div style="margin-top: 10px">
+            <app-cardpostings [cardId]="cardId" [reference]="reference"
+                (notificationContextChange)="setNotificationContext($event)"></app-cardpostings>
+        </div>
     </div>
 </div>

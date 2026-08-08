@@ -1,5 +1,5 @@
 <div
-    class="container default-margin-bottom"
+    class="container default-margin-bottom page-loading-container"
     [class.annual-savings-shell]="useModernLayout"
     [class.annual-pull-active]="pullDistance > 0 && !isPullRefreshing"
     [class.annual-pull-refreshing]="isPullRefreshing"
@@ -9,6 +9,11 @@
     (touchend)="onPullEnd()"
     (touchcancel)="onPullCancel()"
 >
+    <app-load-spinner
+        [loading]="showProgress"
+        [message]="loadingMessage"
+    ></app-load-spinner>
+
     <div
         *ngIf="useModernLayout"
         class="annual-pull-indicator"
@@ -148,13 +153,6 @@
             </div>
         </mat-expansion-panel>
     </mat-accordion>
-
-    <!-- SPINNER -->
-    <div class="row center" style="margin-top: 10px">
-        <div class="row justify-content-center">
-            <app-load-spinner [loading]="showProgress" [message]="loadingMessage"></app-load-spinner>
-        </div>
-    </div>
 
     <!-- BOTÃO ATUALIZAR -->
     <div class="row center" *ngIf="!showProgress && !useModernLayout">

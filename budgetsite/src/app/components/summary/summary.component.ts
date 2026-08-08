@@ -40,6 +40,7 @@ export class SummaryComponent implements OnInit, AfterViewInit {
   monthName: string = "";
   hideAccountsSummaryProgress: boolean = true;
   hideTotalsAccountsSummaryProgress: boolean = true;
+  loadingMessage: string = 'Carregando saldos...';
   accountsSummary!: AccountsSummary[];
   totalsAccountsSummary!: AccountsSummaryTotals;
   forecastBalanceTotal: number = 0;

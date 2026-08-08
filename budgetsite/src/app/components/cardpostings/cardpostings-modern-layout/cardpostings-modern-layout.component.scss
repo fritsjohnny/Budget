@@ -434,6 +434,10 @@
 .notifications-panel .panel-copy strong {
     color: var(--purple);
 }
+.notifications-panel .notifications-count {
+    color: var(--yellow);
+    white-space: nowrap;
+}
 .notifications-panel .panel-copy small {
     overflow: visible;
     text-overflow: clip;

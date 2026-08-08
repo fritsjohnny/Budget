@@ -1,2 +1,8 @@
-<router-outlet></router-outlet>
+<main
+  class="app-page-container"
+  [class.app-page-container-with-tabs]="showBottomTabs"
+>
+  <router-outlet></router-outlet>
+</main>
+
 <app-bottom-tabs *ngIf="showBottomTabs"></app-bottom-tabs>

@@ -5,6 +5,14 @@
     aria-live="polite"
     aria-label="Carregando"
 >
-    <mat-spinner color="accent" [diameter]="52"></mat-spinner>
-    <span *ngIf="message">{{ message }}</span>
+    <div class="load-spinner-content">
+        <mat-spinner color="accent" [diameter]="52"></mat-spinner>
+
+        <span
+            *ngIf="message"
+            class="load-spinner-message"
+        >
+            {{ message }}
+        </span>
+    </div>
 </div>

@@ -884,7 +884,7 @@
                         ><span class="panel-icon"
                             ><mat-icon>notifications_active</mat-icon></span
                         ><span class="panel-copy"
-                            ><strong>Compras detectadas</strong
+                            ><strong>Compras detectadas <span class="notifications-count" *ngIf="context.detectedPurchasesCount > 0">({{ context.detectedPurchasesCount }})</span></strong
                             ><small
                                 >Toque para transformar notificações em
                                 lançamentos</small

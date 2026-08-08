@@ -1888,8 +1888,33 @@ tr.cdk-drag-preview > td.mat-cell:last-child {
 
 @import "./modern-material-overlays";
 
-/* Loader global: impede rolagem da página enquanto uma operação bloqueante está ativa. */
-body:has(app-load-spinner .load-spinner-overlay) {
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
+/* Área de loading local à página ativa. */
+.page-loading-container {
+  position: relative;
+  box-sizing: border-box;
 }
+
+.page-loading-container:has(app-load-spinner .load-spinner-overlay) {
+  min-height: calc(100dvh - 58px - 56px - env(safe-area-inset-bottom));
+}
+
+@media (min-width: 601px) {
+  .page-loading-container:has(app-load-spinner .load-spinner-overlay) {
+    min-height: calc(100dvh - 64px - 68px - env(safe-area-inset-bottom));
+  }
+}
+
+/* Loading limitado à página atual. */
+.app-page-container:has(app-load-spinner .load-spinner-overlay) {
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.app-page-container-with-tabs:has(app-load-spinner .load-spinner-overlay) {
+  height: calc(100dvh - 56px - env(safe-area-inset-bottom));
+  max-height: calc(100dvh - 56px - env(safe-area-inset-bottom));
+}
+

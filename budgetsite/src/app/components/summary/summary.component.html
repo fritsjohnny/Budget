@@ -3,7 +3,7 @@
     [context]="modernLayoutContext"
 ></app-summary-modern-layout>
 
-<div *ngIf="!useModernLayout" class="container default-margin-bottom">
+<div *ngIf="!useModernLayout" class="container default-margin-bottom page-loading-container">
     <mat-accordion displayMode="default" [multi]="true" [hideToggle]="false">
         <mat-expansion-panel
             class="mat-panel-summary"
@@ -27,19 +27,11 @@
         </mat-expansion-panel>
     </mat-accordion>
 
-    <!-- SPINNER -->
-    <div class="row center" style="margin-top: 10px">
-        <div class="row justify-content-center">
-            <mat-spinner
-                color="accent"
-                *ngIf="
-                    !hideAccountsSummaryProgress ||
-                    !hideTotalsAccountsSummaryProgress
-                "
-            >
-            </mat-spinner>
-        </div>
-    </div>
+    <app-load-spinner
+        [loading]="!hideAccountsSummaryProgress || !hideTotalsAccountsSummaryProgress"
+        [message]="loadingMessage"
+    ></app-load-spinner>
+
 
     <!-- BOTÃO ATUALIZAR -->
     <div

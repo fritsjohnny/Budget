@@ -1,5 +1,5 @@
 <div
-    class="modern-summary-shell"
+    class="modern-summary-shell page-loading-container"
     [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
     [class.pull-refreshing]="isPullRefreshing"
     [style.--pull-distance]="pullDistance + 'px'"
@@ -8,6 +8,11 @@
     (touchend)="onPullEnd()"
     (touchcancel)="onPullCancel()"
 >
+    <app-load-spinner
+        [loading]="isLoading"
+        [message]="context.loadingMessage"
+    ></app-load-spinner>
+
     <div
         class="pull-refresh-indicator"
         [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"

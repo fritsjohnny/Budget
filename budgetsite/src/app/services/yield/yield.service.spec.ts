@@ -1,6 +1,7 @@
 /// <reference types="jasmine" />
 
 import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
 import { AccountYieldRangeService } from 'src/app/services/accountyieldrange/accountyieldrange.service';
 import { Accounts } from 'src/app/models/accounts.model';
@@ -156,6 +157,71 @@ describe('YieldService - múltiplas aplicações', () => {
     expect(result.totalNet).toBe(
       details.reduce((total, detail) => total + Number(detail.totalBalance), 0)
     );
+  });
+
+  it('Nubank usa o saldo anterior e recalcula o IOF acumulado da aplicação', async () => {
+    const application = createApplication(1, 10000, 100);
+    const applicationsService = {
+      readByAccount: () => of([application])
+    } as unknown as AccountApplicationsService;
+    const nubankService = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationsService,
+      {} as AccountYieldRangeService
+    );
+
+    spyOn<any>(nubankService, 'getCdiDiarioPercent').and.resolveTo(0);
+
+    const result = await nubankService.suggestYield1(
+      {
+        ...account,
+        name: 'Nubank',
+        yieldPercent: 100,
+        totalBalanceGross: 10100,
+        totalBalance: 10069.75
+      },
+      new Date('2026-08-09T00:00:00'),
+      28
+    );
+
+    expect(result.grossYield).toBe(0);
+    expect(result.iofTotal).toBe(6);
+    expect(result.irTotal).toBe(21.15);
+    expect(result.totalNet).toBe(10072.85);
+    expect(result.netYield).toBe(3.1);
+  });
+
+  it('Mercado Pago usa o saldo líquido do detalhe anterior como acumulado', async () => {
+    const application = createApplication(1, 10000, 100);
+    const applicationsService = {
+      readByAccount: () => of([application])
+    } as unknown as AccountApplicationsService;
+    const mercadoPagoService = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationsService,
+      {} as AccountYieldRangeService
+    );
+
+    const result = await mercadoPagoService.suggestYield3(
+      {
+        ...account,
+        name: 'Mercado Pago',
+        yieldPercent: 100,
+        totalBalanceGross: 10100,
+        totalBalance: 10069.75
+      },
+      new Date('2026-08-09T00:00:00'),
+      28,
+      999
+    );
+
+    expect(result.grossYield).toBe(0);
+    expect(result.iofTotal).toBe(6);
+    expect(result.irTotal).toBe(21.15);
+    expect(result.netYield).toBe(3.1);
+    expect(result.totalNet).toBe(10072.85);
   });
 
   it('usa a tabela correta de IOF por aplicação', () => {

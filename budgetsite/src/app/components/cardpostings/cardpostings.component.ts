@@ -659,11 +659,19 @@ export class CardPostingsComponent implements OnInit {
     if (this.validatingInvoiceClosing) return;
     this.validatingInvoiceClosing = true;
     this.invoiceClosingService.ensure(cardPosting.cardId, cardPosting.reference).pipe(finalize(() => this.validatingInvoiceClosing = false)).subscribe({
-      next: closing => this.openClone(cardPosting, closing)
+      next: closing => this.openClone(cardPosting, closing, false)
     });
   }
 
-  private openClone(cardPosting: CardsPostings, invoiceClosing: CardsInvoiceClosing): void {
+   cancel(cardPosting: CardsPostings): void {
+     if (this.validatingInvoiceClosing) return;
+     this.validatingInvoiceClosing = true;
+     this.invoiceClosingService.ensure(cardPosting.cardId, cardPosting.reference).pipe(finalize(() => this.validatingInvoiceClosing = false)).subscribe({
+       next: closing => this.openClone(cardPosting, closing, true)
+     });
+   }
+
+   private openClone(cardPosting: CardsPostings, invoiceClosing: CardsInvoiceClosing, isCancellation: boolean = false): void {
     this.editing = false;
 
     const dialogRef = this.dialog.open(this.cardPostingsDialogComponent, {
@@ -680,8 +688,8 @@ export class CardPostingsComponent implements OnInit {
         peopleId: cardPosting.peopleId,
         parcelNumber: cardPosting.parcelNumber ?? 1,
         parcels: cardPosting.parcels ?? 1,
-        amount: cardPosting.amount,
-        totalAmount: cardPosting.totalAmount ?? cardPosting.amount,
+        amount: isCancellation ? -Math.abs(cardPosting.amount) : cardPosting.amount,
+        totalAmount: isCancellation ? -Math.abs(cardPosting.totalAmount ?? cardPosting.amount) : cardPosting.totalAmount ?? cardPosting.amount,
         others: cardPosting.others,
         note: cardPosting.note,
         people: cardPosting.people,

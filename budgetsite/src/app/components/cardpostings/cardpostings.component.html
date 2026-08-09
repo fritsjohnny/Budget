@@ -488,6 +488,14 @@
                                     </button>
 
                                     <button
+                                        mat-menu-item
+                                        (click)="cancel(row)"
+                                    >
+                                        <mat-icon>cancel</mat-icon>
+                                        <span>Cancelar</span>
+                                    </button>
+
+                                    <button
                                         *ngIf="checkCard"
                                         mat-menu-item
                                         (click)="toggleCardPostingIgnored(row)"

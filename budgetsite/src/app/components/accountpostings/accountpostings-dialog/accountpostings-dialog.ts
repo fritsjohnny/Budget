@@ -18,7 +18,7 @@ import { Messenger } from 'src/app/common/messenger';
 import { AccountsApplications } from 'src/app/models/accountsapplications.model';
 import { AccountsPostings, AccountsPostingApplicationDetail } from 'src/app/models/accountspostings.model';
 import { AccountApplicationsService } from 'src/app/services/accountapplications/accountapplications.service';
-import { AccountPostingsService } from 'src/app/services/accountpostings/accountpostings.service';
+import { AccountHistoricalBalance, AccountPostingsService } from 'src/app/services/accountpostings/accountpostings.service';
 import { AccountService } from 'src/app/services/account/account.service';
 import { YieldService } from 'src/app/services/yield/yield.service';
 import {
@@ -117,6 +117,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     totalIOF: number;
     totalIR: number;
   }>();
+  private applicationHistoricalBalanceCache = new Map<string, Promise<AccountHistoricalBalance>>();
 
   get consolidatedGross(): number {
     return this.round2(this.applicationDetails.reduce((sum, detail) => sum + Number(detail.grossAmount ?? 0), 0));
@@ -351,18 +352,57 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private async getApplicationGrossBalanceBefore(application: AccountsApplications, launchDate: Date): Promise<number> {
+  private async getApplicationHistoricalBalanceBefore(
+    application: AccountsApplications,
+    launchDate: Date
+  ): Promise<AccountHistoricalBalance> {
+    const applicationAmount = this.round2(Number(application.amountApplied || 0));
+    if (!application.id) {
+      return { balance: applicationAmount, grossBalance: applicationAmount };
+    }
+
+    const normalizedDate = new Date(launchDate);
+    normalizedDate.setHours(0, 0, 0, 0);
+
+    const dateKey = [
+      normalizedDate.getFullYear(),
+      String(normalizedDate.getMonth() + 1).padStart(2, '0'),
+      String(normalizedDate.getDate()).padStart(2, '0')
+    ].join('-');
+    const excludePostingId = this.accountPosting.editing ? this.accountPosting.id : undefined;
+    const cacheKey = `${application.id}|${dateKey}|${excludePostingId ?? 0}`;
+
+    let request = this.applicationHistoricalBalanceCache.get(cacheKey);
+    if (!request) {
+      request = firstValueFrom(
+        this.accountPostingsService.getHistoricalApplicationBalance(
+          application.id,
+          normalizedDate,
+          excludePostingId
+        )
+      ).catch(() => this.getLocalApplicationHistoricalBalance(application, normalizedDate));
+
+      this.applicationHistoricalBalanceCache.set(cacheKey, request);
+    }
+
+    return await request;
+  }
+
+  private getLocalApplicationHistoricalBalance(
+    application: AccountsApplications,
+    launchDate: Date
+  ): AccountHistoricalBalance {
     const applicationAmount = this.round2(Number(application.amountApplied || 0));
     const yields = (this.accountPosting.accountPostingsYields ?? [])
       .filter(yieldPosting => {
         if (yieldPosting.id && this.accountPosting.id && yieldPosting.id === this.accountPosting.id) return false;
+
         const yieldDate = new Date(yieldPosting.date);
         yieldDate.setHours(0, 0, 0, 0);
         if (yieldDate < launchDate) return true;
         if (yieldDate > launchDate) return false;
 
         if (!this.accountPosting.editing || !this.accountPosting.id) return true;
-        if (yieldPosting.id === this.accountPosting.id) return false;
 
         const currentPosition = Number(this.accountPosting.position ?? Number.MAX_SAFE_INTEGER);
         const yieldPosition = Number(yieldPosting.position ?? Number.MAX_SAFE_INTEGER);
@@ -373,81 +413,78 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       })
       .sort((a, b) => {
         const dateDifference = new Date(a.date).getTime() - new Date(b.date).getTime();
-        return dateDifference || Number(a.id || 0) - Number(b.id || 0);
+        if (dateDifference) return dateDifference;
+
+        const positionDifference = Number(a.position ?? 0) - Number(b.position ?? 0);
+        return positionDifference || Number(a.id ?? 0) - Number(b.id ?? 0);
       });
 
-    let balance = applicationAmount;
-
-    for (const yieldPosting of yields) {
+    for (let index = yields.length - 1; index >= 0; index--) {
+      const yieldPosting = yields[index];
       const detail = yieldPosting.applicationDetails?.find(
         item => item.accountApplicationId === application.id
       );
 
-      if (detail?.totalGrossBalance !== undefined && detail.totalGrossBalance !== null) {
-        balance = this.round2(Number(detail.totalGrossBalance));
-      }
+      if (!detail) continue;
+
+      return {
+        balance: this.round2(Number(
+          detail.totalBalance
+          ?? (Number(detail.totalGrossBalance ?? applicationAmount)
+            - Number(detail.totalIOF ?? 0)
+            - Number(detail.totalIR ?? 0))
+        )),
+        grossBalance: this.round2(Number(detail.totalGrossBalance ?? applicationAmount)),
+        totalIOF: detail.totalIOF,
+        totalIR: detail.totalIR,
+        iofElapsedDays: detail.iofElapsedDays,
+        postingDate: yieldPosting.date
+      };
     }
 
-    if (balance === applicationAmount && application.id) {
-      const historical = await firstValueFrom(
-        this.accountPostingsService.getHistoricalApplicationBalance(
-          application.id,
-          launchDate,
-          this.accountPosting.editing ? this.accountPosting.id : undefined
-        )
-      );
-      balance = this.round2(Number(historical.grossBalance ?? applicationAmount));
-    }
-
-    return balance;
+    return { balance: applicationAmount, grossBalance: applicationAmount };
   }
 
-  private async getApplicationNetBalanceBefore(application: AccountsApplications, launchDate: Date): Promise<number> {
-    const applicationAmount = this.round2(Number(application.amountApplied || 0));
-    const yields = (this.accountPosting.accountPostingsYields ?? [])
-      .filter(yieldPosting => {
-        if (yieldPosting.id && this.accountPosting.id && yieldPosting.id === this.accountPosting.id) return false;
-        const yieldDate = new Date(yieldPosting.date);
-        yieldDate.setHours(0, 0, 0, 0);
-        if (yieldDate < launchDate) return true;
-        if (yieldDate > launchDate) return false;
+  private async getApplicationGrossBalanceBefore(
+    application: AccountsApplications,
+    launchDate: Date
+  ): Promise<number> {
+    const historical = await this.getApplicationHistoricalBalanceBefore(application, launchDate);
+    return this.round2(Number(historical.grossBalance ?? application.amountApplied ?? 0));
+  }
 
-        if (!this.accountPosting.editing || !this.accountPosting.id) return true;
-        if (yieldPosting.id === this.accountPosting.id) return false;
+  private async getApplicationNetBalanceBefore(
+    application: AccountsApplications,
+    launchDate: Date
+  ): Promise<number> {
+    const historical = await this.getApplicationHistoricalBalanceBefore(application, launchDate);
+    return this.round2(Number(historical.balance ?? application.amountApplied ?? 0));
+  }
 
-        const currentPosition = Number(this.accountPosting.position ?? Number.MAX_SAFE_INTEGER);
-        const yieldPosition = Number(yieldPosting.position ?? Number.MAX_SAFE_INTEGER);
+  private async getApplicationIofDaysBefore(
+    application: AccountsApplications,
+    launchDate: Date
+  ): Promise<number> {
+    const historical = await this.getApplicationHistoricalBalanceBefore(application, launchDate);
 
-        return yieldPosition < currentPosition ||
-          (yieldPosition === currentPosition &&
-           Number(yieldPosting.id ?? 0) < Number(this.accountPosting.id));
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    let balance = applicationAmount;
-
-    for (const yieldPosting of yields) {
-      const detail = yieldPosting.applicationDetails?.find(
-        item => item.accountApplicationId === application.id
-      );
-
-      if (detail?.totalBalance !== undefined && detail.totalBalance !== null) {
-        balance = this.round2(Number(detail.totalBalance));
-      }
+    if (historical.iofElapsedDays === undefined || historical.iofElapsedDays === null) {
+      return this.getApplicationIofDays(application, launchDate);
     }
 
-    if (balance === applicationAmount && application.id) {
-      const historical = await firstValueFrom(
-        this.accountPostingsService.getHistoricalApplicationBalance(
-          application.id,
-          launchDate,
-          this.accountPosting.editing ? this.accountPosting.id : undefined
-        )
-      );
-      balance = this.round2(Number(historical.balance ?? applicationAmount));
-    }
+    const previousDays = this.toNonNegativeInt(historical.iofElapsedDays);
+    if (!historical.postingDate) return previousDays;
 
-    return balance;
+    const postingDate = new Date(historical.postingDate);
+    const normalizedLaunchDate = new Date(launchDate);
+    postingDate.setHours(0, 0, 0, 0);
+    normalizedLaunchDate.setHours(0, 0, 0, 0);
+
+    const elapsedDays = Math.max(
+      0,
+      Math.floor((normalizedLaunchDate.getTime() - postingDate.getTime()) / 86400000)
+    );
+
+    return previousDays + elapsedDays;
   }
 
   private async calculateApplicationDetails(account: Accounts): Promise<void> {
@@ -462,12 +499,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         application,
         grossBalanceBefore: await this.getApplicationGrossBalanceBefore(application, launchDate),
         netBalanceBefore: await this.getApplicationNetBalanceBefore(application, launchDate),
-        iofElapsedDays: this.toNonNegativeInt(
-          this.applicationDetails.find(
-            detail => detail.accountApplicationId === application.id
-          )?.iofElapsedDays
-          ?? this.getApplicationIofDays(application, launchDate)
-        ),
+        iofElapsedDays: await this.getApplicationIofDaysBefore(application, launchDate),
       }))
     );
 
@@ -972,7 +1004,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           historicalBalanceForEditing?.grossBalance ?? Number(this.accountPosting.currentGrossBalanceForYield ?? referenceGrossBalance) - originalGrossAmount
         );
 
-                 const applicationsForYield = this.getYieldApplications();
+        const applicationsForYield = this.getYieldApplications();
         if (applicationsForYield.length > 0) {
           const launchDateForApplications = new Date(this.accountPosting.date);
           launchDateForApplications.setHours(0, 0, 0, 0);
@@ -981,6 +1013,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
             applicationsForYield.map(async application => ({
               grossBalance: await this.getApplicationGrossBalanceBefore(application, launchDateForApplications),
               netBalance: await this.getApplicationNetBalanceBefore(application, launchDateForApplications),
+              iofElapsedDays: await this.getApplicationIofDaysBefore(application, launchDateForApplications),
             }))
           );
 
@@ -990,9 +1023,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           currentBalanceForYield = this.round2(
             applicationBalances.reduce((sum, item) => sum + item.netBalance, 0)
           );
+
+          if (applicationBalances.length === 1) {
+            const iofElapsedDays = applicationBalances[0].iofElapsedDays;
+            this.accountPosting.iofElapsedDays = iofElapsedDays;
+            this.accountPostingFormGroup.get('iofElapsedDaysFormControl')
+              ?.setValue(iofElapsedDays, { emitEvent: false });
+          }
         }
 
-account!.totalBalance = currentBalanceForYield;
+        account!.totalBalance = currentBalanceForYield;
         account!.totalBalanceGross = currentGrossBalanceForYield;
 
         this.saldoBruto = this.round2(currentGrossBalanceForYield + Number(this.accountPosting.grossAmount ?? 0));
@@ -1044,7 +1084,11 @@ account!.totalBalance = currentBalanceForYield;
             };
 
             if (this.accountPosting.algorithmType === '1') {
-              suggestYield = await this.yieldService.suggestYield1(account!);
+              suggestYield = await this.yieldService.suggestYield1(
+                account!,
+                this.accountPosting.date,
+                this.accountPosting.iofElapsedDays
+              );
             }
             else if (this.accountPosting.algorithmType === '2') {
               suggestYield = await this.yieldService.suggestYield2(account!);

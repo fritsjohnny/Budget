@@ -10,6 +10,10 @@ import { AccountsYieldsDto } from 'src/app/models/accountsyields.model';
 export interface AccountHistoricalBalance {
   balance: number;
   grossBalance: number;
+  totalIOF?: number | null;
+  totalIR?: number | null;
+  iofElapsedDays?: number | null;
+  postingDate?: Date | string | null;
 }
 
 @Injectable({

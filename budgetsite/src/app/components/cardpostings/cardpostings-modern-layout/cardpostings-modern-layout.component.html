@@ -442,6 +442,12 @@
                                         ><span>Clonar</span></button
                                     ><button
                                         mat-menu-item
+                                        (click)="context.cancel(row)"
+                                    >
+                                        <mat-icon>cancel</mat-icon
+                                        ><span>Cancelar</span></button
+                                    ><button
+                                        mat-menu-item
                                         (click)="context.convertToExpense(row)"
                                     >
                                         <mat-icon>swap_horiz</mat-icon
@@ -625,6 +631,12 @@
                             ><button mat-menu-item (click)="context.clone(row)">
                                 <mat-icon>content_copy</mat-icon
                                 ><span>Clonar</span></button
+                                    ><button
+                                        mat-menu-item
+                                        (click)="context.cancel(row)"
+                                    >
+                                        <mat-icon>cancel</mat-icon
+                                        ><span>Cancelar</span></button
                             ><button
                                 mat-menu-item
                                 (click)="context.convertToExpense(row)"
@@ -645,6 +657,46 @@
                         ><span>Nenhum lançamento encontrado.</span>
                     </div>
                 </div>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel
+                class="modern-panel notifications-panel"
+                [style.display]="
+                    context.detectedPurchasesCount > 0 ? '' : 'none'
+                "
+            >
+                <mat-expansion-panel-header
+                    ><mat-panel-title
+                        ><span class="panel-icon"
+                            ><mat-icon>notifications_active</mat-icon></span
+                        ><span class="panel-copy"
+                            ><strong>Compras detectadas <span class="notifications-count" *ngIf="context.detectedPurchasesCount > 0">({{ context.detectedPurchasesCount }})</span></strong
+                            ><small
+                                >Toque para transformar notificações em
+                                lançamentos</small
+                            ></span
+                        ></mat-panel-title
+                    ></mat-expansion-panel-header
+                >
+                <app-cards-notifications
+                    [modernLayout]="true"
+                    [cardId]="context.cardId"
+                    [reference]="context.reference"
+                    [(categoriesList)]="context.categoriesList"
+                    [(peopleList)]="context.peopleList"
+                    [cardsList]="context.cardsList"
+                    [cardsPostings]="context.cardpostings"
+                    (cardPostingCreated)="context.onCardPostingCreated($event)"
+                    (cardPostingSavingChange)="
+                        context.setCardPostingSaving($event)
+                    "
+                    (notificationContextChange)="
+                        context.notificationContextChange.emit($event)
+                    "
+                    (notificationsCountChange)="
+                        context.detectedPurchasesCount = $event
+                    "
+                ></app-cards-notifications>
             </mat-expansion-panel>
 
             <mat-expansion-panel
@@ -873,45 +925,7 @@
                 </div>
             </mat-expansion-panel>
 
-            <mat-expansion-panel
-                class="modern-panel notifications-panel"
-                [style.display]="
-                    context.detectedPurchasesCount > 0 ? '' : 'none'
-                "
-            >
-                <mat-expansion-panel-header
-                    ><mat-panel-title
-                        ><span class="panel-icon"
-                            ><mat-icon>notifications_active</mat-icon></span
-                        ><span class="panel-copy"
-                            ><strong>Compras detectadas <span class="notifications-count" *ngIf="context.detectedPurchasesCount > 0">({{ context.detectedPurchasesCount }})</span></strong
-                            ><small
-                                >Toque para transformar notificações em
-                                lançamentos</small
-                            ></span
-                        ></mat-panel-title
-                    ></mat-expansion-panel-header
-                >
-                <app-cards-notifications
-                    [modernLayout]="true"
-                    [cardId]="context.cardId"
-                    [reference]="context.reference"
-                    [(categoriesList)]="context.categoriesList"
-                    [(peopleList)]="context.peopleList"
-                    [cardsList]="context.cardsList"
-                    [cardsPostings]="context.cardpostings"
-                    (cardPostingCreated)="context.onCardPostingCreated($event)"
-                    (cardPostingSavingChange)="
-                        context.setCardPostingSaving($event)
-                    "
-                    (notificationContextChange)="
-                        context.notificationContextChange.emit($event)
-                    "
-                    (notificationsCountChange)="
-                        context.detectedPurchasesCount = $event
-                    "
-                ></app-cards-notifications>
-            </mat-expansion-panel>
+
 
             <mat-expansion-panel class="modern-panel parcels-panel">
                 <mat-expansion-panel-header

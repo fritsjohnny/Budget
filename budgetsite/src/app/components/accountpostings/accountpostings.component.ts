@@ -598,6 +598,25 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       ? Number(applicationDetails.reduce((total, detail) => total + Number(detail.totalBalance), 0).toFixed(2))
       : undefined;
 
+    const persistedTotalBalance = accountPosting.totalBalance != null
+      ? Number(accountPosting.totalBalance)
+      : undefined;
+    const runningAmount = accountPosting.runningAmount != null
+      ? Number(accountPosting.runningAmount)
+      : undefined;
+    const hasValidPersistedTotalBalance = persistedTotalBalance !== undefined
+      && (persistedTotalBalance !== 0 || runningAmount === 0);
+    const hasValidApplicationTotalBalance = applicationTotalBalance !== undefined
+      && (applicationTotalBalance !== 0 || runningAmount === 0);
+    const yieldTotalBalance = hasValidPersistedTotalBalance
+      ? persistedTotalBalance
+      : (hasValidApplicationTotalBalance
+        ? applicationTotalBalance
+        : (runningAmount
+          ?? (accountPosting.totalGrossBalance != null
+            ? accountPosting.totalGrossBalance - (accountPosting.totalIOF ?? 0) - (accountPosting.totalIR ?? 0)
+            : this.totalBalance)));
+
     const dialogRef = this.dialog.open(this.accountPostingsDialogComponent, {
       width: '100%',
       maxWidth: '100%',
@@ -614,11 +633,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         originalAmount: accountPosting.amount,
         originalGrossAmount: accountPosting.grossAmount,
         totalBalance: accountPosting.type === 'Y'
-          ? (accountPosting.totalBalance
-            ?? applicationTotalBalance
-            ?? (accountPosting.totalGrossBalance != null
-              ? accountPosting.totalGrossBalance - (accountPosting.totalIOF ?? 0) - (accountPosting.totalIR ?? 0)
-              : this.totalBalance))
+          ? yieldTotalBalance
           : this.totalBalance,
 
         note: accountPosting.note,
@@ -634,7 +649,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         currentBalanceForYield: this.currentBalance,
         currentGrossBalanceForYield: this.currentGrossBalance,
         totalGrossBalance: accountPosting.type === 'Y'
-          ? (accountPosting.totalGrossBalance ?? this.totalGrossBalance)
+          ? (accountPosting.totalGrossBalance
+            ?? (accountPosting.runningAmount != null
+              ? accountPosting.runningAmount
+                + Number(accountPosting.totalIOF ?? 0)
+                + Number(accountPosting.totalIR ?? 0)
+              : this.totalGrossBalance))
           : this.totalGrossBalance,
         totalIOF: accountPosting.totalIOF,
         totalIR: accountPosting.totalIR,

@@ -1039,15 +1039,10 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         this.saldoLiquido = this.round2(currentBalanceForYield + Number(this.accountPosting.amount ?? 0));
 
         if (firstLoad && this.accountPosting.editing) {
-          if (hasHistoricalBase) {
-            const currentGrossAmount = this.round2(Number(this.accountPosting.grossAmount ?? 0));
-            const currentNetAmount = this.round2(Number(this.accountPosting.amount ?? 0));
-
-            this.saldoBruto = this.round2(currentGrossBalanceForYield + currentGrossAmount);
-            this.saldoLiquido = this.round2(currentBalanceForYield + currentNetAmount);
-            this.accountPosting.totalGrossBalance = this.saldoBruto;
-            this.accountPosting.totalBalance = this.saldoLiquido;
-          }
+          this.saldoBruto = this.round2(referenceGrossBalance);
+          this.saldoLiquido = this.round2(referenceBalance);
+          this.accountPosting.totalGrossBalance = this.saldoBruto;
+          this.accountPosting.totalBalance = this.saldoLiquido;
 
           this.prepareApplicationDetails();
 

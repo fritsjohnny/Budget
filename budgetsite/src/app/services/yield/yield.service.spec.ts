@@ -224,6 +224,125 @@ describe('YieldService - múltiplas aplicações', () => {
     expect(result.totalNet).toBe(10072.85);
   });
 
+  it('Mercado Pago com aplicação usa o último CDI disponível quando o dia alvo ainda não possui valor', async () => {
+    const application = createApplication(1, 10000, 100);
+    const applicationsService = {
+      readByAccount: () => of([application])
+    } as unknown as AccountApplicationsService;
+    const rangesService = {
+      readByAccount: () => of([])
+    } as unknown as AccountYieldRangeService;
+    const mercadoPagoService = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationsService,
+      rangesService
+    );
+
+    const cdiFallbackSpy = spyOn(mercadoPagoService, 'getCdiDiarioPercent').and.resolveTo(0.05);
+    const cdiStrictSpy = spyOn(mercadoPagoService, 'getCdiDiarioPercentStrict').and.resolveTo(null);
+
+    const result = await mercadoPagoService.suggestYield3(
+      {
+        ...account,
+        name: 'Mercado Pago',
+        yieldPercent: 100,
+        totalBalanceGross: 10100,
+        totalBalance: 10069.75
+      },
+      new Date('2026-08-08T00:00:00'),
+      36,
+      999
+    );
+
+    expect(cdiFallbackSpy).toHaveBeenCalled();
+    expect(cdiStrictSpy).not.toHaveBeenCalled();
+    expect(result.grossYield).toBe(5.05);
+    expect(result.grossYield).toBeGreaterThan(0);
+  });
+
+  it('Mercado Pago sem aplicação mantém o cálculo diário e usa o último CDI disponível', async () => {
+    const applicationsService = {
+      readByAccount: () => of([])
+    } as unknown as AccountApplicationsService;
+    const rangesService = {
+      readByAccount: () => of([])
+    } as unknown as AccountYieldRangeService;
+    const mercadoPagoService = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationsService,
+      rangesService
+    );
+
+    const cdiFallbackSpy = spyOn(mercadoPagoService, 'getCdiDiarioPercent').and.resolveTo(0.05);
+    const cdiStrictSpy = spyOn(mercadoPagoService, 'getCdiDiarioPercentStrict').and.resolveTo(0.05);
+
+    const result = await mercadoPagoService.suggestYield3(
+      {
+        ...account,
+        name: 'Mercado Pago',
+        yieldPercent: 100,
+        totalBalanceGross: 10100,
+        totalBalance: 10050
+      },
+      new Date('2026-08-08T00:00:00'),
+      36,
+      1
+    );
+
+    expect(cdiFallbackSpy).toHaveBeenCalled();
+    expect(cdiStrictSpy).not.toHaveBeenCalled();
+    expect(result.grossYield).toBe(5.05);
+    expect(result.netYield).toBe(3.92);
+  });
+
+  it('Nubank, Neon e PicPay/PagBank sem aplicação preservam o cálculo diário da conta', async () => {
+    const applicationsService = {
+      readByAccount: () => of([])
+    } as unknown as AccountApplicationsService;
+    const rangesService = {
+      readByAccount: () => of([])
+    } as unknown as AccountYieldRangeService;
+    const serviceWithoutApplications = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationsService,
+      rangesService
+    );
+
+    spyOn(serviceWithoutApplications, 'getCdiDiarioPercent').and.resolveTo(0.05);
+
+    const accountWithoutApplications = {
+      ...account,
+      yieldPercent: 100,
+      totalBalanceGross: 10100,
+      totalBalance: 10050
+    };
+
+    const nubank = await serviceWithoutApplications.suggestYield1(
+      accountWithoutApplications,
+      new Date('2026-08-08T00:00:00'),
+      36
+    );
+    const neon = await serviceWithoutApplications.suggestYield2(accountWithoutApplications);
+    const picPayPagBank = await serviceWithoutApplications.suggestYield4(
+      accountWithoutApplications,
+      new Date('2026-08-08T00:00:00'),
+      36,
+      999
+    );
+
+    expect(nubank.grossYield).toBe(5.05);
+    expect(nubank.netYield).toBe(3.92);
+    expect(nubank.totalNet).toBe(10053.92);
+    expect(neon.grossYield).toBe(5.05);
+    expect(neon.netYield).toBe(3.91);
+    expect(picPayPagBank.grossYield).toBe(5.05);
+    expect(picPayPagBank.netYield).toBe(3.92);
+    expect(picPayPagBank.totalNet).toBe(10053.92);
+  });
+
   it('usa a tabela correta de IOF por aplicação', () => {
     expect(service.iofRateFromApplicationTable(0)).toBe(0);
     expect(service.iofRateFromApplicationTable(1)).toBe(0.96);

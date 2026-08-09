@@ -375,6 +375,7 @@ export class YieldService {
     const referenceDate = new Date(launchDate);
     referenceDate.setHours(0, 0, 0, 0);
     const activeApplications = this.getActiveApplications(referenceDate, applications);
+    const hasActiveApplications = activeApplications.length > 0;
 
     let principalTotalC = 0;
     let principalXRateC = 0;
@@ -399,19 +400,30 @@ export class YieldService {
       principalXRateC += principalC * this.iofRateFromApplicationTable(days);
     }
 
-    if (principalTotalC <= 0) {
-      principalTotalC = baseGrossC;
-    }
+    let iofC = 0;
+    let irC = 0;
+    let totalNetC = 0;
+    let netC = 0;
 
-    const iofWeighted = principalTotalC > 0
-      ? principalXRateC / principalTotalC
-      : 0;
-    const accumulatedGrossYieldC = Math.max(0, totalGrossC - principalTotalC);
-    const iofC = toCents(fromCents(accumulatedGrossYieldC) * iofWeighted);
-    const irBaseC = Math.max(0, accumulatedGrossYieldC - iofC);
-    const irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercent) / 100);
-    const totalNetC = totalGrossC - iofC - irC;
-    const netC = totalNetC - baseNetC;
+    if (!hasActiveApplications) {
+      principalTotalC = baseGrossC;
+
+      const irBaseC = grossC;
+      irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercent) / 100);
+      netC = grossC - irC;
+      totalNetC = baseNetC + netC;
+    } else {
+      const iofWeighted = principalTotalC > 0
+        ? principalXRateC / principalTotalC
+        : 0;
+      const accumulatedGrossYieldC = Math.max(0, totalGrossC - principalTotalC);
+
+      iofC = toCents(fromCents(accumulatedGrossYieldC) * iofWeighted);
+      const irBaseC = Math.max(0, accumulatedGrossYieldC - iofC);
+      irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercent) / 100);
+      totalNetC = totalGrossC - iofC - irC;
+      netC = totalNetC - baseNetC;
+    }
 
     return {
       totalGross: fromCents(totalGrossC),
@@ -747,7 +759,7 @@ export class YieldService {
 
     const previousNetAccumulated = hasActiveApplications
       ? round2(Math.max(0, baseNet - principalTotal))
-      : round2(Number(previousYield || 0));
+      : 0;
 
     let grossYieldDay = 0;
 
@@ -759,7 +771,13 @@ export class YieldService {
 
     if (shouldGenerateGrossYield) {
       const targetDate = this.resolveCdiTargetDate(account);
-      const cdiDiarioPercent = await this.getCdiDiarioPercentStrict(targetDate);
+      let cdiDiarioPercent: number | null = null;
+
+      try {
+        cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
+      } catch {
+        cdiDiarioPercent = null;
+      }
 
       if (cdiDiarioPercent !== null) {
         const cdiDiario = cdiDiarioPercent / 100;
@@ -983,9 +1001,12 @@ export class YieldService {
 
     // Principal total (aprox) = soma das aplicações
     // Se não houver aplicações, não dá pra inferir IOF corretamente -> fallback conservador
+    const activeApplications = this.getActiveApplications(launchDate, applications);
+    const hasActiveApplications = activeApplications.length > 0;
+
     let principalTotal = 0;
-    if (applications && applications.length > 0) {
-      for (const app of applications) {
+    if (hasActiveApplications) {
+      for (const app of activeApplications) {
         const p = Number(app.amountApplied) || 0;
         if (p > 0) principalTotal += p;
       }
@@ -1006,8 +1027,8 @@ export class YieldService {
       let principalInWindow = 0;
       let principalXRate = 0;
 
-      if (applications && applications.length > 0) {
-        for (const app of applications) {
+      if (hasActiveApplications) {
+        for (const app of activeApplications) {
           const principal = Number(app.amountApplied) || 0;
           if (principal <= 0) continue;
 
@@ -1031,7 +1052,7 @@ export class YieldService {
         // fração do saldo que está sujeito a IOF (não pode exceder 100%)
         // usa baseForFraction = saldo bruto “após crédito” do dia
         const fractionOnIof = round2(Math.min(1, principalInWindow / (baseForFraction || 1)));
-        iofRateEff = applications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
+        iofRateEff = activeApplications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
       }
 
       const iofTotal = round2(totalYieldGross * iofRateEff);
@@ -1050,7 +1071,8 @@ export class YieldService {
     const calculated = calcNetAccumulated(totalYieldGrossNow, ref, grossEndNow);
 
     // 7) LÍQUIDO DO DIA = (líquido acumulado agora) - (líquido acumulado anterior vindo da tela)
-    const netYieldDay = round2(calculated.netTotal - previousYield); // diferença para o líquido acumulado anterior (que vem da tela)
+    const previousNetAccumulated = hasActiveApplications ? round2(Number(previousYield || 0)) : 0;
+    const netYieldDay = round2(calculated.netTotal - previousNetAccumulated); // diferença para o líquido acumulado anterior (que vem da tela)
 
     // 8) Totais exibidos no modal
     // (mantém seu contrato atual: totalNet = baseNet + netYieldDay, etc.)

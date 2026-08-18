@@ -321,6 +321,22 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.recalculateApplicationTotals();
   }
 
+  private updateYieldAmountValidator(): void {
+    const amountControl = this.accountPostingFormGroup.get('amountFormControl');
+    if (!amountControl) return;
+
+    const requiresAmount = !(this.accountPosting.type === 'Y' && this.hasMultipleApplications);
+
+    if (requiresAmount) {
+      amountControl.setValidators(Validators.required);
+    } else {
+      amountControl.clearValidators();
+      amountControl.setValue(this.accountPosting.amount ?? 0, { emitEvent: false });
+    }
+
+    amountControl.updateValueAndValidity({ emitEvent: false });
+  }
+
   private prepareApplicationDetails(): void {
     if (this.applicationDetailsLoadedFromServer && this.applicationDetails.length > 0) return;
 
@@ -1147,6 +1163,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     } finally {
+      this.updateYieldAmountValidator();
       this.isCalculating = false;
     }
   }

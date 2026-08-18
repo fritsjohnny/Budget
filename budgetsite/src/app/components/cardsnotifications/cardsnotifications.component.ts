@@ -358,6 +358,37 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     return null;
   }
 
+  private findCardByNotificationText(notification: CardNotification): Cards | undefined {
+    const normalizedNote = this.normalizeCardText(notification.note);
+
+    if (!normalizedNote) return undefined;
+
+    const noteWithBoundaries = ' ' + normalizedNote + ' ';
+    const matchingCards = this.cardsList
+      ?.map(card => ({
+        card,
+        normalizedName: this.normalizeCardText(card.name),
+      }))
+      .filter(item =>
+        item.normalizedName.length >= 3 &&
+        !['cartao', 'card', 'credito', 'credit', 'visa', 'mastercard'].includes(item.normalizedName) &&
+        noteWithBoundaries.includes(' ' + item.normalizedName + ' ')
+      )
+      .sort((first, second) => second.normalizedName.length - first.normalizedName.length);
+
+    return matchingCards?.[0]?.card;
+  }
+
+  private normalizeCardText(value?: string): string {
+    return (value ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ');
+  }
+
   convertToCardPosting(notification: CardNotification): void {
     const notificationDate = this.getNotificationDate(notification.date);
 
@@ -368,15 +399,22 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
 
     const initialReference = this.getNotificationReference(notificationDate);
     const sourceAppPackageName = notification.sourceAppPackageName?.trim().toLowerCase();
-    const targetCard = sourceAppPackageName
+    const selectedCard = this.cardId && this.cardId > 0
+      ? this.cardsList?.find(card => card.id === this.cardId)
+      : undefined;
+    const textCard = this.findCardByNotificationText(notification);
+    const appCard = sourceAppPackageName
       ? this.cardsList?.find(card => card.appPackageName?.trim().toLowerCase() === sourceAppPackageName)
-      : this.cardsList?.find(card => card.id === this.cardId);
+      : undefined;
+    const targetCard = selectedCard ?? textCard ?? appCard;
 
     if (!targetCard?.id || targetCard.id <= 0) {
       this.messenger.errorHandler(
-        sourceAppPackageName
-          ? 'Nenhum cartão está configurado para o aplicativo que gerou esta notificação.'
-          : 'Selecione um cartão específico para transformar esta notificação em lançamento.'
+        selectedCard
+          ? 'O cartão selecionado não está disponível para transformar esta notificação em lançamento.'
+          : sourceAppPackageName
+            ? 'Nenhum cartão está configurado para o aplicativo que gerou esta notificação.'
+            : 'Selecione um cartão específico para transformar esta notificação em lançamento.'
       );
       return;
     }

@@ -152,14 +152,14 @@
                         <span
                             *ngIf="
                                 context.getExpectedBalanceWithoutYields() < 0 &&
-                                context.expectedBalance < 0
+                                context.getExpectedBalanceForMyValues() < 0
                             "
                             >100%</span
                         >
                         <span
                             *ngIf="
                                 context.getExpectedBalanceWithoutYields() < 0 &&
-                                context.expectedBalance >= 0
+                                context.getExpectedBalanceForMyValues() >= 0
                             "
                             [class.metric-negative]="
                                 context.getExpectedBalanceCoveredByYieldsPerc() <
@@ -208,7 +208,7 @@
                         <span
                             *ngIf="
                                 context.getExpectedBalanceWithoutYields() < 0 &&
-                                context.expectedBalance < 0
+                                context.getExpectedBalanceForMyValues() < 0
                             "
                             [class.metric-negative]="
                                 context.getExpectedBalanceDeficitReductionPerc() <
@@ -222,7 +222,7 @@
                         <span
                             *ngIf="
                                 context.getExpectedBalanceWithoutYields() < 0 &&
-                                context.expectedBalance >= 0
+                                context.getExpectedBalanceForMyValues() >= 0
                             "
                             [class.metric-negative]="
                                 context.getExpectedBalancePositiveFromYieldsPerc() <

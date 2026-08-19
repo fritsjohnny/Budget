@@ -123,7 +123,7 @@
                         >
                             <span
                                 [ngClass]="
-                                    expectedBalance < 0 ? 'negative' : 'green'
+                                    getExpectedBalanceForMyValues() < 0 ? 'negative' : 'green'
                                 "
                             >
                                 {{
@@ -190,7 +190,7 @@
                             <ng-template #expectedBalanceWithDeficit>
                                 <ng-container
                                     *ngIf="
-                                        expectedBalance < 0;
+                                        getExpectedBalanceForMyValues() < 0;
                                         else expectedBalanceCoveredOrZeroedByYields
                                     "
                                 >

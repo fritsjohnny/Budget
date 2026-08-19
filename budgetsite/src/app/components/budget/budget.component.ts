@@ -2036,22 +2036,36 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
+  getExpectedBalanceForMyValues(): number {
+    const myIncomes = this.budgetTotals?.myIncomes ?? 0;
+    const myExpenses = this.budgetTotals?.myExpenses ?? 0;
+
+    return myIncomes - myExpenses;
+  }
+
   getExpectedBalanceWithoutYields(): number {
-    return this.expectedBalance - (this.budgetTotals?.myYields || 0);
+    const myIncomesWithoutYields =
+      this.budgetTotals?.myIncomesWithoutYields ?? 0;
+    const myExpenses = this.budgetTotals?.myExpenses ?? 0;
+
+    return myIncomesWithoutYields - myExpenses;
   }
 
   getExpectedBalanceWithoutYieldsPerc(): number {
-    if (this.expectedBalance <= 0) return 0;
+    const myExpectedBalance = this.getExpectedBalanceForMyValues();
 
-    return this.getExpectedBalanceWithoutYields() / this.expectedBalance * 100;
+    if (myExpectedBalance <= 0) return 0;
+
+    return this.getExpectedBalanceWithoutYields() / myExpectedBalance * 100;
   }
 
   getExpectedBalanceYieldsCompositionPerc(): number {
     const yields = this.budgetTotals?.myYields || 0;
+    const myExpectedBalance = this.getExpectedBalanceForMyValues();
 
-    if (this.expectedBalance <= 0) return 0;
+    if (myExpectedBalance <= 0) return 0;
 
-    return yields / this.expectedBalance * 100;
+    return yields / myExpectedBalance * 100;
   }
 
   getExpectedBalanceDeficitReductionPerc(): number {
@@ -2074,16 +2088,18 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   getExpectedBalancePositiveFromYieldsPerc(): number {
     const yields = this.budgetTotals?.myYields || 0;
+    const myExpectedBalance = this.getExpectedBalanceForMyValues();
 
     if (yields === 0) return 0;
 
-    return this.expectedBalance / yields * 100;
+    return myExpectedBalance / yields * 100;
   }
 
   openExpectedBalanceInfo(): void {
     const withoutYields = this.getExpectedBalanceWithoutYields();
     const yields = this.budgetTotals?.myYields ?? 0;
     const expectedBalance = this.expectedBalance;
+    const myExpectedBalance = this.getExpectedBalanceForMyValues();
 
     const incomePerc = this.getExpectedBalanceIncomePerc();
     const withoutYieldsIncomePerc = this.getExpectedBalanceWithoutYieldsIncomePerc();
@@ -2104,7 +2120,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     let compositionMessage = '';
 
-    if (withoutYields >= 0 && expectedBalance > 0) {
+    if (withoutYields >= 0 && myExpectedBalance > 0) {
       const withoutYieldsPerc = this
         .getExpectedBalanceWithoutYieldsPerc()
         .toFixed(2)
@@ -2132,7 +2148,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         '%: parte do saldo formada sem rendimentos.\n' +
         yieldsPerc +
         '%: parte do saldo formada pelos rendimentos.';
-    } else if (withoutYields >= 0 && expectedBalance === 0) {
+    } else if (withoutYields >= 0 && myExpectedBalance === 0) {
       compositionMessage =
         'Composição do saldo\n' +
         'Sem rendimentos: ' +
@@ -2143,7 +2159,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         '\n\n' +
         'Resultado\n' +
         'O saldo previsto final ficou zerado.';
-    } else if (expectedBalance < 0) {
+    } else if (myExpectedBalance < 0) {
       const reductionPerc = this
         .getExpectedBalanceDeficitReductionPerc()
         .toFixed(2)
@@ -2166,7 +2182,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         '↓' +
         reductionPerc +
         '%: redução do déficit causada pelos rendimentos.';
-    } else if (expectedBalance === 0) {
+    } else if (myExpectedBalance === 0) {
       compositionMessage =
         'Composição do saldo\n' +
         'Saldo sem rendimentos: ' +
@@ -2243,10 +2259,11 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   getExpectedBalanceIncomePerc(): number | null {
     const myIncomes = Math.abs(this.budgetTotals?.myIncomes ?? 0);
+    const myExpectedBalance = this.getExpectedBalanceForMyValues();
 
     if (myIncomes === 0) return null;
 
-    return this.expectedBalance / myIncomes * 100;
+    return myExpectedBalance / myIncomes * 100;
   }
 
   getExpectedBalanceWithoutYieldsIncomePerc(): number | null {

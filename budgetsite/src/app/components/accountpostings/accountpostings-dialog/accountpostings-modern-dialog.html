@@ -1,5 +1,5 @@
 <div class="modern-entry-dialog modern-account-posting-entry-dialog">
-  <form [formGroup]="accountPostingFormGroup">
+  <form [formGroup]="accountPostingFormGroup" (pointerdown)="onInitialEditInteraction()">
     <header class="modern-entry-header">
       <div class="modern-entry-heading">
         <span class="modern-entry-icon"><mat-icon>receipt_long</mat-icon></span>
@@ -252,7 +252,7 @@
 
             <mat-form-field appearance="fill" floatLabel="always">
               <mat-label>Saldo líquido</mat-label>
-              <input matInput inputmode="numeric" currencyMask formControlName="totalBalanceFormControl" [(ngModel)]="saldoLiquido" placeholder="0" autocomplete="off" (ngModelChange)="onSaldoLiquidoChanged($event)" />
+              <input matInput inputmode="numeric" currencyMask formControlName="totalBalanceFormControl" readonly  placeholder="0" autocomplete="off"  />
             </mat-form-field>
 
             <mat-form-field appearance="fill" floatLabel="always">

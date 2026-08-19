@@ -1,5 +1,5 @@
 ﻿<div class="">
-    <form [formGroup]="accountPostingFormGroup">
+    <form [formGroup]="accountPostingFormGroup" (pointerdown)="onInitialEditInteraction()">
         <div class="cancel">
             <button
                 class="default-button"
@@ -336,11 +336,11 @@
                             matInput
                             inputmode="numeric"
                             currencyMask
-                            formControlName="totalBalanceFormControl"
-                            [(ngModel)]="saldoLiquido"
+                            formControlName="totalBalanceFormControl" readonly
+                            
                             placeholder="0"
                             autocomplete="off"
-                            (ngModelChange)="onSaldoLiquidoChanged($event)"
+                            
                         />
                     </mat-form-field>
                 </div>

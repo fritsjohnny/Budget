@@ -593,29 +593,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const applicationDetails = accountPosting.applicationDetails ?? [];
-    const applicationTotalBalance = applicationDetails.length > 0 && applicationDetails.every(detail => detail.totalBalance != null)
-      ? Number(applicationDetails.reduce((total, detail) => total + Number(detail.totalBalance), 0).toFixed(2))
-      : undefined;
-
-    const persistedTotalBalance = accountPosting.totalBalance != null
-      ? Number(accountPosting.totalBalance)
-      : undefined;
-    const runningAmount = accountPosting.runningAmount != null
-      ? Number(accountPosting.runningAmount)
-      : undefined;
-    const hasValidPersistedTotalBalance = persistedTotalBalance !== undefined
-      && (persistedTotalBalance !== 0 || runningAmount === 0);
-    const hasValidApplicationTotalBalance = applicationTotalBalance !== undefined
-      && (applicationTotalBalance !== 0 || runningAmount === 0);
-    const yieldTotalBalance = hasValidPersistedTotalBalance
-      ? persistedTotalBalance
-      : (hasValidApplicationTotalBalance
-        ? applicationTotalBalance
-        : (runningAmount
-          ?? (accountPosting.totalGrossBalance != null
-            ? accountPosting.totalGrossBalance - (accountPosting.totalIOF ?? 0) - (accountPosting.totalIR ?? 0)
-            : this.totalBalance)));
+    const displayedBalance = accountPosting.runningAmount ?? accountPosting.totalBalance ?? 0;
 
     const dialogRef = this.dialog.open(this.accountPostingsDialogComponent, {
       width: '100%',
@@ -633,7 +611,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         originalAmount: accountPosting.amount,
         originalGrossAmount: accountPosting.grossAmount,
         totalBalance: accountPosting.type === 'Y'
-          ? yieldTotalBalance
+          ? displayedBalance
           : this.totalBalance,
 
         note: accountPosting.note,

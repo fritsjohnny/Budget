@@ -62,7 +62,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   previousBusinessDayHoliday: boolean = false;
   isCalculating: boolean = true;
   isApplyingSuggestedYield: boolean = false;
-
+  private suppressInitialEditEvents: boolean = false;
   private initialCurrentBalanceForYield: number = 0;
   private initialCurrentGrossBalanceForYield: number = 0;
   private dateChangeRequestId: number = 0;
@@ -109,6 +109,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private applicationDetailsLoadedFromServer = false;
+  private initialEditLoadCompleted = false;
   private applicationBaseValues = new Map<number, {
     grossAmount: number;
     amount: number;
@@ -163,6 +164,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
     this.saldoBruto = consolidatedGrossBalance;
     this.saldoLiquido = consolidatedNetBalance;
+    this.setControlValue('totalBalanceFormControl', this.saldoLiquido);
   }
   private captureApplicationBaseValues(): void {
     this.applicationBaseValues.clear();
@@ -338,6 +340,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private prepareApplicationDetails(): void {
+    if (this.accountPosting.editing && !this.initialEditLoadCompleted) return;
     if (this.applicationDetailsLoadedFromServer && this.applicationDetails.length > 0) return;
 
     const saved = this.accountPosting.applicationDetails ?? [];
@@ -990,8 +993,26 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           }
         }
 
-        // Em edição retroativa, obtém a base anterior ao próprio rendimento.
-        // Assim, um TotalGrossBalance salvo incorretamente não é reutilizado.
+        if (firstLoad && this.accountPosting.editing) {
+          this.suppressInitialEditEvents = true;
+          const savedApplicationDetails = this.accountPosting.applicationDetails ?? [];
+
+          if (savedApplicationDetails.length > 0) {
+            this.applicationDetails = savedApplicationDetails.map(detail => ({ ...detail }));
+            this.applicationDetailsLoadedFromServer = true;
+            this.captureApplicationBaseValues();
+          }
+
+          this.initialEditLoadCompleted = true;
+          this.saldoBruto = this.round2(Number(this.accountPosting.totalGrossBalance ?? 0));
+          this.saldoLiquido = this.round2(Number(this.accountPosting.totalBalance ?? 0));
+          this.setControlValue('totalGrossBalanceFormControl', this.saldoBruto);
+          this.setControlValue('totalBalanceFormControl', this.saldoLiquido);
+          this.captureYieldBaseValues();
+          return;
+        }
+
+        // Em inclusão retroativa, usa o saldo histórico anterior à data do lançamento.
         let historicalBalanceForEditing: { balance: number; grossBalance: number } | undefined;
         if (firstLoad && account?.id && this.isRetroactiveDate()) {
           historicalBalanceForEditing = await firstValueFrom(
@@ -1003,10 +1024,9 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
           );
         }
 
-        const hasHistoricalBase = historicalBalanceForEditing !== undefined;
         const referenceBalance = Number(this.accountPosting.totalBalance ?? 0);
         const referenceGrossBalance = Number(this.accountPosting.totalGrossBalance ?? referenceBalance);
-        const shouldRemoveOriginalYield = this.accountPosting.editing && !this.isHistoricalBalanceForYield && !hasHistoricalBase;
+        const shouldRemoveOriginalYield = this.accountPosting.editing && !this.isHistoricalBalanceForYield;
         const originalAmount = shouldRemoveOriginalYield
           ? Number(this.accountPosting.originalAmount ?? 0)
           : 0;
@@ -1053,22 +1073,6 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
         this.saldoBruto = this.round2(currentGrossBalanceForYield + Number(this.accountPosting.grossAmount ?? 0));
         this.saldoLiquido = this.round2(currentBalanceForYield + Number(this.accountPosting.amount ?? 0));
-
-        if (firstLoad && this.accountPosting.editing) {
-          this.saldoBruto = this.round2(referenceGrossBalance);
-          this.saldoLiquido = this.round2(referenceBalance);
-          this.accountPosting.totalGrossBalance = this.saldoBruto;
-          this.accountPosting.totalBalance = this.saldoLiquido;
-
-          this.prepareApplicationDetails();
-
-          if (!this.noRecalculate && this.getYieldApplications().length > 1 && !this.applicationDetailsLoadedFromServer) {
-            await this.calculateApplicationDetails(account!);
-          }
-
-          this.captureYieldBaseValues();
-          return;
-        }
 
         this.prepareApplicationDetails();
         this.isApplyingSuggestedYield = true;
@@ -1135,6 +1139,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
             this.saldoBruto = this.accountPosting.totalGrossBalance;
             this.saldoLiquido = this.accountPosting.totalBalance;
+            this.setControlValue('totalBalanceFormControl', this.saldoLiquido);
             this.captureYieldBaseValues();
           }
 
@@ -1301,7 +1306,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     return this.accountPosting.type === 'Y' &&
       !this.noRecalculate &&
       !this.isCalculating &&
-      !this.isApplyingSuggestedYield;
+      !this.isApplyingSuggestedYield &&
+      !this.suppressInitialEditEvents;
   }
 
   setTitle() {
@@ -1353,9 +1359,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.calculaSaldoLiquido(true);
   }
 
-  onSaldoLiquidoChanged($event: any) {
-    this.accountPosting.totalBalance = this.round2(Number(this.saldoLiquido ?? 0));
-    this.calculaValor();
+  onInitialEditInteraction(): void {
+    if (this.accountPosting.editing) this.suppressInitialEditEvents = false;
   }
 
   calculaSaldoBruto(): void {

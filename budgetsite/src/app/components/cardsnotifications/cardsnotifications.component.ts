@@ -406,7 +406,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     const appCard = sourceAppPackageName
       ? this.cardsList?.find(card => card.appPackageName?.trim().toLowerCase() === sourceAppPackageName)
       : undefined;
-    const targetCard = selectedCard ?? textCard ?? appCard;
+    const targetCard = textCard ?? appCard ?? selectedCard;
 
     if (!targetCard?.id || targetCard.id <= 0) {
       this.messenger.errorHandler(

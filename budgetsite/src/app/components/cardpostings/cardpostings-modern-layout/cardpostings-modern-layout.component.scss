@@ -1285,3 +1285,90 @@
         padding: 8px;
     }
 }
+
+.card-summary-panel {
+    --summary-net-color: #00a9c0;
+    --summary-net-soft: rgba(0, 188, 212, 0.13);
+}
+
+.modern-card-postings ::ng-deep .card-summary-panel .mat-expansion-panel-header {
+    border-left-color: var(--summary-net-color);
+    background: linear-gradient(
+        90deg,
+        var(--summary-net-soft),
+        transparent 52%
+    ) !important;
+}
+
+.card-summary-panel .panel-icon {
+    background: var(--summary-net-soft);
+    color: var(--summary-net-color);
+}
+
+.card-summary-panel .panel-copy strong {
+    color: var(--summary-net-color);
+}
+
+.parcels-panel {
+    --modern-panel-accent: var(--pink);
+    --modern-panel-accent-soft: var(--pink-soft);
+}
+
+.modern-card-postings ::ng-deep .parcels-panel .mat-expansion-panel-header {
+    border-left-color: var(--pink);
+    background: linear-gradient(
+        90deg,
+        var(--pink-soft),
+        transparent 52%
+    ) !important;
+}
+
+.parcels-panel .panel-icon {
+    background: var(--pink-soft);
+    color: var(--pink);
+}
+
+.parcels-panel .panel-copy strong {
+    color: var(--pink);
+}
+
+::ng-deep .card-summary-panel .mat-expansion-panel-header {
+    border-left: 3px solid var(--summary-net-color) !important;
+    background: linear-gradient(
+        90deg,
+        var(--summary-net-soft),
+        transparent 52%
+    ) !important;
+}
+
+::ng-deep .card-summary-panel .mat-expansion-panel-header .panel-icon,
+::ng-deep .card-summary-panel .mat-expansion-panel-header .panel-icon .mat-icon {
+    background: var(--summary-net-soft) !important;
+    color: var(--summary-net-color) !important;
+}
+
+.summary-heading-copy {
+    min-width: 0;
+}
+
+.summary-heading-copy small {
+    display: block;
+    color: var(--m);
+    font-size: 11px;
+}
+
+.summary-heading-value {
+    color: var(--t);
+    font-weight: 700;
+}
+
+.summary-details-grid {
+    padding: 2px 0;
+}
+
+@media (max-width: 700px) {
+    .summary-details-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+    }
+}

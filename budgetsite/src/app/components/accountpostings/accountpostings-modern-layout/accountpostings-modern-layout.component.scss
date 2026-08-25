@@ -794,3 +794,86 @@ button.summary-item {
         gap: 8px;
     }
 }
+
+.account-summary-panel {
+    --summary-net-color: #00a9c0;
+    --summary-net-soft: rgba(0, 188, 212, 0.13);
+}
+
+::ng-deep .account-summary-panel .mat-expansion-panel-header {
+    border-left-color: var(--summary-net-color);
+    background: linear-gradient(
+        90deg,
+        var(--summary-net-soft),
+        transparent 52%
+    ) !important;
+}
+
+.account-summary-panel .panel-icon {
+    background: var(--summary-net-soft);
+    color: var(--summary-net-color);
+}
+
+.account-summary-panel .panel-heading-copy strong {
+    color: var(--summary-net-color);
+}
+
+::ng-deep .account-summary-panel .mat-expansion-panel-header {
+    border-left: 3px solid var(--summary-net-color) !important;
+    background: linear-gradient(
+        90deg,
+        var(--summary-net-soft),
+        transparent 52%
+    ) !important;
+}
+
+::ng-deep .account-summary-panel .mat-expansion-panel-header .panel-icon,
+::ng-deep .account-summary-panel .mat-expansion-panel-header .panel-icon .mat-icon {
+    background: var(--summary-net-soft) !important;
+    color: var(--summary-net-color) !important;
+}
+
+.summary-heading-copy {
+    min-width: 0;
+}
+
+.summary-heading-copy small {
+    display: block;
+    color: var(--posting-muted);
+    font-size: 11px;
+}
+
+.summary-heading-value {
+    color: var(--posting-text);
+    font-weight: 700;
+}
+
+.account-summary-details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 2px 0;
+}
+
+.account-summary-details .summary-item {
+    min-height: 76px;
+    border: 1px solid var(--posting-divider);
+    border-radius: 14px;
+    background: var(--posting-surface);
+}
+
+.account-summary-details button.summary-item {
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .account-summary-details {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+    .account-summary-details .summary-item {
+        min-height: 70px;
+        padding: 10px;
+    }
+}

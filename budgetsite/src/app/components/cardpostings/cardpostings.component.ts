@@ -112,6 +112,7 @@ export class CardPostingsComponent implements OnInit {
   cardsList?: Cards[];
   accountsList?: Accounts[];
   cardPostingsPanelExpanded: boolean = false;
+  cardSummaryPanelExpanded: boolean = true;
   peoplePanelExpanded: boolean = false;
   categoryPanelExpanded: boolean = false;
   private _checkCard: boolean = false;
@@ -195,6 +196,9 @@ export class CardPostingsComponent implements OnInit {
       localStorage.getItem('peoplePanelExpanded') === 'true';
     this.categoryPanelExpanded =
       localStorage.getItem('categoryPanelExpanded') === 'true';
+
+    const storedCardSummaryPanelExpanded = localStorage.getItem('cardSummaryPanelExpanded');
+    this.cardSummaryPanelExpanded = storedCardSummaryPanelExpanded !== 'false';
   }
 
   getLists() {
@@ -887,6 +891,14 @@ export class CardPostingsComponent implements OnInit {
         });
       }
     });
+  }
+
+  cardSummaryPanelClosed() {
+    localStorage.setItem('cardSummaryPanelExpanded', 'false');
+  }
+
+  cardSummaryPanelOpened() {
+    localStorage.setItem('cardSummaryPanelExpanded', 'true');
   }
 
   cardPostingsPanelClosed() {

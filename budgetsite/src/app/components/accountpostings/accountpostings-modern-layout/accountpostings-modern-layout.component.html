@@ -2,55 +2,75 @@
   <app-load-spinner [loading]="!context.hideProgress" [message]="context.loadingMessage"></app-load-spinner>
 
   <ng-container *ngIf="context.hideProgress">
-    <section class="account-summary" aria-label="Resumo da conta">
-      <article class="summary-item summary-general">
-        <span class="summary-icon"><mat-icon>account_balance_wallet</mat-icon></span>
-        <div>
-          <small>Saldo geral</small>
-          <strong>{{ context.grandTotalBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
-        </div>
-      </article>
+        <mat-expansion-panel
+      class="modern-panel modern-account-panel summary-panel account-summary-panel"
+      [(expanded)]="context.accountSummaryPanelExpanded"
+      (closed)="context.accountSummaryPanelClosed()"
+      (opened)="context.accountSummaryPanelOpened()"
+    >
+            <mat-expansion-panel-header>
+        <mat-panel-title>
+          <span class="panel-icon"><mat-icon>account_balance</mat-icon></span>
+          <span class="panel-heading-copy summary-heading-copy">
+            <strong>Resumo da conta</strong>
+            <small>
+              Saldo líquido:
+              <span class="summary-heading-value">{{ context.totalBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</span>
+            </small>
+          </span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-      <article class="summary-item summary-previous">
-        <span class="summary-icon"><mat-icon>history</mat-icon></span>
-        <div>
-          <small>Saldo anterior</small>
-          <strong>{{ context.previousBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
-        </div>
-      </article>
+            <section class="account-summary-details" aria-label="Detalhes do resumo da conta">
+        <article class="summary-item summary-general">
+          <span class="summary-icon"><mat-icon>account_balance_wallet</mat-icon></span>
+          <div>
+            <small>Saldo geral</small>
+            <strong>{{ context.grandTotalBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+          </div>
+        </article>
 
-      <article class="summary-item summary-gross">
-        <span class="summary-icon"><mat-icon>stacked_bar_chart</mat-icon></span>
-        <div>
-          <small>Saldo bruto</small>
-          <strong>{{ context.totalGrossBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
-        </div>
-      </article>
+        <article class="summary-item summary-previous">
+          <span class="summary-icon"><mat-icon>history</mat-icon></span>
+          <div>
+            <small>Saldo anterior</small>
+            <strong>{{ context.previousBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+          </div>
+        </article>
 
-      <button type="button" class="summary-item summary-yield" (click)="context.openGeneralYields()">
-        <span class="summary-icon"><mat-icon>trending_up</mat-icon></span>
-        <div>
-          <small>Rend. geral</small>
-          <strong>{{ context.grandTotalYields | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
-        </div>
-      </button>
+        <article class="summary-item summary-gross">
+          <span class="summary-icon"><mat-icon>stacked_bar_chart</mat-icon></span>
+          <div>
+            <small>Saldo bruto</small>
+            <strong>{{ context.totalGrossBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+          </div>
+        </article>
 
-      <article class="summary-item summary-net">
-        <span class="summary-icon"><mat-icon>paid</mat-icon></span>
-        <div>
-          <small>Saldo líquido</small>
-          <strong>{{ context.totalBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
-        </div>
-      </article>
+        <button type="button" class="summary-item summary-yield" (click)="context.openGeneralYields()">
+          <span class="summary-icon"><mat-icon>trending_up</mat-icon></span>
+          <div>
+            <small>Rend. geral</small>
+            <strong>{{ context.grandTotalYields | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+          </div>
+        </button>
 
-      <button type="button" class="summary-item summary-account-yield" (click)="context.openAccountYields()">
-        <span class="summary-icon"><mat-icon>monetization_on</mat-icon></span>
-        <div>
-          <small>Rendimentos</small>
-          <strong>{{ context.totalYields | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
-        </div>
-      </button>
-    </section>
+        <article class="summary-item summary-net">
+          <span class="summary-icon"><mat-icon>attach_money</mat-icon></span>
+          <div>
+            <small>Saldo líquido</small>
+            <strong>{{ context.totalBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+          </div>
+        </article>
+
+        <button type="button" class="summary-item summary-account-yield" (click)="context.openAccountYields()">
+          <span class="summary-icon"><mat-icon>monetization_on</mat-icon></span>
+          <div>
+            <small>Rendimentos</small>
+            <strong>{{ context.totalYields | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+          </div>
+        </button>
+      </section>
+    </mat-expansion-panel>
 
     <div class="refresh-row">
       <button mat-stroked-button class="refresh-button" (click)="context.refresh()">

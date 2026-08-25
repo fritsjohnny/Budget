@@ -134,6 +134,34 @@ export class YieldsComponent implements OnInit {
       .toLowerCase();
   }
 
+  getYieldVariation(row: AccountsYieldsDto, index: number): number | null {
+    const data = (this.dataSource.data ?? []) as AccountsYieldsDto[];
+
+    if (!row || row.accountId == null || index < 0 || index >= data.length) return null;
+
+    const currentAmount = Number(row.amount);
+
+    if (!Number.isFinite(currentAmount)) return null;
+
+    const previousYield = data
+      .slice(index + 1)
+      .find((item) => String(item.accountId) === String(row.accountId));
+
+    if (!previousYield) return null;
+
+    const previousAmount = Number(previousYield.amount);
+
+    if (!Number.isFinite(previousAmount)) return null;
+
+    const variation = currentAmount - previousAmount;
+
+    return Math.abs(variation) < 0.005 ? null : variation;
+  }
+
+  getAbsoluteValue(value: number): number {
+    return Math.abs(value);
+  }
+
   getDescription(account: AccountsYieldsDto): string {
     if (!account || !account.account) {
       return '';

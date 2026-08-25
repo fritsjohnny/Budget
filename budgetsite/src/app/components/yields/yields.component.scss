@@ -83,6 +83,7 @@ tr.mat-footer-row {
 
 .modern-yields-dialog {
     --yield-accent: #20a968;
+    --yield-positive: #4f6fe8;
     --yield-accent-strong: #0d8d52;
     --yield-accent-soft: rgba(32, 169, 104, 0.12);
     --yield-accent-soft-strong: rgba(32, 169, 104, 0.19);
@@ -381,6 +382,7 @@ tr.mat-footer-row {
 
 :host-context(.dark-theme) .modern-yields-dialog {
     --yield-accent: #4edb8c;
+    --yield-positive: #7392ff;
     --yield-accent-strong: #21b86b;
     --yield-accent-soft: rgba(78, 219, 140, 0.12);
     --yield-accent-soft-strong: rgba(78, 219, 140, 0.17);
@@ -603,5 +605,27 @@ tr.mat-footer-row {
 
     .yield-row-values strong {
         font-size: 12px;
+    }
+}
+
+.yield-row-values .yield-variation {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.yield-row-values .yield-variation-positive {
+    color: var(--yield-positive) !important;
+}
+
+.yield-row-values .yield-variation-negative {
+    color: #e25d6b !important;
+}
+
+@media (max-width: 600px) {
+    .yield-row-values .yield-variation {
+        font-size: 10px;
     }
 }

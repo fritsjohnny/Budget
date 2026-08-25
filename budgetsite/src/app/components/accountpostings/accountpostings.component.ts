@@ -139,6 +139,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
   accountPostingsPanelExpanded: boolean = false;
   accountApplicationsPanelExpanded: boolean = false;
+  accountSummaryPanelExpanded: boolean = true;
 
   lastYield: number = 0;
   totalPreviousYield: number = 0;
@@ -163,6 +164,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
     this.accountApplicationsPanelExpanded =
       localStorage.getItem('accountApplicationsPanelExpanded') === 'true';
+
+    const storedAccountSummaryPanelExpanded = localStorage.getItem('accountSummaryPanelExpanded');
+    this.accountSummaryPanelExpanded = storedAccountSummaryPanelExpanded !== 'false';
   }
 
   ngAfterViewInit(): void {
@@ -187,6 +191,14 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
   accountApplicationsPanelOpened() {
     localStorage.setItem('accountApplicationsPanelExpanded', 'true');
+  }
+
+  accountSummaryPanelClosed() {
+    localStorage.setItem('accountSummaryPanelExpanded', 'false');
+  }
+
+  accountSummaryPanelOpened() {
+    localStorage.setItem('accountSummaryPanelExpanded', 'true');
   }
 
   private rebindAccount(): void {

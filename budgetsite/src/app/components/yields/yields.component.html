@@ -155,7 +155,15 @@
 
                     <span class="yield-row-values">
                         <strong>{{ row.amount | currency: "BRL" : "symbol" : "1.2-2" }}</strong>
-                        <small>Saldo acumulado</small>
+                        <ng-container *ngIf="getYieldVariation(row, i) as variation">
+                            <small
+                                class="yield-variation"
+                                [class.yield-variation-positive]="variation > 0"
+                                [class.yield-variation-negative]="variation < 0"
+                            >
+                                {{ variation > 0 ? "+ " : "− " }}{{ getAbsoluteValue(variation) | currency: "BRL" : "symbol" : "1.2-2" }}
+                            </small>
+                        </ng-container>
                         <span [class.negative-value]="row.runningTotal < 0">
                             {{ row.runningTotal | currency: "BRL" : "symbol" : "1.2-2" }}
                         </span>

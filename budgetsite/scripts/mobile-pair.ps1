@@ -21,11 +21,21 @@ if ($pairingCode -notmatch '^\d{6}$') {
 }
 
 $adbPath = Get-BudgetAdbPath
-$output = $pairingCode | & $adbPath pair $PairingTarget 2>&1
+$previousErrorActionPreference = $ErrorActionPreference
+
+try {
+    $ErrorActionPreference = 'Continue'
+    $output = $pairingCode | & $adbPath pair $PairingTarget 2>&1
+    $exitCode = $LASTEXITCODE
+}
+finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+}
+
 $safeOutput = ($output -join [Environment]::NewLine) -replace [regex]::Escape($pairingCode), '******'
 $pairingCode = $null
 
-if ($LASTEXITCODE -ne 0 -or $safeOutput -notmatch 'Successfully paired') {
+if ($exitCode -ne 0 -or $safeOutput -notmatch 'Successfully paired') {
     throw "Falha no pareamento ADB: $safeOutput"
 }
 

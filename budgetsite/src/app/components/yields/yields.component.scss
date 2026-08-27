@@ -292,6 +292,29 @@ tr.mat-footer-row {
     color: #e4525c !important;
 }
 
+.day-total-values {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.day-total-variation {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.day-total-variation-positive {
+    color: var(--yield-positive) !important;
+}
+
+.day-total-variation-negative {
+    color: #e25d6b !important;
+}
+
 .modern-yields-mobile-list {
     display: none;
 }

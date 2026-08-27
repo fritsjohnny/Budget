@@ -111,7 +111,18 @@
 
                 <ng-container matColumnDef="subtotalAmount">
                     <td mat-cell *matCellDef="let row" class="subtotal-amount">
-                        {{ row.dayTotal | currency: "" : "" : "1.2-2" }}
+                        <span class="day-total-values">
+                            <strong>{{ row.dayTotal | currency: "" : "" : "1.2-2" }}</strong>
+                            <ng-container *ngIf="getDayTotalVariation(row) as variation">
+                                <small
+                                    class="day-total-variation"
+                                    [class.day-total-variation-positive]="variation > 0"
+                                    [class.day-total-variation-negative]="variation < 0"
+                                >
+                                    {{ variation > 0 ? "+ " : "− " }}{{ getAbsoluteValue(variation) | currency: "BRL" : "symbol" : "1.2-2" }}
+                                </small>
+                            </ng-container>
+                        </span>
                     </td>
                 </ng-container>
 
@@ -172,7 +183,18 @@
 
                 <div class="mobile-day-total" *ngIf="isEndOfDay(i, row)">
                     <span>Total do dia {{ row.date | date: "dd/MM" }} ({{ getWeekday(row.date) }})</span>
-                    <strong>{{ row.dayTotal | currency: "BRL" : "symbol" : "1.2-2" }}</strong>
+                    <span class="day-total-values">
+                        <strong>{{ row.dayTotal | currency: "BRL" : "symbol" : "1.2-2" }}</strong>
+                        <ng-container *ngIf="getDayTotalVariation(row) as variation">
+                            <small
+                                class="day-total-variation"
+                                [class.day-total-variation-positive]="variation > 0"
+                                [class.day-total-variation-negative]="variation < 0"
+                            >
+                                {{ variation > 0 ? "+ " : "− " }}{{ getAbsoluteValue(variation) | currency: "BRL" : "symbol" : "1.2-2" }}
+                            </small>
+                        </ng-container>
+                    </span>
                 </div>
             </ng-container>
 

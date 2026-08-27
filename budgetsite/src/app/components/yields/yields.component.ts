@@ -134,6 +134,38 @@ export class YieldsComponent implements OnInit {
       .toLowerCase();
   }
 
+  getDayTotalVariation(row: AccountsYieldsDto): number | null {
+    const data = (this.dataSource.data ?? []) as AccountsYieldsDto[];
+
+    if (!this.isGeneralYields || !row || data.length === 0) return null;
+
+    const index = data.findIndex((item) => item === row || item.rowNum === row.rowNum);
+    if (index < 0) return null;
+
+    const currentTotal = Number(row.dayTotal);
+    if (!Number.isFinite(currentTotal)) return null;
+
+    const currentDate = this.getDateKey(row.date);
+    const previousDay = data
+      .slice(index + 1)
+      .find((item) => this.getDateKey(item.date) !== currentDate);
+
+    if (!previousDay) return null;
+
+    const previousTotal = Number(previousDay.dayTotal);
+    if (!Number.isFinite(previousTotal)) return null;
+
+    const variation = currentTotal - previousTotal;
+
+    return Math.abs(variation) < 0.005 ? null : variation;
+  }
+
+  private getDateKey(date: string | Date): string {
+    return typeof date === 'string'
+      ? date.substring(0, 10)
+      : new Date(date).toISOString().substring(0, 10);
+  }
+
   getYieldVariation(row: AccountsYieldsDto, index: number): number | null {
     const data = (this.dataSource.data ?? []) as AccountsYieldsDto[];
 

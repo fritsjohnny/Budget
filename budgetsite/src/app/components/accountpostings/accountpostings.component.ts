@@ -381,8 +381,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           this.accountpostings
             .sort((a, b) => a.position! - b.position!)
             .forEach((accountposting) => {
-              accountposting.runningAmount = runningValue +=
-                accountposting.amount;
+              runningValue = this.calculateRunningBalance(runningValue, accountposting);
+              accountposting.runningAmount = runningValue;
 
               this.minBalance =
                 accountposting.runningAmount < this.minBalance
@@ -413,6 +413,14 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
       && (posting.type === 'P' || posting.type === 'R')
       && posting.relatedId != null
       && posting.toAccountId != null;
+  }
+
+  private calculateRunningBalance(currentBalance: number, posting: AccountsPostings): number {
+    const value = posting.type?.toUpperCase() === 'Y' && posting.totalBalance != null
+      ? Number(posting.totalBalance)
+      : currentBalance + Number(posting.amount || 0);
+
+    return Math.round((value + Number.EPSILON) * 100) / 100;
   }
 
   getTotalAmount() {
@@ -848,7 +856,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.accountpostings
       .sort((a, b) => a.position! - b.position!)
       .forEach((accountposting) => {
-        accountposting.runningAmount = runningValue += accountposting.amount;
+        runningValue = this.calculateRunningBalance(runningValue, accountposting);
+        accountposting.runningAmount = runningValue;
       });
 
     this.accountpostings = [

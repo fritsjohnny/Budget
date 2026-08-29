@@ -56,6 +56,8 @@ public class NotificationReaderPlugin extends Plugin {
 
         notif.put("title", titleChar != null ? titleChar.toString() : "");
         notif.put("text", textChar != null ? textChar.toString() : "");
+        long receivedAt = sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis();
+        notif.put("receivedAt", receivedAt);
 
         notifications.put(notif);
       }

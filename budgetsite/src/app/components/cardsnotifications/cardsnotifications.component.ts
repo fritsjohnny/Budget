@@ -20,6 +20,7 @@ import { prepareApiDates } from 'src/app/utils/api-date.util';
 
 interface CardNotification extends CardsPostings {
   sourceAppPackageName?: string;
+  notificationReceivedAt?: string;
 }
 
 export interface CardNotificationContext {
@@ -56,7 +57,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
 
   private readonly processedNotificationKeys = new Set<string>();
   private readonly pendingNotificationKeys = new Set<string>();
-  private readonly knownCardPostingNotes = new Set<string>();
+  private readonly knownCardPostings: CardsPostings[] = [];
   private readonly loadingCardPostingRanges = new Map<string, Promise<void>>();
   private readonly loadedCardPostingRanges = new Set<string>();
   private intervalId?: ReturnType<typeof setInterval>;
@@ -75,7 +76,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
   async ngOnInit(): Promise<void> {
     await this.loadProcessedNotifications();
     await this.restoreNotificationsFromStorage();
-    await this.loadExistingCardPostingNotes(this.notifications);
+    await this.loadExistingCardPostings(this.notifications);
     await this.reconcileNotificationsWithCardPostings();
 
     this.notificationListener = await NotificationReader.addListener(
@@ -132,7 +133,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           !!notification &&
           typeof notification === 'object' &&
           !this.isProcessedNotification(notification as CardNotification) &&
-          !this.isCardPostingDuplicate((notification as CardNotification).note)
+          !this.isCardPostingDuplicate(notification as CardNotification)
         );
         this.sortNotificationsByDate();
       }
@@ -170,7 +171,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
 
     if (!cardPosting) return;
 
-    await this.loadExistingCardPostingNotes([cardPosting]);
+    await this.loadExistingCardPostings([cardPosting]);
 
     const notificationKey = this.getNotificationKey(cardPosting);
 
@@ -178,7 +179,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
       !notificationKey ||
       this.isProcessedNotification(cardPosting) ||
       this.isDuplicate(cardPosting) ||
-      this.isCardPostingDuplicate(cardPosting.note) ||
+      this.isCardPostingDuplicate(cardPosting) ||
       this.pendingNotificationKeys.has(notificationKey)
     ) {
       return;
@@ -211,6 +212,8 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     const title = payload.title ?? '';
     const pkg = payload.package?.trim().toLowerCase() ?? '';
     const sourceAppPackageName = pkg || undefined;
+    const receivedDate = this.getPayloadReceivedDate(payload);
+    const notificationReceivedAt = receivedDate?.toISOString();
 
     // C6 Bank
     if (
@@ -251,7 +254,8 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           date,
           description,
           note: text,
-          sourceAppPackageName
+          sourceAppPackageName,
+          notificationReceivedAt
         } as CardNotification;
       } catch {
         return null;
@@ -275,7 +279,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
         // Remove prefixo de parcelamento como "2x em", "3x em", etc.
         description = description.replace(/^\d+x em /i, '').trim();
         const parcels = parcelasMatch ? parseInt(parcelasMatch[1], 10) : 1;
-        const date = new Date(); // Assume data atual
+        const date = receivedDate ?? new Date();
 
         return {
           amount,
@@ -283,7 +287,8 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           description,
           note: text,
           parcels,
-          sourceAppPackageName
+          sourceAppPackageName,
+          notificationReceivedAt
         } as CardNotification;
       } catch {
         return null;
@@ -302,14 +307,15 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           valorMatch[1].replace('.', '').replace(',', '.')
         );
         const description = lojaMatch[1].trim();
-        const date = new Date(); // Assume data atual
+        const date = receivedDate ?? new Date();
 
         return {
           amount,
           date,
           description,
           note: text,
-          sourceAppPackageName
+          sourceAppPackageName,
+          notificationReceivedAt
         } as CardNotification;
       } catch {
         return null;
@@ -346,7 +352,8 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           description,
           note: text,
           parcels,
-          sourceAppPackageName
+          sourceAppPackageName,
+          notificationReceivedAt
         } as CardNotification;
       } catch {
         return null;
@@ -356,6 +363,13 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     // Outros bancos no futuro aqui...
 
     return null;
+  }
+
+  private getPayloadReceivedDate(payload: NotificationPayload): Date | null {
+    if (payload.receivedAt === undefined || payload.receivedAt === null) return null;
+
+    const receivedDate = new Date(payload.receivedAt);
+    return Number.isNaN(receivedDate.getTime()) ? null : receivedDate;
   }
 
   private findCardByNotificationText(notification: CardNotification): Cards | undefined {
@@ -567,12 +581,22 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     ]);
   }
 
-  private async loadExistingCardPostingNotes(notifications: CardNotification[]): Promise<void> {
+  private addKnownCardPosting(posting: CardsPostings): void {
+    if (!posting.note) return;
+
+    if (posting.id !== undefined && this.knownCardPostings.some(item => item.id === posting.id)) {
+      return;
+    }
+
+    this.knownCardPostings.push(posting);
+  }
+
+  private async loadExistingCardPostings(notifications: CardNotification[]): Promise<void> {
     this.cardsPostings?.forEach((posting) => {
       const normalizedNote = this.normalizeNotificationText(posting.note);
 
       if (normalizedNote) {
-        this.knownCardPostingNotes.add(normalizedNote);
+        this.addKnownCardPosting(posting);
       }
     });
 
@@ -609,7 +633,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
             const normalizedNote = this.normalizeNotificationText(posting.note);
 
             if (normalizedNote) {
-              this.knownCardPostingNotes.add(normalizedNote);
+              this.addKnownCardPosting(posting);
             }
           });
 
@@ -643,11 +667,12 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
   }
 
   private async reconcileNotificationsWithCardPostings(): Promise<void> {
+    this.cardsPostings?.forEach(posting => this.addKnownCardPosting(posting));
     const originalLength = this.notifications.length;
 
     this.notifications = this.notifications.filter((notification) =>
       !this.isProcessedNotification(notification) &&
-      !this.isCardPostingDuplicate(notification.note)
+      !this.isCardPostingDuplicate(notification)
     );
 
     if (this.notifications.length !== originalLength) {
@@ -657,13 +682,16 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
   }
 
   private getNotificationKey(
-    notification: Pick<CardNotification, 'note' | 'sourceAppPackageName'>
+    notification: Pick<CardNotification, 'note' | 'sourceAppPackageName' | 'date'>
   ): string {
     const note = this.normalizeNotificationText(notification.note);
     if (!note) return '';
 
+    const notificationDate = this.getNotificationDate(notification.date);
+    if (!notificationDate) return '';
+
     const source = notification.sourceAppPackageName?.trim().toLowerCase() ?? '';
-    return `${source}|${note}`;
+    return `${source}|${note}|${notificationDate.toISOString()}`;
   }
 
   private normalizeNotificationText(value: string | undefined): string {
@@ -676,23 +704,26 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
   }
 
   private isDuplicate(notification: CardNotification): boolean {
-    const normalizedNote = this.normalizeNotificationText(notification.note);
-    if (!normalizedNote) return false;
-
-    return this.notifications.some(
-      item => this.normalizeNotificationText(item.note) === normalizedNote
+    const notificationKey = this.getNotificationKey(notification);
+    return !!notificationKey && this.notifications.some(
+      item => this.getNotificationKey(item) === notificationKey
     );
   }
 
-  private isCardPostingDuplicate(note: string | undefined): boolean {
-    const normalizedNote = this.normalizeNotificationText(note);
+  private isCardPostingDuplicate(notification: CardNotification): boolean {
+    const normalizedNote = this.normalizeNotificationText(notification.note);
+    const notificationDate = this.getNotificationDate(notification.date);
 
-    return !!normalizedNote && (
-      this.knownCardPostingNotes.has(normalizedNote) ||
-      (this.cardsPostings?.some(
-        posting => this.normalizeNotificationText(posting.note) === normalizedNote
-      ) ?? false)
-    );
+    if (!normalizedNote || !notificationDate) return false;
+
+    return this.knownCardPostings.some((posting) => {
+      const postingDate = this.getNotificationDate(posting.date);
+
+      return !!postingDate &&
+        this.normalizeNotificationText(posting.note) === normalizedNote &&
+        Math.abs(postingDate.getTime() - notificationDate.getTime()) < 60000 &&
+        Math.abs((posting.amount ?? 0) - (notification.amount ?? 0)) < 0.01;
+    });
   }
 
   // Transforma um texto em um padrão regex que aceita versões com e sem acento

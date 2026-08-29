@@ -2,6 +2,7 @@ export interface NotificationPayload {
   package: string;
   title: string;
   text: string;
+  receivedAt?: number | string;
 }
 
 export interface NotificationReaderPlugin {

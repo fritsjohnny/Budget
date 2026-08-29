@@ -42,12 +42,14 @@ public class NotificationReaderService extends NotificationListenerService {
 
     String title = titleChar != null ? titleChar.toString() : "";
     String text  = textChar  != null ? textChar.toString()  : "";
+    long receivedAt = sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis();
 
     if (pluginInstance != null) {
       JSObject payload = new JSObject();
       payload.put("package", packageName);
       payload.put("title", title);
       payload.put("text", text);
+      payload.put("receivedAt", receivedAt);
       pluginInstance.emitNotification(payload);
     }
   }

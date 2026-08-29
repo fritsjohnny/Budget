@@ -61,10 +61,35 @@ try {
         throw "Falha no Capacitor Sync. Código de saída: $LASTEXITCODE"
     }
 
-    Write-Host "Compilando, instalando e abrindo no dispositivo $($device.Serial)..."
-    & npx cap run android --target=$($device.Serial)
+    Write-Host "Compilando o APK Android..."
+    Push-Location (Join-Path (Get-Location) 'android')
+    try {
+        & .\gradlew.bat clean assembleDebug
+        $gradleExitCode = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+    }
+
+    if ($gradleExitCode -ne 0) {
+        throw "Falha no build Android. Código de saída: $gradleExitCode"
+    }
+
+    $apkPath = Join-Path (Get-Location) 'android\app\build\outputs\apk\debug\app-debug.apk'
+    if (-not (Test-Path $apkPath)) {
+        throw "APK de debug não encontrado em: $apkPath"
+    }
+
+    Write-Host "Instalando o APK no dispositivo $($device.Serial)..."
+    & $adbPath -s $device.Serial install -r -d $apkPath
     if ($LASTEXITCODE -ne 0) {
-        throw "Falha na publicação mobile. Código de saída: $LASTEXITCODE"
+        throw "Falha na instalação do APK. Código de saída: $LASTEXITCODE"
+    }
+
+    Write-Host "Abrindo o BudgetApp no dispositivo $($device.Serial)..."
+    & $adbPath -s $device.Serial shell am start -n 'com.budget.app/.MainActivity'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Falha ao abrir o BudgetApp. Código de saída: $LASTEXITCODE"
     }
 
     Write-Host "BudgetApp publicado com sucesso em $($device.Serial) ($($device.Model))."

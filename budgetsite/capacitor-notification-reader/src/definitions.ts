@@ -10,8 +10,14 @@ export interface NotificationReaderPlugin {
 
   getActiveNotifications(): Promise<{ notifications: NotificationPayload[] }>;
 
+  getPendingNotification(): Promise<{ notification?: NotificationPayload }>;
+
+  clearPendingNotification(): Promise<void>;
+
+  repostNotifications(options: { notifications: NotificationPayload[] }): Promise<void>;
+
   addListener(
-    eventName: 'notificationReceived',
+    eventName: 'notificationReceived' | 'cardNotificationOpened',
     listenerFunc: (payload: NotificationPayload) => void
   ): Promise<PluginListenerHandle> & PluginListenerHandle;
 

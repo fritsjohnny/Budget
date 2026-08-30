@@ -165,6 +165,8 @@ export class CardPostingsComponent implements OnInit {
   savingCardPosting = false;
   
   detectedPurchasesCount = 0;
+  notificationReloadRequest = 0;
+  deletedCardPosting?: CardsPostings;
 
   constructor(
     private cardPostingsService: CardPostingsService,
@@ -815,7 +817,7 @@ export class CardPostingsComponent implements OnInit {
         if (result.deleting) {
           this.cardPostingsService.delete(result).subscribe({
             next: () => {
-              this.afterDelete(result);
+              this.afterDelete(result, true);
             },
           });
         } else {
@@ -837,7 +839,7 @@ export class CardPostingsComponent implements OnInit {
     });
   }
 
-  afterDelete(result: CardsPostings) {
+  afterDelete(result: CardsPostings, restoreNotification = false) {
     if (result.id != null) {
       this.checkedCardPostingIds.delete(result.id);
     }
@@ -850,6 +852,17 @@ export class CardPostingsComponent implements OnInit {
 
     this.getCardsPostingsPeople();
     this.getExpensesByCategories();
+
+    if (restoreNotification) {
+      this.deletedCardPosting = { ...result };
+    }
+
+    this.cd.detectChanges();
+    this.reloadCardPostings();
+  }
+
+  reloadNotifications(): void {
+    this.notificationReloadRequest++;
   }
 
   delete(cardPosting: CardsPostings) {
@@ -883,7 +896,7 @@ export class CardPostingsComponent implements OnInit {
               'Lançamento de cartão removido com sucesso.'
             );
 
-            this.afterDelete(cardPosting);
+            this.afterDelete(cardPosting, true);
           },
           error: () => {
             this.messenger.message('Erro ao remover lançamento de cartão.');

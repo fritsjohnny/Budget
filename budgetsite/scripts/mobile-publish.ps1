@@ -56,7 +56,21 @@ try {
     }
 
     Write-Host 'Sincronizando o projeto Android...'
-    & npx cap sync android
+    $syncAttempts = 0
+    do {
+        $syncAttempts++
+        Write-Host "Sincronizando o projeto Android (tentativa $syncAttempts de 3)..."
+        & npx cap sync android
+
+        if ($LASTEXITCODE -eq 0) {
+            break
+        }
+
+        if ($syncAttempts -lt 3) {
+            Write-Host 'O sync encontrou um bloqueio transitório. Aguardando antes de tentar novamente...'
+            Start-Sleep -Seconds 3
+        }
+    } while ($syncAttempts -lt 3)
     if ($LASTEXITCODE -ne 0) {
         throw "Falha no Capacitor Sync. Código de saída: $LASTEXITCODE"
     }
@@ -64,7 +78,7 @@ try {
     Write-Host "Compilando o APK Android..."
     Push-Location (Join-Path (Get-Location) 'android')
     try {
-        & .\gradlew.bat clean assembleDebug
+        & .\gradlew.bat assembleDebug
         $gradleExitCode = $LASTEXITCODE
     }
     finally {

@@ -196,6 +196,7 @@ export class CardComponent implements OnInit, AfterViewInit {
 
     this.setCard(context.card);
     this.setReference(context.reference);
+    this.refresh();
   }
 
   getCardsNotDisabled(cards: Cards[]) {

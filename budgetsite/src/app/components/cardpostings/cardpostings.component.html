@@ -3,13 +3,15 @@
     [message]="loadingMessage"
 ></app-load-spinner>
 
-
-
 <app-cardpostings-modern-layout
     *ngIf="modernLayout"
     [context]="modernLayoutContext"
 ></app-cardpostings-modern-layout>
 
+
+
+
+<ng-container *ngIf="!modernLayout">
 <div class="row center">
     <div class="row justify-content-center">
         
@@ -828,6 +830,8 @@
         [(categoriesList)]="categoriesList"
         [(peopleList)]="peopleList"
         [cardsList]="cardsList"
+        [notificationReloadRequest]="notificationReloadRequest"
+        [deletedCardPosting]="deletedCardPosting"
         (cardPostingCreated)="onCardPostingCreated($event)"
         (cardPostingSavingChange)="setCardPostingSaving($event)"
         (notificationContextChange)="notificationContextChange.emit($event)"
@@ -926,3 +930,4 @@
         </span>
     </div>
 </div>
+</ng-container>

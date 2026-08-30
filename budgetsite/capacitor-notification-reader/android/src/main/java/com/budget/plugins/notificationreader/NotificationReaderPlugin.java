@@ -1,7 +1,7 @@
 package com.budget.plugins.notificationreader;
 
 import android.content.ComponentName;
-import android.content.pm.ResolveInfo;
+import android.content.Context;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -13,12 +13,10 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-import android.content.Intent;
-import android.content.pm.PackageManager;
-
 import androidx.annotation.RequiresApi;
 
-import java.util.List;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 
 @CapacitorPlugin(name = "NotificationReaderPlugin")
 public class NotificationReaderPlugin extends Plugin {
@@ -45,21 +43,11 @@ public class NotificationReaderPlugin extends Plugin {
       JSArray notifications = new JSArray();
 
       for (StatusBarNotification sbn : sbns) {
-        if (sbn == null || sbn.getNotification() == null)
-          continue;
+        JSObject payload = NotificationReaderService.createPayload(sbn);
 
-        JSObject notif = new JSObject();
-        notif.put("package", sbn.getPackageName());
-
-        CharSequence titleChar = sbn.getNotification().extras.getCharSequence("android.title");
-        CharSequence textChar = sbn.getNotification().extras.getCharSequence("android.text");
-
-        notif.put("title", titleChar != null ? titleChar.toString() : "");
-        notif.put("text", textChar != null ? textChar.toString() : "");
-        long receivedAt = sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis();
-        notif.put("receivedAt", receivedAt);
-
-        notifications.put(notif);
+        if (payload != null) {
+          notifications.put(payload);
+        }
       }
 
       JSObject result = new JSObject();
@@ -72,12 +60,75 @@ public class NotificationReaderPlugin extends Plugin {
   }
 
   @PluginMethod
+  public void getPendingNotification(PluginCall call) {
+    JSObject result = new JSObject();
+    JSObject notification = NotificationReaderService.getPendingNotification(
+      getActivity().getApplicationContext(),
+      getActivity().getIntent()
+    );
+
+    if (notification != null) {
+      result.put("notification", notification);
+    }
+
+    call.resolve(result);
+  }
+
+  @PluginMethod
+  public void repostNotifications(PluginCall call) {
+    try {
+      JSArray payloads = call.getArray("notifications", new JSArray());
+      Context context = getActivity().getApplicationContext();
+      NotificationReaderService.clearCardNotifications(context);
+
+      for (int index = 0; index < payloads.length(); index++) {
+        org.json.JSONObject source = payloads.getJSONObject(index);
+        JSObject payload = new JSObject();
+        payload.put("package", source.optString("package", ""));
+        payload.put("title", source.optString("title", ""));
+        payload.put("text", source.optString("text", ""));
+        payload.put("receivedAt", source.optLong("receivedAt", System.currentTimeMillis()));
+        NotificationReaderService.repostCardNotification(context, payload);
+      }
+
+      call.resolve();
+    } catch (Exception error) {
+      call.reject("Erro ao republicar notificações: " + error.getMessage());
+    }
+  }
+
+  @PluginMethod
+  public void clearPendingNotification(PluginCall call) {
+    NotificationReaderService.clearPendingNotification(
+      getActivity().getApplicationContext(),
+      getActivity().getIntent()
+    );
+    call.resolve();
+  }
+
+  @PluginMethod
   public void addListener(PluginCall call) {
     call.resolve();
   }
 
   public void emitNotification(JSObject payload) {
     notifyListeners("notificationReceived", payload);
+  }
+
+  public void emitNotificationOpened(JSObject payload) {
+    notifyListeners("cardNotificationOpened", payload, true);
+
+    final String payloadJson = payload.toString();
+    getActivity().runOnUiThread(() -> {
+      if (getBridge() == null || getBridge().getWebView() == null) return;
+
+      getBridge().getWebView().evaluateJavascript(
+        "window.dispatchEvent(new CustomEvent('native-card-notification-opened',{detail:" +
+          payloadJson +
+          "}));",
+        null
+      );
+    });
   }
 
   @Override
@@ -125,7 +176,6 @@ public class NotificationReaderPlugin extends Plugin {
 
     PackageManager pm = getActivity().getPackageManager();
 
-    // 1. Tenta com getLaunchIntentForPackage
     Log.d(TAG, "[openApp] Tentando getLaunchIntentForPackage...");
     Intent launchIntent = pm.getLaunchIntentForPackage(packageName);
     if (launchIntent != null) {
@@ -141,7 +191,6 @@ public class NotificationReaderPlugin extends Plugin {
       return;
     }
 
-    // 2. Se nome explícito foi fornecido, tenta direto
     if (isExplicitActivity && activityName != null) {
       Log.d(TAG, "[openApp] Tentando iniciar activity diretamente: " + activityName);
       try {
@@ -165,6 +214,4 @@ public class NotificationReaderPlugin extends Plugin {
     Log.e(TAG, "[openApp] Todas as tentativas falharam para abrir: " + appPackageName);
     call.reject("Não foi possível abrir o aplicativo: " + appPackageName);
   }
-
-  // teste 11:19
 }

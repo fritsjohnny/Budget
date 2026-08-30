@@ -42,6 +42,8 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
   @Input() categoriesList?: Categories[];
   @Input() cardsList?: Cards[];
   @Input() cardsPostings?: CardsPostings[];
+  @Input() notificationReloadRequest = 0;
+  @Input() deletedCardPosting?: CardsPostings;
 
   @Output() peopleListChange = new EventEmitter<People[]>();
   @Output() categoriesListChange = new EventEmitter<Categories[]>();
@@ -52,16 +54,33 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
 
   private readonly STORAGE_KEY = 'persisted_notifications';
   private readonly PROCESSED_STORAGE_KEY = 'processed_notifications';
+  private readonly DISMISSED_STORAGE_KEY = 'dismissed_notifications';
 
   notifications = [] as CardNotification[];
 
   private readonly processedNotificationKeys = new Set<string>();
+  private readonly dismissedNotificationKeys = new Set<string>();
   private readonly pendingNotificationKeys = new Set<string>();
   private readonly knownCardPostings: CardsPostings[] = [];
   private readonly loadingCardPostingRanges = new Map<string, Promise<void>>();
   private readonly loadedCardPostingRanges = new Set<string>();
   private intervalId?: ReturnType<typeof setInterval>;
   private notificationListener?: PluginListenerHandle;
+  private pendingNotificationHandled = false;
+  private pendingNotificationPayload?: NotificationPayload;
+  private pendingNotificationRequested = false;
+  private readonly handlePendingNotificationRouteReady = (event: Event): void => {
+    const payload = (event as CustomEvent<NotificationPayload>).detail;
+
+    if (payload) {
+      this.pendingNotificationPayload = payload;
+    }
+
+    this.pendingNotificationHandled = false;
+    this.pendingNotificationRequested = true;
+    void this.tryOpenPendingNotification();
+  };
+
   private loadingNotifications = false;
   private initialized = false;
   validatingInvoiceClosing = false;
@@ -74,7 +93,11 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.pendingNotificationRequested = !!localStorage.getItem('pendingCardNotificationOpen');
+    window.addEventListener('card-notification-route-ready', this.handlePendingNotificationRouteReady);
+
     await this.loadProcessedNotifications();
+    await this.loadDismissedNotifications();
     await this.restoreNotificationsFromStorage();
     await this.loadExistingCardPostings(this.notifications);
     await this.reconcileNotificationsWithCardPostings();
@@ -95,6 +118,9 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
 
     this.initialized = true;
     await this.reconcileNotificationsWithCardPostings();
+    if (this.pendingNotificationRequested) {
+      await this.tryOpenPendingNotification();
+    }
   }
 
   private async loadProcessedNotifications(): Promise<void> {
@@ -117,6 +143,26 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     }
   }
 
+  private async loadDismissedNotifications(): Promise<void> {
+    const stored = await Preferences.get({ key: this.DISMISSED_STORAGE_KEY });
+
+    if (!stored.value) return;
+
+    try {
+      const parsed: unknown = JSON.parse(stored.value);
+
+      if (Array.isArray(parsed)) {
+        for (const key of parsed) {
+          if (typeof key === 'string' && key.trim()) {
+            this.dismissedNotificationKeys.add(key);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[DEBUG] Não foi possível restaurar notificações desconsideradas:', error);
+    }
+  }
+
   private async restoreNotificationsFromStorage(): Promise<void> {
     const stored = await Preferences.get({ key: this.STORAGE_KEY });
 
@@ -133,6 +179,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           !!notification &&
           typeof notification === 'object' &&
           !this.isProcessedNotification(notification as CardNotification) &&
+          !this.isDismissedNotification(notification as CardNotification) &&
           !this.isCardPostingDuplicate(notification as CardNotification)
         );
         this.sortNotificationsByDate();
@@ -174,9 +221,16 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     await this.loadExistingCardPostings([cardPosting]);
 
     const notificationKey = this.getNotificationKey(cardPosting);
+    const processedNotificationWasReleased =
+      this.releaseProcessedNotificationIfPostingWasDeleted(cardPosting);
+
+    if (processedNotificationWasReleased) {
+      await this.saveNotificationsToStorage();
+    }
 
     if (
       !notificationKey ||
+      this.isDismissedNotification(cardPosting) ||
       this.isProcessedNotification(cardPosting) ||
       this.isDuplicate(cardPosting) ||
       this.isCardPostingDuplicate(cardPosting) ||
@@ -365,6 +419,56 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     return null;
   }
 
+  private async tryOpenPendingNotification(): Promise<void> {
+    if (!this.pendingNotificationRequested || this.pendingNotificationHandled || !this.cardsList?.length) return;
+
+    const storedPayload = localStorage.getItem('pendingCardNotificationPayload');
+    let storedNotification: NotificationPayload | undefined;
+
+    if (storedPayload) {
+      try {
+        storedNotification = JSON.parse(storedPayload) as NotificationPayload;
+      } catch {
+        localStorage.removeItem('pendingCardNotificationPayload');
+      }
+    }
+
+    const payload = this.pendingNotificationPayload ??
+      storedNotification ??
+      (await NotificationReader.getPendingNotification()).notification;
+
+    if (!payload) {
+      this.pendingNotificationRequested = false;
+      localStorage.removeItem('pendingCardNotificationOpen');
+      localStorage.removeItem('pendingCardNotificationPayload');
+      return;
+    }
+
+    const cardPosting = this.parseNotification(payload);
+    if (!cardPosting) {
+      await this.acknowledgePendingNotificationOpen();
+      return;
+    }
+
+    if (this.convertToCardPosting(cardPosting, true)) {
+      this.pendingNotificationHandled = true;
+      this.pendingNotificationRequested = false;
+    }
+  }
+
+  private async acknowledgePendingNotificationOpen(): Promise<void> {
+    this.pendingNotificationPayload = undefined;
+    this.pendingNotificationRequested = false;
+    localStorage.removeItem('pendingCardNotificationOpen');
+    localStorage.removeItem('pendingCardNotificationPayload');
+
+    try {
+      await NotificationReader.clearPendingNotification();
+    } catch (error) {
+      console.error('[DEBUG] Não foi possível confirmar a abertura da notificação:', error);
+    }
+  }
+
   private getPayloadReceivedDate(payload: NotificationPayload): Date | null {
     if (payload.receivedAt === undefined || payload.receivedAt === null) return null;
 
@@ -403,12 +507,12 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
       .replace(/\s+/g, ' ');
   }
 
-  convertToCardPosting(notification: CardNotification): void {
+  convertToCardPosting(notification: CardNotification, fromPendingNotification = false): boolean {
     const notificationDate = this.getNotificationDate(notification.date);
 
     if (!notificationDate) {
       this.messenger.errorHandler('A data da notificação é inválida.');
-      return;
+      return false;
     }
 
     const initialReference = this.getNotificationReference(notificationDate);
@@ -430,10 +534,15 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
             ? 'Nenhum cartão está configurado para o aplicativo que gerou esta notificação.'
             : 'Selecione um cartão específico para transformar esta notificação em lançamento.'
       );
-      return;
+      return false;
     }
 
-    if (this.validatingInvoiceClosing) return;
+    if (this.validatingInvoiceClosing) {
+      if (fromPendingNotification) {
+        window.setTimeout(() => void this.tryOpenPendingNotification(), 250);
+      }
+      return false;
+    }
 
     const targetCardId = targetCard.id;
 
@@ -486,15 +595,26 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           },
         });
 
+        if (fromPendingNotification) {
+          void this.acknowledgePendingNotificationOpen();
+        }
+
         dialogRef.afterClosed().subscribe((result) => {
-          if (!result) return;
+          if (!result) {
+            if (fromPendingNotification) this.pendingNotificationHandled = false;
+            return;
+          }
 
           this.cardPostingSavingChange.emit(true);
 
           const payload = prepareApiDates(result, ['date', 'dueDate']);
           this.cardPostingsService.createFromNotification(payload).subscribe({
-            next: (cardposting) => {
-              this.removeNotification(notification);
+            next: async (cardposting) => {
+              await this.removeNotification(notification);
+
+              if (fromPendingNotification) {
+                await NotificationReader.clearPendingNotification();
+              }
 
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
@@ -503,11 +623,22 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
               this.peopleListChange.emit(this.peopleList);
               this.cardPostingCreated.emit(cardposting);
             },
-            error: () => this.cardPostingSavingChange.emit(false),
+            error: () => {
+              this.cardPostingSavingChange.emit(false);
+              if (fromPendingNotification) this.pendingNotificationHandled = false;
+            },
           });
         });
       },
+      error: () => {
+        if (fromPendingNotification) {
+          this.pendingNotificationHandled = false;
+          this.pendingNotificationRequested = true;
+        }
+      },
     });
+
+    return true;
   }
 
   private getNotificationDate(date: Date | string): Date | null {
@@ -552,14 +683,25 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     return this.getNotificationReference(referenceDate);
   }
 
-  async removeNotification(notification: CardNotification): Promise<void> {
+  async dismissNotification(notification: CardNotification): Promise<void> {
+    await this.removeNotification(notification, true);
+  }
+
+  private async removeNotification(
+    notification: CardNotification,
+    dismissed = false
+  ): Promise<void> {
     const notificationKey = this.getNotificationKey(notification);
 
     if (notificationKey) {
       this.processedNotificationKeys.add(notificationKey);
+      if (dismissed) this.dismissedNotificationKeys.add(notificationKey);
     }
 
-    this.notifications = this.notifications.filter((n) => n !== notification);
+    this.notifications = this.notifications.filter((item) =>
+      item !== notification &&
+      (!notificationKey || this.getNotificationKey(item) !== notificationKey)
+    );
     this.emitNotificationsCount();
     await this.saveNotificationsToStorage();
   }
@@ -577,6 +719,10 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
       Preferences.set({
         key: this.PROCESSED_STORAGE_KEY,
         value: JSON.stringify([...this.processedNotificationKeys]),
+      }),
+      Preferences.set({
+        key: this.DISMISSED_STORAGE_KEY,
+        value: JSON.stringify([...this.dismissedNotificationKeys]),
       }),
     ]);
   }
@@ -666,8 +812,22 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     return this.getNotificationReference(referenceDate);
   }
 
+  private deduplicateNotifications(): void {
+    const identities = new Set<string>();
+
+    this.notifications = this.notifications.filter(notification => {
+      const identity = this.getNotificationIdentitySuffix(notification);
+
+      if (!identity || identities.has(identity)) return false;
+
+      identities.add(identity);
+      return true;
+    });
+  }
+
   private async reconcileNotificationsWithCardPostings(): Promise<void> {
     this.cardsPostings?.forEach(posting => this.addKnownCardPosting(posting));
+    this.deduplicateNotifications();
     const originalLength = this.notifications.length;
 
     this.notifications = this.notifications.filter((notification) =>
@@ -681,17 +841,48 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     }
   }
 
-  private getNotificationKey(
-    notification: Pick<CardNotification, 'note' | 'sourceAppPackageName' | 'date'>
-  ): string {
-    const note = this.normalizeNotificationText(notification.note);
-    if (!note) return '';
+  private getNotificationReceivedTimestamp(
+    notification: Pick<CardNotification, 'note' | 'date'> & { notificationReceivedAt?: string }
+  ): number | null {
+    const dateMatch = notification.note?.match(
+      /dia (\d{2}\/\d{2}\/\d{4}) às (\d{2}):(\d{2})/i
+    ) ?? notification.note?.match(
+      /(\d{2}\/\d{2}\/\d{4})\s+(\d{2}):(\d{2})/
+    );
+
+    if (dateMatch) {
+      const [, dateText, hours, minutes] = dateMatch;
+      const date = new Date(
+        `${dateText.split('/').reverse().join('-')}T${hours}:${minutes}:00`
+      );
+
+      if (!Number.isNaN(date.getTime())) return date.getTime();
+    }
+
+    const receivedAt = notification.notificationReceivedAt
+      ? new Date(notification.notificationReceivedAt)
+      : null;
+
+    if (receivedAt && !Number.isNaN(receivedAt.getTime())) {
+      return receivedAt.getTime();
+    }
 
     const notificationDate = this.getNotificationDate(notification.date);
-    if (!notificationDate) return '';
+    return notificationDate?.getTime() ?? null;
+  }
+
+  private getNotificationKey(
+    notification: Pick<CardNotification, 'note' | 'sourceAppPackageName' | 'date'> & {
+      notificationReceivedAt?: string;
+    }
+  ): string {
+    const note = this.normalizeNotificationText(notification.note);
+    const notificationTimestamp = this.getNotificationReceivedTimestamp(notification);
+
+    if (!note || notificationTimestamp === null) return '';
 
     const source = notification.sourceAppPackageName?.trim().toLowerCase() ?? '';
-    return `${source}|${note}|${notificationDate.toISOString()}`;
+    return `${source}|${note}|${new Date(notificationTimestamp).toISOString()}`;
   }
 
   private normalizeNotificationText(value: string | undefined): string {
@@ -703,10 +894,124 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     return !!notificationKey && this.processedNotificationKeys.has(notificationKey);
   }
 
-  private isDuplicate(notification: CardNotification): boolean {
+  private isDismissedNotification(notification: CardNotification): boolean {
     const notificationKey = this.getNotificationKey(notification);
-    return !!notificationKey && this.notifications.some(
-      item => this.getNotificationKey(item) === notificationKey
+    return !!notificationKey && this.dismissedNotificationKeys.has(notificationKey);
+  }
+
+  private releaseProcessedNotificationIfPostingWasDeleted(
+    notification: CardNotification
+  ): boolean {
+    const suffix = this.getNotificationIdentitySuffix(notification);
+    if (!suffix) return false;
+
+    const keysToRelease = [...this.processedNotificationKeys]
+      .filter(key => key.endsWith(suffix));
+
+    keysToRelease.forEach(key => this.processedNotificationKeys.delete(key));
+    return keysToRelease.length > 0;
+  }
+
+  private getNotificationIdentitySuffix(
+    notification: Pick<CardNotification, 'note' | 'date'> & { notificationReceivedAt?: string }
+  ): string {
+    const note = this.normalizeNotificationText(notification.note);
+    const notificationTimestamp = this.getNotificationReceivedTimestamp(notification);
+
+    if (!note || notificationTimestamp === null) return '';
+    return `|${note}|${new Date(notificationTimestamp).toISOString()}`;
+  }
+
+  private isSameNotificationPosting(
+    first: Pick<CardNotification, 'note' | 'date' | 'amount'> & { notificationReceivedAt?: string },
+    second: Pick<CardNotification, 'note' | 'date' | 'amount'> & { notificationReceivedAt?: string }
+  ): boolean {
+    const firstTimestamp = this.getNotificationReceivedTimestamp(first);
+    const secondTimestamp = this.getNotificationReceivedTimestamp(second);
+
+    return firstTimestamp !== null && secondTimestamp !== null &&
+      this.normalizeNotificationText(first.note) === this.normalizeNotificationText(second.note) &&
+      Math.abs(firstTimestamp - secondTimestamp) < 60000 &&
+      Math.abs((first.amount ?? 0) - (second.amount ?? 0)) < 0.01;
+  }
+
+  async restoreNotificationForDeletedCardPosting(posting: CardsPostings): Promise<void> {
+    if (!posting?.note) return;
+
+    const suffix = this.getNotificationIdentitySuffix(posting);
+    if (!suffix) return;
+
+    const sourceKey = [...this.processedNotificationKeys]
+      .find(key => key.endsWith(suffix));
+    const sourceAppPackageName = sourceKey?.substring(0, sourceKey.indexOf('|')) || undefined;
+
+    this.processedNotificationKeys.forEach(key => {
+      if (key.endsWith(suffix)) this.processedNotificationKeys.delete(key);
+    });
+    this.dismissedNotificationKeys.forEach(key => {
+      if (key.endsWith(suffix)) this.dismissedNotificationKeys.delete(key);
+    });
+
+    for (let index = this.knownCardPostings.length - 1; index >= 0; index--) {
+      if (this.isSameNotificationPosting(this.knownCardPostings[index], posting)) {
+        this.knownCardPostings.splice(index, 1);
+      }
+    }
+
+    if (!this.notifications.some(notification => this.isSameNotificationPosting(notification, posting))) {
+      this.notifications.unshift({
+        ...posting,
+        sourceAppPackageName,
+      } as CardNotification);
+      this.sortNotificationsByDate();
+    }
+
+    await this.saveNotificationsToStorage();
+    this.emitNotificationsCount();
+    await this.loadNotifications();
+  }
+
+  async reloadNotifications(): Promise<void> {
+    // Recarregar apenas republica as notificações para teste.
+    // Nunca deve abrir o cadastro automaticamente.
+    this.pendingNotificationHandled = false;
+    this.pendingNotificationRequested = false;
+    this.pendingNotificationPayload = undefined;
+    localStorage.removeItem('pendingCardNotificationOpen');
+    localStorage.removeItem('pendingCardNotificationPayload');
+
+    try {
+      await NotificationReader.clearPendingNotification();
+    } catch (error) {
+      console.warn('[DEBUG] Não foi possível limpar o clique pendente:', error);
+    }
+
+    await this.republishVisibleNotifications();
+    await this.loadNotifications();
+    await this.reconcileNotificationsWithCardPostings();
+  }
+
+    private async republishVisibleNotifications(): Promise<void> {
+    if (this.notifications.length === 0) return;
+
+    const payloads: NotificationPayload[] = this.notifications.map(notification => ({
+      package: notification.sourceAppPackageName ?? 'com.budget.app',
+      title: 'Compra detectada',
+      text: notification.note ?? '',
+      receivedAt: this.getNotificationReceivedTimestamp(notification) ?? Date.now(),
+    }));
+
+    try {
+      await NotificationReader.repostNotifications({ notifications: payloads });
+    } catch (error) {
+      console.error('[DEBUG] Não foi possível republicar as notificações visíveis:', error);
+    }
+  }
+
+private isDuplicate(notification: CardNotification): boolean {
+    const notificationIdentity = this.getNotificationIdentitySuffix(notification);
+    return !!notificationIdentity && this.notifications.some(
+      item => this.getNotificationIdentitySuffix(item) === notificationIdentity
     );
   }
 
@@ -763,9 +1068,32 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     if (this.initialized && changes['cardsPostings']) {
       void this.reconcileNotificationsWithCardPostings();
     }
+
+    if (
+      this.initialized &&
+      changes['notificationReloadRequest'] &&
+      changes['notificationReloadRequest'].currentValue !== changes['notificationReloadRequest'].previousValue
+    ) {
+      void this.reloadNotifications();
+    }
+
+    if (this.initialized && changes['deletedCardPosting']?.currentValue) {
+      void this.restoreNotificationForDeletedCardPosting(changes['deletedCardPosting'].currentValue);
+    }
+
+    if (
+      this.initialized &&
+      this.pendingNotificationRequested &&
+      !this.pendingNotificationHandled &&
+      (changes['cardsList'] || changes['peopleList'] || changes['categoriesList'])
+    ) {
+      void this.tryOpenPendingNotification();
+    }
   }
 
   ngOnDestroy(): void {
+    window.removeEventListener('card-notification-route-ready', this.handlePendingNotificationRouteReady);
+
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }

@@ -237,6 +237,10 @@
                         <mat-icon>autorenew</mat-icon
                         ><span>Atualizar lançamentos</span>
                     </button>
+                    <button mat-menu-item (click)="context.reloadNotifications()">
+                        <mat-icon>notifications_active</mat-icon
+                        ><span>Recarregar Notificações</span>
+                    </button>
                 </mat-menu>
 
                 <mat-menu
@@ -712,6 +716,8 @@
                     [(peopleList)]="context.peopleList"
                     [cardsList]="context.cardsList"
                     [cardsPostings]="context.cardpostings"
+                    [notificationReloadRequest]="context.notificationReloadRequest"
+                    [deletedCardPosting]="context.deletedCardPosting"
                     (cardPostingCreated)="context.onCardPostingCreated($event)"
                     (cardPostingSavingChange)="
                         context.setCardPostingSaving($event)

@@ -9,6 +9,13 @@
         <action android:name="android.service.notification.NotificationListenerService" />
       </intent-filter>
     </service>
+
+    <activity
+      android:name=".NotificationClickActivity"
+      android:excludeFromRecents="true"
+      android:exported="false"
+      android:noHistory="true"
+      android:theme="@android:style/Theme.NoDisplay" />
   </application>
 
 </manifest>

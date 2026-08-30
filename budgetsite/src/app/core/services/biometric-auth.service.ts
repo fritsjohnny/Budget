@@ -15,6 +15,7 @@ export class BiometricAuthService {
     private suppressNextGuardPrompt = false;
     // --- registrar início/fim do prompt (se já não tiver) ---
     private biometricInProgress = false;
+    private authenticationPromise?: Promise<boolean>;
 
     beginBiometric() { this.biometricInProgress = true; }
     endBiometric() { this.biometricInProgress = false; }
@@ -79,6 +80,21 @@ export class BiometricAuthService {
     }
 
     async authenticate(reason = 'Confirme sua identidade'): Promise<boolean> {
+        if (this.authenticationPromise) return this.authenticationPromise;
+
+        const authentication = this.performAuthentication(reason);
+        this.authenticationPromise = authentication;
+
+        try {
+            return await authentication;
+        } finally {
+            if (this.authenticationPromise === authentication) {
+                this.authenticationPromise = undefined;
+            }
+        }
+    }
+
+    private async performAuthentication(reason: string): Promise<boolean> {
         try {
             this.beginBiometric();
 

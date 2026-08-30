@@ -11,11 +11,24 @@ export class NotificationReaderPluginWeb extends WebPlugin implements Notificati
     return { notifications: [] };
   }
 
+  async getPendingNotification(): Promise<{ notification?: NotificationPayload }> {
+    console.warn('getPendingNotification is not available on web');
+    return {};
+  }
+
+  async repostNotifications(): Promise<void> {
+    console.warn('repostNotifications is not available on web');
+  }
+
+  async clearPendingNotification(): Promise<void> {
+    console.warn('clearPendingNotification is not available on web');
+  }
+
   override addListener(
-    eventName: 'notificationReceived',
+    eventName: 'notificationReceived' | 'cardNotificationOpened',
     listenerFunc: (payload: NotificationPayload) => void
   ): Promise<import('./definitions').PluginListenerHandle> & import('./definitions').PluginListenerHandle {
-    console.warn('notificationReceived listener not supported on web');
+    console.warn(`Event ${eventName} is not supported on web`);
     const handle = {
       remove: async () => {},
     };

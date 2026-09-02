@@ -138,6 +138,37 @@
     border-right: none;
 }
 
+/* A coluna Total contém campo editável e precisa reservar espaço para o valor e o botão de limpar. */
+.annual-economy-table th:nth-child(2),
+.annual-economy-table td:nth-child(2) {
+    width: 110px;
+    min-width: 110px;
+}
+
+.annual-economy-table td:nth-child(2) .annual-total-input-wrapper {
+    width: 95px;
+    max-width: 95px;
+}
+
+.annual-economy-table td:nth-child(2) .annual-total-input {
+    width: 100%;
+    min-width: 0;
+    max-width: 95px;
+    font-size: 0.95em;
+}
+
+.annual-economy-table th:nth-child(3),
+.annual-economy-table td:nth-child(3) {
+    width: 105px;
+    min-width: 105px;
+}
+
+.annual-economy-table th:nth-child(4),
+.annual-economy-table td:nth-child(4) {
+    width: 135px;
+    min-width: 135px;
+}
+
 .annual-economy-table-without-real-balance {
     width: 100%;
     min-width: 100%;
@@ -151,11 +182,25 @@
     max-width: 44px;
 }
 
-.annual-economy-table-without-real-balance th:not(:first-child),
-.annual-economy-table-without-real-balance td:not(:first-child) {
-    width: calc((100% - 44px) / 3);
-    min-width: 0;
-    max-width: none;
+.annual-economy-table-without-real-balance th:nth-child(2),
+.annual-economy-table-without-real-balance td:nth-child(2) {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+}
+
+.annual-economy-table-without-real-balance th:nth-child(3),
+.annual-economy-table-without-real-balance td:nth-child(3) {
+    width: 105px;
+    min-width: 105px;
+    max-width: 105px;
+}
+
+.annual-economy-table-without-real-balance th:nth-child(4),
+.annual-economy-table-without-real-balance td:nth-child(4) {
+    width: 135px;
+    min-width: 135px;
+    max-width: 135px;
 }
 
 .annual-total-row {

@@ -231,15 +231,20 @@ public class NotificationReaderService extends NotificationListenerService {
     String normalizedTitle = title.toLowerCase();
     String normalizedText = text.toLowerCase();
 
-    boolean hasAmount = normalizedText.contains("r$");
+    boolean isPicPayPurchase =
+      (normalizedPackage.contains("picpay") || normalizedTitle.contains("cashback")) &&
+      normalizedText.matches("(?s).*r\\$\\s*[\\d.,]+.*\\bem\\s+.+?\\s+aprovada\\b.*");
+    boolean isC6Purchase =
+      (normalizedPackage.contains("c6") || normalizedTitle.contains("crédito")) &&
+      normalizedText.matches("(?s).*no valor de r\\$\\s*[\\d.,]+.*\\bem\\s+.+?foi aprovada\\b.*");
+    boolean isNubankPurchase =
+      normalizedPackage.equals("com.nu.production") &&
+      normalizedText.matches("(?s).*r\\$\\s*[\\d.,]+.*\\bem\\s+.+?\\s+para o cartão\\b.*");
+    boolean isAmazonCardPurchase =
+      (normalizedText.contains("cartao amazon") || normalizedText.contains("cartão amazon")) &&
+      normalizedText.matches("(?s).*valor de r\\$\\s*[\\d.,]+.*\\d{2}/\\d{2}/\\d{4}\\s+\\d{2}:\\d{2}.*");
 
-    return (normalizedPackage.contains("picpay") && hasAmount) ||
-      (normalizedPackage.contains("c6") && hasAmount) ||
-      (normalizedPackage.equals("com.nu.production") && hasAmount) ||
-      (normalizedTitle.contains("cashback") && hasAmount) ||
-      (normalizedTitle.contains("crédito") && normalizedText.contains("no valor de r$")) ||
-      normalizedText.contains("cartao amazon") ||
-      normalizedText.contains("cartão amazon");
+    return isPicPayPurchase || isC6Purchase || isNubankPurchase || isAmazonCardPurchase;
   }
 
   private static void showCardNotification(Context context, JSObject payload) {

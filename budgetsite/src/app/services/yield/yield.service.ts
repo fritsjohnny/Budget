@@ -343,7 +343,7 @@ export class YieldService {
       const targetDate = this.resolveCdiTargetDate(account);
       cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
     } catch {
-      this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
+      this.messenger.errorHandler('Não foi possível carregar a taxa DI. Usando último rendimento.');
       return {
         totalGross: account.totalBalanceGross ?? 0,
         totalNet: account.totalBalance ?? 0,
@@ -458,7 +458,7 @@ export class YieldService {
       const targetDate = this.resolveCdiTargetDate(account);
       cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
     } catch {
-      this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
+      this.messenger.errorHandler('Não foi possível carregar a taxa DI. Usando último rendimento.');
       return {
         totalGross: account.totalBalanceGross ?? 0,
         totalNet: account.totalBalance ?? 0,
@@ -565,7 +565,7 @@ export class YieldService {
   //     const targetDate = this.resolveCdiTargetDate(account); // p/ Mercado Pago deixe cdiRateLagDays=0 (D0) no cadastro
   //     cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
   //   } catch {
-  //     this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
+  //     this.messenger.errorHandler('Não foi possível carregar a taxa DI. Usando último rendimento.');
   //     return {
   //       totalGross: account.totalBalanceGross ?? 0,
   //       totalNet: account.totalBalance ?? 0,
@@ -776,6 +776,7 @@ export class YieldService {
       try {
         cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
       } catch {
+        this.messenger.errorHandler('Não foi possível carregar a taxa DI.');
         cdiDiarioPercent = null;
       }
 
@@ -870,6 +871,7 @@ export class YieldService {
       const targetDate = this.resolveCdiTargetDate(account);
       cdiDailyPercent = await this.getCdiDiarioPercent(targetDate);
     } catch {
+      this.messenger.errorHandler('Não foi possível carregar a taxa DI.');
       cdiDailyPercent = 0;
     }
 
@@ -969,7 +971,7 @@ export class YieldService {
       cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
     } catch {
       // fallback conservador
-      this.messenger.errorHandler('Erro ao obter CDI diário. Usando último rendimento.');
+      this.messenger.errorHandler('Não foi possível carregar a taxa DI. Usando último rendimento.');
       return {
         totalGross: account.totalBalanceGross ?? 0,
         totalNet: account.totalBalance ?? 0,

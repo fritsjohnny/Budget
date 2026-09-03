@@ -14,6 +14,9 @@
         </div>
 
         <h2 mat-dialog-title>{{setTitle()}}</h2>
+        <p class="yield-calculation-status" *ngIf="isCalculating && accountPosting.type === 'Y'">
+            {{ calculationStatus }}
+        </p>
         <div mat-dialog-content>
             <mat-radio-group
                 name="typeFormControl"

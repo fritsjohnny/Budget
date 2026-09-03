@@ -61,6 +61,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   noRecalculate: boolean = false;
   previousBusinessDayHoliday: boolean = false;
   isCalculating: boolean = true;
+  calculationStatus: string = 'Preparando rendimento...';
   isApplyingSuggestedYield: boolean = false;
   private suppressInitialEditEvents: boolean = false;
   private initialCurrentBalanceForYield: number = 0;
@@ -974,6 +975,13 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.noRecalculate = false;
     this.isCalculating = true;
 
+    if (this.accountPosting.type === 'Y') {
+      this.calculationStatus = this.accountPosting.algorithmType === '3'
+        && this.previousBusinessDayHoliday
+        ? 'Calculando rendimento...'
+        : 'Buscando taxa DI...';
+    }
+
     try {
 
       if (!this.accountPosting.editing)
@@ -1169,6 +1177,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       }
     } finally {
       this.updateYieldAmountValidator();
+      this.calculationStatus = '';
       this.isCalculating = false;
     }
   }

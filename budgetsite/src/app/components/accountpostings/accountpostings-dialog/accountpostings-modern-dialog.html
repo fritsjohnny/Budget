@@ -6,6 +6,9 @@
         <div>
           <h2 mat-dialog-title>{{ setTitle() }}</h2>
           <p>{{ accountPosting.editing ? 'Atualize os dados do lançamento' : 'Registre um novo lançamento na conta' }}</p>
+          <small class="modern-entry-status" *ngIf="isCalculating && accountPosting.type === 'Y'">
+            {{ calculationStatus }}
+          </small>
         </div>
       </div>
 

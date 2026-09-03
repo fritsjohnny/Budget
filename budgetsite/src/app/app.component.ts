@@ -29,6 +29,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private recentCardNotificationKey?: string;
   private recentCardNotificationAt = 0;
   private foregroundAuthenticationPromise?: Promise<boolean>;
+  private appIsActive = true;
+  private appResumingFromBackground = false;
   private resumeNotificationCheckTimer?: number;
   private keyboardViewport?: VisualViewport;
   private keyboardViewportHeight = 0;
@@ -97,7 +99,17 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.sub = App.addListener('appStateChange', async ({ isActive }) => {
+      if (isActive) {
+        const resumedFromBackground = !this.appIsActive;
+        this.appIsActive = true;
+        this.appResumingFromBackground = resumedFromBackground;
+
+        window.setTimeout(() => {
+          this.appResumingFromBackground = false;
+        }, 2000);
+      }
       if (!isActive) {
+        this.appIsActive = false;
         // indo para background → marca horário
         await this.bio.markPausedNow();
         return;
@@ -240,6 +252,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private async authenticateForegroundSession(): Promise<boolean> {
+    if (this.appIsActive && !this.appResumingFromBackground) {
+      return true;
+    }
     if (this.bio.isBiometricInProgress()) {
       return this.bio.authenticate();
     }

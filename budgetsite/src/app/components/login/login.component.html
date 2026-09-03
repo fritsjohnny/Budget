@@ -1,96 +1,96 @@
-<div class="row">
+<div class="login-component">
     <app-load-spinner [loading]="!hideProgress" [message]="loadingMessage"></app-load-spinner>
-    <mat-card class="container">
-        <mat-card-header>
-            <mat-card-title>
-                <img
-                    src="../../../assets/img/budget512.png"
-                    style="height: 100px; padding-right: 5px"
-                />
-                <span>Budget</span>
-            </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <form [formGroup]="loginFormGroup">
-                <div class="row">
-                    <mat-form-field appearance="fill">
-                        <mat-label>Usuário</mat-label>
-                        <input
-                            type="text"
-                            id="loginFormControl"
-                            required
-                            matInput
-                            formControlName="loginFormControl"
-                            [(ngModel)]="_login"
-                            cdkFocusInitial
-                        />
-                        <mat-error
-                            *ngIf="
-                                loginFormGroup
-                                    .get('loginFormControl')
-                                    ?.hasError('required')
-                            "
-                        >
-                            Campo <strong>obrigatório</strong>.
-                        </mat-error>
-                    </mat-form-field>
+
+    <mat-card class="login-card">
+        <section class="login-brand" aria-label="Budget">
+            <div class="brand-mark">
+                <img src="../../../assets/img/budget512.png" alt="Budget" />
+            </div>
+            <div class="brand-copy">
+                <span class="brand-kicker">ORGANIZE SUA VIDA FINANCEIRA</span>
+                <h1>Budget</h1>
+                <p>Tenha clareza sobre seu dinheiro e transforme seus planos em realidade.</p>
+            </div>
+            <div class="brand-decoration brand-decoration-one"></div>
+            <div class="brand-decoration brand-decoration-two"></div>
+        </section>
+
+        <section class="login-form-panel">
+            <div class="login-heading">
+                <span class="login-eyebrow">Bem-vindo de volta</span>
+                <h2>Entrar na sua conta</h2>
+                <p>Acesse seus lançamentos e acompanhe suas finanças.</p>
+            </div>
+
+            <form [formGroup]="loginFormGroup" (ngSubmit)="login()" class="login-form">
+                <mat-form-field appearance="outline">
+                    <mat-label>Usuário</mat-label>
+                    <mat-icon matPrefix>person_outline</mat-icon>
+                    <input
+                        type="text"
+                        id="loginFormControl"
+                        required
+                        matInput
+                        formControlName="loginFormControl"
+                        [(ngModel)]="_login"
+                        cdkFocusInitial
+                        autocomplete="username"
+                    />
+                    <mat-error *ngIf="loginFormGroup.get('loginFormControl')?.hasError('required')">
+                        Campo <strong>obrigatório</strong>.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Senha</mat-label>
+                    <mat-icon matPrefix>lock_outline</mat-icon>
+                    <input
+                        matInput
+                        [type]="hide ? 'password' : 'text'"
+                        id="passwordFormControl"
+                        required
+                        formControlName="passwordFormControl"
+                        [(ngModel)]="_password"
+                        autocomplete="current-password"
+                    />
+                    <button
+                        type="button"
+                        mat-icon-button
+                        matSuffix
+                        class="password-toggle"
+                        (click)="hide = !hide"
+                        [attr.aria-label]="hide ? 'Mostrar senha' : 'Ocultar senha'"
+                        [attr.aria-pressed]="!hide"
+                    >
+                        <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="loginFormGroup.get('passwordFormControl')?.hasError('required')">
+                        Campo <strong>obrigatório</strong>.
+                    </mat-error>
+                </mat-form-field>
+
+                <div class="login-options">
+                    <a [routerLink]="['/usersregister']">Ainda não tenho uma conta</a>
                 </div>
-                <div class="row">
-                    <mat-form-field appearance="fill">
-                        <mat-label>Senha</mat-label>
-                        <input
-                            matInput
-                            [type]="hide ? 'password' : 'text'"
-                            id="passwordFormControl"
-                            required
-                            matInput
-                            formControlName="passwordFormControl"
-                            [(ngModel)]="_password"
-                        />
-                        <button
-                            mat-icon-button
-                            matSuffix
-                            (click)="hide = !hide"
-                            [attr.aria-label]="'Hide password'"
-                            [attr.aria-pressed]="hide"
-                        >
-                            <mat-icon>{{
-                                hide ? "visibility_off" : "visibility"
-                            }}</mat-icon>
-                        </button>
-                        <mat-error
-                            *ngIf="
-                                loginFormGroup
-                                    .get('passwordFormControl')
-                                    ?.hasError('required')
-                            "
-                        >
-                            Campo <strong>obrigatório</strong>.
-                        </mat-error>
-                    </mat-form-field>
-                    <a [routerLink]="['/usersregister']">Cadastrar-se</a>
+
+                <div class="login-actions" *ngIf="hideProgress">
+                    <button type="submit" mat-flat-button class="login-submit">
+                        <mat-icon>login</mat-icon>
+                        <span>Entrar</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        mat-stroked-button
+                        class="biometric-submit"
+                        (click)="loginWithBiometrics()"
+                        [disabled]="!canBiometric"
+                    >
+                        <mat-icon>fingerprint</mat-icon>
+                        <span>Entrar com biometria</span>
+                    </button>
                 </div>
             </form>
-        </mat-card-content>
-        <div class="row center">
-            <button mat-fab color="warn" (click)="login()" *ngIf="hideProgress">
-                <mat-icon class="default-icon">login</mat-icon>
-            </button>
-            <!-- Botão de biometria -->
-            <button
-                mat-fab
-                color="primary"
-                style="margin-left: 16px"
-                (click)="loginWithBiometrics()"
-                [disabled]="!canBiometric"
-                *ngIf="hideProgress"
-            >
-                <mat-icon>fingerprint</mat-icon>
-            </button>
-            <div class="row center">
-                <div class="row justify-content-center">
-                </div>
-            </div>
-        </div>
+        </section>
     </mat-card>
 </div>

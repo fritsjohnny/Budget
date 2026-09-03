@@ -1,20 +1,39 @@
+.login-page > app-login {
+  display: block;
+  width: 100%;
+}
+
 :host {
   display: block;
   min-height: 100%;
 }
 
-.login-container {
+.login-page {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   min-height: 100%;
   min-height: 100dvh;
-  background-color: #f1f4f8;
+  padding: 32px 24px;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(79, 111, 232, 0.16), transparent 32%),
+    linear-gradient(135deg, #eef3f9 0%, #f8fafc 52%, #e8eef8 100%);
   color: #172033;
 }
 
-:host-context(.dark-theme) .login-container {
-  background-color: #111c28;
+:host-context(.dark-theme) .login-page {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(115, 146, 255, 0.16), transparent 32%),
+    linear-gradient(135deg, #0d1621 0%, #111c28 52%, #172738 100%);
   color: #edf3fa;
+}
+
+@media (max-width: 700px) {
+  .login-page {
+    align-items: flex-start;
+    padding: 0 10px;
+    background: #111c28;
+  }
 }

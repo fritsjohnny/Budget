@@ -610,6 +610,9 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           const payload = prepareApiDates(result, ['date', 'dueDate']);
           this.cardPostingsService.createFromNotification(payload).subscribe({
             next: async (cardposting) => {
+              if (cardposting) {
+                this.addKnownCardPosting(cardposting);
+              }
               await this.removeNotification(notification);
 
               if (fromPendingNotification) {
@@ -904,6 +907,12 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
   ): boolean {
     const suffix = this.getNotificationIdentitySuffix(notification);
     if (!suffix) return false;
+
+    const hasMatchingCardPosting = this.knownCardPostings.some(posting =>
+      this.isSameNotificationPosting(posting, notification)
+    );
+
+    if (hasMatchingCardPosting) return false;
 
     const keysToRelease = [...this.processedNotificationKeys]
       .filter(key => key.endsWith(suffix));

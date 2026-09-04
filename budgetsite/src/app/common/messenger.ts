@@ -5,6 +5,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, throwError } from 'rxjs';
 import { NotificationBubbleComponent } from 'src/app/components/notification-bubble/notification-bubble.component';
 
+export interface NotificationBubbleMessage {
+  message: string;
+  onClick?: () => void;
+}
+
 @Injectable({ providedIn: 'root' })
 export class Messenger {
   private notificationOverlays: OverlayRef[] = [];
@@ -37,13 +42,15 @@ export class Messenger {
     });
   }
 
-  messageBubbles(messages: string[], duration: number = 10000): void {
-    const validMessages = messages.filter(message => message.trim().length > 0);
+  messageBubbles(messages: Array<string | NotificationBubbleMessage>, duration: number = 10000): void {
+    const validMessages = messages
+      .map(message => typeof message === 'string' ? { message } : message)
+      .filter(item => item.message.trim().length > 0);
     if (validMessages.length === 0) return;
 
     this.closeBubbles();
 
-    validMessages.forEach((message, index) => {
+    validMessages.forEach((item, index) => {
       const positionStrategy = this.overlay.position().global()
         .top((16 + index * 72) + 'px')
         .centerHorizontally();
@@ -56,7 +63,16 @@ export class Messenger {
       });
 
       const componentRef = overlayRef.attach(new ComponentPortal(NotificationBubbleComponent));
-      componentRef.instance.message = message;
+      componentRef.instance.message = item.message;
+      componentRef.instance.clickNotification = item.onClick
+        ? () => {
+            try {
+              item.onClick?.();
+            } finally {
+              this.closeOverlay(overlayRef);
+            }
+          }
+        : undefined;
       componentRef.instance.closeNotification = () => this.closeOverlay(overlayRef);
 
       const timer = window.setTimeout(() => this.closeOverlay(overlayRef), duration);

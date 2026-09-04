@@ -528,20 +528,31 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       next: (references: ExpenseNotificationReference[]) => {
         if (!references || references.length === 0) return;
 
-        const messages: string[] = [];
+        const messages: { message: string; onClick: () => void }[] = [];
 
         references
           .sort((a, b) => a.reference.localeCompare(b.reference))
           .forEach(item => {
             const formattedReference = `${item.reference.substring(4, 6)}/${item.reference.substring(0, 4)}`;
             const referenceSuffix = item.reference === this.reference ? '' : ` na referência ${formattedReference}`;
+            const selectReference = (): void => {
+              if (this.reference !== item.reference) {
+                this.referenceChanges(item.reference);
+              }
+            };
 
             if (item.hasDueToday) {
-              messages.push(`Há lançamento vencendo hoje${referenceSuffix}.`);
+              messages.push({
+                message: `Há lançamento vencendo hoje${referenceSuffix}.`,
+                onClick: selectReference,
+              });
             }
 
             if (item.hasOverdue) {
-              messages.push(`Há lançamento vencido${referenceSuffix}.`);
+              messages.push({
+                message: `Há lançamento vencido${referenceSuffix}.`,
+                onClick: selectReference,
+              });
             }
           });
 

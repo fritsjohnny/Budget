@@ -8,9 +8,17 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 })
 export class NotificationBubbleComponent {
   @Input() message = '';
+  @Input() clickNotification?: () => void;
   @Input() closeNotification: () => void = () => undefined;
 
-  close(): void {
+  click(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.clickNotification?.();
+  }
+
+  close(event: Event): void {
+    event.stopPropagation();
     this.closeNotification();
   }
 }

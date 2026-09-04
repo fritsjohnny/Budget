@@ -1,7 +1,15 @@
-<div class="budget-notification-bubble" role="alert">
+<div
+  class="budget-notification-bubble"
+  [class.budget-notification-bubble-clickable]="!!clickNotification"
+  [attr.role]="clickNotification ? 'button' : 'alert'"
+  [attr.tabindex]="clickNotification ? 0 : null"
+  (click)="click()"
+  (keydown.enter)="click($event)"
+  (keydown.space)="click($event)"
+>
   <mat-icon class="budget-notification-bubble-icon">notifications</mat-icon>
   <span class="budget-notification-bubble-content">{{ message }}</span>
-  <button mat-icon-button type="button" aria-label="Fechar notificação" class="budget-notification-bubble-close" (click)="close()">
+  <button mat-icon-button type="button" aria-label="Fechar notificação" class="budget-notification-bubble-close" (click)="close($event)">
     <mat-icon>close</mat-icon>
   </button>
 </div>

@@ -73,22 +73,192 @@
 
 .modern-budget-shell {
     position: relative;
+    z-index: 1;
     width: min(100%, 1180px);
     margin: 0 auto;
     padding: 16px 16px 96px;
     color: var(--modern-text);
     box-sizing: border-box;
-    transform: translateY(var(--pull-distance, 0));
+    touch-action: pan-y;
     transition: transform 180ms ease-out;
 }
 
-.modern-budget-shell > app-modern-reference-selector {
+.budget-reference-selector-container {
     display: block;
     margin-bottom: 14px;
 }
 
+.modern-budget-shell.pull-active,
+.modern-budget-shell.pull-refreshing {
+    transform: translateY(var(--pull-distance, 0));
+}
+
+.modern-budget-shell.swipe-active {
+    background: var(--modern-bg);
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.16);
+    transform: translateX(var(--swipe-offset, 0));
+    transition: none;
+}
+
 .modern-budget-shell.pull-active {
     transition: none;
+}
+
+.budget-reference-compact-anchor {
+    position: sticky;
+    top: 70px;
+    z-index: 18;
+    height: 0;
+    pointer-events: none;
+}
+
+.budget-reference-compact-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: auto;
+    min-width: 172px;
+    max-width: calc(100% - 48px);
+    height: 34px;
+    margin: 0 auto;
+    padding: 0 15px;
+    border: 1px solid var(--modern-border);
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--modern-surface), var(--modern-surface-soft));
+    box-shadow: 0 7px 18px rgba(9, 17, 29, 0.18);
+    color: var(--modern-text);
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+    transition:
+        opacity 150ms ease-out,
+        transform 170ms ease-out;
+}
+
+.reference-compact-visible {
+    display: flex;
+    justify-content: center;
+}
+
+.reference-compact-visible .budget-reference-compact-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.budget-reference-compact-dot {
+    flex: 0 0 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--modern-blue);
+    box-shadow: 0 0 0 4px var(--modern-blue-soft);
+}
+
+.budget-reference-compact-card strong {
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.045em;
+    white-space: nowrap;
+}
+
+.swipe-reference-backdrop {
+    position: fixed;
+    inset: 58px 0 72px;
+    z-index: 0;
+    display: none;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.swipe-reference-backdrop-visible {
+    display: block;
+}
+
+.swipe-reference-reveal {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 136px;
+    background: linear-gradient(180deg, var(--modern-surface-strong), var(--modern-bg));
+    color: var(--modern-blue);
+}
+
+.swipe-reference-reveal::after {
+    content: "";
+    position: absolute;
+    top: 12%;
+    bottom: 12%;
+    width: 1px;
+    background: var(--modern-border);
+}
+
+.swipe-reference-reveal-previous {
+    left: 0;
+}
+
+.swipe-reference-reveal-previous::after {
+    right: 0;
+}
+
+.swipe-reference-reveal-next {
+    right: 0;
+}
+
+.swipe-reference-reveal-next::after {
+    left: 0;
+}
+
+.swipe-reference-reveal-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--modern-blue);
+    border-radius: 50%;
+    background: var(--modern-blue-soft);
+    color: var(--modern-blue);
+    transition:
+        transform 120ms ease-out,
+        background-color 120ms ease-out;
+}
+
+.swipe-reference-reveal-icon .mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 24px;
+}
+
+.swipe-reference-reveal strong {
+    width: 88px;
+    font-size: 10px;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+}
+
+.swipe-reference-reveal small {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.swipe-reference-backdrop:not(.swipe-reference-backdrop-previous) .swipe-reference-reveal-previous,
+.swipe-reference-backdrop:not(.swipe-reference-backdrop-next) .swipe-reference-reveal-next {
+    visibility: hidden;
+}
+
+.swipe-reference-backdrop-ready .swipe-reference-reveal-icon {
+    background: var(--modern-blue);
+    color: #fff;
+    transform: scale(1.08);
 }
 
 .pull-refresh-indicator {
@@ -1567,9 +1737,34 @@
     }
 }
 
+@media (min-width: 601px) {
+    .swipe-reference-backdrop {
+        display: none !important;
+    }
+}
+
 @media (max-width: 600px) {
     .modern-budget-shell {
         padding: 10px 10px 88px;
+    }
+
+    .budget-reference-compact-anchor {
+        top: 64px;
+    }
+
+    .budget-reference-compact-card {
+        min-width: 158px;
+        max-width: calc(100% - 96px);
+        height: 31px;
+        padding: 0 13px;
+    }
+
+    .budget-reference-compact-card strong {
+        font-size: 11px;
+    }
+
+    .swipe-reference-backdrop {
+        inset: 58px 0 68px;
     }
 
     .reference-card {

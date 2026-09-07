@@ -1,0 +1,62 @@
+<div
+    class="modern-reference-swipe-backdrop"
+    [class.modern-reference-swipe-backdrop-visible]="swipeDirection !== null"
+    [class.modern-reference-swipe-backdrop-ready]="swipeReady"
+    [class.modern-reference-swipe-backdrop-previous]="swipeDirection === 'previous'"
+    [class.modern-reference-swipe-backdrop-next]="swipeDirection === 'next'"
+    aria-hidden="true"
+>
+    <div class="modern-reference-swipe-reveal modern-reference-swipe-reveal-previous">
+        <span class="modern-reference-swipe-icon"><mat-icon>chevron_left</mat-icon></span>
+        <strong>{{ previousReferenceLabel }}</strong>
+        <small>{{ swipeReady ? "SOLTE" : "ANTERIOR" }}</small>
+    </div>
+
+    <div class="modern-reference-swipe-reveal modern-reference-swipe-reveal-next">
+        <span class="modern-reference-swipe-icon"><mat-icon>chevron_right</mat-icon></span>
+        <strong>{{ nextReferenceLabel }}</strong>
+        <small>{{ swipeReady ? "SOLTE" : "PRÓXIMO" }}</small>
+    </div>
+</div>
+
+<div
+    class="modern-reference-page-content"
+    [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
+    [class.pull-refreshing]="isPullRefreshing"
+    [class.swipe-active]="swipeDirection !== null"
+    [style.--pull-distance]="pullDistance + 'px'"
+    [style.--swipe-offset]="swipeOffsetX + 'px'"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd()"
+    (touchcancel)="onTouchCancel()"
+>
+    <div
+        class="modern-reference-pull-indicator"
+        [class.modern-reference-pull-visible]="pullDistance > 0 || isPullRefreshing"
+        [class.modern-reference-pull-ready]="pullReady"
+        aria-live="polite"
+    >
+        <mat-icon>{{ isPullRefreshing ? "autorenew" : "arrow_downward" }}</mat-icon>
+        <span>{{ pullRefreshLabel }}</span>
+    </div>
+
+    <div #referenceSelectorContainer class="modern-reference-selector-container">
+        <ng-content select="[modernReferenceSelector]"></ng-content>
+    </div>
+
+    <div
+        class="modern-reference-compact-anchor"
+        [class.modern-reference-compact-visible]="referenceCollapsed"
+        [attr.aria-hidden]="!referenceCollapsed"
+    >
+        <div class="modern-reference-compact-card">
+            <span class="modern-reference-compact-dot" aria-hidden="true"></span>
+            <strong>{{ referenceTitle }}</strong>
+        </div>
+    </div>
+
+    <div class="modern-reference-page-body">
+        <ng-content></ng-content>
+    </div>
+</div>

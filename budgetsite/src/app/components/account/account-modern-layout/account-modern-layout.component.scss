@@ -96,6 +96,13 @@
     }
 }
 
+.modern-account-content {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .reference-card,
 .account-selector {
     border: 1px solid var(--account-border);
@@ -369,6 +376,10 @@ app-accountpostings {
         gap: 10px;
         padding: 10px 10px 68px;
         overflow: visible;
+    }
+
+    .modern-account-content {
+        gap: 10px;
     }
 
     .reference-card {

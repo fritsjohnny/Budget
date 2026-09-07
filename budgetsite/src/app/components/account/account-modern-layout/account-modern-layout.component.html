@@ -1,25 +1,13 @@
-<div
-    class="modern-account-shell"
-    [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
-    [class.pull-refreshing]="isPullRefreshing"
-    [style.--pull-distance]="pullDistance + 'px'"
-    (touchstart)="onPullStart($event)"
-    (touchmove)="onPullMove($event)"
-    (touchend)="onPullEnd()"
-    (touchcancel)="onPullCancel()"
+<app-modern-reference-page-shell
+    [reference]="context.reference"
+    refreshLabel="Atualizando contas..."
+    [refreshDisabled]="!context.hideProgress"
+    [refreshLoading]="!context.hideProgress"
+    [navigationDisabled]="!context.hideProgress"
+    (refreshRequested)="context.refresh()"
 >
-    <div
-        class="pull-refresh-indicator"
-        [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"
-        [class.pull-refresh-ready]="pullReady"
-        aria-live="polite"
-    >
-        <mat-icon>{{
-            isPullRefreshing ? "autorenew" : "arrow_downward"
-        }}</mat-icon>
-        <span>{{ pullRefreshLabel }}</span>
-    </div>
     <app-modern-reference-selector
+        modernReferenceSelector
         [reference]="context.reference"
         storageKey="accountDate"
         ariaLabel="Referência das contas"
@@ -27,7 +15,7 @@
         (referenceChange)="onReferenceChange($event)"
     ></app-modern-reference-selector>
 
-    <ng-container *ngIf="!isPullRefreshing">
+    <div class="modern-account-content">
         <section class="account-selector" aria-label="Seleção de conta">
             <div class="selected-account">
                 <div class="selected-account-copy">
@@ -81,6 +69,7 @@
 
             <div
                 class="account-chips account-drag-boundary"
+                data-reference-swipe-ignore
                 cdkDropList
                 cdkDropListOrientation="horizontal"
                 [cdkDropListAutoScrollStep]="7"
@@ -120,5 +109,5 @@
             [modernLayout]="true"
             (accountUpdated)="context.updateAccountFromChild($event)"
         ></app-accountpostings>
-    </ng-container>
-</div>
+    </div>
+</app-modern-reference-page-shell>

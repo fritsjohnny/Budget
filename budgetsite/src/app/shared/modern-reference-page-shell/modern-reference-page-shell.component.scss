@@ -1,0 +1,323 @@
+:host {
+    --reference-page-bg: #f4f6fa;
+    --reference-page-surface: #ffffff;
+    --reference-page-surface-soft: #f8f9fc;
+    --reference-page-surface-strong: #eef1f6;
+    --reference-page-border: rgba(23, 35, 55, 0.13);
+    --reference-page-text: #172033;
+    --reference-page-muted: #687286;
+    --reference-page-blue: #4f6fe8;
+    --reference-page-blue-soft: rgba(79, 111, 232, 0.12);
+    --reference-page-shadow: 0 6px 18px rgba(28, 39, 60, 0.08);
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+:host-context(.dark-theme) {
+    --reference-page-bg: #0d1621;
+    --reference-page-surface: #111c28;
+    --reference-page-surface-soft: #14212e;
+    --reference-page-surface-strong: #172634;
+    --reference-page-border: rgba(194, 213, 232, 0.18);
+    --reference-page-text: #edf3fa;
+    --reference-page-muted: #a8b2c1;
+    --reference-page-blue: #7392ff;
+    --reference-page-blue-soft: rgba(71, 102, 217, 0.17);
+    --reference-page-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.modern-reference-page-content {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 1180px);
+    margin: 0 auto;
+    padding: 16px 16px 96px;
+    color: var(--reference-page-text);
+    box-sizing: border-box;
+    touch-action: pan-y;
+    transition: transform 180ms ease-out;
+}
+
+.modern-reference-page-content.pull-active,
+.modern-reference-page-content.pull-refreshing {
+    transform: translate3d(0, var(--pull-distance, 0), 0);
+}
+
+.modern-reference-page-content.swipe-active {
+    background: var(--reference-page-bg);
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.16);
+    transform: translate3d(var(--swipe-offset, 0), 0, 0);
+    transition: none;
+}
+
+.modern-reference-page-content.pull-active {
+    transition: none;
+}
+
+.modern-reference-selector-container {
+    display: block;
+    margin-bottom: 14px;
+}
+
+.modern-reference-compact-anchor {
+    position: sticky;
+    top: 70px;
+    z-index: 18;
+    height: 0;
+    pointer-events: none;
+}
+
+.modern-reference-compact-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: auto;
+    min-width: 172px;
+    max-width: calc(100% - 48px);
+    height: 34px;
+    margin: 0 auto;
+    padding: 0 15px;
+    border: 1px solid var(--reference-page-border);
+    border-radius: 999px;
+    background: linear-gradient(
+        180deg,
+        var(--reference-page-surface),
+        var(--reference-page-surface-soft)
+    );
+    box-shadow: 0 7px 18px rgba(9, 17, 29, 0.18);
+    color: var(--reference-page-text);
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+    transition:
+        opacity 150ms ease-out,
+        transform 170ms ease-out;
+}
+
+.modern-reference-compact-visible {
+    display: flex;
+    justify-content: center;
+}
+
+.modern-reference-compact-visible .modern-reference-compact-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.modern-reference-compact-dot {
+    flex: 0 0 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--reference-page-blue);
+    box-shadow: 0 0 0 4px var(--reference-page-blue-soft);
+}
+
+.modern-reference-compact-card strong {
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.045em;
+    white-space: nowrap;
+}
+
+.modern-reference-swipe-backdrop {
+    position: fixed;
+    inset: 58px 0 72px;
+    z-index: 0;
+    display: none;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.modern-reference-swipe-backdrop-visible {
+    display: block;
+}
+
+.modern-reference-swipe-reveal {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 136px;
+    background: linear-gradient(
+        180deg,
+        var(--reference-page-surface-strong),
+        var(--reference-page-bg)
+    );
+    color: var(--reference-page-blue);
+}
+
+.modern-reference-swipe-reveal::after {
+    content: "";
+    position: absolute;
+    top: 12%;
+    bottom: 12%;
+    width: 1px;
+    background: var(--reference-page-border);
+}
+
+.modern-reference-swipe-reveal-previous {
+    left: 0;
+}
+
+.modern-reference-swipe-reveal-previous::after {
+    right: 0;
+}
+
+.modern-reference-swipe-reveal-next {
+    right: 0;
+}
+
+.modern-reference-swipe-reveal-next::after {
+    left: 0;
+}
+
+.modern-reference-swipe-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--reference-page-blue);
+    border-radius: 50%;
+    background: var(--reference-page-blue-soft);
+    color: var(--reference-page-blue);
+    transition:
+        transform 120ms ease-out,
+        background-color 120ms ease-out;
+}
+
+.modern-reference-swipe-icon .mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 24px;
+}
+
+.modern-reference-swipe-reveal strong {
+    width: 88px;
+    font-size: 10px;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+}
+
+.modern-reference-swipe-reveal small {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.modern-reference-swipe-backdrop:not(.modern-reference-swipe-backdrop-previous)
+    .modern-reference-swipe-reveal-previous,
+.modern-reference-swipe-backdrop:not(.modern-reference-swipe-backdrop-next)
+    .modern-reference-swipe-reveal-next {
+    visibility: hidden;
+}
+
+.modern-reference-swipe-backdrop-ready .modern-reference-swipe-icon {
+    background: var(--reference-page-blue);
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.modern-reference-pull-indicator {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--reference-page-border);
+    border-radius: 999px;
+    background: var(--reference-page-surface);
+    box-shadow: var(--reference-page-shadow);
+    color: var(--reference-page-muted);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -135%);
+    transition:
+        opacity 120ms ease-out,
+        color 120ms ease-out;
+}
+
+.modern-reference-pull-visible {
+    opacity: 1;
+}
+
+.modern-reference-pull-ready {
+    color: var(--reference-page-blue);
+}
+
+.modern-reference-pull-indicator .mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 18px;
+    transition: transform 120ms ease-out;
+}
+
+.modern-reference-pull-ready .mat-icon {
+    transform: rotate(180deg);
+}
+
+.pull-refreshing .modern-reference-pull-indicator .mat-icon {
+    animation: modern-reference-refresh-spin 800ms linear infinite;
+}
+
+.modern-reference-page-body {
+    min-width: 0;
+    max-width: 100%;
+}
+
+@keyframes modern-reference-refresh-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (min-width: 601px) {
+    .modern-reference-swipe-backdrop {
+        display: none !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .modern-reference-page-content {
+        width: 100%;
+        padding: 10px 10px 88px;
+    }
+
+    .modern-reference-compact-anchor {
+        top: 64px;
+    }
+
+    .modern-reference-compact-card {
+        min-width: 158px;
+        max-width: calc(100% - 96px);
+        height: 31px;
+        padding: 0 13px;
+    }
+
+    .modern-reference-compact-card strong {
+        font-size: 11px;
+    }
+
+    .modern-reference-swipe-backdrop {
+        inset: 58px 0 68px;
+    }
+}

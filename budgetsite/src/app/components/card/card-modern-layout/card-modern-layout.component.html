@@ -1,25 +1,13 @@
-<div
-    class="modern-card-shell"
-    [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
-    [class.pull-refreshing]="isPullRefreshing"
-    [style.--pull-distance]="pullDistance + 'px'"
-    (touchstart)="onPullStart($event)"
-    (touchmove)="onPullMove($event)"
-    (touchend)="onPullEnd()"
-    (touchcancel)="onPullCancel()"
+<app-modern-reference-page-shell
+    [reference]="context.reference"
+    refreshLabel="Atualizando cartões..."
+    [refreshDisabled]="!context.hideProgress"
+    [refreshLoading]="!context.hideProgress"
+    [navigationDisabled]="!context.hideProgress || context.validatingInvoiceClosing"
+    (refreshRequested)="context.refresh()"
 >
-    <div
-        class="pull-refresh-indicator"
-        [class.visible]="pullDistance > 0 || isPullRefreshing"
-        [class.ready]="pullReady"
-    >
-        <mat-icon>{{
-            isPullRefreshing ? "autorenew" : "arrow_downward"
-        }}</mat-icon>
-        <span>{{ pullRefreshLabel }}</span>
-    </div>
-
     <app-modern-reference-selector
+        modernReferenceSelector
         [reference]="context.reference"
         storageKey="cardDate"
         ariaLabel="Referência dos cartões"
@@ -34,7 +22,7 @@
         (referenceChange)="onReferenceChange($event)"
     ></app-modern-reference-selector>
 
-    <ng-container *ngIf="!isPullRefreshing">
+    <div class="modern-card-content">
         <section class="card-selector">
             <div class="selected-card">
                 <div class="selected-card-copy">
@@ -86,7 +74,7 @@
                 </div>
             </div>
 
-            <div class="card-chips">
+            <div class="card-chips" data-reference-swipe-ignore>
                 <button
                     mat-button
                     class="card-chip"
@@ -114,5 +102,5 @@
             (notificationContextChange)="context.setNotificationContext($event)"
             (invoiceClosingRequested)="context.openInvoiceClosing()"
         ></app-cardpostings>
-    </ng-container>
-</div>
+    </div>
+</app-modern-reference-page-shell>

@@ -73,6 +73,13 @@
     }
 }
 
+.modern-card-content {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .card-selector {
     min-width: 0;
     max-width: 100%;
@@ -196,6 +203,10 @@ app-cardpostings {
         width: 100%;
         gap: 10px;
         padding: 10px 10px 68px;
+    }
+
+    .modern-card-content {
+        gap: 10px;
     }
     .card-selector {
         padding: 12px;

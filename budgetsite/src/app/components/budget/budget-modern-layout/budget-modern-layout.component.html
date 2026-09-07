@@ -1,26 +1,13 @@
-<div
-    class="modern-budget-shell"
-    [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
-    [class.pull-refreshing]="isPullRefreshing"
-    [style.--pull-distance]="pullDistance + 'px'"
-    (touchstart)="onPullStart($event)"
-    (touchmove)="onPullMove($event)"
-    (touchend)="onPullEnd()"
-    (touchcancel)="onPullCancel()"
+<app-modern-reference-page-shell
+    [reference]="context.reference"
+    refreshLabel="Atualizando orçamento..."
+    [refreshDisabled]="context.isBudgetLoading"
+    [refreshLoading]="context.isBudgetLoading"
+    [navigationDisabled]="context.isBudgetLoading || context.savingCardPosting"
+    (refreshRequested)="context.refresh()"
 >
-    <div
-        class="pull-refresh-indicator"
-        [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"
-        [class.pull-refresh-ready]="pullReady"
-        aria-live="polite"
-    >
-        <mat-icon>{{
-            isPullRefreshing ? "autorenew" : "arrow_downward"
-        }}</mat-icon>
-        <span>{{ pullRefreshLabel }}</span>
-    </div>
-
     <app-modern-reference-selector
+        modernReferenceSelector
         [reference]="context.reference"
         storageKey="budgetDate"
         ariaLabel="Referência do orçamento"
@@ -55,8 +42,6 @@
             >
         </div>
     </app-modern-reference-selector>
-
-    
 
     <ng-container *ngIf="context.isBudgetLoaded">
         <section class="summary-grid" aria-label="Resumo financeiro">
@@ -1931,7 +1916,7 @@
                             <span class="panel-heading-label"
                                 ><strong>Categorias</strong
                                 ><small class="panel-record-count"
-                                    >#{{ provisionedCategories.length }}</small
+                                    >#{{ context.expensesByCategories?.length || 0 }}</small
                                 ></span
                             >
                             <!-- <small *ngIf="provisionedCategories.length > 0"
@@ -2221,4 +2206,4 @@
             </mat-expansion-panel>
         </mat-accordion>
     </ng-container>
-</div>
+</app-modern-reference-page-shell>

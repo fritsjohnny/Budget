@@ -78,6 +78,7 @@ import { ExpensesDialog } from './components/budget/expenses-dialog';
 import { ExpensesModernDialog } from './components/budget/expenses-modern-dialog';
 import { DatepickerComponent } from './shared/datepicker/datepicker.component';
 import { ModernReferenceSelectorComponent } from './shared/modern-reference-selector/modern-reference-selector.component';
+import { ModernReferencePageShellComponent } from './shared/modern-reference-page-shell/modern-reference-page-shell.component';
 import { BudgetViewComponent } from './views/budget-view/budget-view.component';
 import { DatepickerinputComponent } from './shared/datepickerinput/datepickerinput.component';
 import { SummaryComponent } from './components/summary/summary.component';
@@ -160,6 +161,7 @@ registerLocaleData(localePt);
     BudgetModernLayoutComponent,
     DatepickerComponent,
     ModernReferenceSelectorComponent,
+    ModernReferencePageShellComponent,
     BudgetViewComponent,
     CardPostingsDialog,
     CardPostingsModernDialog,

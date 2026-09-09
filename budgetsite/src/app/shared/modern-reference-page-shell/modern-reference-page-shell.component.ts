@@ -31,6 +31,7 @@ export class ModernReferencePageShellComponent
   @Input() refreshDisabled = false;
   @Input() refreshLoading = false;
   @Input() navigationDisabled = false;
+  @Input() showReferenceSelector = true;
 
   @Output() refreshRequested = new EventEmitter<void>();
 

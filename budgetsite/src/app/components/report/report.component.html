@@ -1,4 +1,8 @@
-<div class="container default-margin-bottom" [class.modern-report-shell]="useModernLayout">
+<ng-template #reportPageContent>
+<div
+    class="container default-margin-bottom"
+    [class.modern-report-shell]="useModernLayout"
+>
     <mat-accordion *ngIf="useModernLayout" displayMode="default">
         <mat-expansion-panel class="modern-report-catalog" [(expanded)]="catalogPanelExpanded">
             <mat-expansion-panel-header>
@@ -436,26 +440,135 @@
                     </mat-form-field>
                 </div>
             </div>
-            <div class="investment-filter-grid" *ngIf="selectedReportType === 8">
-                <div class="col">
-                    <mat-form-field appearance="fill" style="width:100%">
-                    <mat-label>Conta principal</mat-label>
-                    <mat-select [(ngModel)]="investmentAccountId" (selectionChange)="investmentAccountChanged($event.value)">
-                        <mat-option [value]="0">-- Selecione --</mat-option>
-                        <mat-option *ngFor="let account of investmentAccounts" [value]="account.id">{{account.name}}</mat-option>
-                    </mat-select>
-                    </mat-form-field></div>
-                    <div class="col">
-                        <mat-form-field appearance="fill" style="width:100%">
-                            <mat-label>Reserva operacional mínima</mat-label>
-                            <input matInput type="number" min="0" [(ngModel)]="investmentReserve" (ngModelChange)="investmentReserveChanged($event)">
-                            <mat-hint>{{ investmentReserve === null ? 'Será usada a reserva sugerida' : 'Reserva personalizada' }}</mat-hint>
-                        </mat-form-field>
-                        </div>
+            <div class="investment-strategy-parameters" *ngIf="selectedReportType === 8">
+                <div class="investment-filter-grid">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Conta operacional</mat-label>
+                        <mat-select [(ngModel)]="investmentAccountId" (selectionChange)="investmentAccountChanged($event.value)">
+                            <mat-option [value]="0">-- Selecione --</mat-option>
+                            <mat-option *ngFor="let account of investmentAccounts" [value]="account.id">{{ account.name }}</mat-option>
+                        </mat-select>
+                        <mat-hint>Usada para reserva e excedente seguro</mat-hint>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>Reserva operacional mínima</mat-label>
+                        <span matPrefix>R$&nbsp;</span>
+                        <input matInput type="number" min="0" [(ngModel)]="investmentReserve" (ngModelChange)="investmentReserveChanged($event)">
+                        <mat-hint>{{ investmentReserve === null ? 'Será usada a reserva sugerida' : 'Reserva personalizada' }}</mat-hint>
+                    </mat-form-field>
+                </div>
+
+                <div class="investment-primary-grid">
+                    <mat-form-field appearance="fill" class="investment-target-account-field">
+                        <mat-label>Conta alvo do investimento</mat-label>
+                        <mat-select [(ngModel)]="investmentTargetAccountId" (selectionChange)="investmentTargetAccountChanged($event.value)">
+                            <mat-option [value]="0">-- Automático: buscar melhores destinos --</mat-option>
+                            <mat-option *ngFor="let account of investmentAccounts" [value]="account.id">{{ account.name }}</mat-option>
+                        </mat-select>
+                        <mat-hint>Opcional. Sem alvo, mantém a busca automática.</mat-hint>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>Data inicial</mat-label>
+                        <input matInput [matDatepicker]="investmentStart" [(ngModel)]="investmentInitialDateValue" (dateChange)="investmentInitialDateChanged($event.value)">
+                        <mat-datepicker-toggle matSuffix [for]="investmentStart"></mat-datepicker-toggle>
+                        <mat-datepicker #investmentStart></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>Data final</mat-label>
+                        <input matInput [matDatepicker]="investmentEnd" [(ngModel)]="investmentFinalDateValue" (dateChange)="investmentFinalDateChanged($event.value)">
+                        <mat-datepicker-toggle matSuffix [for]="investmentEnd"></mat-datepicker-toggle>
+                        <mat-datepicker #investmentEnd></mat-datepicker>
+                    </mat-form-field>
+                </div>
+
+                <div class="investment-target-settings" *ngIf="investmentTargetAccountId > 0">
+                    <div class="investment-target-settings-title">
+                        <mat-icon>track_changes</mat-icon>
+                        <span>
+                            <b>Condições do produto alvo</b>
+                            <small>Salvas neste aparelho para esta conta.</small>
+                        </span>
                     </div>
-            <div class="row d-flex" *ngIf="selectedReportType === 8">
-                <div class="col"><mat-form-field appearance="fill" style="width:100%">
-                    <mat-label>Data inicial</mat-label><input matInput [matDatepicker]="investmentStart" [(ngModel)]="investmentInitialDateValue" (dateChange)="investmentInitialDateChanged($event.value)"><mat-datepicker-toggle matSuffix [for]="investmentStart"></mat-datepicker-toggle><mat-datepicker #investmentStart></mat-datepicker></mat-form-field></div><div class="col"><mat-form-field appearance="fill" style="width:100%"><mat-label>Data final</mat-label><input matInput [matDatepicker]="investmentEnd" [(ngModel)]="investmentFinalDateValue" (dateChange)="investmentFinalDateChanged($event.value)"><mat-datepicker-toggle matSuffix [for]="investmentEnd"></mat-datepicker-toggle><mat-datepicker #investmentEnd></mat-datepicker></mat-form-field></div></div>
+
+                    <div class="investment-target-grid">
+                        <mat-form-field appearance="fill">
+                            <mat-label>Índice</mat-label>
+                            <mat-select [(ngModel)]="investmentTargetYieldIndex" (ngModelChange)="investmentTargetSettingChanged()">
+                                <mat-option value="CDI">CDI</mat-option>
+                                <mat-option value="PREFIXADO">Prefixado</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="fill">
+                            <mat-label>Rentabilidade inicial</mat-label>
+                            <input matInput type="number" min="0" step="0.01" [(ngModel)]="investmentTargetYieldPercent" (ngModelChange)="investmentTargetSettingChanged()">
+                            <span matSuffix>%</span>
+                            <mat-hint>Ex.: 150 para 150% do CDI</mat-hint>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="fill">
+                            <mat-label>Vencimento</mat-label>
+                            <input matInput [matDatepicker]="investmentTargetMaturity" [(ngModel)]="investmentTargetMaturityDate" (dateChange)="investmentTargetSettingChanged()">
+                            <mat-datepicker-toggle matSuffix [for]="investmentTargetMaturity"></mat-datepicker-toggle>
+                            <mat-datepicker #investmentTargetMaturity></mat-datepicker>
+                            <mat-hint *ngIf="investmentTargetTermDays !== null">Prazo: {{ investmentTargetTermDays }} dias</mat-hint>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="fill">
+                            <mat-label>Capacidade disponível</mat-label>
+                            <input matInput inputmode="numeric" currencyMask [(ngModel)]="investmentTargetAvailableAmount" (ngModelChange)="investmentTargetSettingChanged()" placeholder="0" autocomplete="off">
+                            <mat-hint>Quanto ainda pode ser aplicado</mat-hint>
+                        </mat-form-field>
+
+                        <div class="investment-target-money-grid">
+                            <mat-form-field appearance="fill">
+                                <mat-label>Investimento mínimo</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="investmentTargetMinimumAmount" (ngModelChange)="investmentTargetSettingChanged()" placeholder="0" autocomplete="off">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="fill">
+                                <mat-label>Investimento máximo</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="investmentTargetMaximumAmount" (ngModelChange)="investmentTargetSettingChanged()" placeholder="0" autocomplete="off">
+                            </mat-form-field>
+
+                        </div>
+
+                        <mat-form-field appearance="fill" class="investment-target-post-maturity-wide">
+                            <mat-label>Índice após vencimento</mat-label>
+                            <mat-select [(ngModel)]="investmentTargetPostMaturityYieldIndex" (ngModelChange)="investmentTargetSettingChanged()">
+                                <mat-option value="CDI">CDI</mat-option>
+                                <mat-option value="PREFIXADO">Prefixado</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="fill" class="investment-target-post-yield-field">
+                            <mat-label>Rentab. após vencimento</mat-label>
+                            <input matInput type="number" min="0" step="0.01" [(ngModel)]="investmentTargetPostMaturityYieldPercent" (ngModelChange)="investmentTargetSettingChanged()">
+                            <span matSuffix>%</span>
+                            <mat-hint>Vazio = dinheiro parado após o vencimento</mat-hint>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="investment-target-options">
+                        <mat-checkbox color="warn" [(ngModel)]="investmentTargetLockedUntilMaturity" (ngModelChange)="investmentTargetSettingChanged()">
+                            <span class="investment-option-copy">
+                                <strong>Sem liquidez até o vencimento</strong>
+                                <small>Não considerar resgate antecipado na estratégia.</small>
+                            </span>
+                        </mat-checkbox>
+
+                        <mat-checkbox color="warn" [(ngModel)]="investmentTargetPostMaturityRestartsTaxClock" (ngModelChange)="investmentTargetSettingChanged()">
+                            <span class="investment-option-copy">
+                                <strong>Reiniciar IR após vencimento</strong>
+                                <small>Considerar nova aplicação e nova contagem tributária.</small>
+                            </span>
+                        </mat-checkbox>
+                    </div>
+                </div>
+            </div>
         </mat-expansion-panel>
     </mat-accordion>
 
@@ -564,7 +677,24 @@
                     [includeCurrentMonth]="financialHealthIncludeCurrentMonth"
                 ></app-financial-health-report>
             </div>
-            <div class="col" *ngIf="reportType === 8 && showReport"><app-investment-strategy-report [accountId]="investmentAccountId" [initialDate]="investmentInitialDateValue" [finalDate]="investmentFinalDateValue" [reserve]="investmentReserve"></app-investment-strategy-report></div>
+            <div class="col" *ngIf="reportType === 8 && showReport"><app-investment-strategy-report [accountId]="investmentAccountId" [initialDate]="investmentInitialDateValue" [finalDate]="investmentFinalDateValue" [reserve]="investmentReserve" [targetConfiguration]="generatedInvestmentTargetConfiguration"></app-investment-strategy-report></div>
         </div>
     </div>
 </div>
+</ng-template>
+
+<app-modern-reference-page-shell
+    *ngIf="useModernLayout; else classicReportPage"
+    [showReferenceSelector]="false"
+    refreshLabel="Atualizando relatórios..."
+    [refreshDisabled]="refreshingPageData"
+    [refreshLoading]="refreshingPageData"
+    [navigationDisabled]="true"
+    (refreshRequested)="refreshPageData()"
+>
+    <ng-container *ngTemplateOutlet="reportPageContent"></ng-container>
+</app-modern-reference-page-shell>
+
+<ng-template #classicReportPage>
+    <ng-container *ngTemplateOutlet="reportPageContent"></ng-container>
+</ng-template>

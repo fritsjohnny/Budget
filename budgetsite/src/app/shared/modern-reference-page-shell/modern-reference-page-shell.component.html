@@ -41,11 +41,12 @@
         <span>{{ pullRefreshLabel }}</span>
     </div>
 
-    <div #referenceSelectorContainer class="modern-reference-selector-container">
+    <div *ngIf="showReferenceSelector" #referenceSelectorContainer class="modern-reference-selector-container">
         <ng-content select="[modernReferenceSelector]"></ng-content>
     </div>
 
     <div
+        *ngIf="showReferenceSelector"
         class="modern-reference-compact-anchor"
         [class.modern-reference-compact-visible]="referenceCollapsed"
         [attr.aria-hidden]="!referenceCollapsed"

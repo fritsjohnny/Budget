@@ -1,4 +1,6 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MatSelectChange } from '@angular/material/select';
 import { Accounts } from 'src/app/models/accounts.model';
 import { Cards } from 'src/app/models/cards.model';
@@ -7,6 +9,7 @@ import { AccountService } from 'src/app/services/account/account.service';
 import { CardService } from 'src/app/services/card/card.service';
 import { CategoryService } from 'src/app/services/category/category.service';
 import { DatepickerComponent } from 'src/app/shared/datepicker/datepicker.component';
+import { InvestmentTargetConfiguration } from 'src/app/models/investment-strategy-report.model';
 
 @Component({
   selector: 'app-report',
@@ -37,6 +40,7 @@ export class ReportComponent implements OnInit, AfterViewInit {
   categoryId: number | undefined;
   initialDateValue: Date | null = null;
   finalDateValue: Date | null = null;
+  refreshingPageData = false;
 
   groupByCategory: boolean = false;
   showCategoryChart: boolean = false;
@@ -61,12 +65,57 @@ export class ReportComponent implements OnInit, AfterViewInit {
   investmentReserve: number | null = localStorage.getItem('investmentReserve') === null ? null : Number(localStorage.getItem('investmentReserve'));
   investmentSuggestedReserve: number | null = null;
   investmentReserveExplanation = '';
+  investmentTargetAccountId = 0;
+  investmentTargetYieldIndex = 'CDI';
+  investmentTargetYieldPercent: number | null = null;
+  investmentTargetMaturityDate: Date | null = null;
+  investmentTargetMinimumAmount: number | null = null;
+  investmentTargetMaximumAmount: number | null = null;
+  investmentTargetAvailableAmount: number | null = null;
+  investmentTargetLockedUntilMaturity = false;
+  investmentTargetPostMaturityYieldIndex = 'CDI';
+  investmentTargetPostMaturityYieldPercent: number | null = null;
+  investmentTargetPostMaturityRestartsTaxClock = true;
+  generatedInvestmentTargetConfiguration: InvestmentTargetConfiguration | null = null;
   useSuggestedInvestmentReserve() { if (this.investmentSuggestedReserve !== null) this.investmentReserveChanged(this.investmentSuggestedReserve); }
   get investmentAccounts(): Accounts[] { return this.allForecastAccounts.filter(account => account.disabled !== true); }
   investmentReserveChanged(value: number | null) { this.investmentReserve = value === null || value === undefined || Number.isNaN(Number(value)) ? null : Number(value); if (this.investmentReserve === null) localStorage.removeItem('investmentReserve'); else localStorage.setItem('investmentReserve', this.investmentReserve.toString()); }
   investmentAccountChanged(value: number) { this.investmentAccountId = Number(value) || 0; localStorage.setItem('investmentAccountId', this.investmentAccountId.toString()); }
   investmentInitialDateChanged(value: Date | null) { this.investmentInitialDateValue = value; this.persistDate('investmentInitialDate', value); }
   investmentFinalDateChanged(value: Date | null) { this.investmentFinalDateValue = value; this.persistDate('investmentFinalDate', value); }
+  investmentTargetAccountChanged(value: number): void {
+    this.investmentTargetAccountId = Number(value) || 0;
+
+    if (!this.investmentTargetAccountId) {
+      localStorage.removeItem('investmentTargetAccountId');
+      this.resetInvestmentTargetSettings();
+      return;
+    }
+
+    localStorage.setItem('investmentTargetAccountId', this.investmentTargetAccountId.toString());
+    this.loadInvestmentTargetSettings(this.investmentTargetAccountId);
+  }
+
+  get investmentTargetTermDays(): number | null {
+    if (!this.investmentTargetMaturityDate) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const maturity = new Date(this.investmentTargetMaturityDate);
+    maturity.setHours(0, 0, 0, 0);
+
+    return Math.max(0, Math.round((maturity.getTime() - today.getTime()) / 86400000));
+  }
+
+  investmentTargetSettingChanged(): void {
+    if (!this.investmentTargetAccountId) return;
+
+    const settings = this.buildInvestmentTargetConfiguration();
+    if (!settings) return;
+
+    localStorage.setItem(this.investmentTargetStorageKey(this.investmentTargetAccountId), JSON.stringify(settings));
+  }
+
 
   financialHealthReserveTargetMonths: number = 9;
   financialHealthFutureMonths: number = 12;
@@ -109,6 +158,7 @@ export class ReportComponent implements OnInit, AfterViewInit {
     this.investmentInitialDateValue = this.readStoredDate('investmentInitialDate') ?? new Date(today.getFullYear(), today.getMonth(), today.getDate());
     this.investmentFinalDateValue = this.readStoredDate('investmentFinalDate') ?? new Date(today.getFullYear(), today.getMonth() + 1, 0);
     this.investmentAccountId = Number(localStorage.getItem('investmentAccountId') || 0);
+    this.investmentTargetAccountId = Number(localStorage.getItem('investmentTargetAccountId') || 0);
 
     this.categoryService.read().subscribe((categories) => {
       this.categories = categories.sort((a, b) => a.name.localeCompare(b.name));
@@ -132,6 +182,13 @@ export class ReportComponent implements OnInit, AfterViewInit {
       );
       this.refreshForecastAccounts();
       if (this.investmentAccountId && !accounts.some(account => account.id === this.investmentAccountId && account.disabled !== true)) { this.investmentAccountId = 0; localStorage.removeItem('investmentAccountId'); }
+      if (this.investmentTargetAccountId && !accounts.some(account => account.id === this.investmentTargetAccountId && account.disabled !== true)) {
+        this.investmentTargetAccountId = 0;
+        localStorage.removeItem('investmentTargetAccountId');
+        this.resetInvestmentTargetSettings();
+      } else if (this.investmentTargetAccountId) {
+        this.loadInvestmentTargetSettings(this.investmentTargetAccountId);
+      }
     });
 
     const initialDateStr = localStorage.getItem('report4InitialDate');
@@ -232,7 +289,13 @@ export class ReportComponent implements OnInit, AfterViewInit {
   }
 
   get reportInvalid(): boolean {
-    return this.forecastReportInvalid || this.financialHealthReportInvalid || (this.selectedReportType === 8 && (!this.investmentAccountId || !this.investmentInitialDateValue || !this.investmentFinalDateValue || this.investmentInitialDateValue > this.investmentFinalDateValue));
+    return this.forecastReportInvalid || this.financialHealthReportInvalid || (this.selectedReportType === 8 && (
+      !this.investmentAccountId ||
+      !this.investmentInitialDateValue ||
+      !this.investmentFinalDateValue ||
+      this.investmentInitialDateValue > this.investmentFinalDateValue ||
+      (this.investmentTargetAccountId > 0 && (!this.investmentTargetYieldPercent || this.investmentTargetYieldPercent <= 0))
+    ));
   }
 
   initialReferenceChanges(reference: string) {
@@ -302,6 +365,10 @@ export class ReportComponent implements OnInit, AfterViewInit {
   generateReport() {
     if (this.reportInvalid) {
       return;
+    }
+
+    if (this.selectedReportType === 8) {
+      this.generatedInvestmentTargetConfiguration = this.buildInvestmentTargetConfiguration();
     }
 
     this.catalogPanelExpanded = false;
@@ -465,6 +532,117 @@ export class ReportComponent implements OnInit, AfterViewInit {
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
 
     return `${year}${month}`;
+  }
+
+  refreshPageData(): void {
+    if (this.refreshingPageData) return;
+
+    const generatedReportType = this.showReport ? this.reportType : undefined;
+    this.refreshingPageData = true;
+
+    forkJoin({
+      categories: this.categoryService.read().pipe(catchError(() => of(this.categories))),
+      cards: this.cardService.read().pipe(catchError(() => of(this.allCards))),
+      accounts: this.accountService.read().pipe(catchError(() => of(this.allForecastAccounts)))
+    }).subscribe(({ categories, cards, accounts }) => {
+      this.categories = categories.sort((a, b) => a.name.localeCompare(b.name));
+      this.allCards = cards.sort((a, b) => a.name.localeCompare(b.name));
+      this.refreshCards();
+      this.allForecastAccounts = accounts.sort((a, b) => a.name.localeCompare(b.name));
+      this.refreshForecastAccounts();
+
+      if (this.investmentAccountId && !accounts.some(account => account.id === this.investmentAccountId && account.disabled !== true)) {
+        this.investmentAccountId = 0;
+        localStorage.removeItem('investmentAccountId');
+      }
+
+      if (this.investmentTargetAccountId && !accounts.some(account => account.id === this.investmentTargetAccountId && account.disabled !== true)) {
+        this.investmentTargetAccountId = 0;
+        localStorage.removeItem('investmentTargetAccountId');
+        this.resetInvestmentTargetSettings();
+      } else if (this.investmentTargetAccountId) {
+        this.loadInvestmentTargetSettings(this.investmentTargetAccountId);
+      }
+
+      if (!generatedReportType) {
+        this.refreshingPageData = false;
+        return;
+      }
+
+      this.showReport = false;
+      this.reportType = undefined;
+
+      setTimeout(() => {
+        this.reportType = generatedReportType;
+        this.showReport = true;
+        this.refreshingPageData = false;
+      });
+    });
+  }
+
+  private buildInvestmentTargetConfiguration(): InvestmentTargetConfiguration | null {
+    if (!this.investmentTargetAccountId) return null;
+
+    return {
+      accountId: this.investmentTargetAccountId,
+      yieldIndex: (this.investmentTargetYieldIndex || 'CDI').trim().toUpperCase(),
+      yieldPercent: Number(this.investmentTargetYieldPercent || 0),
+      maturityDate: this.investmentTargetMaturityDate ? new Date(this.investmentTargetMaturityDate).toISOString() : null,
+      minimumAmount: this.optionalNumber(this.investmentTargetMinimumAmount),
+      maximumAmount: this.optionalNumber(this.investmentTargetMaximumAmount),
+      availableAmount: this.optionalNumber(this.investmentTargetAvailableAmount),
+      lockedUntilMaturity: this.investmentTargetLockedUntilMaturity,
+      postMaturityYieldIndex: (this.investmentTargetPostMaturityYieldIndex || 'CDI').trim().toUpperCase(),
+      postMaturityYieldPercent: this.optionalNumber(this.investmentTargetPostMaturityYieldPercent),
+      postMaturityRestartsTaxClock: this.investmentTargetPostMaturityRestartsTaxClock
+    };
+  }
+
+  private investmentTargetStorageKey(accountId: number): string {
+    return `investmentTargetSettings_${accountId}`;
+  }
+
+  private loadInvestmentTargetSettings(accountId: number): void {
+    this.resetInvestmentTargetSettings();
+    const account = this.allForecastAccounts.find(item => item.id === accountId);
+    this.investmentTargetYieldPercent = account?.yieldPercent ?? null;
+
+    const raw = localStorage.getItem(this.investmentTargetStorageKey(accountId));
+    if (!raw) return;
+
+    try {
+      const settings = JSON.parse(raw) as InvestmentTargetConfiguration;
+      this.investmentTargetYieldIndex = settings.yieldIndex || 'CDI';
+      this.investmentTargetYieldPercent = Number(settings.yieldPercent || 0) || this.investmentTargetYieldPercent;
+      this.investmentTargetMaturityDate = settings.maturityDate ? new Date(settings.maturityDate) : null;
+      this.investmentTargetMinimumAmount = settings.minimumAmount ?? null;
+      this.investmentTargetMaximumAmount = settings.maximumAmount ?? null;
+      this.investmentTargetAvailableAmount = settings.availableAmount ?? null;
+      this.investmentTargetLockedUntilMaturity = settings.lockedUntilMaturity === true;
+      this.investmentTargetPostMaturityYieldIndex = settings.postMaturityYieldIndex || 'CDI';
+      this.investmentTargetPostMaturityYieldPercent = settings.postMaturityYieldPercent ?? null;
+      this.investmentTargetPostMaturityRestartsTaxClock = settings.postMaturityRestartsTaxClock !== false;
+    } catch {
+      localStorage.removeItem(this.investmentTargetStorageKey(accountId));
+    }
+  }
+
+  private resetInvestmentTargetSettings(): void {
+    this.investmentTargetYieldIndex = 'CDI';
+    this.investmentTargetYieldPercent = null;
+    this.investmentTargetMaturityDate = null;
+    this.investmentTargetMinimumAmount = null;
+    this.investmentTargetMaximumAmount = null;
+    this.investmentTargetAvailableAmount = null;
+    this.investmentTargetLockedUntilMaturity = false;
+    this.investmentTargetPostMaturityYieldIndex = 'CDI';
+    this.investmentTargetPostMaturityYieldPercent = null;
+    this.investmentTargetPostMaturityRestartsTaxClock = true;
+  }
+
+  private optionalNumber(value: number | null | undefined): number | null {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) return null;
+    return Number(value);
   }
 
   private readStoredNumber(

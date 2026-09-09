@@ -78,7 +78,7 @@ try {
     Write-Host "Compilando o APK Android..."
     Push-Location (Join-Path (Get-Location) 'android')
     try {
-        & .\gradlew.bat assembleDebug
+        & .\gradlew.bat assembleDebug --rerun-tasks
         $gradleExitCode = $LASTEXITCODE
     }
     finally {
@@ -95,7 +95,7 @@ try {
     }
 
     Write-Host "Instalando o APK no dispositivo $($device.Serial)..."
-    & $adbPath -s $device.Serial install -r -d $apkPath
+    & $adbPath -s $device.Serial install --no-streaming -r -d $apkPath
     if ($LASTEXITCODE -ne 0) {
         throw "Falha na instalação do APK. Código de saída: $LASTEXITCODE"
     }

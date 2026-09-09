@@ -8,7 +8,7 @@ import { Messenger } from 'src/app/common/messenger';
 import { AccountsSummary } from 'src/app/models/accountssummary';
 import { AccountsSummaryTotals } from 'src/app/models/accountssummarytotals';
 import { AccountForecastBalanceReport } from 'src/app/models/account-forecast-balance-report.model';
-import { InvestmentStrategyReport } from 'src/app/models/investment-strategy-report.model';
+import { InvestmentStrategyReport, InvestmentTargetConfiguration } from 'src/app/models/investment-strategy-report.model';
 
 @Injectable({
   providedIn: 'root'
@@ -105,7 +105,19 @@ export class AccountService {
     );
   }
 
-  getInvestmentStrategyReport(accountId:number, initialDate:string, finalDate:string, reserve:number|null): Observable<InvestmentStrategyReport> {
-    return this.http.post<InvestmentStrategyReport>(`${ApiUrls.accounts}/investmentstrategyreport`, { accountId, initialDate, finalDate, operationalReserve: reserve }).pipe(catchError(e => this.messenger.errorHandler(e)));
+  getInvestmentStrategyReport(
+    accountId: number,
+    initialDate: string,
+    finalDate: string,
+    reserve: number | null,
+    targetConfiguration: InvestmentTargetConfiguration | null
+  ): Observable<InvestmentStrategyReport> {
+    return this.http.post<InvestmentStrategyReport>(`${ApiUrls.accounts}/investmentstrategyreport`, {
+      accountId,
+      initialDate,
+      finalDate,
+      operationalReserve: reserve,
+      targetConfiguration
+    }).pipe(catchError(e => this.messenger.errorHandler(e)));
   }
 }

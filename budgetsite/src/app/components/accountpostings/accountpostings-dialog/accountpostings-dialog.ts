@@ -59,6 +59,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   saldoLiquido!: number;
   saldoBruto!: number;
   noRecalculate: boolean = false;
+  preserveValuesOnDateChange: boolean = false;
   previousBusinessDayHoliday: boolean = false;
   isCalculating: boolean = true;
   calculationStatus: string = 'Preparando rendimento...';
@@ -811,6 +812,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.accountPosting.date.setHours(0, 0, 0, 0);
 
     let diff = Math.floor((new Date(date).getTime() - new Date(this.accountPosting.date).getTime()) / 86400000);
+
+    if (this.accountPosting.editing && this.accountPosting.type === 'Y' && this.preserveValuesOnDateChange) {
+      this.accountPosting.date = date;
+      ++this.dateChangeRequestId;
+      return;
+    }
 
     this.changeDays(diff, false, false);
 

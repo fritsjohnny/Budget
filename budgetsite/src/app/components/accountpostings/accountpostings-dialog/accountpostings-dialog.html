@@ -82,6 +82,9 @@
                         (currentDateChanged)="currentDateChanged($event)"
                     >
                     </app-datepickerinput>
+                    <mat-checkbox *ngIf="accountPosting.editing && accountPosting.type === 'Y'" [(ngModel)]="preserveValuesOnDateChange" [ngModelOptions]="{ standalone: true }">
+                        Não recalcular valores
+                    </mat-checkbox>
                 </div>
             </div>
 

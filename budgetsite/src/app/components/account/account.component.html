@@ -120,6 +120,7 @@
         <app-accountpostings
             [accountId]="accountId"
             [reference]="reference"
+            [refreshRequest]="refreshRequest"
             [accountsList]="accounts"
             (accountUpdated)="updateAccountFromChild($any($event))"
         ></app-accountpostings>

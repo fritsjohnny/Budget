@@ -71,6 +71,7 @@ export class CardPostingsComponent implements OnInit {
 
   @Input() cardId?: number;
   @Input() reference?: string;
+  @Input() refreshRequest = 0;
 
   @Output() notificationContextChange = new EventEmitter<CardNotificationContext>();
   @Output() invoiceClosingRequested = new EventEmitter<void>();

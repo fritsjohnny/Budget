@@ -73,11 +73,14 @@ export class CardComponent implements OnInit, AfterViewInit {
     this.refresh();
   }
 
+  refreshRequest = 0;
+
   refresh() {
     if (!this.reference) {
       return;
     }
 
+    this.refreshRequest++;
     this.hideProgress = false;
 
     const requestId = ++this.cardRefreshRequestId;

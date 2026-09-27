@@ -98,6 +98,7 @@
         <app-cardpostings
             [cardId]="context.cardId"
             [reference]="context.reference"
+            [refreshRequest]="context.refreshRequest"
             [modernLayout]="true"
             (notificationContextChange)="context.setNotificationContext($event)"
             (invoiceClosingRequested)="context.openInvoiceClosing()"

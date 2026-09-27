@@ -60,11 +60,14 @@ export class AccountComponent implements OnInit {
     this.cd.detectChanges();
   }
 
+  refreshRequest = 0;
+
   refresh() {
     if (!this.reference) {
       return;
     }
 
+    this.refreshRequest++;
     this.hideProgress = false;
 
     // Lista completa continua sendo usada no dialog de manutenção

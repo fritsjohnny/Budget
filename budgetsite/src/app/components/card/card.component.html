@@ -32,7 +32,7 @@
             </mat-expansion-panel>
         </mat-accordion>
         <div style="margin-top: 10px">
-            <app-cardpostings [cardId]="cardId" [reference]="reference"
+            <app-cardpostings [cardId]="cardId" [reference]="reference" [refreshRequest]="refreshRequest"
                 (notificationContextChange)="setNotificationContext($event)"></app-cardpostings>
         </div>
     </div>

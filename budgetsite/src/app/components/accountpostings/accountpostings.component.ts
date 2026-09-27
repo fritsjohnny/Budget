@@ -64,6 +64,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
   @Input() accountId?: number;
   @Input() reference?: string;
+  @Input() refreshRequest = 0;
 
   @Output() accountUpdated = new EventEmitter<Partial<Accounts>>();
 
@@ -173,7 +174,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['accountId']?.currentValue || changes['reference']?.currentValue)
+    if (changes['accountId']?.currentValue || changes['reference']?.currentValue || changes['refreshRequest'])
       this.refresh();
   }
 

@@ -932,8 +932,8 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
   }
 
   private isSameNotificationPosting(
-    first: Pick<CardNotification, 'note' | 'date' | 'amount'> & { notificationReceivedAt?: string },
-    second: Pick<CardNotification, 'note' | 'date' | 'amount'> & { notificationReceivedAt?: string }
+    first: Pick<CardNotification, 'note' | 'date' | 'amount' | 'totalAmount'> & { notificationReceivedAt?: string },
+    second: Pick<CardNotification, 'note' | 'date' | 'amount' | 'totalAmount'> & { notificationReceivedAt?: string }
   ): boolean {
     const firstTimestamp = this.getNotificationReceivedTimestamp(first);
     const secondTimestamp = this.getNotificationReceivedTimestamp(second);
@@ -941,7 +941,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     return firstTimestamp !== null && secondTimestamp !== null &&
       this.normalizeNotificationText(first.note) === this.normalizeNotificationText(second.note) &&
       Math.abs(firstTimestamp - secondTimestamp) < 60000 &&
-      Math.abs((first.amount ?? 0) - (second.amount ?? 0)) < 0.01;
+      Math.abs((first.totalAmount ?? first.amount ?? 0) - (second.totalAmount ?? second.amount ?? 0)) < 0.01;
   }
 
   async restoreNotificationForDeletedCardPosting(posting: CardsPostings): Promise<void> {
@@ -1025,19 +1025,7 @@ private isDuplicate(notification: CardNotification): boolean {
   }
 
   private isCardPostingDuplicate(notification: CardNotification): boolean {
-    const normalizedNote = this.normalizeNotificationText(notification.note);
-    const notificationDate = this.getNotificationDate(notification.date);
-
-    if (!normalizedNote || !notificationDate) return false;
-
-    return this.knownCardPostings.some((posting) => {
-      const postingDate = this.getNotificationDate(posting.date);
-
-      return !!postingDate &&
-        this.normalizeNotificationText(posting.note) === normalizedNote &&
-        Math.abs(postingDate.getTime() - notificationDate.getTime()) < 60000 &&
-        Math.abs((posting.amount ?? 0) - (notification.amount ?? 0)) < 0.01;
-    });
+    return this.knownCardPostings.some(posting => this.isSameNotificationPosting(posting, notification));
   }
 
   // Transforma um texto em um padrão regex que aceita versões com e sem acento

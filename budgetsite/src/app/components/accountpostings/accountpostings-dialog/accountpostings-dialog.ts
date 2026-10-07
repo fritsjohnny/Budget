@@ -164,6 +164,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.accountPosting.totalGrossBalance = consolidatedGrossBalance;
     this.accountPosting.totalBalance = consolidatedNetBalance;
 
+    if (this.hasMultipleApplications) {
+      // O campo consolidado não representa os dias de IOF de várias aplicações.
+      this.accountPosting.iofElapsedDays = null;
+      this.setControlValue('iofElapsedDaysFormControl', null);
+    }
+
     this.saldoBruto = consolidatedGrossBalance;
     this.saldoLiquido = consolidatedNetBalance;
     this.setControlValue('totalBalanceFormControl', this.saldoLiquido);
@@ -735,7 +741,15 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
     const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
 
-    const finish = (days: number): void => {
+    const finish = (days: number | null): void => {
+      if (days === null && this.hasMultipleApplications) {
+        this.accountPosting.iofElapsedDays = null;
+        control?.setValue(null, { emitEvent: false });
+        this.isCalculating = false;
+        this.onTypeChange(true);
+        return;
+      }
+
       const normalizedDays = this.toNonNegativeInt(days);
 
       this.accountPosting.iofElapsedDays = normalizedDays;
@@ -869,6 +883,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.prepareApplicationDetails();
     if (this.hasMultipleApplications) {
       this.recalculateApplicationTotals();
+      this.accountPosting.iofElapsedDays = null;
       this.accountPosting.applicationDetails = this.applicationDetails.map(x => ({ ...x }));
     } else {
       const application = this.getYieldApplications()[0];
@@ -1117,7 +1132,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
               suggestYield = await this.yieldService.suggestYield1(
                 account!,
                 this.accountPosting.date,
-                this.accountPosting.iofElapsedDays
+                this.accountPosting.iofElapsedDays ?? undefined
               );
             }
             else if (this.accountPosting.algorithmType === '2') {
@@ -1303,7 +1318,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     this.captureYieldBaseValues();
   }
 
-  private setControlValue(controlName: string, value: number): void {
+  private setControlValue(controlName: string, value: number | null): void {
     this.accountPostingFormGroup.get(controlName)?.setValue(value, { emitEvent: false });
   }
 

@@ -52,7 +52,7 @@ export interface AccountsPostings {
   totalIOF?: number;
   totalIR?: number;
   accountPostingsYields?: AccountsPostings[];
-  iofElapsedDays?: number;
+  iofElapsedDays?: number | null;
   iofElapsedDate?: Date;
   relatedId?: number;
   toAccountId?: number;

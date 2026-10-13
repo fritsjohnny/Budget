@@ -63,7 +63,6 @@
 
 .gross-balance-close {
   flex: 0 0 auto;
-  color: #687286;
 }
 
 .gross-balance-dialog [mat-dialog-content] {
@@ -140,7 +139,11 @@
 }
 
 .gross-balance-suggestion-row strong {
+  display: inline-block;
+  flex: 0 0 auto;
+  min-width: max-content;
   color: #172033;
+  font-weight: 700;
   text-align: right;
 }
 
@@ -185,10 +188,6 @@
 .dark-theme .gross-balance-suggestion {
   border-color: rgba(119, 146, 255, 0.24);
   background: rgba(119, 146, 255, 0.08);
-}
-
-.dark-theme .gross-balance-suggestion-row strong {
-  color: #edf3fa;
 }
 
 .dark-theme .gross-balance-suggestion p {

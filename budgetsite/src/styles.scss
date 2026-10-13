@@ -1919,3 +1919,6 @@ tr.cdk-drag-preview > td.mat-cell:last-child {
   max-height: calc(100dvh - 56px - env(safe-area-inset-bottom));
 }
 
+.dark-theme .gross-balance-dialog .gross-balance-suggestion-row strong {
+  color: #edf3fa !important;
+}

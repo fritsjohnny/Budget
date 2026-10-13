@@ -5,6 +5,7 @@
 @import "./app/components/budget/budget-entry-modern-dialog-panel";
 @import "./app/components/account/account-modern-dialog-panel";
 @import "./app/components/accountpostings/account-entry-modern-dialog-panel";
+@import "./app/components/accountpostings/gross-balance-edit-dialog-panel";
 @import "./app/shared/confirm-dialog/modern-confirm-dialog-panel";
 @import "./styles/modern-panels";
 @include mat.core();

@@ -55,6 +55,7 @@ import { AccountDialog } from './components/account/account-dialog';
 import { AccountModernDialog } from './components/account/account-modern-dialog';
 import { AccountPostingsComponent } from './components/accountpostings/accountpostings.component';
 import { AccountPostingsModernLayoutComponent } from './components/accountpostings/accountpostings-modern-layout/accountpostings-modern-layout.component';
+import { GrossBalanceEditDialogComponent } from './components/accountpostings/gross-balance-edit-dialog.component';
 import { AccountPostingsDialog } from './components/accountpostings/accountpostings-dialog/accountpostings-dialog';
 import { AccountPostingsModernDialog } from './components/accountpostings/accountpostings-dialog/accountpostings-modern-dialog';
 import { CardViewComponent } from './views/card-view/card-view.component';
@@ -148,6 +149,7 @@ registerLocaleData(localePt);
     AccountModernDialog,
     AccountPostingsComponent,
     AccountPostingsModernLayoutComponent,
+    GrossBalanceEditDialogComponent,
     CardComponent,
     CardModernLayoutComponent,
     CardModernDialog,

@@ -19,6 +19,83 @@ export class YieldService {
     private accountApplicationsService: AccountApplicationsService,
     private accountYieldRangeService: AccountYieldRangeService) { }
 
+  /**
+   * Estimates a gross balance from the net yield already produced by the
+   * selected account algorithm. It uses the same gross-yield proportional
+   * adjustment as the provided example (entered bank net yield is first
+   * converted to a gross target using the current effective tax ratio).
+   */
+  async suggestGrossBalanceFromNetYield(
+    account: Accounts,
+    currentGrossBalance: number,
+    targetNetYield: number,
+    launchDate: Date,
+    iofElapsedDays?: number
+  ): Promise<{ suggestedGrossBalance: number; currentYield: { grossYield: number; netYield: number; irTotal: number; iofTotal: number }; grossTarget: number }> {
+    if (!account || !Number.isFinite(Number(account.yieldPercent)) || Number(account.yieldPercent) <= 0) {
+      throw new Error('Esta conta não possui cálculo de rendimento configurado.');
+    }
+
+    try {
+      await this.getCdiDiarioPercent(this.resolveCdiTargetDate(account));
+    } catch {
+      throw new Error('Não foi possível obter a taxa CDI para a data informada.');
+    }
+
+    const currentYield = await this.calculateYieldForBalance(
+      account,
+      currentGrossBalance,
+      launchDate,
+      iofElapsedDays
+    );
+
+    if (!Number.isFinite(targetNetYield) || targetNetYield <= 0 || currentYield.netYield <= 0 || currentYield.grossYield <= 0) {
+      throw new Error('Não foi possível encontrar um saldo bruto compatível com o rendimento informado.');
+    }
+
+    const grossTarget = Math.round((targetNetYield * currentYield.grossYield / currentYield.netYield + Number.EPSILON) * 100) / 100;
+    const suggestedGrossBalance = Math.round(
+      (currentGrossBalance * grossTarget / currentYield.grossYield + Number.EPSILON) * 100
+    ) / 100;
+
+    return { suggestedGrossBalance, currentYield, grossTarget };
+  }
+
+  inferAlgorithm(accountName: string | undefined): string | undefined {
+    return this.inferAlgorithmFromAccountName(accountName);
+  }
+
+  private async calculateYieldForBalance(
+    account: Accounts,
+    grossBalance: number,
+    launchDate: Date,
+    iofElapsedDays?: number
+  ) {
+    const simulationAccount = { ...account, totalBalanceGross: grossBalance };
+    const accountId = account.id;
+    const algorithm = accountId
+      ? localStorage.getItem(`budget.algorithmType.${accountId}`)
+        ?? this.inferAlgorithmFromAccountName(account.name)
+      : this.inferAlgorithmFromAccountName(account.name);
+
+    const days = Math.max(0, Math.trunc(Number(iofElapsedDays ?? 0)));
+    if (algorithm === '1') return this.suggestYield1(simulationAccount, launchDate, days);
+    if (algorithm === '2') return this.suggestYield2(simulationAccount);
+    if (algorithm === '3') return this.suggestYield3(simulationAccount, launchDate, days, 0, false);
+    if (algorithm === '4' || algorithm === '5') return this.suggestYield4(simulationAccount, launchDate, days, 0);
+    throw new Error('Esta conta não possui cálculo de rendimento configurado.');
+  }
+
+  private inferAlgorithmFromAccountName(name: string | undefined): string | undefined {
+    const normalized = (name ?? '').toLocaleLowerCase('pt-BR');
+    if (normalized.includes('nubank')) return '1';
+    if (normalized.includes('neon')) return '2';
+    if (normalized.includes('mercado pago')) return '3';
+    if (normalized.includes('picpay')) return '4';
+    if (normalized.includes('pagbank')) return '5';
+    return undefined;
+  }
+
   async getCdiDiarioPercentOld(): Promise<number> {
     if (this.cdiCache) return Promise.resolve(this.cdiCache);
 

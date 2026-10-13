@@ -33,6 +33,7 @@ import { AccountApplicationsModernDialog } from './accountapplications-dialog/ac
 import { GenerateCardReceiptDialog } from './generate-cardreceipt-dialog/generate-cardreceipt-dialog';
 import { Messenger } from 'src/app/common/messenger';
 import { prepareApiDates } from 'src/app/utils/api-date.util';
+import { GrossBalanceEditDialogComponent } from './gross-balance-edit-dialog.component';
 
 @Component({
   selector: 'app-accountpostings',
@@ -200,6 +201,59 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
   accountSummaryPanelOpened() {
     localStorage.setItem('accountSummaryPanelExpanded', 'true');
+  }
+
+  editGrossBalance(): void {
+    const dialogRef = this.dialog.open(GrossBalanceEditDialogComponent, {
+      width: this.modernLayout ? '420px' : 'min(420px, 92vw)',
+      maxWidth: 'calc(100vw - 24px)',
+      maxHeight: 'calc(100dvh - 32px)',
+      panelClass: this.modernLayout ? 'modern-gross-balance-dialog-panel' : 'gross-balance-dialog-panel',
+      data: {
+        amount: Number(this.currentGrossBalance ?? this.totalGrossBalance ?? 0),
+        account: this.account ?? this.accountsList.find(item => item.id === this.accountId)
+      }
+    });
+    dialogRef.afterClosed().subscribe((value?: number) => {
+      const account = this.account ?? this.accountsList.find(item => item.id === this.accountId) ?? null;
+      if (value === undefined) return;
+      if (!account?.id) {
+        this.messenger.errorHandler('Não foi possível identificar a conta para salvar o saldo bruto.').subscribe();
+        return;
+      }
+
+      const normalizedValue = Math.round(Number(value) * 100) / 100;
+      this.accountService.update({ ...account, totalBalanceGross: normalizedValue }).subscribe({
+        next: (updated) => {
+          const returnedValue = Number(updated?.totalBalanceGross);
+          if (Number.isFinite(returnedValue) && Math.round(returnedValue * 100) === Math.round(normalizedValue * 100)) {
+            this.applySavedGrossBalance(account.id!, normalizedValue);
+            return;
+          }
+
+          // Some API deployments return an empty body from PUT; verify the persisted value with GET.
+          this.accountService.read().subscribe({
+            next: (accounts) => {
+              const persistedValue = accounts.find(item => item.id === account.id)?.totalBalanceGross;
+              if (persistedValue === undefined || Math.round(Number(persistedValue) * 100) !== Math.round(normalizedValue * 100)) {
+                this.messenger.errorHandler('A API não confirmou a gravação do saldo bruto.').subscribe();
+                return;
+              }
+              this.applySavedGrossBalance(account.id!, normalizedValue);
+            },
+            error: (error) => this.messenger.errorHandler(error).subscribe()
+          });
+        },
+        error: (error) => this.messenger.errorHandler(error).subscribe()
+      });
+    });
+  }
+
+  private applySavedGrossBalance(accountId: number, value: number): void {
+    this.totalGrossBalance = value;
+    this.currentGrossBalance = value;
+    this.refreshAccountsList(undefined, value);
+    this.messenger.message('Saldo bruto atualizado com sucesso.');
   }
 
   private rebindAccount(): void {

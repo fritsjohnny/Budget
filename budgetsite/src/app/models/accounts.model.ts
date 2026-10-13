@@ -21,7 +21,7 @@ export interface Accounts {
   editing?: boolean;
   deleting?: boolean;
   yieldPercent?: number;
-  yieldIndex?: number;
+  yieldIndex?: string;
   irPercent?: number;
   isTaxExempt?: boolean;
   lastYield?: number;

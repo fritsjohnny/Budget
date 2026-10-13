@@ -35,6 +35,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
     positionFormControl: new FormControl(''),
     appPackageNameFormControl: new FormControl(''),
     yieldPercentFormControl: new FormControl(''),
+    yieldIndexFormControl: new FormControl(''),
     irPercentFormControl: new FormControl(''),
     isTaxExemptFormControl: new FormControl(false),
     totalBalanceGrossFormControl: new FormControl(''),
@@ -78,15 +79,23 @@ export class AccountDialog implements OnInit, AfterViewInit {
       position: this.accountFormGroup.get('positionFormControl')?.value,
       appPackageName: this.accountFormGroup.get('appPackageNameFormControl')?.value,
       yieldPercent: parseFloat(this.accountFormGroup.get('yieldPercentFormControl')?.value?.toString().replace(',', '.') ?? '0'),
+      yieldIndex: (this.accountFormGroup.get('yieldIndexFormControl')?.value ?? '').toString().trim().toUpperCase() || undefined,
       irPercent: parseFloat(this.accountFormGroup.get('irPercentFormControl')?.value?.toString().replace(',', '.') ?? '0'),
       isTaxExempt: this.accountFormGroup.get('isTaxExemptFormControl')?.value,
-      totalBalanceGross: parseFloat(this.accountFormGroup.get('totalBalanceGrossFormControl')?.value?.toString().replace(',', '.') ?? '0'),
+      totalBalanceGross: this.parseAmount(this.accountFormGroup.get('totalBalanceGrossFormControl')?.value),
       yieldRanges: this.normalizeYieldRanges(),
       editing: this.id != undefined,
       deleting: false
     };
 
     this.dialogRef.close(account);
+  }
+
+  private parseAmount(value: unknown): number {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+    const normalized = String(value ?? '').trim().replace(/\s|R\$/gi, '').replace(/\./g, '').replace(',', '.');
+    const amount = Number(normalized);
+    return Number.isFinite(amount) ? amount : 0;
   }
 
   delete(): void {
@@ -105,10 +114,22 @@ export class AccountDialog implements OnInit, AfterViewInit {
   addAccount() {
 
     this.id = undefined;
-
-    this.accountFormGroup.get('nameFormControl')?.setValue('');
-    this.accountFormGroup.get('disabledFormControl')?.setValue(false);
-    this.accountFormGroup.get('calcInGeneralFormControl')?.setValue(false);
+    this.buttonName = '';
+    this.buttonText = 'Nome da Conta';
+    this.accountFormGroup.reset({
+      nameFormControl: '',
+      backgroundFormControl: '',
+      colorFormControl: '',
+      disabledFormControl: false,
+      calcInGeneralFormControl: false,
+      positionFormControl: 1,
+      appPackageNameFormControl: '',
+      yieldPercentFormControl: '',
+      yieldIndexFormControl: '',
+      irPercentFormControl: '',
+      isTaxExemptFormControl: false,
+      totalBalanceGrossFormControl: ''
+    });
 
     this.yieldRanges = [];
     this.setBackgroundAndColor('#000000', '#ffffff');
@@ -154,6 +175,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
       this.accountFormGroup.get('positionFormControl')?.setValue(account.position);
       this.accountFormGroup.get('appPackageNameFormControl')?.setValue(account.appPackageName);
       this.accountFormGroup.get('yieldPercentFormControl')?.setValue(account.yieldPercent);
+      this.accountFormGroup.get('yieldIndexFormControl')?.setValue(account.yieldIndex ?? '');
       this.accountFormGroup.get('irPercentFormControl')?.setValue(account.irPercent);
       this.accountFormGroup.get('isTaxExemptFormControl')?.setValue(account.isTaxExempt);
       this.accountFormGroup.get('totalBalanceGrossFormControl')?.setValue(account.totalBalanceGross);

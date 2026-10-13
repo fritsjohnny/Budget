@@ -38,13 +38,13 @@
           </div>
         </article>
 
-        <article class="summary-item summary-gross">
+        <button type="button" class="summary-item summary-gross" (click)="context.editGrossBalance()" aria-label="Editar saldo bruto">
           <span class="summary-icon"><mat-icon>stacked_bar_chart</mat-icon></span>
           <div>
             <small>Saldo bruto</small>
             <strong>{{ context.totalGrossBalance | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
           </div>
-        </article>
+        </button>
 
         <button type="button" class="summary-item summary-yield" (click)="context.openGeneralYields()">
           <span class="summary-icon"><mat-icon>trending_up</mat-icon></span>

@@ -38,9 +38,9 @@
 </div>
 <div class="row center mt-2 mb-2" *ngIf="!modernLayout && hideProgress">
     <div class="col text-center">
-        <span class="center">Saldo Bruto:</span>
+        <span class="center" (click)="editGrossBalance()" style="cursor: pointer" matTooltip="Editar saldo bruto">Saldo Bruto:</span>
         <span class="center"
-            ><b>{{ totalGrossBalance | currency: "" : "" }}</b></span
+            ><b (click)="editGrossBalance()" style="cursor: pointer" matTooltip="Editar saldo bruto">{{ totalGrossBalance | currency: "" : "" }}</b></span
         >
     </div>
     <div class="col text-center">

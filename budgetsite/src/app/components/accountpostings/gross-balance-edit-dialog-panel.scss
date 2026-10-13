@@ -1,0 +1,212 @@
+.cdk-overlay-pane.modern-gross-balance-dialog-panel,
+.cdk-overlay-pane.gross-balance-dialog-panel {
+  width: min(440px, calc(100vw - 24px)) !important;
+  max-width: calc(100vw - 24px) !important;
+}
+
+.modern-gross-balance-dialog-panel .mat-dialog-container,
+.gross-balance-dialog-panel .mat-dialog-container {
+  padding: 0 !important;
+  border: 1px solid rgba(23, 35, 55, 0.14);
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  color: #172033 !important;
+  box-shadow: 0 24px 64px rgba(22, 32, 48, 0.3) !important;
+  overflow: hidden !important;
+}
+
+.gross-balance-dialog {
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+
+.gross-balance-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid rgba(23, 35, 55, 0.1);
+}
+
+.gross-balance-icon {
+  display: inline-flex;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(79, 111, 232, 0.13);
+  color: #4f6fe8;
+}
+
+.gross-balance-heading {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.gross-balance-heading h2 {
+  margin: 0 !important;
+  color: #172033;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.gross-balance-heading p {
+  margin: 4px 0 0;
+  color: #687286;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.gross-balance-close {
+  flex: 0 0 auto;
+  color: #687286;
+}
+
+.gross-balance-dialog [mat-dialog-content] {
+  margin: 0 !important;
+  padding: 20px 18px 6px !important;
+  overflow: visible !important;
+}
+
+.gross-balance-dialog .mat-form-field {
+  width: 100%;
+}
+
+.gross-balance-dialog .mat-form-field-flex {
+  border-radius: 11px 11px 0 0;
+  background: #f4f7fb !important;
+}
+
+.gross-balance-assistant-toggle {
+  display: block;
+  margin: -2px 0 14px;
+}
+
+.gross-balance-assistant {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+.gross-balance-calculate {
+  align-self: flex-start;
+  min-height: 42px;
+  border-radius: 12px !important;
+}
+
+.gross-balance-calculate mat-spinner {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.gross-balance-assistant-error {
+  margin: 6px 0 10px;
+  color: #c62828;
+  font-size: 13px;
+}
+
+.gross-balance-suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 4px;
+  padding: 14px;
+  border: 1px solid rgba(79, 111, 232, 0.22);
+  border-radius: 14px;
+  background: rgba(79, 111, 232, 0.06);
+}
+
+.gross-balance-suggestion-main,
+.gross-balance-suggestion-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gross-balance-suggestion-main strong {
+  color: #4f6fe8;
+  font-size: 19px;
+}
+
+.gross-balance-suggestion-row {
+  color: #687286;
+  font-size: 13px;
+}
+
+.gross-balance-suggestion-row strong {
+  color: #172033;
+  text-align: right;
+}
+
+.gross-balance-suggestion p {
+  margin: 2px 0 4px;
+  color: #687286;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.gross-balance-use {
+  align-self: flex-end;
+  min-height: 40px;
+  border-radius: 12px !important;
+}
+
+.dark-theme .modern-gross-balance-dialog-panel .mat-dialog-container,
+.dark-theme .gross-balance-dialog-panel .mat-dialog-container {
+  border-color: rgba(194, 213, 232, 0.2);
+  background: #111c28 !important;
+  color: #edf3fa !important;
+  box-shadow: 0 26px 72px rgba(0, 0, 0, 0.58) !important;
+}
+
+.dark-theme .gross-balance-header {
+  border-bottom-color: rgba(194, 213, 232, 0.12);
+}
+
+.dark-theme .gross-balance-heading h2 {
+  color: #edf3fa;
+}
+
+.dark-theme .gross-balance-heading p,
+.dark-theme .gross-balance-close {
+  color: #9eabba;
+}
+
+.dark-theme .gross-balance-dialog .mat-form-field-flex {
+  background: #182634 !important;
+}
+
+.dark-theme .gross-balance-suggestion {
+  border-color: rgba(119, 146, 255, 0.24);
+  background: rgba(119, 146, 255, 0.08);
+}
+
+.dark-theme .gross-balance-suggestion-row strong {
+  color: #edf3fa;
+}
+
+.dark-theme .gross-balance-suggestion p {
+  color: #9eabba;
+}
+
+@media (max-width: 520px) {
+  .modern-gross-balance-dialog-panel .mat-dialog-container,
+  .gross-balance-dialog-panel .mat-dialog-container {
+    border-radius: 16px !important;
+  }
+
+  .gross-balance-header {
+    padding: 15px 14px 12px;
+  }
+
+  .gross-balance-dialog [mat-dialog-content] {
+    padding: 16px 14px 4px !important;
+  }
+
+}

@@ -514,7 +514,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     return previousDays + elapsedDays;
   }
 
-  private async calculateApplicationDetails(account: Accounts): Promise<void> {
+  private async calculateApplicationDetails(
+    account: Accounts,
+    consolidatedGrossBalanceBefore: number,
+    consolidatedNetBalanceBefore: number
+  ): Promise<void> {
     const applications = this.getYieldApplications();
     if (applications.length <= 1 || this.applicationDetailsLoadedFromServer) return;
 
@@ -529,6 +533,35 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         iofElapsedDays: await this.getApplicationIofDaysBefore(application, launchDate),
       }))
     );
+
+    // Mantém os saldos consolidados da conta como base. Os históricos individuais
+    // podem divergir após arredondamentos; reconcilia as diferenças na última
+    // aplicação para que a soma das bases continue igual à posição oficial.
+    const individualGrossBalanceBefore = this.round2(
+      applicationInputs.reduce((sum, item) => sum + item.grossBalanceBefore, 0)
+    );
+    const individualNetBalanceBefore = this.round2(
+      applicationInputs.reduce((sum, item) => sum + item.netBalanceBefore, 0)
+    );
+    const grossBalanceAdjustment = this.round2(
+      consolidatedGrossBalanceBefore - individualGrossBalanceBefore
+    );
+    const netBalanceAdjustment = this.round2(
+      consolidatedNetBalanceBefore - individualNetBalanceBefore
+    );
+    const lastApplicationInput = applicationInputs[applicationInputs.length - 1];
+    if (lastApplicationInput) {
+      if (grossBalanceAdjustment !== 0) {
+        lastApplicationInput.grossBalanceBefore = this.round2(
+          lastApplicationInput.grossBalanceBefore + grossBalanceAdjustment
+        );
+      }
+      if (netBalanceAdjustment !== 0) {
+        lastApplicationInput.netBalanceBefore = this.round2(
+          lastApplicationInput.netBalanceBefore + netBalanceAdjustment
+        );
+      }
+    }
 
     const calculation = await this.yieldService.suggestYieldMultipleApplications(
       account,
@@ -1083,13 +1116,6 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
             }))
           );
 
-          currentGrossBalanceForYield = this.round2(
-            applicationBalances.reduce((sum, item) => sum + item.grossBalance, 0)
-          );
-          currentBalanceForYield = this.round2(
-            applicationBalances.reduce((sum, item) => sum + item.netBalance, 0)
-          );
-
           if (applicationBalances.length === 1) {
             const iofElapsedDays = applicationBalances[0].iofElapsedDays;
             this.accountPosting.iofElapsedDays = iofElapsedDays;
@@ -1115,7 +1141,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
             this.accountPosting.totalIOF = 0;
             this.accountPosting.totalIR = 0;
 
-            await this.calculateApplicationDetails(account!);
+            await this.calculateApplicationDetails(
+              account!,
+              currentGrossBalanceForYield,
+              currentBalanceForYield
+            );
             this.recalculateApplicationTotals();
           } else {
             let suggestYield = {

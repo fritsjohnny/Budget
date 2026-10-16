@@ -47,6 +47,13 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     return this;
   }
 
+  private sortApplicationsNewestFirst(applications: AccountsApplications[]): AccountsApplications[] {
+    return [...applications].sort((a, b) => {
+      const dateDifference = new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime();
+      return dateDifference || Number(b.id ?? 0) - Number(a.id ?? 0);
+    });
+  }
+
   private get accountEntryDialogPanelClass(): string | undefined {
     return this.modernLayout ? 'modern-account-entry-dialog-panel' : undefined;
   }
@@ -377,7 +384,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         .readByAccount(this.accountId!)
         .subscribe({
           next: (accountApplications) => {
-            this.accountApplications = accountApplications;
+            this.accountApplications = this.sortApplicationsNewestFirst(accountApplications);
 
             // this.accountApplicationsLength = this.accountApplications.length;
 
@@ -812,7 +819,10 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
           next: (accountApplication) => {
             if (accountApplication.accountId === this.accountId
             ) {
-              this.accountApplications = [...this.accountApplications, accountApplication];
+              this.accountApplications = this.sortApplicationsNewestFirst([
+                ...this.accountApplications,
+                accountApplication,
+              ]);
 
               this.accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);
 
@@ -869,12 +879,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
                   t.maturityDate = result.maturityDate;
                 });
 
-              this.accountApplications = [
+              this.accountApplications = this.sortApplicationsNewestFirst([
                 ...this.accountApplications.filter(
                   (ap) =>
                     ap.accountId === this.accountId
                 ),
-              ];
+              ]);
 
               this.accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);
 

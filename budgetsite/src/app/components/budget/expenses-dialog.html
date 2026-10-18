@@ -312,6 +312,7 @@
                     formControlName="generateParcelsFormControl"
                     [disabled]="
                       hasExistingParcelSequence ||
+                      hasLinkedIncome ||
                       disableGenerateParcelsCheck ||
                       expenses.repeatToNextMonths! ||
                       expenses.repeatParcels!
@@ -329,7 +330,7 @@
                 <mat-checkbox
                     [(ngModel)]="expenses.repeatParcels"
                     formControlName="repeatParcelsFormControl"
-                    [disabled]="disableRepeatParcelsCheck || expenses.repeatToNextMonths! || expenses.generateParcels!"
+                    [disabled]="disableRepeatParcelsCheck || hasLinkedIncome || expenses.repeatToNextMonths! || expenses.generateParcels!"
                     (change)="onRepeatParcelsChanged($event)"
                 >
                     Repetir para os próximos
@@ -354,6 +355,7 @@
                     formControlName="repeatToNextMonthsFormControl"
                     [disabled]="
                         expenses.repeatParcels! ||
+                        hasLinkedIncome ||
                         expenses.generateParcels!
                     "
                     (change)="onRepeatToNextMonthsChanged()"
@@ -491,6 +493,12 @@
                             [value]="expenses.relatedId ?? ''"
                             readonly
                         />
+                    </mat-form-field>
+                </div>
+                <div class="col-6" *ngIf="expenses.linkedIncomeId">
+                    <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
+                        <mat-label>ID da receita vinculada</mat-label>
+                        <input matInput [value]="expenses.linkedIncomeId" readonly />
                     </mat-form-field>
                 </div>
             </div>

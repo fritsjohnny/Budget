@@ -34,4 +34,5 @@ export interface Incomes {
   repeatToNextMonths?: boolean;
   preserveFutureValues?: boolean;
   relatedId?: number;
+  linkedExpenseId?: number;
 }

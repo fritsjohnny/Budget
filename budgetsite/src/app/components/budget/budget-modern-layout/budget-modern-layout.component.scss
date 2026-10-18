@@ -482,6 +482,28 @@
     white-space: nowrap;
 }
 
+.summary-card > div {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.summary-own-total {
+    display: block;
+    margin-top: 4px;
+    color: var(--modern-text);
+    opacity: 0.72;
+    font-size: 10px;
+    line-height: 1.1;
+}
+
+.summary-own-total strong {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
 .summary-label {
     display: block;
     font-weight: 700;

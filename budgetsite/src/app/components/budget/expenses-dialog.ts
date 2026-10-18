@@ -37,6 +37,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   disableGenerateParcelsCheck: boolean = true;
   disableRepeatParcelsCheck: boolean = false;
   hasExistingParcelSequence: boolean = false;
+  hasLinkedIncome: boolean = false;
 
   expensesFormGroup = new FormGroup({
     descriptionFormControl: new FormControl('', Validators.required),
@@ -82,6 +83,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
     this.hasExistingParcelSequence =
       this.expenses.editing === true &&
       originalParcels > 1;
+    this.hasLinkedIncome = !!this.expenses.linkedIncomeId;
 
     this.expenses.parcelNumber =
       this.expenses.parcelNumber ?? 1;
@@ -91,10 +93,14 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
 
     this.disableGenerateParcelsCheck =
       this.hasExistingParcelSequence ||
-      this.expenses.parcels <= 1;
+      this.expenses.parcels <= 1 ||
+      this.hasLinkedIncome;
+    this.disableRepeatParcelsCheck = this.hasLinkedIncome;
 
-    if (this.hasExistingParcelSequence) {
+    if (this.hasExistingParcelSequence || this.hasLinkedIncome) {
       this.expenses.generateParcels = false;
+      this.expenses.repeatParcels = false;
+      this.expenses.repeatToNextMonths = false;
     }
 
     this.expenses.monthsToRepeat = 12;
@@ -112,7 +118,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   }
 
   save(): void {
-    if (this.hasExistingParcelSequence) {
+    if (this.hasExistingParcelSequence || this.hasLinkedIncome) {
       this.expenses.generateParcels = false;
     }
 
@@ -176,7 +182,8 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
 
     this.disableGenerateParcelsCheck =
       this.hasExistingParcelSequence ||
-      this.expenses.parcels! <= 1;
+      this.expenses.parcels! <= 1 ||
+      this.hasLinkedIncome;
 
     if (this.disableGenerateParcelsCheck) {
       this.expenses.generateParcels = false;
@@ -188,7 +195,7 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   }
 
   onGenerateParcelsChanged(event: any): void {
-    if (this.hasExistingParcelSequence) {
+    if (this.hasExistingParcelSequence || this.hasLinkedIncome) {
       this.expenses.generateParcels = false;
       return;
     }
@@ -213,6 +220,11 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   }
 
   onRepeatParcelsChanged(event: any): void {
+    if (this.hasLinkedIncome) {
+      this.expenses.repeatParcels = false;
+      return;
+    }
+
     if (this.expenses.repeatParcels) {
       this.disableGenerateParcelsCheck = true;
 
@@ -231,6 +243,9 @@ export class ExpensesDialog implements OnInit, AfterViewInit {
   }
 
   onRepeatToNextMonthsChanged(): void {
+    if (this.hasLinkedIncome) {
+      this.expenses.repeatToNextMonths = false;
+    }
     if (!this.expenses.repeatToNextMonths) {
       this.expenses.preserveFutureValues = false;
     }

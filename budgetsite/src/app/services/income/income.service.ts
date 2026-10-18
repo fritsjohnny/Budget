@@ -85,6 +85,13 @@ export class IncomeService {
       );
   }
 
+  updatePositions(incomes: Incomes[]): Observable<any> {
+    const positions = incomes.map(({ id, position }) => ({ id, position }));
+    return this.http
+      .put<any>(`${ApiUrls.incomes}/setpositions`, positions)
+      .pipe(catchError((e) => this.messenger.errorHandler(e)));
+  }
+
   updateValue(id: number, value: number): Observable<Incomes> {
     return this.http
       .put<Incomes>(`${ApiUrls.incomes}/AddValue/${id}?value=${value}`, null)

@@ -31,6 +31,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
   isScreenInit: boolean = true;
   disableGenerateParcelsCheck: boolean = true;
   disableRepeatIncomeCheck: boolean = false;
+  hasLinkedExpense: boolean = false;
 
   incomesFormGroup = new FormGroup({
     descriptionFormControl: new FormControl('', Validators.required),
@@ -71,11 +72,19 @@ export class IncomesDialog implements OnInit, AfterViewInit {
     this.incomes.totalToReceive = this.incomes.totalToReceive ?? this.incomes.toReceive ?? 0;
     this.incomes.monthsToRepeat = 12;
     this.incomes.preserveFutureValues = false;
+    this.hasLinkedExpense = !!this.incomes.linkedExpenseId;
+    this.disableRepeatIncomeCheck = this.hasLinkedExpense;
+    if (this.hasLinkedExpense) {
+      this.incomes.repeatIncome = false;
+      this.incomes.repeatToNextMonths = false;
+      this.incomes.generateParcels = false;
+    }
 
     this.disableGenerateParcelsCheck =
       this.incomes.parcels == undefined ||
       this.incomes.parcels == null ||
-      this.incomes.parcels === 1;
+      this.incomes.parcels === 1 ||
+      this.hasLinkedExpense;
   }
 
   ngAfterViewInit(): void {
@@ -144,7 +153,7 @@ export class IncomesDialog implements OnInit, AfterViewInit {
 
   onParcelsChanged(event: any): void {
     this.disableGenerateParcelsCheck =
-      event.target.value == '' || this.incomes.parcels! <= 1;
+      this.hasLinkedExpense || event.target.value == '' || this.incomes.parcels! <= 1;
 
     this.incomes.generateParcels = !this.disableGenerateParcelsCheck;
 

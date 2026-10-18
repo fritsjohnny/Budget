@@ -37,6 +37,7 @@ export interface Expenses {
   duetoday?: boolean;
   fixed?: boolean;
   relatedId?: number;
+  linkedIncomeId?: number;
   dueDay?: number;
   expectedValue?: number;
 }

@@ -855,6 +855,15 @@
                                             >
                                             <span>Clonar</span>
                                         </button>
+                                        <button
+                                            mat-menu-item
+                                            id="menu-expenses"
+                                            (click)="linkExpenseIncome(row)"
+                                            [disabled]="!!row.linkedIncomeId"
+                                        >
+                                            <mat-icon id="menu-icon-expenses">link</mat-icon>
+                                            <span>{{ row.linkedIncomeId ? 'Receita vinculada' : 'Vincular receita' }}</span>
+                                        </button>
                                         <!-- <button
                                         [id]="
                                             canSelectExpenseToMerge(row)

@@ -175,17 +175,17 @@
           <mat-checkbox [(ngModel)]="expenses.scheduled" formControlName="scheduledFormControl">Pagamento agendado</mat-checkbox>
 
           <div class="modern-option-with-help">
-            <mat-checkbox [(ngModel)]="expenses.generateParcels" formControlName="generateParcelsFormControl" [disabled]="hasExistingParcelSequence || disableGenerateParcelsCheck || expenses.repeatToNextMonths! || expenses.repeatParcels!" (change)="onGenerateParcelsChanged($event)">Gerar as demais parcelas</mat-checkbox>
+            <mat-checkbox [(ngModel)]="expenses.generateParcels" formControlName="generateParcelsFormControl" [disabled]="hasExistingParcelSequence || hasLinkedIncome || disableGenerateParcelsCheck || expenses.repeatToNextMonths! || expenses.repeatParcels!" (change)="onGenerateParcelsChanged($event)">Gerar as demais parcelas</mat-checkbox>
             <small *ngIf="hasExistingParcelSequence">As demais parcelas desta sequência já foram geradas.</small>
           </div>
 
           <div class="modern-inline-option">
-            <mat-checkbox [(ngModel)]="expenses.repeatParcels" formControlName="repeatParcelsFormControl" [disabled]="disableRepeatParcelsCheck || expenses.repeatToNextMonths! || expenses.generateParcels!" (change)="onRepeatParcelsChanged($event)">Repetir para os próximos</mat-checkbox>
+            <mat-checkbox [(ngModel)]="expenses.repeatParcels" formControlName="repeatParcelsFormControl" [disabled]="disableRepeatParcelsCheck || hasLinkedIncome || expenses.repeatToNextMonths! || expenses.generateParcels!" (change)="onRepeatParcelsChanged($event)">Repetir para os próximos</mat-checkbox>
             <input type="number" inputmode="numeric" onfocus="this.select()" min="1" formControlName="monthsToRepeatFormControl" [(ngModel)]="expenses.monthsToRepeat" />
             <span>meses</span>
           </div>
 
-          <mat-checkbox *ngIf="expenses.editing" [(ngModel)]="expenses.repeatToNextMonths" formControlName="repeatToNextMonthsFormControl" [disabled]="expenses.repeatParcels! || expenses.generateParcels!" (change)="onRepeatToNextMonthsChanged()">Repetir edição para os próximos meses</mat-checkbox>
+          <mat-checkbox *ngIf="expenses.editing" [(ngModel)]="expenses.repeatToNextMonths" formControlName="repeatToNextMonthsFormControl" [disabled]="hasLinkedIncome || expenses.repeatParcels! || expenses.generateParcels!" (change)="onRepeatToNextMonthsChanged()">Repetir edição para os próximos meses</mat-checkbox>
 
           <mat-checkbox *ngIf="expenses.editing" [(ngModel)]="expenses.preserveFutureValues" formControlName="preserveFutureValuesFormControl" [disabled]="!expenses.repeatToNextMonths">Não alterar os valores dos próximos meses</mat-checkbox>
         </div>
@@ -209,6 +209,13 @@
             <mat-form-field appearance="fill" floatLabel="always">
               <mat-label>Related ID</mat-label>
               <input matInput [value]="expenses.relatedId ?? ''" readonly />
+            </mat-form-field>
+          </div>
+
+          <div class="modern-field-column" *ngIf="expenses.linkedIncomeId">
+            <mat-form-field appearance="fill" floatLabel="always">
+              <mat-label>ID da receita vinculada</mat-label>
+              <input matInput [value]="expenses.linkedIncomeId" readonly />
             </mat-form-field>
           </div>
         </div>

@@ -55,6 +55,13 @@
                         context.toReceiveTotalNoFilter
                             | currency: "BRL" : "symbol" : "1.2-2"
                     }}</strong>
+                    <span class="summary-own-total">
+                        <span>Minhas</span>
+                        <strong>{{
+                            context.budgetTotals?.myIncomes
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong>
+                    </span>
                 </div>
             </article>
 
@@ -66,6 +73,13 @@
                         context.toPayTotalNoFilter
                             | currency: "BRL" : "symbol" : "1.2-2"
                     }}</strong>
+                    <span class="summary-own-total">
+                        <span>Minhas</span>
+                        <strong>{{
+                            context.budgetTotals?.myExpenses
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong>
+                    </span>
                 </div>
             </article>
 
@@ -709,6 +723,9 @@
                                         <mat-icon>content_copy</mat-icon
                                         ><span>Clonar</span>
                                     </button>
+                                    <button mat-menu-item (click)="context.linkExpenseIncome(row)" [disabled]="!!row.linkedIncomeId">
+                                        <mat-icon>link</mat-icon><span>{{ row.linkedIncomeId ? 'Receita vinculada' : 'Vincular receita' }}</span>
+                                    </button>
                                     <button
                                         mat-menu-item
                                         class="modern-menu-danger"
@@ -933,6 +950,9 @@
                                     >
                                         <mat-icon>content_copy</mat-icon
                                         ><span>Clonar</span>
+                                    </button>
+                                    <button mat-menu-item (click)="context.linkExpenseIncome(row)" [disabled]="!!row.linkedIncomeId">
+                                        <mat-icon>link</mat-icon><span>{{ row.linkedIncomeId ? 'Receita vinculada' : 'Vincular receita' }}</span>
                                     </button>
                                     <button
                                         mat-menu-item

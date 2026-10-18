@@ -357,7 +357,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   onCheckboxJustMyValuesChange(): void {
-    this.refresh();
+    this.refresh(false);
   }
 
   onCheckboxJustToPayChange(): void {
@@ -385,21 +385,20 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     this.getIncomesTotals();
   }
 
-  refresh() {
+  refresh(showLoading: boolean = true) {
     if (!this.reference) return;
 
     const requestId = ++this.budgetRefreshRequestId;
 
-    this.loadingMessage = 'Carregando orçamento...';
-    this.isBudgetLoading = true;
+    if (showLoading) {
+      this.loadingMessage = 'Carregando orçamento...';
+      this.isBudgetLoading = true;
 
-    if (!this.savingCardPosting) {
-      this.isBudgetLoaded = false;
-    }
-
-    if (!this.savingCardPosting) {
-      this.showUpcomingExpenses = false;
-      this.onlyPendingExpenses = false;
+      if (!this.savingCardPosting) {
+        this.isBudgetLoaded = false;
+        this.showUpcomingExpenses = false;
+        this.onlyPendingExpenses = false;
+      }
     }
 
     const reference = this.reference;
@@ -421,7 +420,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             requestId === this.budgetRefreshRequestId &&
             this.reference === reference
           ) {
-            this.isBudgetLoading = false;
+            if (showLoading) {
+              this.isBudgetLoading = false;
+            }
             this.savingCardPosting = false;
           }
         })
@@ -498,7 +499,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           this.getTotalPeople();
           this.getTotalByCategories();
 
-          this.checkExpensesWarnings();
+          if (showLoading) {
+            this.checkExpensesWarnings();
+          }
 
           this.loadPanelState();
 
@@ -512,7 +515,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             return;
           }
 
-          if (!this.savingCardPosting) {
+          if (showLoading && !this.savingCardPosting) {
             this.isBudgetLoaded = false;
           }
         }
@@ -772,7 +775,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
             this.categoriesList = result.categoriesList;
             this.peopleList = result.peopleList;
 
-            this.refreshExpenses();
+            this.refresh(false);
             this.focusCreatedExpense(expenses.id);
           },
           error: () => {
@@ -791,7 +794,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   orderExpensesByPreviousMonth(): void {
     this.expenseService.orderByPreviousMonth(this.reference!).subscribe({
       next: () => {
-        this.refresh();
+        this.refresh(false);
       },
       error: () => { },
     });
@@ -822,7 +825,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           .repeatPreviousMonth(this.reference!)
           .subscribe({
             next: () => {
-              this.refresh();
+              this.refresh(false);
             },
             error: (e) => {
               this.messenger.errorHandler(e);
@@ -869,6 +872,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         dueDay: expense.dueDay,
         expectedValue: expense.expectedValue,
         relatedId: expense.relatedId,
+        linkedIncomeId: expense.linkedIncomeId,
       },
     });
 
@@ -921,7 +925,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
               this.categoriesList = result.categoriesList;
               this.peopleList = result.peopleList;
 
-              this.refreshExpenses();
+              // Recarrega despesas e receitas para refletir o espelhamento do registro vinculado.
+              this.refresh(false);
             },
             error: () => {
             },
@@ -961,7 +966,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         );
 
         this.messenger.message('Despesa removida com sucesso.');
-        this.refreshExpenses();
+        this.refresh(false);
       },
       error: () => {
         this.messenger.message('Erro ao remover despesa.');
@@ -1061,7 +1066,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
             this.peopleList = result.peopleList;
 
-            this.refreshIncomes();
+            this.refresh(false);
             this.focusCreatedIncome(incomes.id);
           },
           error: () => { },
@@ -1079,7 +1084,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   orderIncomesByPreviousMonth(): void {
     this.incomeService.orderByPreviousMonth(this.reference!).subscribe({
       next: () => {
-        this.refresh();
+        this.refresh(false);
       },
       error: (e) => {
         this.messenger.errorHandler(e);
@@ -1104,7 +1109,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
       this.incomeService.repeatPreviousMonth(this.reference!).subscribe({
         next: () => {
-          this.refresh();
+          this.refresh(false);
         },
         error: (e) => {
           this.messenger.errorHandler(e);
@@ -1142,6 +1147,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         type: income.type,
         peopleId: income.peopleId,
         relatedId: income.relatedId,
+        linkedExpenseId: income.linkedExpenseId,
         editing: this.editing,
         deleting: false,
         cardsList: this.cardsList,
@@ -1180,7 +1186,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
               this.peopleList = result.peopleList;
 
-              this.refreshIncomes();
+              // Recarrega despesas e receitas para refletir o espelhamento do registro vinculado.
+              this.refresh(false);
             },
             error: () => { },
           });
@@ -1219,7 +1226,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         );
 
         this.messenger.message('Receita removida com sucesso.');
-        this.refreshIncomes();
+        this.refresh(false);
       },
       error: () => {
         this.messenger.message('Erro ao remover receita.');
@@ -1375,13 +1382,13 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
             if (result.amount >= expense.toPay) {
               this.expenseService.delete(expense.id!).pipe(
-                finalize(() => this.refresh())
+                finalize(() => this.refresh(false))
               ).subscribe();
               return;
             }
 
             this.expenseService.updateValue(expense.id!, result.amount * -1).pipe(
-              finalize(() => this.refresh())
+              finalize(() => this.refresh(false))
             ).subscribe();
           },
           error: () => this.savingCardPosting = false,
@@ -1450,7 +1457,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
               row.totalToPay = +(row.totalToPay + result.amount).toFixed(2);
               row.remaining = +(row.toPay - (row.paid ?? 0)).toFixed(2);
 
-              this.getExpensesTotals();
+              this.refresh(false);
             },
           });
         } else if (result.type === 'R') {
@@ -1459,7 +1466,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
               row.toReceive = +(row.toReceive + result.amount).toFixed(2);
               row.remaining = +(row.toReceive - (row.received ?? 0)).toFixed(2);
 
-              this.getIncomesTotals();
+              this.refresh(false);
             },
           });
         }
@@ -1473,6 +1480,8 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
       // campos que NÃO podem ser reaproveitados
       id: undefined,
+      relatedId: undefined,
+      linkedIncomeId: undefined,
       generateParcels: false,
       repeatExpense: false
     };
@@ -1494,6 +1503,16 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
+  linkExpenseIncome(expense: Expenses): void {
+    if (!expense.id || expense.linkedIncomeId) return;
+    this.expenseService.linkIncome(expense.id).subscribe({
+      next: () => {
+        this.refresh(false);
+        this.messenger.message('Receita vinculada à despesa.');
+      },
+    });
+  }
+
   incomeClone(row: Incomes): void {
     const clone = {
       ...row,
@@ -1501,6 +1520,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       // campos que NÃO podem ser reaproveitados
       id: undefined,
       relatedId: undefined,
+      linkedExpenseId: undefined,
       generateParcels: false,
       repeatIncome: false,
       repeatToNextMonths: false
@@ -1758,9 +1778,9 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.expenses.forEach((expense, index) => {
       expense.position = index + 1;
-
-      this.expenseService.update(expense).subscribe();
     });
+
+    this.expenseService.updatePositions(this.expenses).subscribe();
   }
 
   dropIncomes(event: CdkDragDrop<any[]>) {
@@ -1774,11 +1794,11 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
     this.incomes = this.incomes.slice();
 
-    this.incomes.forEach((expense, index) => {
-      expense.position = index + 1;
-
-      this.incomeService.update(expense).subscribe();
+    this.incomes.forEach((income, index) => {
+      income.position = index + 1;
     });
+
+    this.incomeService.updatePositions(this.incomes).subscribe();
   }
 
   toggleRow(row: ExpensesByCategories) {

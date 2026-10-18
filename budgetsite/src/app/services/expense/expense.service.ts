@@ -150,6 +150,19 @@ export class ExpenseService {
       );
   }
 
+  updatePositions(expenses: Expenses[]): Observable<any> {
+    const positions = expenses.map(({ id, position }) => ({ id, position }));
+    return this.http
+      .put<any>(`${ApiUrls.expenses}/setpositions`, positions)
+      .pipe(catchError((e) => this.messenger.errorHandler(e)));
+  }
+
+  linkIncome(expenseId: number): Observable<any> {
+    return this.http
+      .post<any>(`${ApiUrls.expenses}/${expenseId}/link-income`, null)
+      .pipe(catchError((e) => this.messenger.errorHandler(e)));
+  }
+
   updateValue(id: number, value: number): Observable<Expenses> {
     return this.http
       .put<Expenses>(`${ApiUrls.expenses}/AddValue/${id}?value=${value}`, null)

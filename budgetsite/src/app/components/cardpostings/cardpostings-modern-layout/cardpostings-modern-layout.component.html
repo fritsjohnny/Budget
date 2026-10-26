@@ -526,9 +526,7 @@
                             [cdkDragStartDelay]="300"
                             [ngClass]="{
                                 'card-yield-checked':
-                                    (row.isSelected && row.amount >= 0) ||
-                                    (!row.isPaid &&
-                                        (row.overdue || row.duetoday)),
+                                    row.isSelected && row.amount >= 0,
                                 'card-yield-checked2':
                                     row.isSelected && row.amount < 0,
                                 'selected-posting': row.isSelected,
@@ -579,8 +577,7 @@
                         [cdkDragStartDelay]="300"
                         [ngClass]="{
                             'card-yield-checked':
-                                (row.isSelected && row.amount >= 0) ||
-                                (!row.isPaid && (row.overdue || row.duetoday)),
+                                row.isSelected && row.amount >= 0,
                             'card-yield-checked2':
                                 row.isSelected && row.amount < 0,
                             'selected-posting': row.isSelected,

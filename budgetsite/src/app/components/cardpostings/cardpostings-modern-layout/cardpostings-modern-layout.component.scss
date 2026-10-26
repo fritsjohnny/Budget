@@ -8,6 +8,7 @@
     --blue: #4f6fe8;
     --blue-soft: rgba(79, 111, 232, 0.13);
     --red: #e74c56;
+    --red-soft: rgba(231, 76, 86, 0.12);
     --green: #29a452;
     --green-soft: rgba(41, 164, 82, 0.13);
     --pink: #e94387;
@@ -48,6 +49,7 @@
     --blue: #7392ff;
     --blue-soft: rgba(115, 146, 255, 0.15);
     --red: #ff6269;
+    --red-soft: rgba(215, 61, 73, 0.17);
     --green: #58d77b;
     --green-soft: rgba(88, 215, 123, 0.14);
     --pink: #ff5b9c;
@@ -97,6 +99,10 @@
     --summary-soft: var(--blue-soft);
     --summary-gradient-angle: 135deg;
     grid-column: span 2;
+}
+.summary-main > div {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 .summary-main strong {
     font-size: 23px;
@@ -345,6 +351,10 @@
 
 :host-context(.dark-theme) .future-posting {
     background: rgba(180, 200, 225, 0.16) !important;
+}
+
+.mobile-posting.overdue-posting.future-posting {
+    background: var(--red-soft) !important;
 }
 
 .card-info-label {
@@ -828,7 +838,19 @@
     color: #9b1c2c !important;
 }
 .overdue-posting {
+    background: var(--red-soft) !important;
     color: var(--t) !important;
+    box-shadow: inset 4px 0 0 var(--red);
+}
+.modern-card-postings ::ng-deep .modern-table .overdue-posting td.mat-cell {
+    background: var(--red-soft) !important;
+}
+.modern-card-postings
+    ::ng-deep
+    .modern-table
+    .overdue-posting.future-posting
+    td.mat-cell {
+    background: var(--red-soft) !important;
 }
 .overdue-posting .posting-copy strong,
 .overdue-posting .posting-copy small,
@@ -836,6 +858,9 @@
 .overdue-posting .posting-index,
 .overdue-posting button .mat-icon {
     color: var(--t) !important;
+}
+.overdue-posting .posting-copy small.posting-category {
+    color: var(--yellow) !important;
 }
 .overdue-posting .posting-category,
 .overdue-posting .third-party-person,
@@ -1068,6 +1093,9 @@
     .summary-main strong {
         font-size: 18px;
     }
+    .summary-main-large-total strong {
+        font-size: 14px;
+    }
     .summary-card-dates {
         gap: 7px;
     }
@@ -1198,6 +1226,12 @@
         border: 1px solid var(--d);
         border-radius: 11px;
         background: var(--soft);
+    }
+    .mobile-posting.overdue-posting {
+        background: var(--red-soft) !important;
+    }
+    .mobile-posting.overdue-posting.future-posting {
+        background: var(--red-soft) !important;
     }
     .posting-index {
         display: inline-flex;

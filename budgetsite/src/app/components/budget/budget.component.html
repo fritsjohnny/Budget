@@ -723,6 +723,13 @@
                                     }"
                                 >
                                     {{ row.remaining | currency: "" : "" }}
+                                    <mat-icon
+                                        *ngIf="row.linkedIncomeId"
+                                        class="linked-record-indicator"
+                                        title="Receita vinculada"
+                                        aria-label="Receita vinculada"
+                                        >link</mat-icon
+                                    >
                                 </td>
                                 <td
                                     mat-footer-cell
@@ -1139,6 +1146,13 @@
                                     [ngClass]="'primary'"
                                 >
                                     {{ row.remaining | currency: "" : "" }}
+                                    <mat-icon
+                                        *ngIf="row.linkedExpenseId"
+                                        class="linked-record-indicator"
+                                        title="Despesa vinculada"
+                                        aria-label="Despesa vinculada"
+                                        >link</mat-icon
+                                    >
                                 </td>
                                 <td
                                     mat-footer-cell

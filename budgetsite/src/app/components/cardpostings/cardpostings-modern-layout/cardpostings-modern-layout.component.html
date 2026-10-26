@@ -25,7 +25,7 @@
                 class="summary-grid summary-details-grid"
                 aria-label="Detalhes do resumo do cartão"
             >
-                <article class="summary-card summary-main">
+                <article class="summary-card summary-main" [class.summary-main-large-total]="context.total >= 10000">
                     <span class="summary-icon"><mat-icon>account_balance_wallet</mat-icon></span>
                     <div>
                         <small>Total geral</small>

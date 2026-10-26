@@ -101,6 +101,9 @@
 .summary-main strong {
     font-size: 23px;
 }
+.summary-main-large-total strong {
+    font-size: 17px;
+}
 .summary-card-dates {
     --summary-accent: var(--purple);
     --summary-soft: rgba(127, 99, 244, 0.12);
@@ -825,19 +828,19 @@
     color: #9b1c2c !important;
 }
 .overdue-posting {
-    color: #202633 !important;
+    color: var(--t) !important;
 }
 .overdue-posting .posting-copy strong,
 .overdue-posting .posting-copy small,
 .overdue-posting .posting-value,
 .overdue-posting .posting-index,
 .overdue-posting button .mat-icon {
-    color: #202633 !important;
+    color: var(--t) !important;
 }
 .overdue-posting .posting-category,
 .overdue-posting .third-party-person,
 .overdue-posting .installment-info {
-    color: #584300 !important;
+    color: var(--yellow) !important;
 }
 .overdue-posting .negative {
     color: #9b1c2c !important;
@@ -855,7 +858,7 @@
     .overdue-posting
     td.mat-cell
     .mat-icon {
-    color: #202633 !important;
+    color: var(--t) !important;
 }
 .modern-card-postings
     ::ng-deep
@@ -875,7 +878,7 @@
     .overdue-posting
     td.mat-cell
     .installment-info {
-    color: #584300 !important;
+    color: var(--yellow) !important;
 }
 .modern-card-postings
     ::ng-deep

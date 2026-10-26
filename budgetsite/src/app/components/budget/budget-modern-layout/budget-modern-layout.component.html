@@ -861,20 +861,23 @@
                                                     : "1.2-2"
                                         }}</span
                                     >
-                                    <span
-                                        class="status-chip"
-                                        [ngClass]="getExpenseStatusClass(row)"
-                                    >
-                                        <mat-icon>{{
-                                            getExpenseStatusIcon(row)
-                                        }}</mat-icon
-                                        >{{ getExpenseStatus(row) }}
+                                </div>
+                                <div class="entry-status-line">
+                                    <span class="status-chip" [ngClass]="getExpenseStatusClass(row)">
+                                        <mat-icon>{{ getExpenseStatusIcon(row) }}</mat-icon>{{ getExpenseStatus(row) }}
                                     </span>
                                 </div>
+                                <mat-icon
+                                    *ngIf="row.linkedIncomeId"
+                                    class="linked-record-indicator linked-record-expense"
+                                    title="Receita vinculada"
+                                    aria-label="Receita vinculada"
+                                    >link</mat-icon
+                                >
                             </div>
-                            <span class="budget-mobile-value">{{
-                                row.toPay | currency: "" : "" : "1.2-2"
-                            }}</span>
+                            <span class="budget-mobile-value">
+                                {{ row.toPay | currency: "" : "" : "1.2-2" }}
+                            </span>
                             <span class="budget-mobile-value expense-paid">{{
                                 row.paid | currency: "" : "" : "1.2-2"
                             }}</span>
@@ -1125,11 +1128,7 @@
                                     >
                                 </div>
                                 <div class="entry-metadata">
-                                    <span
-                                        *ngIf="row.type === 'R'"
-                                        class="metadata-info"
-                                        >Recebimento</span
-                                    >
+                                    <span *ngIf="row.type === 'R'" class="metadata-info">Recebimento<span *ngIf="row.receiptDate">: {{ row.receiptDate | date: "dd/MM" }}</span></span>
                                     <span
                                         *ngIf="row.type === 'C'"
                                         class="metadata-provisioned"
@@ -1140,14 +1139,7 @@
                                         class="metadata-success"
                                         >Rendimento</span
                                     >
-                                    <span
-                                        *ngIf="row.receiptDate"
-                                        class="metadata-success"
-                                        >Receb.:
-                                        {{
-                                            row.receiptDate | date: "dd/MM"
-                                        }}</span
-                                    >
+                                    <span *ngIf="row.receiptDate && row.type !== 'R'" class="metadata-success">Receb.: {{ row.receiptDate | date: "dd/MM" }}</span>
                                     <span
                                         class="status-chip"
                                         [class.status-paid]="row.remaining <= 0"
@@ -1365,7 +1357,7 @@
                                     <span
                                         *ngIf="row.type === 'R'"
                                         class="metadata-info"
-                                        >Recebimento</span
+                                        >Recebimento<span *ngIf="row.receiptDate">: {{ row.receiptDate | date: "dd/MM" }}</span></span
                                     >
                                     <span
                                         *ngIf="row.type === 'C'"
@@ -1378,36 +1370,30 @@
                                         >Rendimento</span
                                     >
                                     <span
-                                        *ngIf="row.receiptDate"
+                                        *ngIf="row.receiptDate && row.type !== 'R'"
                                         class="metadata-success"
                                         >Receb.:
                                         {{
                                             row.receiptDate | date: "dd/MM"
                                         }}</span
                                     >
-                                    <span
-                                        class="status-chip"
-                                        [class.status-paid]="row.remaining <= 0"
-                                        [class.status-pending]="
-                                            row.remaining > 0
-                                        "
-                                    >
-                                        <mat-icon>{{
-                                            row.remaining <= 0
-                                                ? "check_circle_outline"
-                                                : "schedule"
-                                        }}</mat-icon
-                                        >{{
-                                            row.remaining <= 0
-                                                ? "Recebido"
-                                                : "Pendente"
-                                        }}
+                                </div>
+                                <div class="entry-status-line">
+                                    <span class="status-chip" [class.status-paid]="row.remaining <= 0" [class.status-pending]="row.remaining > 0">
+                                        <mat-icon>{{ row.remaining <= 0 ? "check_circle_outline" : "schedule" }}</mat-icon>{{ row.remaining <= 0 ? "Recebido" : "Pendente" }}
                                     </span>
                                 </div>
+                                <mat-icon
+                                    *ngIf="row.linkedExpenseId"
+                                    class="linked-record-indicator linked-record-income"
+                                    title="Despesa vinculada"
+                                    aria-label="Despesa vinculada"
+                                    >link</mat-icon
+                                >
                             </div>
-                            <span class="budget-mobile-value">{{
-                                row.toReceive | currency: "" : "" : "1.2-2"
-                            }}</span>
+                            <span class="budget-mobile-value">
+                                {{ row.toReceive | currency: "" : "" : "1.2-2" }}
+                            </span>
                             <span class="budget-mobile-value income-received">{{
                                 row.received | currency: "" : "" : "1.2-2"
                             }}</span>

@@ -52,6 +52,17 @@ table {
     text-align: right;
 }
 
+.linked-record-indicator {
+    display: block;
+    width: 15px;
+    height: 15px;
+    margin: 2px 0 0 auto;
+    color: #7898ff;
+    font-size: 15px;
+    line-height: 15px;
+    opacity: 0.9;
+}
+
 tr.mat-footer-row {
     font-weight: bold;
 }

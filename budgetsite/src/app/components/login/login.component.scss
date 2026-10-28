@@ -5,6 +5,13 @@
     width: 100%;
 }
 
+.login-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 16px;
+}
+
 .login-card {
     display: grid;
     grid-template-columns: minmax(280px, 0.88fr) minmax(360px, 1.12fr);

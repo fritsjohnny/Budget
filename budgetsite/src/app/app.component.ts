@@ -64,7 +64,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.events.subscribe((evt) => {
       if (evt instanceof NavigationEnd) {
         const currentUrl = evt.urlAfterRedirects.split(/[?#]/, 1)[0];
-        this.showBottomTabs = !['/login', '/usersregister'].includes(currentUrl);
+        this.showBottomTabs = !['/login', '/usersregister', '/forgot-password', '/reset-password', '/verify-email'].includes(currentUrl);
       }
     });
   }

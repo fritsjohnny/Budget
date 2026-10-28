@@ -1,52 +1,123 @@
-<div class="container">
-  <br>
-  <mat-card>
-    <mat-card-title>{{setTitle()}}</mat-card-title>
-    <mat-card-content>
-      <form [formGroup]="userFormGroup">
-        <div class="row">
-          <mat-form-field appearance="fill">
-            <mat-label>Nome</mat-label>
-            <input type="text" id="nameFormControl" required matInput formControlName="nameFormControl"
-              [(ngModel)]="user.name" cdkFocusInitial autocomplete="off">
-            <mat-error *ngIf="userFormGroup.get('nameFormControl')?.hasError('required')">
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-        <div class="row">
-          <mat-form-field appearance="fill">
-            <mat-label>Usuário</mat-label>
-            <input type="text" id="loginFormControl" matInput formControlName="loginFormControl"
-              [(ngModel)]="user.login" autocomplete="off" readonly>
-          </mat-form-field>
-        </div>
-        <div class="row">
-          <mat-form-field appearance="fill">
-            <mat-label>Senha</mat-label>
-            <input matInput [type]="hide ? 'password' : 'text'" id="passwordFormControl" required matInput
-              formControlName="passwordFormControl" [(ngModel)]="user.password" autocomplete="new-password">
-            <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
-              [attr.aria-pressed]="hide">
-              <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-            </button>
-            <mat-error *ngIf="userFormGroup.get('passwordFormControl')?.hasError('required')">
-              Campo <strong>obrigatório</strong>.
-            </mat-error>
-          </mat-form-field>
-        </div>
-      </form>
-    </mat-card-content>
-    <div class="row center">
-      <button mat-fab color="warn" (click)="save()" *ngIf="hideProgress">
-        <mat-icon class="default-icon">save</mat-icon>
-      </button>
-      <div class="row center">
-        <div class="row justify-content-center">
-          <app-load-spinner [loading]="!hideProgress" [message]="loadingMessage"></app-load-spinner>
-        </div>
+<div class="profile-page">
+  <header class="page-heading">
+    <div class="heading-icon"><mat-icon>manage_accounts</mat-icon></div>
+    <div>
+      <p class="eyebrow">CONTA</p>
+      <h1>Meu perfil</h1>
+      <p class="page-description">Gerencie seus dados e as credenciais de acesso.</p>
+    </div>
+  </header>
+
+  <section class="profile-card" aria-labelledby="profile-title">
+    <div class="section-heading">
+      <span class="section-icon"><mat-icon>person_outline</mat-icon></span>
+      <div>
+        <h2 id="profile-title">Dados pessoais</h2>
+        <p>Atualize como seu perfil aparece no Budget.</p>
       </div>
     </div>
-  </mat-card>
-  <br>
+
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nome</mat-label>
+          <input matInput formControlName="name" autocomplete="name" maxlength="100">
+          <mat-error *ngIf="profileForm.controls['name'].hasError('required')">Informe seu nome.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Usuário</mat-label>
+          <input matInput [value]="user.login" readonly autocomplete="username">
+          <mat-hint>O nome de usuário não pode ser alterado.</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>E-mail para recuperação</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" inputmode="email">
+          <mat-hint *ngIf="!user.emailVerified">A alteração só será aplicada depois que você confirmar o link enviado.</mat-hint>
+          <mat-error *ngIf="profileForm.controls['email'].hasError('email')">Informe um e-mail válido.</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="email-status" *ngIf="user.email">
+        <mat-icon>{{ user.emailVerified ? 'verified_user' : 'mark_email_unread' }}</mat-icon>
+        <span *ngIf="user.emailVerified">E-mail confirmado: {{ user.email }}</span>
+        <span *ngIf="!user.emailVerified">Confirmação pendente para {{ user.email }}</span>
+        <button *ngIf="!user.emailVerified" type="button" mat-button (click)="resendEmailVerification()" [disabled]="resendingEmail">
+          {{ resendingEmail ? 'Enviando…' : 'Reenviar confirmação' }}
+        </button>
+      </div>
+      <div class="email-status pending" *ngIf="user.pendingEmail">
+        <mat-icon>schedule</mat-icon><span>Aguardando confirmação de {{ user.pendingEmail }}</span>
+        <button type="button" mat-button (click)="resendEmailVerification()" [disabled]="resendingEmail">Reenviar confirmação</button>
+      </div>
+
+      <div class="form-actions">
+        <button mat-flat-button class="profile-save-button" type="submit" [disabled]="savingProfile || profileForm.invalid">
+          <mat-icon>save</mat-icon>
+          {{ savingProfile ? 'Salvando…' : 'Salvar alterações' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="profile-card security-card" aria-labelledby="security-title">
+    <div class="section-heading">
+      <span class="section-icon security-icon"><mat-icon>shield</mat-icon></span>
+      <div>
+        <h2 id="security-title">Segurança</h2>
+        <p>Use uma senha longa e exclusiva para sua conta.</p>
+      </div>
+    </div>
+
+    <button mat-stroked-button type="button" class="toggle-password-form" (click)="togglePasswordForm()" [attr.aria-expanded]="passwordFormVisible">
+      <mat-icon>{{ passwordFormVisible ? 'close' : 'lock_reset' }}</mat-icon>
+      {{ passwordFormVisible ? 'Cancelar alteração' : 'Alterar senha' }}
+    </button>
+
+    <ng-container *ngIf="passwordFormVisible">
+      <div class="security-notice">
+        <mat-icon>info_outline</mat-icon>
+        <p *ngIf="passwordChangeAvailable; else passwordApiPending">Para trocar a senha, confirme a senha atual. A API validará essa credencial antes de salvar a nova senha.</p>
+        <ng-template #passwordApiPending><p>A troca de senha será liberada quando a API segura estiver disponível. Ela precisa validar a senha atual antes de salvar a nova.</p></ng-template>
+      </div>
+
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" [class.password-api-pending]="!passwordChangeAvailable">
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Senha atual</mat-label>
+          <input matInput formControlName="currentPassword" [type]="hideCurrentPassword ? 'password' : 'text'" autocomplete="current-password">
+          <button mat-icon-button matSuffix type="button" (click)="hideCurrentPassword = !hideCurrentPassword" [attr.aria-label]="hideCurrentPassword ? 'Mostrar senha atual' : 'Ocultar senha atual'">
+            <mat-icon>{{ hideCurrentPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nova senha</mat-label>
+          <input matInput formControlName="newPassword" [type]="hideNewPassword ? 'password' : 'text'" autocomplete="new-password">
+          <button mat-icon-button matSuffix type="button" (click)="hideNewPassword = !hideNewPassword" [attr.aria-label]="hideNewPassword ? 'Mostrar nova senha' : 'Ocultar nova senha'">
+            <mat-icon>{{ hideNewPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-hint>Use pelo menos 12 caracteres.</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirme a nova senha</mat-label>
+          <input matInput formControlName="confirmPassword" [type]="hideConfirmPassword ? 'password' : 'text'" autocomplete="new-password">
+          <button mat-icon-button matSuffix type="button" (click)="hideConfirmPassword = !hideConfirmPassword" [attr.aria-label]="hideConfirmPassword ? 'Mostrar confirmação' : 'Ocultar confirmação'">
+            <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="passwordForm.controls['confirmPassword'].hasError('mismatch')">As senhas não coincidem.</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button mat-stroked-button type="submit" [disabled]="!passwordChangeAvailable || savingPassword || passwordForm.invalid">
+          <mat-icon>lock_reset</mat-icon>
+          {{ savingPassword ? 'Alterando…' : 'Alterar senha' }}
+        </button>
+      </div>
+      </form>
+    </ng-container>
+  </section>
 </div>

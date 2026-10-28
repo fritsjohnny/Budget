@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { NavService } from 'src/app/components/template/nav/nav.service';
 
 @Component({
   selector: 'app-budget-view',
@@ -7,16 +6,6 @@ import { NavService } from 'src/app/components/template/nav/nav.service';
   styleUrls: ['./budget-view.component.scss']
 })
 export class BudgetViewComponent implements OnInit {
-
-  constructor(private navService: NavService) {
-
-    navService.navData = {
-
-      title: 'Orçamento',
-      icon: 'view_quilt',
-      routeUrl: '/budget'
-    };
-  }
 
   ngOnInit(): void {
   }

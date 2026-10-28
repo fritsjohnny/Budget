@@ -126,6 +126,7 @@ import { AnnualSavingsComponent } from './components/annual-savings/annual-savin
 import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
 import { CardsInvoiceClosingDialog } from './components/card/cards-invoice-closing-dialog/cards-invoice-closing-dialog';
 import { LoadSpinnerComponent } from './shared/load-spinner/load-spinner.component';
+import { PasswordRecoveryComponent } from './components/password-recovery/password-recovery.component';
 
 import { NgChartsModule } from 'ng2-charts';
 
@@ -217,6 +218,7 @@ registerLocaleData(localePt);
     AnnualSavingsViewComponent,
     CardsInvoiceClosingDialog,
     LoadSpinnerComponent,
+    PasswordRecoveryComponent,
   ],
   imports: [
     BrowserModule,

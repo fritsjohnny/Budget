@@ -7,6 +7,7 @@ import { Messenger } from 'src/app/common/messenger';
 import { Users } from 'src/app/models/users';
 import { UsersAuthenticateRequest } from 'src/app/models/usersauthenticaterequest';
 import { UsersAuthenticateResponse } from 'src/app/models/usersauthenticateresponse';
+import { UsersRegisterRequest } from 'src/app/models/usersregisterrequest';
 import { Preferences } from '@capacitor/preferences';
 import { environment } from '../../../environments/environment';
 import { switchMap } from 'rxjs/operators';
@@ -18,6 +19,8 @@ import { BiometricAuthService } from 'src/app/core/services/biometric-auth.servi
   providedIn: 'root',
 })
 export class UserService {
+  readonly passwordSecurityEndpointsEnabled = true;
+
   constructor(
     private http: HttpClient,
     private messenger: Messenger,
@@ -85,8 +88,8 @@ export class UserService {
       );
   }
 
-  create(user: Users): Observable<Users> {
-    return this.http.post<Users>(`${ApiUrls.users}/register`, user).pipe(
+  create(user: UsersRegisterRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${ApiUrls.users}/register`, user).pipe(
       map((obj) => obj),
       catchError((e) => this.messenger.errorHandler(e))
     );
@@ -95,6 +98,52 @@ export class UserService {
   update(user: Users): Observable<Users> {
     return this.http.put<Users>(`${ApiUrls.users}/${user.id}`, user).pipe(
       map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
+  getProfile(): Observable<Users> {
+    return this.http.get<Users>(`${ApiUrls.users}/profile`).pipe(
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
+  updateProfile(name: string, email?: string): Observable<Users> {
+    return this.http.put<Users>(`${ApiUrls.users}/profile`, { name, email }).pipe(
+      map((obj) => obj),
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${ApiUrls.users}/change-password`, {
+      currentPassword,
+      newPassword
+    }).pipe(catchError((e) => this.messenger.errorHandler(e)));
+  }
+
+  requestPasswordReset(email: string): Observable<void> {
+    return this.http.post<void>(`${ApiUrls.users}/forgot-password`, { email }).pipe(
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
+  resetPassword(email: string, token: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${ApiUrls.users}/reset-password`, {
+      email,
+      token,
+      newPassword
+    }).pipe(catchError((e) => this.messenger.errorHandler(e)));
+  }
+
+  verifyEmail(email: string, token: string): Observable<void> {
+    return this.http.post<void>(`${ApiUrls.users}/verify-email`, { email, token }).pipe(
+      catchError((e) => this.messenger.errorHandler(e))
+    );
+  }
+
+  resendEmailVerification(email: string): Observable<void> {
+    return this.http.post<void>(`${ApiUrls.users}/resend-verification`, { email }).pipe(
       catchError((e) => this.messenger.errorHandler(e))
     );
   }

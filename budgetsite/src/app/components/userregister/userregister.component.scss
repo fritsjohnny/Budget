@@ -19,3 +19,9 @@
 .mat-card-header {
 	padding-bottom: 10px;
 }
+.registration-api-notice { margin: 0 16px 16px; color: #68758a; font-size: 12px; line-height: 1.45; }
+.registration-success { display: grid; justify-items: center; gap: 12px; padding: 24px; text-align: center; }
+.registration-success > mat-icon { width: 44px; height: 44px; color: #526fe5; font-size: 44px; }
+.registration-success h2, .registration-success p { margin: 0; }
+.registration-success p { color: #68758a; line-height: 1.5; }
+.registration-success a { color: #526fe5; font-size: 14px; }

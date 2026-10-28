@@ -47,6 +47,15 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
     '/reports',
     '/annual-savings'
   ]);
+  private readonly routeNavData: Record<string, { title: string; icon: string; routeUrl: string }> = {
+    '/summary': { title: 'Saldos', icon: 'account_balance_wallet', routeUrl: '/summary' },
+    '/budget': { title: 'Orçamento', icon: 'view_quilt', routeUrl: '/budget' },
+    '/accounts': { title: 'Contas', icon: 'account_balance', routeUrl: '/accounts' },
+    '/cards': { title: 'Cartões', icon: 'credit_card', routeUrl: '/cards' },
+    '/reports': { title: 'Relatórios', icon: 'pie_chart', routeUrl: '/reports' },
+    '/annual-savings': { title: 'Economia anual', icon: 'savings', routeUrl: '/annual-savings' },
+    '/users': { title: 'Meu perfil', icon: 'manage_accounts', routeUrl: '/users' }
+  };
   private routerEventsSubscription?: Subscription;
   private currentRouteKey = '';
   private firstAnimationFrame?: number;
@@ -74,6 +83,7 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
     this.themeService.applyTheme(this.theme);
 
     this.user = JSON.parse(localStorage.getItem('user')!);
+    this.updatePageTitle(this.router.url);
   }
 
   ngAfterViewInit(): void {
@@ -88,6 +98,7 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if (event instanceof NavigationEnd) {
         this.currentRouteKey = this.normalizeRouteKey(event.urlAfterRedirects);
+        this.updatePageTitle(event.urlAfterRedirects);
         this.saveLastVisitedRoute(this.currentRouteKey);
         this.scheduleScrollRestoration(this.currentRouteKey);
       }
@@ -355,5 +366,11 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return path.startsWith('/') ? path : `/${path}`;
+  }
+
+  private updatePageTitle(url: string): void {
+    const routeKey = this.normalizeRouteKey(url);
+    const pageData = this.routeNavData[routeKey] ?? this.routeNavData['/summary'];
+    this.navService.navData = pageData;
   }
 }

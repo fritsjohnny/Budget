@@ -13,6 +13,7 @@ import { UserComponent } from './components/user/user.component';
 import { UserRegisterViewComponent } from './views/userregister-view/userregister-view.component';
 import { ReportViewComponent } from './views/report-view/report-view.component';
 import { AnnualSavingsViewComponent } from './views/annual-savings-view/annual-savings-view.component';
+import { PasswordRecoveryComponent } from './components/password-recovery/password-recovery.component';
 
 const routes: Routes = [
   {
@@ -24,6 +25,18 @@ const routes: Routes = [
     path: 'usersregister',
     component: UserRegisterViewComponent,
     canActivate: [UnautheticatedUserGuard],
+  },
+  {
+    path: 'forgot-password',
+    component: PasswordRecoveryComponent,
+  },
+  {
+    path: 'reset-password',
+    component: PasswordRecoveryComponent,
+  },
+  {
+    path: 'verify-email',
+    component: PasswordRecoveryComponent,
   },
   {
     path: '',

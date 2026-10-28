@@ -7,11 +7,30 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <form [formGroup]="userRegisterFormGroup">
+      <div class="registration-success" *ngIf="registrationComplete" role="status">
+        <mat-icon>mark_email_read</mat-icon>
+        <h2>Confirme seu e-mail</h2>
+        <p>Criamos sua conta. Acesse {{ _email }} pelo link que enviamos para ativá-la antes do primeiro login.</p>
+        <button mat-stroked-button type="button" (click)="resendVerification()" [disabled]="resendingVerification">
+          {{ resendingVerification ? 'Enviando…' : 'Reenviar confirmação' }}
+        </button>
+        <a routerLink="/login">Voltar para entrar</a>
+      </div>
+      <form [formGroup]="userRegisterFormGroup" *ngIf="!registrationComplete">
+        <div class="row">
+          <mat-form-field appearance="fill">
+            <mat-label>E-mail</mat-label>
+            <input type="email" id="emailFormControl" required matInput formControlName="emailFormControl" [readonly]="!emailRegistrationAvailable"
+              [(ngModel)]="_email" autocomplete="email" inputmode="email">
+            <mat-hint>Usaremos este endereço para verificar sua conta e recuperar o acesso.</mat-hint>
+            <mat-error *ngIf="userRegisterFormGroup.get('emailFormControl')?.hasError('required')">Informe seu e-mail.</mat-error>
+            <mat-error *ngIf="userRegisterFormGroup.get('emailFormControl')?.hasError('email')">Informe um e-mail válido.</mat-error>
+          </mat-form-field>
+        </div>
         <div class="row">
           <mat-form-field appearance="fill">
             <mat-label>Nome</mat-label>
-            <input type="text" id="nameFormControl" required matInput formControlName="nameFormControl"
+            <input type="text" id="nameFormControl" required matInput formControlName="nameFormControl" [readonly]="!emailRegistrationAvailable"
               [(ngModel)]="_name" cdkFocusInitial autocomplete="off">
             <mat-error *ngIf="userRegisterFormGroup.get('nameFormControl')?.hasError('required')">
               Campo <strong>obrigatório</strong>.
@@ -21,7 +40,7 @@
         <div class="row">
           <mat-form-field appearance="fill">
             <mat-label>Usuário</mat-label>
-            <input type="text" id="loginFormControl" required matInput formControlName="loginFormControl"
+            <input type="text" id="loginFormControl" required matInput formControlName="loginFormControl" [readonly]="!emailRegistrationAvailable"
               [(ngModel)]="_login" autocomplete="off">
             <mat-error *ngIf="userRegisterFormGroup.get('loginFormControl')?.hasError('required')">
               Campo <strong>obrigatório</strong>.
@@ -32,20 +51,32 @@
           <mat-form-field appearance="fill">
             <mat-label>Senha</mat-label>
             <input matInput [type]="hide ? 'password' : 'text'" id="passwordFormControl" required matInput
-              formControlName="passwordFormControl" [(ngModel)]="_password" autocomplete="new-password">
+              formControlName="passwordFormControl" [(ngModel)]="_password" autocomplete="new-password" [readonly]="!emailRegistrationAvailable">
             <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
               [attr.aria-pressed]="hide">
               <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
             </button>
+            <mat-hint>Use pelo menos 12 caracteres.</mat-hint>
             <mat-error *ngIf="userRegisterFormGroup.get('passwordFormControl')?.hasError('required')">
-              Campo <strong>obrigatório</strong>.
+              Informe uma senha.
             </mat-error>
+            <mat-error *ngIf="userRegisterFormGroup.get('passwordFormControl')?.hasError('minlength')">Use pelo menos 12 caracteres.</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="row">
+          <mat-form-field appearance="fill">
+            <mat-label>Confirme a senha</mat-label>
+            <input matInput type="password" formControlName="confirmPasswordFormControl"
+              [(ngModel)]="_confirmPassword" autocomplete="new-password" [readonly]="!emailRegistrationAvailable">
+            <mat-error *ngIf="userRegisterFormGroup.get('confirmPasswordFormControl')?.hasError('required')">Confirme sua senha.</mat-error>
+            <mat-error *ngIf="userRegisterFormGroup.get('confirmPasswordFormControl')?.hasError('mismatch')">As senhas não coincidem.</mat-error>
           </mat-form-field>
         </div>
       </form>
+      <p class="registration-api-notice" *ngIf="!emailRegistrationAvailable">O cadastro com e-mail e verificação ficará disponível após a atualização da API.</p>
     </mat-card-content>
     <div class="row center">
-      <button mat-fab color="warn" (click)="register()" *ngIf="hideProgress">
+      <button mat-fab color="warn" (click)="register()" *ngIf="hideProgress && !registrationComplete" [disabled]="!userRegisterFormGroup.valid || !emailRegistrationAvailable">
         <mat-icon class="default-icon">save</mat-icon>
       </button>
       <div class="row center">

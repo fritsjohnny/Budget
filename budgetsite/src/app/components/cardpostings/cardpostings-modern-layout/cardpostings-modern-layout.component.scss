@@ -336,11 +336,11 @@
 
 .postings-panel .filter-button,
 .postings-panel .panel-options-button,
-.postings-panel .sort-button {
+.postings-panel .reconciliation-button {
     color: var(--m);
 }
 
-.postings-panel .sort-button .mat-icon,
+.postings-panel .reconciliation-button .mat-icon,
 .postings-panel .filter-button .mat-icon {
     color: inherit;
 }
@@ -480,7 +480,7 @@
     margin-left: 40px;
 }
 
-.panel-toolbar > .sort-button {
+.panel-toolbar > .reconciliation-button {
     grid-column: 1;
     grid-row: 1;
     justify-self: start;
@@ -493,7 +493,7 @@
         min-width: 0;
     }
 
-    .postings-panel .panel-toolbar > .sort-button,
+    .postings-panel .panel-toolbar > .reconciliation-button,
     .postings-panel .panel-toolbar > .posting-search-button {
         flex: 0 0 40px;
         width: 40px;
@@ -530,7 +530,7 @@
 .toolbar-actions .filter-button {
     display: none;
 }
-.sort-button {
+.reconciliation-button {
     justify-self: start;
 }
 .toolbar-actions .filter-button,
@@ -544,7 +544,7 @@
     justify-self: auto;
 }
 
-.postings-panel .sort-button,
+.postings-panel .reconciliation-button,
 .postings-panel .posting-search-button,
 .postings-panel .toolbar-actions .panel-options-button {
     display: inline-flex;
@@ -555,7 +555,7 @@
     margin-bottom: 0;
 }
 
-.postings-panel .sort-button .mat-icon,
+.postings-panel .reconciliation-button .mat-icon,
 .postings-panel .posting-search-button .mat-icon,
 .postings-panel .toolbar-actions .panel-options-button .mat-icon {
     display: block;

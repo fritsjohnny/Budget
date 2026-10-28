@@ -1,0 +1,50 @@
+<section class="modern-entry-dialog statement-posting-picker">
+  <header class="modern-entry-header">
+    <div class="modern-entry-heading">
+      <span class="modern-entry-icon"><mat-icon>link</mat-icon></span>
+      <div>
+        <h2 mat-dialog-title>Vincular lançamento</h2>
+        <p>Escolha um lançamento disponível para esta compra do extrato</p>
+      </div>
+    </div>
+    <button mat-icon-button type="button" class="modern-entry-close" matTooltip="Cancelar" aria-label="Cancelar" (click)="cancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div mat-dialog-content class="modern-entry-content">
+    <section class="modern-form-section statement-purchase-context">
+      <div class="modern-section-title"><mat-icon>receipt_long</mat-icon><span>Compra no extrato</span></div>
+      <strong>{{ data.statementDescription }}</strong>
+      <small>{{ data.statementDate | date:'dd/MM/yyyy' }} · {{ data.statementAmount | currency:'BRL':'symbol':'1.2-2' }}</small>
+    </section>
+
+    <mat-form-field appearance="fill" class="modern-field-full">
+      <mat-label>Buscar por descrição, data ou valor</mat-label>
+      <input matInput [(ngModel)]="searchText" (ngModelChange)="applyFilter($event)" autocomplete="off">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="posting-picker-count">{{ filteredPostings.length }} lançamentos disponíveis</div>
+
+    <div class="posting-picker-list" *ngIf="filteredPostings.length; else noPostings">
+      <button class="posting-picker-item" type="button" *ngFor="let posting of filteredPostings" (click)="select(posting)">
+        <span class="posting-picker-date">{{ posting.date | date:'dd/MM/yyyy' }}</span>
+        <strong>{{ posting.description }}</strong>
+        <span class="posting-picker-amount">{{ posting.amount | currency:'BRL':'symbol':'1.2-2' }}</span>
+        <small *ngIf="(posting.parcels || 1) > 1">Parcela {{ posting.parcelNumber }}/{{ posting.parcels }}</small>
+      </button>
+    </div>
+
+    <ng-template #noPostings>
+      <div class="posting-picker-empty">
+        <mat-icon>search_off</mat-icon>
+        <span>{{ data.postings.length ? 'Nenhum lançamento corresponde à busca.' : 'Não há lançamentos disponíveis para vincular.' }}</span>
+      </div>
+    </ng-template>
+  </div>
+
+  <div mat-dialog-actions class="modern-entry-actions posting-picker-actions">
+    <button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancel()">Cancelar</button>
+  </div>
+</section>

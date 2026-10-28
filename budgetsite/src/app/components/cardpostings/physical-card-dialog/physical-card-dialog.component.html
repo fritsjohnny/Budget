@@ -1,0 +1,34 @@
+<form [formGroup]="form" (ngSubmit)="save()">
+  <div class="cancel">
+    <button class="default-button" mat-mini-fab matTooltip="Cancelar" color="accent" aria-label="Cancelar" type="button" (click)="dialogRef.close()">
+      <mat-icon class="default-icon">close</mat-icon>
+    </button>
+  </div>
+  <h2 mat-dialog-title>{{ data.editing ? 'Cartão físico - Editar' : 'Cartão físico - Incluir' }}</h2>
+  <div mat-dialog-content>
+    <p class="physical-card-parent">Vinculado ao cartão <strong>{{ data.cardName }}</strong></p>
+    <div class="row">
+      <mat-form-field appearance="fill">
+        <mat-label>Nome impresso no cartão</mat-label>
+        <input matInput formControlName="nameOnCard" maxlength="100" cdkFocusInitial>
+        <mat-error *ngIf="form.get('nameOnCard')?.hasError('required')">Informe o nome impresso no cartão.</mat-error>
+      </mat-form-field>
+    </div>
+    <div class="row">
+      <mat-form-field appearance="fill">
+        <mat-label>Quatro últimos dígitos</mat-label>
+        <input matInput inputmode="numeric" formControlName="lastFourDigits" maxlength="4">
+        <mat-error *ngIf="form.get('lastFourDigits')?.invalid">Informe os quatro últimos dígitos.</mat-error>
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div mat-dialog-actions>
+        <button [disabled]="form.invalid" class="default-button bg-primary" mat-mini-fab matTooltip="Salvar cartão" aria-label="Salvar cartão" type="submit">
+          <mat-icon class="default-icon">save</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</form>

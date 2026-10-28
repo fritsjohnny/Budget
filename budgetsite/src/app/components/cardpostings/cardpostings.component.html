@@ -240,6 +240,19 @@
                     <button
                         class="default-button"
                         mat-mini-fab
+                        *ngIf="isC6CardSelected"
+                        matTooltip="Conferir fatura do C6"
+                        matTooltipPosition="right"
+                        color="primary"
+                        aria-label="Conferir fatura do C6"
+                        [disabled]="!cardId || cardId <= 0"
+                        (click)="openStatementReconciliation()"
+                    >
+                        <mat-icon class="default-icon">fact_check</mat-icon>
+                    </button>
+                    <button
+                        class="default-button"
+                        mat-mini-fab
                         matTooltip="Adicionar compra no cartão"
                         matTooltipPosition="right"
                         color="accent"

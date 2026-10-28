@@ -282,6 +282,11 @@ body.modern-layout .mat-tooltip {
   --modern-aux-accent-soft: rgba(255, 193, 7, 0.14);
 }
 
+.cdk-overlay-pane.modern-physical-card-dialog-panel {
+  --modern-aux-accent: #2dbf60;
+  --modern-aux-accent-soft: rgba(45, 191, 96, 0.14);
+}
+
 .cdk-overlay-pane.modern-people-dialog-panel {
   --modern-aux-accent: #e03e7e;
   --modern-aux-accent-soft: rgba(224, 62, 126, 0.14);

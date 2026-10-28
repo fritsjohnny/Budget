@@ -160,15 +160,16 @@
 
                 <div class="panel-toolbar">
                     <button
+                        *ngIf="context.isC6CardSelected"
                         mat-icon-button
-                        class="sort-button"
-                        (click)="context.sort()"
-                        [disabled]="context.cardId <= 0"
-                        matTooltip="Ordenar lançamentos"
+                        class="filter-button reconciliation-button"
+                        (click)="context.openStatementReconciliation()"
+                        [disabled]="!context.cardId || context.cardId <= 0"
+                        matTooltip="Conferir fatura C6"
+                        aria-label="Conferir fatura C6"
                     >
-                        <mat-icon>sort_by_alpha</mat-icon>
+                        <mat-icon>fact_check</mat-icon>
                     </button>
-
                     <button
                         mat-icon-button
                         class="filter-button posting-search-button"
@@ -233,6 +234,14 @@
                     #postingsActionsMenu="matMenu"
                     class="modern-menu modern-card-posting-actions-menu"
                 >
+                    <button
+                        mat-menu-item
+                        (click)="context.sort()"
+                        [disabled]="context.cardId <= 0"
+                    >
+                        <mat-icon>sort_by_alpha</mat-icon>
+                        <span>Ordenar lançamentos</span>
+                    </button>
                     <button mat-menu-item (click)="context.refresh()">
                         <mat-icon>autorenew</mat-icon
                         ><span>Atualizar lançamentos</span>

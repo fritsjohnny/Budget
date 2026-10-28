@@ -22,6 +22,7 @@ export class CardDialog implements OnInit, AfterViewInit {
 
   editing: boolean = false;
   deleting: boolean = false;
+  hasStatementPassword = false;
 
   cardFormGroup = new FormGroup({
     nameFormControl: new FormControl('', Validators.required),
@@ -31,6 +32,9 @@ export class CardDialog implements OnInit, AfterViewInit {
     closingDayFormControl: new FormControl(''),
     dueDayFormControl: new FormControl(''),
     appPackageNameFormControl: new FormControl(''),
+    statementProviderFormControl: new FormControl(null),
+    statementPasswordFormControl: new FormControl(''),
+    clearStatementPasswordFormControl: new FormControl(false),
   });
 
   constructor(
@@ -72,6 +76,9 @@ export class CardDialog implements OnInit, AfterViewInit {
       closingDay,
       dueDay,
       appPackageName: this.cardFormGroup.get('appPackageNameFormControl')?.value,
+      statementProvider: this.cardFormGroup.get('statementProviderFormControl')?.value || null,
+      statementPassword: this.cardFormGroup.get('statementPasswordFormControl')?.value || null,
+      clearStatementPassword: this.cardFormGroup.get('clearStatementPasswordFormControl')?.value === true,
       editing: this.id != undefined,
       deleting: false
     };
@@ -99,6 +106,7 @@ export class CardDialog implements OnInit, AfterViewInit {
     this.buttonText = 'Nome do Cartão';
     this.editing = false;
     this.deleting = false;
+    this.hasStatementPassword = false;
 
     this.cardFormGroup.reset({
       nameFormControl: '',
@@ -108,6 +116,9 @@ export class CardDialog implements OnInit, AfterViewInit {
       closingDayFormControl: null,
       dueDayFormControl: null,
       appPackageNameFormControl: '',
+      statementProviderFormControl: null,
+      statementPasswordFormControl: '',
+      clearStatementPasswordFormControl: false,
     });
 
     this.setBackgroundAndColor('#000000', '#ffffff');
@@ -143,6 +154,10 @@ export class CardDialog implements OnInit, AfterViewInit {
       this.cardFormGroup.get('closingDayFormControl')?.setValue(card.closingDay);
       this.cardFormGroup.get('dueDayFormControl')?.setValue(card.dueDay);
       this.cardFormGroup.get('appPackageNameFormControl')?.setValue(card.appPackageName);
+      this.cardFormGroup.get('statementProviderFormControl')?.setValue(card.statementProvider ?? null);
+      this.hasStatementPassword = card.hasStatementPassword === true;
+      this.cardFormGroup.get('statementPasswordFormControl')?.setValue('');
+      this.cardFormGroup.get('clearStatementPasswordFormControl')?.setValue(false);
       this.setBackgroundAndColor(card.background!, card.color!);
     }
   }

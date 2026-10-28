@@ -1,0 +1,21 @@
+:host{display:flex;width:100%;height:100%;min-width:0;min-height:0}
+.statement-posting-picker{display:flex;width:100%;height:100%;max-height:100%;min-height:0;flex-direction:column;overflow:hidden}
+.statement-posting-picker .modern-entry-content{display:flex;flex:1 1 auto;min-height:0;max-height:none!important;flex-direction:column;gap:10px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.statement-purchase-context{display:grid;gap:5px}
+.statement-purchase-context strong{overflow-wrap:anywhere;color:var(--entry-text);font-size:14px}
+.statement-purchase-context small{color:var(--entry-muted);font-size:12px}
+.posting-picker-count{color:var(--entry-muted);font-size:11px;font-weight:600}
+.posting-picker-list{display:grid;flex:0 0 auto;align-content:start;gap:7px;min-height:0;max-height:none;overflow:visible;padding:2px}
+.posting-picker-item{display:grid;grid-template-columns:1fr auto;gap:3px 10px;width:100%;padding:10px 12px;border:1px solid var(--entry-border);border-radius:10px;background:var(--entry-surface-soft);color:var(--entry-text);font:inherit;text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
+.posting-picker-item:hover,.posting-picker-item:focus-visible{border-color:var(--entry-accent);background:var(--entry-accent-soft);outline:none}
+.posting-picker-date,.posting-picker-item small{color:var(--entry-muted);font-size:11px}
+.posting-picker-item strong{min-width:0;overflow-wrap:anywhere;font-size:13px}
+.posting-picker-amount{grid-column:2;grid-row:1/3;align-self:center;color:var(--entry-text);font-size:13px;font-weight:700;white-space:nowrap}
+.posting-picker-item small{grid-column:1/-1}
+.posting-picker-empty{display:flex;align-items:center;justify-content:center;gap:9px;min-height:100px;border:1px dashed var(--entry-border);border-radius:12px;color:var(--entry-muted);font-size:13px;text-align:center}
+.posting-picker-empty mat-icon{color:var(--entry-accent)}
+::ng-deep .cdk-overlay-pane.card-statement-posting-picker-panel{width:min(600px,calc(100vw - 20px))!important;max-width:calc(100vw - 20px)!important}
+::ng-deep .card-statement-posting-picker-panel .mat-dialog-container{display:flex;width:100%;height:100%;max-height:100%;box-sizing:border-box;flex-direction:column;min-height:0;padding:0!important;border:0;border-radius:20px;background:transparent;box-shadow:0 24px 64px rgba(22,32,48,.32);overflow:hidden}
+.posting-picker-actions{min-height:54px;padding:6px 12px!important}
+.posting-picker-actions button{min-height:38px}
+@media(max-width:600px){.statement-posting-picker{border-radius:16px}.posting-picker-actions{min-height:50px;padding:4px 10px!important}}

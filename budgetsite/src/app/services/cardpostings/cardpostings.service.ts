@@ -155,6 +155,15 @@ export class CardPostingsService {
       );
   }
 
+  updatePhysicalCardAssociations(associations: Array<{ cardsPostingId: number; physicalCardId: number | null }>): Observable<void> {
+    return this.http
+      .put<void>(
+        `${ApiUrls.cardspostings}/PhysicalCardAssociations`,
+        associations
+      )
+      .pipe(catchError((e) => this.messenger.errorHandler(e)));
+  }
+
 
   updatePositions(cardPostings: CardsPostings[]): Observable<CardsPostings> {
     return this.http
@@ -214,6 +223,8 @@ export class CardPostingsService {
 
   createFromNotification(cardPosting: CardsPostings): Observable<CardsPostings> {
     cardPosting.others = cardPosting.peopleId ? true : false;
+    const postingPayload = { ...cardPosting };
+    delete postingPayload.detectedPhysicalCardLastFourDigits;
 
     const useParcels = cardPosting.generateParcels || cardPosting.repeatParcels;
 
@@ -221,7 +232,7 @@ export class CardPostingsService {
     if (useParcels) params = params.set('repeat', String(cardPosting.repeatParcels ?? false)).set('qtyMonths', String(cardPosting.monthsToRepeat ?? 0));
     const url = `${ApiUrls.cardspostings}/FromNotification${useParcels ? '/AllParcels' : ''}`;
 
-    return this.http.post<CardsPostings>(url, cardPosting, { params }).pipe(
+    return this.http.post<CardsPostings>(url, postingPayload, { params }).pipe(
       map((obj) => obj),
       catchError((e) => this.messenger.errorHandler(e))
     );

@@ -18,7 +18,8 @@ export class ApiUrls {
   public static cardspostings            = ApiUrls.baseUrl + 'cardspostings';
   public static cardspostingspeople      = ApiUrls.baseUrl + 'cardspostings/people?';
   public static cardsreceipts            = ApiUrls.baseUrl + 'cardsreceipts';
-  public static cardsInvoiceClosings      = ApiUrls.baseUrl + 'CardsInvoiceClosings';
+  public static cardsInvoiceClosings     = ApiUrls.baseUrl + 'CardsInvoiceClosings';
+  public static cardStatements           = ApiUrls.baseUrl + 'CardStatements';
   public static expenses                 = ApiUrls.baseUrl + 'expenses';
   public static incomes                  = ApiUrls.baseUrl + 'incomes';
   public static people                   = ApiUrls.baseUrl + 'people';

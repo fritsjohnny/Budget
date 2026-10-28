@@ -8,6 +8,10 @@ export interface Cards {
   closingDay?: number;
   dueDay?: number;
   appPackageName?: string;
+  statementProvider?: string | null;
+  statementPassword?: string | null;
+  clearStatementPassword?: boolean;
+  hasStatementPassword?: boolean;
   expenseDueDate?: Date;
   editing?: boolean,
   deleting?: boolean;

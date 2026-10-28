@@ -254,6 +254,12 @@ export class CardComponent implements OnInit, AfterViewInit {
                   t.closingDay = result.closingDay;
                   t.dueDay = result.dueDay;
                   t.appPackageName = result.appPackageName;
+                  t.statementProvider = result.statementProvider;
+                  t.hasStatementPassword = result.statementPassword
+                    ? true
+                    : result.clearStatementPassword
+                      ? false
+                      : Boolean(t.hasStatementPassword);
                 });
 
                 if (result.disabled && this.cards!.length > 0) {
@@ -274,6 +280,8 @@ export class CardComponent implements OnInit, AfterViewInit {
           this.cardService.create(result).subscribe(
             {
               next: card => {
+
+                card.hasStatementPassword = Boolean(result.statementPassword);
 
                 this.cards!.push(card);
 

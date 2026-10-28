@@ -67,6 +67,26 @@
                     >
                     </app-datepickerinput>
                 </div>
+                <div class="col-12 card-selection-enabled">
+                    <div class="row align-items-start">
+                        <div class="col-6">
+                            <mat-form-field appearance="fill" floatLabel="always" style="width: 100%">
+                                <mat-label>Cartão físico (final)</mat-label>
+                                <mat-select mat-input [(ngModel)]="cardPosting.physicalCardId" formControlName="physicalCardIdFormControl">
+                                    <mat-option [value]="null">-- Não informado --</mat-option>
+                                    <mat-option *ngFor="let physicalCard of cardPosting.physicalCardsList" [value]="physicalCard.id">{{ physicalCard.nameOnCard }} ···· {{ physicalCard.lastFourDigits }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-6">
+                            <button mat-stroked-button type="button" style="width: 100%; min-height: 51px" (click)="togglePhysicalCardForm()">
+                                <mat-icon>{{ cardPosting.physicalCardId ? 'credit_card' : 'add_card' }}</mat-icon>{{ cardPosting.physicalCardId ? 'Editar cartão' : 'Novo cartão' }}
+                            </button>
+                        </div>
+                        <small class="col-12" *ngIf="cardPosting.detectedPhysicalCardLastFourDigits && cardPosting.physicalCardId">Cartão final {{ cardPosting.detectedPhysicalCardLastFourDigits }} identificado pela notificação e associado automaticamente.</small>
+                        <small class="col-12" *ngIf="cardPosting.detectedPhysicalCardLastFourDigits && !cardPosting.physicalCardId">A notificação indica o cartão final {{ cardPosting.detectedPhysicalCardLastFourDigits }}. Selecione ou cadastre esse cartão físico.</small>
+                    </div>
+                </div>
             </div>
 
             <div class="row">

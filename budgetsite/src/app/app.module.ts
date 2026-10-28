@@ -69,7 +69,10 @@ import { CardPostingsModernLayoutComponent } from './components/cardpostings/car
 import { CardReceiptsDialog } from './components/cardpostings/cardreceipts-dialog/cardreceipts-dialog';
 import { CardReceiptsModernDialog } from './components/cardpostings/cardreceipts-dialog/cardreceipts-modern-dialog';
 import { CardPostingsDialog } from './components/cardpostings/cardpostings-dialog/cardpostings-dialog';
+import { PhysicalCardDialogComponent } from './components/cardpostings/physical-card-dialog/physical-card-dialog.component';
 import { CardPostingsModernDialog } from './components/cardpostings/cardpostings-dialog/cardpostings-modern-dialog';
+import { CardStatementReconciliationComponent } from './components/cardstatements/card-statement-reconciliation.component';
+import { CardStatementPostingPickerDialogComponent } from './components/cardstatements/card-statement-posting-picker-dialog.component';
 import { BudgetComponent } from './components/budget/budget.component';
 import { BudgetModernLayoutComponent } from './components/budget/budget-modern-layout/budget-modern-layout.component';
 import { PaymentReceiveDialog } from './components/budget/payment-receive-dialog';
@@ -166,7 +169,10 @@ registerLocaleData(localePt);
     ModernReferencePageShellComponent,
     BudgetViewComponent,
     CardPostingsDialog,
+    PhysicalCardDialogComponent,
     CardPostingsModernDialog,
+    CardStatementReconciliationComponent,
+    CardStatementPostingPickerDialogComponent,
     CardReceiptsDialog,
     CardReceiptsModernDialog,
     AccountPostingsDialog,

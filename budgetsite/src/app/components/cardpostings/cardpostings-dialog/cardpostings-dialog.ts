@@ -20,6 +20,8 @@ import { DatepickerinputComponent } from 'src/app/shared/datepickerinput/datepic
 import { CategoryComponent } from '../../category/category.component';
 import { PeopleComponent } from '../../people/people.component';
 import { CardPostingsService } from 'src/app/services/cardpostings/cardpostings.service';
+import { CardStatementsService } from 'src/app/services/cardstatements/cardstatements.service';
+import { CardsPhysicalCard } from 'src/app/models/cardsphysicalcard.model';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -30,6 +32,7 @@ import { Messenger } from 'src/app/common/messenger';
 import { formatReference } from 'src/app/common/reference';
 import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
+import { PhysicalCardDialogComponent } from '../physical-card-dialog/physical-card-dialog.component';
 
 @Component({
   selector: 'cardpostings-dialog',
@@ -49,6 +52,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
 
   cardPostingFormGroup = new FormGroup({
     cardIdFormControl: new FormControl('', Validators.required),
+    physicalCardIdFormControl: new FormControl(''),
     descriptionFormControl: new FormControl('', Validators.required),
     totalAmountFormControl: new FormControl('', Validators.required),
     amountFormControl: new FormControl('', Validators.required),
@@ -82,9 +86,11 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   referenceListsLoadFailed = false;
   private invoiceClosingRequestId = 0;
   private referenceListsRequestId = 0;
+  private physicalCardsRequestId = 0;
   private descriptionSuggestionLoading = false;
   recentCategoryIds: number[] = [];
   selectedRecentCategoryId?: number;
+  savingPhysicalCard = false;
   readonly formatReference = formatReference;
 
   get requiresClosedInvoiceOverride(): boolean {
@@ -117,11 +123,14 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     private expenseService: ExpenseService,
     private cd: ChangeDetectorRef,
     private invoiceClosingService: CardsInvoiceClosingService,
-    private messenger: Messenger
+    private messenger: Messenger,
+    private cardStatementsService: CardStatementsService
   ) { }
 
   ngOnInit(): void {
     this.cardPosting.allowClosedInvoiceOperation = false;
+    this.cardPosting.physicalCardId = this.cardPosting.physicalCardId ?? null;
+    this.cardPostingFormGroup.get('physicalCardIdFormControl')?.setValue(this.cardPosting.physicalCardId, { emitEvent: false });
     this.invoiceClosingLoaded = !!this.cardPosting.invoiceClosing &&
       this.cardPosting.invoiceClosing.cardId === this.cardPosting.cardId &&
       this.cardPosting.invoiceClosing.reference === this.cardPosting.reference;
@@ -149,6 +158,7 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
     this.cardPosting.preserveFutureValues = false;
 
     this.getLists();
+    this.loadPhysicalCards(this.cardPosting.cardId);
     this.loadReferenceDependentLists(this.cardPosting.reference, false);
     this.applyBusinessControlState();
   }
@@ -205,6 +215,10 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
       return;
     }
     this.cardPosting.allowClosedInvoiceOperation = this.cardPosting.allowClosedInvoiceOperation === true;
+    const physicalCardId = this.cardPostingFormGroup.get('physicalCardIdFormControl')?.value;
+    this.cardPosting.physicalCardId = physicalCardId === null || physicalCardId === undefined || physicalCardId === ''
+      ? null
+      : Number(physicalCardId);
     if (this.hasExistingParcelSequence) {
       this.cardPosting.generateParcels = false;
     }
@@ -247,7 +261,80 @@ export class CardPostingsDialog implements OnInit, AfterViewInit {
   }
 
   onCardChanged(cardId: number): void {
+    this.cardPosting.physicalCardId = null;
+    this.cardPosting.physicalCard = undefined;
+    this.cardPostingFormGroup.get('physicalCardIdFormControl')?.setValue(null);
+    this.loadPhysicalCards(cardId);
     this.loadInvoiceClosing(cardId, this.cardPosting.reference);
+  }
+
+  togglePhysicalCardForm(): void {
+    const cardId = this.cardPosting.cardId;
+    const selectedCard = this.cardPosting.physicalCardsList?.find(card => card.id === this.cardPosting.physicalCardId);
+    const dialogRef = this.dialog.open(PhysicalCardDialogComponent, {
+      width: '420px',
+      maxWidth: 'calc(100vw - 24px)',
+      panelClass: 'modern-physical-card-dialog-panel',
+      data: {
+        cardName: this.cardPosting.cardsList?.find(card => card.id === cardId)?.name ?? '',
+        nameOnCard: selectedCard?.nameOnCard ?? '',
+        lastFourDigits: selectedCard?.lastFourDigits.trim() ?? this.cardPosting.detectedPhysicalCardLastFourDigits ?? '',
+        editing: !!selectedCard,
+      },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) this.savePhysicalCard(cardId, selectedCard?.id, result.nameOnCard, result.lastFourDigits);
+    });
+  }
+
+  private savePhysicalCard(cardId: number, id: number | undefined, nameOnCard: string, lastFourDigits: string): void {
+    if (this.savingPhysicalCard) return;
+    this.savingPhysicalCard = true;
+
+    this.cardStatementsService.savePhysicalCards(cardId, [{
+      id,
+      nameOnCard,
+      lastFourDigits,
+    }])
+      .pipe(finalize(() => this.savingPhysicalCard = false))
+      .subscribe(cards => {
+        if (this.cardPosting.cardId !== cardId) return;
+        this.cardPosting.physicalCardsList = cards;
+        const savedCard = cards.find(card =>
+          card.lastFourDigits === lastFourDigits && card.nameOnCard.toLocaleLowerCase() === nameOnCard.toLocaleLowerCase()
+        );
+        this.cardPosting.physicalCardId = savedCard?.id ?? null;
+        this.cardPosting.physicalCard = savedCard;
+        this.cardPostingFormGroup.get('physicalCardIdFormControl')?.setValue(this.cardPosting.physicalCardId);
+      });
+  }
+
+  private loadPhysicalCards(cardId: number): void {
+    const requestId = ++this.physicalCardsRequestId;
+    this.cardPosting.physicalCardsList = [];
+    if (!cardId || cardId <= 0) {
+      return;
+    }
+
+    this.cardStatementsService.readPhysicalCards(cardId).subscribe(cards => {
+      if (requestId !== this.physicalCardsRequestId || cardId !== this.cardPosting.cardId) return;
+      this.cardPosting.physicalCardsList = cards;
+      const detectedLastFourDigits = this.cardPosting.detectedPhysicalCardLastFourDigits?.trim();
+      if (!this.cardPosting.physicalCardId && detectedLastFourDigits) {
+        const matches = cards.filter(card => card.lastFourDigits.trim() === detectedLastFourDigits);
+        if (matches.length === 1) {
+          this.cardPosting.physicalCardId = matches[0].id ?? null;
+          this.cardPosting.physicalCard = matches[0];
+        }
+      }
+
+      if (this.cardPosting.physicalCardId && !cards.some(card => card.id === this.cardPosting.physicalCardId)) {
+        this.cardPosting.physicalCardId = null;
+        this.cardPosting.physicalCard = undefined;
+      }
+      this.cardPosting.physicalCard = cards.find(card => card.id === this.cardPosting.physicalCardId);
+      this.cardPostingFormGroup.get('physicalCardIdFormControl')?.setValue(this.cardPosting.physicalCardId ?? null, { emitEvent: false });
+    });
   }
 
   onReferenceChanged(reference: string): void {

@@ -29,6 +29,7 @@ import { Cards } from 'src/app/models/cards.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { CardPostingsDialog } from './cardpostings-dialog/cardpostings-dialog';
 import { CardPostingsModernDialog } from './cardpostings-dialog/cardpostings-modern-dialog';
+import { CardStatementReconciliationComponent } from '../cardstatements/card-statement-reconciliation.component';
 import { CardReceiptsDialog } from './cardreceipts-dialog/cardreceipts-dialog';
 import { CardReceiptsModernDialog } from './cardreceipts-dialog/cardreceipts-modern-dialog';
 import { Messenger } from 'src/app/common/messenger';
@@ -688,6 +689,7 @@ export class CardPostingsComponent implements OnInit {
       data: {
         id: undefined,
         cardId: cardPosting.cardId,
+        physicalCardId: cardPosting.physicalCardId,
         date: cardPosting.date,
         reference: cardPosting.reference,
         position: undefined,
@@ -779,6 +781,7 @@ export class CardPostingsComponent implements OnInit {
       data: {
         id: cardPosting.id,
         cardId: cardPosting.cardId,
+        physicalCardId: cardPosting.physicalCardId,
         date: cardPosting.date,
         reference: cardPosting.reference,
         position: cardPosting.position,
@@ -1064,6 +1067,51 @@ export class CardPostingsComponent implements OnInit {
         this.reloadCardPostings();
       },
       error: () => (this.hideProgress = true),
+    });
+  }
+
+  get isC6CardSelected(): boolean {
+    const selectedCard = this.cardsList?.find(card => card.id === this.cardId);
+    if (!selectedCard) return false;
+
+    const statementProvider = selectedCard.statementProvider?.trim().toLocaleUpperCase();
+    if (statementProvider) return statementProvider === 'C6';
+
+    // Cartões cadastrados antes do campo "Emissor da fatura" podem não ter
+    // metadado. Preserve o acesso para o cartão C6 legado pelo nome exato.
+    return selectedCard.name?.trim().toLocaleUpperCase() === 'C6';
+  }
+
+  openStatementReconciliation(): void {
+    if (!this.isC6CardSelected) {
+      this.messenger.errorHandler('A conferência de faturas está disponível apenas para cartões C6.');
+      return;
+    }
+
+    if (!this.cardId || this.cardId <= 0 || !this.reference) {
+      this.messenger.errorHandler('Selecione um cartão e uma fatura para iniciar a conferência.');
+      return;
+    }
+
+    const isMobile = window.innerWidth <= 600;
+    const mobileViewportHeight = `${Math.round(window.visualViewport?.height ?? window.innerHeight)}px`;
+    this.dialog.open(CardStatementReconciliationComponent, {
+      width: isMobile ? '100vw' : '920px',
+      maxWidth: isMobile ? '100vw' : '96vw',
+      height: isMobile ? mobileViewportHeight : '92vh',
+      maxHeight: isMobile ? mobileViewportHeight : '92vh',
+      panelClass: 'card-statement-reconciliation-panel',
+      disableClose: true,
+      data: {
+        cardId: this.cardId,
+        reference: this.reference,
+        postings: [...(this.cardpostings ?? [])],
+        cardsList: this.cardsList ?? [],
+        categoriesList: this.categoriesList ?? [],
+        peopleList: this.peopleList ?? [],
+        modernLayout: this.modernLayout,
+        onUpdated: () => this.reloadCardPostings(),
+      },
     });
   }
 

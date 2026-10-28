@@ -34,6 +34,8 @@ Este arquivo registra convenções observadas no código existente para alteraç
 - Em templates Angular, quebrar componentes com muitos atributos em várias linhas, seguindo o padrão Material já existente.
 - Evitar vários elementos HTML ou bindings longos na mesma linha.
 - Preservar acentuação UTF-8 e o texto original do projeto.
+- Em diálogos modernos, reutilizar `budget-entry-modern-dialog.scss` e as classes `modern-entry-actions`, `modern-cancel-action` e `modern-save-action` quando aplicável, mantendo os ícones Material do padrão existente.
+- Em telas estreitas, manter ações lado a lado quando couberem, com espaçamento horizontal visível em relação às bordas; não esticar botões até os cantos nem criar uma paleta de ações diferente do padrão moderno sem necessidade.
 
 ## Regra de aplicação
 

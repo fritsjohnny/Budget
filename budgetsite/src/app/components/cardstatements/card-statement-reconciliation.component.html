@@ -1,0 +1,179 @@
+<div class="statement-reconciliation">
+  <header class="reconciliation-header">
+    <div class="header-copy">
+      <span class="header-icon"><mat-icon>receipt_long</mat-icon></span>
+      <div>
+        <h2>Conferir fatura</h2>
+        <p>{{ selectedCardName }} · {{ data.reference | slice:4:6 }}/{{ data.reference | slice:0:4 }}</p>
+      </div>
+    </div>
+    <button mat-icon-button type="button" (click)="closeKeepingDraft()" [disabled]="finishing || importing || restoringDraft || !!statusMessage" aria-label="Fechar e manter o rascunho"><mat-icon>close</mat-icon></button>
+  </header>
+
+  <div class="reconciliation-status" *ngIf="statusMessage" role="status" aria-live="polite">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="reconciliation-status-copy">
+      <mat-icon>autorenew</mat-icon>
+      <span>{{ statusMessage }}</span>
+    </div>
+  </div>
+
+  <input #statementFileInput type="file" accept=".zip,application/zip" hidden (change)="fileSelected($event)">
+
+  <div class="reconciliation-content" mat-dialog-content>
+    <section class="import-card">
+      <div class="import-copy">
+        <div>
+          <strong>{{ preview ? 'Arquivo do extrato' : 'Importe a fatura C6' }}</strong>
+          <p>{{ preview ? 'O ZIP foi lido. Revise as sugestões antes de concluir.' : 'Selecione o ZIP exportado pelo aplicativo C6 para comparar as compras.' }}</p>
+        </div>
+        <button mat-stroked-button type="button" (click)="chooseFile()" [disabled]="importing || restoringDraft || !!statusMessage">
+          <mat-icon>{{ preview ? 'swap_horiz' : 'upload_file' }}</mat-icon>
+          {{ preview ? 'Trocar arquivo' : 'Selecionar arquivo' }}
+        </button>
+      </div>
+      <div class="file-meta" *ngIf="selectedFile || preview">
+        <mat-icon>{{ importing ? 'hourglass_top' : 'check_circle' }}</mat-icon>
+        <span>{{ preview?.fileName || selectedFile?.name }}</span>
+        <small *ngIf="preview">{{ preview.purchaseCount }} compras · {{ preview.paymentOrCreditCount }} pagamentos/créditos ignorados</small>
+      </div>
+      <small class="format-hint">Arquivo ZIP protegido do C6 · compras futuras no Budget são ignoradas · o ZIP e as revisões são salvos automaticamente neste dispositivo, por cartão e referência.</small>
+      <small class="format-hint">O X fecha esta janela e mantém o rascunho. As associações só entram no histórico ao concluir; Excluir conferência apaga o rascunho e as alterações pendentes.</small>
+      <small class="draft-hint" *ngIf="restoringDraft">Restaurando a conferência salva neste dispositivo...</small>
+      <small class="draft-hint" *ngIf="draftRestored && !restoringDraft">Rascunho restaurado para {{ data.reference | slice:4:6 }}/{{ data.reference | slice:0:4 }}. O ZIP e as associações desta referência foram recuperados.</small>
+      <small class="draft-warning" *ngIf="draftStorageFailed">Não foi possível salvar o rascunho localmente. Mantenha o ZIP para poder retomá-la.</small>
+    </section>
+
+    <ng-container *ngIf="preview">
+      <section class="summary-grid" aria-label="Resumo da conferência">
+        <button type="button" class="summary-card success summary-card-filter" [class.selected]="filter === 'matched'" (click)="setFilter('matched')" [attr.aria-pressed]="filter === 'matched'" aria-label="Filtrar lançamentos conciliados">
+          <strong>{{ matchedCount }}</strong><span>conciliados</span>
+        </button>
+        <button type="button" class="summary-card warning summary-card-filter" [class.selected]="filter === 'differences'" (click)="setFilter('differences')" [attr.aria-pressed]="filter === 'differences'" aria-label="Filtrar divergências">
+          <strong>{{ differenceCount }}</strong><span>divergências</span>
+        </button>
+        <button type="button" class="summary-card missing summary-card-filter" [class.selected]="filter === 'missing'" (click)="setFilter('missing')" [attr.aria-pressed]="filter === 'missing'" aria-label="Filtrar lançamentos sem par">
+          <strong>{{ statementOnlyCount + budgetOnlyCount }}</strong><span>sem par</span>
+        </button>
+      </section>
+
+      <section class="comparison-list" *ngIf="visibleRows.length; else emptyFilter">
+        <article class="comparison-card" *ngFor="let row of visibleRows" [class.divergence]="row.status === 'divergence'" [class.unmatched]="row.status === 'missing' || row.status === 'budgetOnly'">
+          <ng-container *ngIf="row.transaction; else budgetOnlyRow">
+            <div class="comparison-side statement-side">
+              <span class="side-label">NO EXTRATO · {{ row.transaction.purchaseDate | date:'dd MMM' }}</span>
+              <strong>{{ row.transaction.description }}</strong>
+              <span class="side-amount">{{ row.transaction.amountBrl | currency:'BRL':'symbol':'1.2-2' }}</span>
+              <small *ngIf="parseInstallment(row.transaction.installment) as installment">Parcela {{ installment.number }}/{{ installment.total }}</small>
+              <small class="physical-card-label" *ngIf="getPhysicalCard(row.transaction) as physicalCard">{{ physicalCard.nameOnCard }} ···· {{ physicalCard.lastFourDigits }}</small>
+            </div>
+
+            <div
+              class="comparison-divider"
+              [class.status-success]="row.status === 'matched' || row.status === 'ignored'"
+              [class.status-warning]="row.status === 'divergence'"
+            ><mat-icon>{{ row.status === 'matched' || row.status === 'ignored' ? 'check' : row.status === 'missing' ? 'add' : 'south' }}</mat-icon></div>
+
+            <div class="comparison-side budget-side">
+              <span class="side-label">NO BUDGET</span>
+              <ng-container *ngIf="row.posting; else noBudgetMatch">
+                <strong>{{ row.posting.description }}</strong>
+                <span class="side-amount">{{ row.posting.amount | currency:'BRL':'symbol':'1.2-2' }}</span>
+                <small>{{ row.posting.date | date:'dd MMM' }}<ng-container *ngIf="(row.posting.parcels || 1) > 1"> · Parcela {{ row.posting.parcelNumber }}/{{ row.posting.parcels }}</ng-container></small>
+                <small class="match-suggestion" *ngIf="row.suggestedMatch">Sugestão por comerciante, data e valor semelhantes. Confirme se é esta compra.</small>
+              </ng-container>
+              <ng-template #noBudgetMatch>
+                <strong class="no-match-text" *ngIf="row.status !== 'ignored'; else ignoredStatement">Nenhum lançamento correspondente</strong>
+                <ng-template #ignoredStatement><strong class="ignored-statement-text">Este registro foi ignorado manualmente.</strong></ng-template>
+              </ng-template>
+            </div>
+          </ng-container>
+
+          <ng-template #budgetOnlyRow>
+            <div class="comparison-side budget-only-side">
+              <span class="side-label">NO BUDGET · {{ row.posting?.date | date:'dd MMM' }}</span>
+              <strong>{{ row.posting?.description }}</strong>
+              <span class="side-amount">{{ row.posting?.amount | currency:'BRL':'symbol':'1.2-2' }}</span>
+              <small>Este lançamento não teve correspondência no arquivo importado.</small>
+            </div>
+          </ng-template>
+
+          <div class="status-line" [class.status-success]="row.status === 'matched' || row.status === 'ignored'" [class.status-warning]="row.status === 'divergence'" [class.status-missing]="row.status === 'missing' || row.status === 'budgetOnly'">
+            <mat-icon>{{ row.status === 'matched' ? 'check_circle' : row.status === 'ignored' ? 'visibility_off' : row.status === 'divergence' ? 'warning_amber' : 'help_outline' }}</mat-icon>
+            <span>{{ statusLabel(row) }}</span>
+            <span class="difference-amount" *ngIf="row.amountDiff && row.posting && row.transaction">{{ (row.transaction.amountBrl - row.posting.amount) | currency:'BRL':'symbol':'1.2-2' }}</span>
+          </div>
+
+          <div
+            class="row-actions"
+            *ngIf="row.status !== 'matched' || (row.status === 'matched' && row.posting && !row.posting.physicalCardId) || (row.transaction && row.hasAvailablePostings)"
+          >
+            <button mat-stroked-button type="button" *ngIf="row.status === 'matched' && row.posting && !row.posting.physicalCardId && !row.physicalCardId && !getPhysicalCard(row.transaction)" (click)="editPosting(row)" [disabled]="savingPostingKey === row.key">
+              <mat-icon>credit_card</mat-icon> Associar cartão físico
+            </button>
+            <button mat-stroked-button type="button" *ngIf="row.suggestedMatch && row.posting" (click)="confirmSuggestedMatch(row)" [disabled]="savingPostingKey === row.key">
+              <mat-icon>check</mat-icon> Confirmar correspondência
+            </button>
+            <button mat-stroked-button type="button" *ngIf="row.transaction && (row.status === 'missing' || row.status === 'divergence')" (click)="setIgnored(row, true)">
+              <mat-icon>visibility_off</mat-icon> Ignorar registro
+            </button>
+            <button mat-stroked-button type="button" *ngIf="row.status === 'ignored'" (click)="setIgnored(row, false)">
+              <mat-icon>undo</mat-icon> Incluir na conferência
+            </button>
+            <button mat-stroked-button type="button" *ngIf="row.descriptionDiff && row.posting && row.transaction && !row.aliasSaved" (click)="saveDescriptionAssociation(row)" [disabled]="savingAliasKey === row.key">
+              <mat-icon>link</mat-icon> {{ savingAliasKey === row.key ? 'Salvando...' : 'Associar e lembrar descrição' }}
+            </button>
+            <button
+              mat-stroked-button
+              type="button"
+              *ngIf="row.transaction && row.hasAvailablePostings"
+              (click)="chooseExistingPosting(row)"
+            >
+              <mat-icon>link</mat-icon>
+              {{ row.posting ? 'Trocar lançamento' : 'Vincular lançamento existente' }}
+            </button>
+            <button mat-stroked-button type="button" *ngIf="row.posting" (click)="editPosting(row)" [disabled]="savingPostingKey === row.key">
+              <mat-icon>edit</mat-icon> Editar lançamento
+            </button>
+            <button mat-flat-button type="button" class="modern-save-action" *ngIf="row.status === 'missing' && row.transaction" (click)="createPosting(row)" [disabled]="savingPostingKey === row.key">
+              <mat-icon>add</mat-icon>Criar lançamento
+            </button>
+          </div>
+          <ng-container *ngIf="row.status === 'matched' && row.posting && !row.posting.physicalCardId && row.transaction">
+            <small class="physical-card-auto-status" *ngIf="getPhysicalCard(row.transaction) as physicalCard">
+              Cartão final {{ physicalCard.lastFourDigits }} será associado ao concluir.
+            </small>
+          </ng-container>
+          <small class="recurrence-hint" *ngIf="row.status === 'divergence' && row.posting && (row.posting.parcels || 1) > 1">Para aplicar uma correção às parcelas seguintes, use “Repetir edição nos próximos meses” no editor.</small>
+        </article>
+      </section>
+
+      <ng-template #emptyFilter>
+        <div class="empty-filter">
+          <mat-icon>task_alt</mat-icon>
+          <strong>{{ filter === 'matched' ? 'Nenhum lançamento conciliado.' : filter === 'differences' ? 'Nenhuma divergência nesta fatura.' : filter === 'missing' ? 'Nenhum lançamento sem par.' : 'Nenhum lançamento para exibir.' }}</strong>
+          <span>{{ filter === 'matched' ? 'As associações conciliadas aparecerão aqui para revisão.' : filter === 'differences' ? 'Os lançamentos não apresentam divergências.' : filter === 'missing' ? 'Todos os lançamentos possuem correspondência.' : 'Importe uma fatura para iniciar a conferência.' }}</span>
+        </div>
+      </ng-template>
+
+      <section class="totals-card">
+        <div><small>Total de compras no extrato</small><strong>{{ preview.purchasesTotal | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+        <div><small>Diferença de valores</small><strong [class.pending-value]="pendingDifference > 0">{{ pendingDifference | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+      </section>
+    </ng-container>
+  </div>
+
+  <footer class="reconciliation-footer modern-entry-actions" mat-dialog-actions>
+    <span class="footer-progress" *ngIf="preview">{{ matchedCount }} de {{ preview.purchaseCount }} compras conciliadas</span>
+    <span class="footer-progress" *ngIf="!preview">O rascunho é salvo neste dispositivo e separado por cartão e referência.</span>
+    <div class="footer-actions">
+      <button mat-stroked-button type="button" class="modern-cancel-action" (click)="cancelReconciliation()" [disabled]="finishing || importing || restoringDraft || !!statusMessage">
+        <mat-icon>delete_outline</mat-icon><span>Excluir conferência</span>
+      </button>
+      <button mat-flat-button type="button" class="modern-save-action" (click)="finishReconciliation()" [disabled]="finishing || importing || restoringDraft || !!statusMessage">
+        <mat-icon>{{ finishing ? 'sync' : 'check' }}</mat-icon>
+        <span>{{ finishing ? 'Salvando...' : 'Concluir conferência' }}</span>
+      </button>
+    </div>
+  </footer>
+</div>

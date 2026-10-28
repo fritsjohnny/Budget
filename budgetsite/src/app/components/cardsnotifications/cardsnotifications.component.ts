@@ -280,6 +280,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           /dia (\d{2}\/\d{2}\/\d{4}) às (\d{2}:\d{2})/
         );
         const lojaMatch = text.match(/em (.+?),? foi aprovada/i);
+        const physicalCardLastFourDigits = this.extractPhysicalCardLastFourDigits(text);
 
         if (!valorMatch || !dataMatch || !lojaMatch) return null;
 
@@ -308,6 +309,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
           date,
           description,
           note: text,
+          detectedPhysicalCardLastFourDigits: physicalCardLastFourDigits,
           sourceAppPackageName,
           notificationReceivedAt
         } as CardNotification;
@@ -417,6 +419,13 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
     // Outros bancos no futuro aqui...
 
     return null;
+  }
+
+  private extractPhysicalCardLastFourDigits(note: string): string | undefined {
+    // Notas C6 já salvas no Budget seguem o padrão "CARTAO FINAL 1234".
+    // Aceita a forma acentuada e variações comuns do texto da notificação.
+    const match = note.match(/cart[aã]o\s+final\s*[:#-]?\s*(\d{4})\b/i);
+    return match?.[1];
   }
 
   private async tryOpenPendingNotification(): Promise<void> {
@@ -589,6 +598,7 @@ export class CardsNotificationsComponent implements OnInit, OnChanges, OnDestroy
             editing: false,
             adding: true,
             note: notification.note,
+            detectedPhysicalCardLastFourDigits: notification.detectedPhysicalCardLastFourDigits,
             provisioned: false,
             invoiceClosing,
             allowClosedInvoiceOperation: false,

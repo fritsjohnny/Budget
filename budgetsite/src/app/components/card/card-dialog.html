@@ -68,6 +68,27 @@
       </div>
 
       <div class="row">
+        <mat-form-field appearance="fill">
+          <mat-label>Emissor da fatura</mat-label>
+          <mat-select formControlName="statementProviderFormControl">
+            <mat-option [value]="null">Outro / não suportado</mat-option>
+            <mat-option value="C6">C6</mat-option>
+          </mat-select>
+          <mat-hint>A conferência automática está disponível para faturas C6.</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <div class="row">
+        <mat-form-field appearance="fill">
+          <mat-label>Senha da fatura (ZIP ou PDF)</mat-label>
+          <input matInput type="password" autocomplete="new-password" formControlName="statementPasswordFormControl" />
+          <mat-hint *ngIf="hasStatementPassword && !cardFormGroup.get('clearStatementPasswordFormControl')?.value">Já existe uma senha salva. Deixe em branco para mantê-la.</mat-hint>
+          <mat-hint *ngIf="!hasStatementPassword || cardFormGroup.get('clearStatementPasswordFormControl')?.value">A senha é opcional e será protegida antes de ser armazenada.</mat-hint>
+        </mat-form-field>
+        <mat-checkbox *ngIf="hasStatementPassword" formControlName="clearStatementPasswordFormControl">Remover senha salva</mat-checkbox>
+      </div>
+
+      <div class="row">
         <div class="col-6">
           <mat-form-field
             appearance="fill"

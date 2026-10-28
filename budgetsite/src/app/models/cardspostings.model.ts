@@ -3,10 +3,15 @@ import { Categories } from "./categories.model";
 import { Expenses } from './expenses.model';
 import { People } from "./people.model";
 import { CardsInvoiceClosing } from './cardsinvoiceclosing.model';
+import { CardsPhysicalCard } from './cardsphysicalcard.model';
 
 export interface CardsPostings {
   id?: number;
   cardId: number;
+  physicalCardId?: number | null;
+  physicalCard?: CardsPhysicalCard;
+  physicalCardsList?: CardsPhysicalCard[];
+  detectedPhysicalCardLastFourDigits?: string;
   date: Date;
   reference: string;
   position?: number;

@@ -51,6 +51,9 @@ export interface AccountsPostings {
   algorithmType?: string;
   totalIOF?: number;
   totalIR?: number;
+  diRatePercent?: number | null;
+  diRateDate?: Date | string | null;
+  diRateFallback?: boolean | null;
   accountPostingsYields?: AccountsPostings[];
   iofElapsedDays?: number | null;
   iofElapsedDate?: Date;

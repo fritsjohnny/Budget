@@ -63,6 +63,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   previousBusinessDayHoliday: boolean = false;
   isCalculating: boolean = true;
   calculationStatus: string = 'Preparando rendimento...';
+  diRateFallbackNotice: string | null = null;
   isApplyingSuggestedYield: boolean = false;
   private suppressInitialEditEvents: boolean = false;
   private initialCurrentBalanceForYield: number = 0;
@@ -571,6 +572,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       applicationInputs
     );
 
+    this.captureDiRate(calculation);
+
     this.applicationDetails = calculation.applicationDetails;
     this.recalculateApplicationTotals();
     this.captureApplicationBaseValues();
@@ -616,6 +619,20 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   private getAlgorithmKey(accountId?: number): string {
     return `${this.ALGORITHM_STORAGE_KEY}.${accountId ?? 0}`;
+  }
+
+  private captureDiRate(result: {
+    diRatePercent?: number;
+    diRateDate?: Date;
+    diRateFallback?: boolean;
+  }): void {
+    if (result.diRatePercent == null || !result.diRateDate) return;
+    this.accountPosting.diRatePercent = result.diRatePercent;
+    this.accountPosting.diRateDate = result.diRateDate;
+    this.accountPosting.diRateFallback = result.diRateFallback ?? false;
+    this.diRateFallbackNotice = result.diRateFallback
+      ? `Não foi possível consultar a taxa DI. Usando o fallback da taxa DI do dia ${new Date(result.diRateDate).toLocaleDateString('pt-BR')}.`
+      : null;
   }
 
   private getStoredIofValue(daysKey: string, dateKey: string, fallbackDays: number): number {
@@ -917,6 +934,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.prepareApplicationDetails();
+    if (this.accountPosting.type !== 'Y') {
+      this.accountPosting.diRatePercent = null;
+      this.accountPosting.diRateDate = null;
+      this.accountPosting.diRateFallback = null;
+    }
     if (this.hasMultipleApplications) {
       this.recalculateApplicationTotals();
       this.accountPosting.iofElapsedDays = null;
@@ -1151,14 +1173,28 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
             );
             this.recalculateApplicationTotals();
           } else {
-            let suggestYield = {
+            let suggestYield: {
+              grossYield: number;
+              netYield: number;
+              totalGross: number;
+              totalNet: number;
+              iofTotal: number;
+              irTotal: number;
+              totalAplicado: number;
+              diRatePercent?: number;
+              diRateDate?: Date;
+              diRateFallback?: boolean;
+            } = {
               grossYield: 0,
               netYield: 0,
               totalGross: 0,
               totalNet: 0,
               iofTotal: 0,
               irTotal: 0,
-              totalAplicado: 0
+              totalAplicado: 0,
+              diRatePercent: undefined,
+              diRateDate: undefined,
+              diRateFallback: undefined
             };
 
             if (this.accountPosting.algorithmType === '1') {
@@ -1188,6 +1224,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
                 this.accountPosting.totalPreviousYield!
               );
             }
+
+            this.captureDiRate(suggestYield);
 
             this.accountPosting.grossAmount = suggestYield.grossYield;
             this.accountPosting.amount = suggestYield.netYield;

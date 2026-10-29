@@ -8,6 +8,7 @@ import { AccountsPostingApplicationDetail } from 'src/app/models/accountsposting
 import { AccountYieldRange } from 'src/app/models/accountyieldrange.model';
 import { firstValueFrom } from 'rxjs';
 import { AccountYieldRangeService } from '../accountyieldrange/accountyieldrange.service';
+import { AccountPostingsService } from '../accountpostings/accountpostings.service';
 
 @Injectable({ providedIn: 'root' })
 export class YieldService {
@@ -17,7 +18,8 @@ export class YieldService {
     private http: HttpClient,
     private messenger: Messenger,
     private accountApplicationsService: AccountApplicationsService,
-    private accountYieldRangeService: AccountYieldRangeService) { }
+    private accountYieldRangeService: AccountYieldRangeService,
+    private accountPostingsService?: AccountPostingsService) { }
 
   /**
    * Estimates a gross balance from the net yield already produced by the
@@ -36,8 +38,9 @@ export class YieldService {
       throw new Error('Esta conta não possui cálculo de rendimento configurado.');
     }
 
+    let diRate: { ratePercent: number; rateDate: Date; fallback: boolean };
     try {
-      await this.getCdiDiarioPercent(this.resolveCdiTargetDate(account));
+      diRate = await this.getCdiDiarioResult(account, this.resolveCdiTargetDate(account));
     } catch {
       throw new Error('Não foi possível obter a taxa CDI para a data informada.');
     }
@@ -58,6 +61,9 @@ export class YieldService {
       (currentGrossBalance * grossTarget / currentYield.grossYield + Number.EPSILON) * 100
     ) / 100;
 
+    if (diRate.fallback) {
+      this.messenger.errorHandler(`Não foi possível consultar a taxa DI. Usando o fallback da taxa DI do dia ${diRate.rateDate.toLocaleDateString('pt-BR')}.`);
+    }
     return { suggestedGrossBalance, currentYield, grossTarget };
   }
 
@@ -141,6 +147,22 @@ export class YieldService {
     return x;
   }
 
+  private parseCdiDate(value: string): Date | null {
+    const [day, month, year] = String(value ?? '').split('/').map(Number);
+    if (!day || !month || !year) return null;
+    const date = new Date(year, month - 1, day);
+    date.setHours(0, 0, 0, 0);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private async getCdiRatesForDate(date: Date): Promise<Array<{ data: string; valor: string }>> {
+    // SGS rejects intervals where dataInicial === dataFinal. Request a valid
+    // seven-day window ending on the requested date, then select the right point.
+    const start = this.addDays(date, -7);
+    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=${encodeURIComponent(this.formatBR(start))}&dataFinal=${encodeURIComponent(this.formatBR(date))}`;
+    return await this.http.get<Array<{ data: string; valor: string }>>(url).toPromise() ?? [];
+  }
+
   /**
    * Retorna o CDI DIÁRIO em percentual do dia (ex.: 0.0551014 para 0,0551014% ao dia).
    * Se 'date' não for informada, usa hoje. Recuará até 7 dias atrás se o BCB não tiver ponto.
@@ -157,18 +179,15 @@ export class YieldService {
 
     // 2) Função de busca para um dia específico
     const fetchFor = async (d: Date): Promise<number | null> => {
-      const dayBR = this.formatBR(d);
-      const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=${dayBR}&dataFinal=${dayBR}`;
-
       try {
-        const data = await this.http.get<any[]>(url).toPromise();
-        const valorStr = data?.[0]?.valor;
-        const valor = parseFloat(String(valorStr).replace(',', '.'));
-        if (isNaN(valor)) return null;
-
-        // Guarda em cache específico da data e como "último conhecido"
-        const key = this.formatYMD(d);
-        this.cdiCacheByDate.set(key, valor);
+        const data = await this.getCdiRatesForDate(d);
+        const latest = data
+          .map(point => ({ point, date: this.parseCdiDate(point.data), value: parseFloat(String(point.valor).replace(',', '.')) }))
+          .filter(item => item.date && item.date <= d && Number.isFinite(item.value))
+          .sort((a, b) => b.date!.getTime() - a.date!.getTime())[0];
+        if (!latest?.date) return null;
+        const valor = latest.value;
+        this.cdiCacheByDate.set(this.formatYMD(latest.date), valor);
         this.cdiLastKnown = valor;
         return valor;
       } catch {
@@ -184,14 +203,42 @@ export class YieldService {
       d = this.addDays(d, -1);
     }
 
-    // 4) Fallback final: usa o último valor conhecido (se houver) ou lança erro
-    if (typeof this.cdiLastKnown === 'number') {
-      // opcional: também cacheia na data solicitada
-      this.cdiCacheByDate.set(cacheKey, this.cdiLastKnown);
-      return this.cdiLastKnown;
-    }
-
     throw new Error('CDI diário indisponível para a data informada.');
+  }
+
+  async getCdiDiarioResult(
+    account: Accounts,
+    date?: Date
+  ): Promise<{ ratePercent: number; rateDate: Date; fallback: boolean }> {
+    const targetDate = date ? new Date(date) : this.resolveCdiTargetDate(account);
+    targetDate.setHours(0, 0, 0, 0);
+    try {
+      const ratePercent = await this.getCdiDiarioPercent(targetDate);
+      let rateDate = new Date(targetDate);
+      for (let i = 0; i < 7; i++) {
+        const publishedRate = await this.getCdiDiarioPercentStrict(rateDate);
+        if (publishedRate !== null) {
+          return { ratePercent, rateDate: new Date(rateDate), fallback: false };
+        }
+        rateDate = this.addDays(rateDate, -1);
+      }
+      throw new Error('Taxa DI sem publicação nos últimos sete dias.');
+    } catch {
+      if (!account.id) throw new Error('Conta inválida para recuperar a taxa DI anterior.');
+      const previous = await this.getSavedDiRate(account.id);
+      return { ...previous, fallback: true };
+    }
+  }
+
+  async getSavedDiRate(accountId: number): Promise<{ ratePercent: number; rateDate: Date }> {
+    if (!this.accountPostingsService) throw new Error('Consulta do histórico de taxa DI indisponível.');
+    const previous = await firstValueFrom(this.accountPostingsService.getLatestDiRate(accountId));
+    const ratePercent = Number(previous?.diRatePercent);
+    const rateDate = previous?.diRateDate ? new Date(previous.diRateDate) : null;
+    if (!Number.isFinite(ratePercent) || !rateDate || Number.isNaN(rateDate.getTime())) {
+      throw new Error('Não há taxa DI salva para esta conta.');
+    }
+    return { ratePercent, rateDate };
   }
 
   async getCdiDiarioPercentStrict(date: Date): Promise<number | null> {
@@ -204,21 +251,16 @@ export class YieldService {
       return this.cdiCacheByDate.get(cacheKey)!;
     }
 
-    const dayBR = this.formatBR(target);
-    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial=${dayBR}&dataFinal=${dayBR}`;
-
     try {
-      const data = await this.http.get<any[]>(url).toPromise();
-      const valorStr = data?.[0]?.valor;
-      const valor = parseFloat(String(valorStr).replace(',', '.'));
-
-      if (isNaN(valor)) {
-        return null;
-      }
-
+      const data = await this.getCdiRatesForDate(target);
+      const exact = data.find(point => {
+        const publishedDate = this.parseCdiDate(point.data);
+        return publishedDate && this.formatYMD(publishedDate) === cacheKey;
+      });
+      const valor = exact ? parseFloat(String(exact.valor).replace(',', '.')) : NaN;
+      if (!Number.isFinite(valor)) return null;
       this.cdiCacheByDate.set(cacheKey, valor);
       this.cdiLastKnown = valor;
-
       return valor;
     } catch {
       return null;
@@ -406,6 +448,9 @@ export class YieldService {
     iofTotal: number;
     irTotal: number;
     totalAplicado: number;
+    diRatePercent?: number;
+    diRateDate?: Date;
+    diRateFallback?: boolean;
   }> {
     if (!account || !account.yieldPercent) {
       return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
@@ -416,9 +461,14 @@ export class YieldService {
     const isTaxExempt = account.isTaxExempt ?? false;
 
     let cdiDiarioPercent = 0;
+    let diRateDate: Date | undefined;
+    let diRateFallback = false;
     try {
       const targetDate = this.resolveCdiTargetDate(account);
-      cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
+      const rate = await this.getCdiDiarioResult(account, targetDate);
+      cdiDiarioPercent = rate.ratePercent;
+      diRateDate = rate.rateDate;
+      diRateFallback = rate.fallback;
     } catch {
       this.messenger.errorHandler('Não foi possível carregar a taxa DI. Usando último rendimento.');
       return {
@@ -510,6 +560,9 @@ export class YieldService {
       iofTotal: fromCents(iofC),
       irTotal: fromCents(irC),
       totalAplicado: fromCents(principalTotalC),
+      diRatePercent: cdiDiarioPercent,
+      diRateDate,
+      diRateFallback,
     };
   }
 
@@ -521,6 +574,9 @@ export class YieldService {
     iofTotal: number;
     irTotal: number;
     totalAplicado: number;
+    diRatePercent?: number;
+    diRateDate?: Date;
+    diRateFallback?: boolean;
   }> {
     if (!account || !account.yieldPercent)
       return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
@@ -531,9 +587,14 @@ export class YieldService {
 
     // CDI do dia-alvo (D0/D-1…)
     let cdiDiarioPercent = 0;
+    let diRateDate: Date | undefined;
+    let diRateFallback = false;
     try {
       const targetDate = this.resolveCdiTargetDate(account);
-      cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
+      const rate = await this.getCdiDiarioResult(account, targetDate);
+      cdiDiarioPercent = rate.ratePercent;
+      diRateDate = rate.rateDate;
+      diRateFallback = rate.fallback;
     } catch {
       this.messenger.errorHandler('Não foi possível carregar a taxa DI. Usando último rendimento.');
       return {
@@ -611,6 +672,9 @@ export class YieldService {
       iofTotal: trunc2(iofAmount),
       irTotal: trunc2(irBase * (irPercent / 100)),
       totalAplicado: trunc2(principalTotal),
+      diRatePercent: cdiDiarioPercent,
+      diRateDate,
+      diRateFallback,
     };
   }
 
@@ -792,6 +856,9 @@ export class YieldService {
     iofTotal: number;
     irTotal: number;
     totalAplicado: number;
+    diRatePercent?: number;
+    diRateDate?: Date;
+    diRateFallback?: boolean;
   }> {
     if (!account || !account.yieldPercent) {
       return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
@@ -839,6 +906,9 @@ export class YieldService {
       : 0;
 
     let grossYieldDay = 0;
+    let diRatePercent: number | undefined;
+    let diRateDate: Date | undefined;
+    let diRateFallback = false;
 
     const shouldGenerateGrossYield = this.shouldGenerateGrossYieldForMercadoPago(
       launchDate,
@@ -851,7 +921,11 @@ export class YieldService {
       let cdiDiarioPercent: number | null = null;
 
       try {
-        cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
+        const rate = await this.getCdiDiarioResult(account, targetDate);
+        cdiDiarioPercent = rate.ratePercent;
+        diRatePercent = rate.ratePercent;
+        diRateDate = rate.rateDate;
+        diRateFallback = rate.fallback;
       } catch {
         this.messenger.errorHandler('Não foi possível carregar a taxa DI.');
         cdiDiarioPercent = null;
@@ -916,6 +990,9 @@ export class YieldService {
       iofTotal,
       irTotal,
       totalAplicado: principalTotal,
+      diRatePercent,
+      diRateDate,
+      diRateFallback,
     };
   }
 
@@ -935,6 +1012,9 @@ export class YieldService {
     totalNet: number;
     iofTotal: number;
     irTotal: number;
+    diRatePercent?: number;
+    diRateDate?: Date;
+    diRateFallback?: boolean;
   }> {
     const round2 = (value: number): number =>
       Math.round((value + Number.EPSILON) * 100) / 100;
@@ -943,10 +1023,14 @@ export class YieldService {
     const isTaxExempt = account.isTaxExempt ?? false;
 
     let cdiDailyPercent = 0;
-
+    let diRateDate: Date | undefined;
+    let diRateFallback = false;
     try {
       const targetDate = this.resolveCdiTargetDate(account);
-      cdiDailyPercent = await this.getCdiDiarioPercent(targetDate);
+      const rate = await this.getCdiDiarioResult(account, targetDate);
+      cdiDailyPercent = rate.ratePercent;
+      diRateDate = rate.rateDate;
+      diRateFallback = rate.fallback;
     } catch {
       this.messenger.errorHandler('Não foi possível carregar a taxa DI.');
       cdiDailyPercent = 0;
@@ -1011,6 +1095,9 @@ export class YieldService {
       totalNet: round2(details.reduce((sum, detail) => sum + Number(detail.totalBalance ?? 0), 0)),
       iofTotal: round2(details.reduce((sum, detail) => sum + Number(detail.totalIOF ?? 0), 0)),
       irTotal: round2(details.reduce((sum, detail) => sum + Number(detail.totalIR ?? 0), 0)),
+      diRatePercent: cdiDailyPercent,
+      diRateDate,
+      diRateFallback,
     };
   }
 
@@ -1027,6 +1114,9 @@ export class YieldService {
     iofTotal: number;
     irTotal: number;
     totalAplicado: number;
+    diRatePercent?: number;
+    diRateDate?: Date;
+    diRateFallback?: boolean;
   }> {
     if (!account || !account.yieldPercent) {
       return { totalGross: 0, totalNet: 0, grossYield: 0, netYield: 0, iofTotal: 0, irTotal: 0, totalAplicado: 0 };
@@ -1041,11 +1131,16 @@ export class YieldService {
 
     // 1) CDI diário do dia-alvo
     let cdiDiarioPercent = 0;
+    let diRateDate: Date | undefined;
+    let diRateFallback = false;
     try {
       // mantém sua regra de “qual data buscar CDI”
       // (normalmente CDI do último dia útil / fechamento)
       const targetDate = this.resolveCdiTargetDate(account);
-      cdiDiarioPercent = await this.getCdiDiarioPercent(targetDate);
+      const rate = await this.getCdiDiarioResult(account, targetDate);
+      cdiDiarioPercent = rate.ratePercent;
+      diRateDate = rate.rateDate;
+      diRateFallback = rate.fallback;
     } catch {
       // fallback conservador
       this.messenger.errorHandler('Não foi possível carregar a taxa DI. Usando último rendimento.');
@@ -1166,6 +1261,9 @@ export class YieldService {
       iofTotal: calculated.iofTotal,
       irTotal: calculated.irTotal,
       totalAplicado: principalTotal,
+      diRatePercent: cdiDiarioPercent,
+      diRateDate,
+      diRateFallback,
     };
   }
 

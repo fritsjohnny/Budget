@@ -297,6 +297,11 @@
           </div>
         </div>
 
+        <div class="modern-calculation-options" *ngIf="diRateFallbackNotice" role="status" aria-live="polite">
+          <mat-icon color="warn">info</mat-icon>
+          <span>{{ diRateFallbackNotice }}</span>
+        </div>
+
         <div class="modern-calculation-options">
           <mat-checkbox [(ngModel)]="noRecalculate" formControlName="noRecalculateFormControl">
             Não calcular valores relacionados

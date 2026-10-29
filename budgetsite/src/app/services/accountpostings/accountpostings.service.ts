@@ -39,6 +39,13 @@ export class AccountPostingsService {
     );
   }
 
+  getLatestDiRate(accountId: number): Observable<AccountsPostings> {
+    return this.http.get<AccountsPostings>(`${ApiUrls.accountspostings}/latest-di-rate/${accountId}`).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
   update(accountPosting: AccountsPostings): Observable<AccountsPostings> {
 
     return this.http.put<AccountsPostings>(`${ApiUrls.accountspostings}/${accountPosting.id}`, accountPosting).pipe(

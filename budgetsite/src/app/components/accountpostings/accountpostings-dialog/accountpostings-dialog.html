@@ -439,6 +439,12 @@
                 </div>
                 <p></p>
             </div>
+            <div class="row" *ngIf="accountPosting.type == 'Y' && diRateFallbackNotice" role="status" aria-live="polite">
+                <div class="col-12">
+                    <mat-icon color="warn">info</mat-icon>
+                    <strong>{{ diRateFallbackNotice }}</strong>
+                </div>
+            </div>
             <div
                 class="row"
                 *ngIf="accountPosting.type == 'Y' && accountPosting.algorithmType === '3'"

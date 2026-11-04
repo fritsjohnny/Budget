@@ -179,32 +179,68 @@
 
             <div class="modern-paired-grid">
               <div class="modern-field-column">
-                <mat-form-field appearance="fill" floatLabel="always">
-                  <mat-label>Valor bruto</mat-label>
-                  <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.grossAmount" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationGrossAmountChanged(detail)" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" floatLabel="always">
-                  <mat-label>Saldo bruto</mat-label>
-                  <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalGrossBalance" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalGrossBalanceChanged(detail)" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" floatLabel="always">
-                  <mat-label>Desconto de IOF</mat-label>
-                  <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIOF" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIOFChanged(detail)" />
-                </mat-form-field>
+                <div class="yield-adjustable-field">
+                  <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Valor bruto</mat-label>
+                    <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.grossAmount" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationGrossAmountChanged(detail)" />
+                  </mat-form-field>
+                  <div class="yield-field-stepper" aria-label="Ajustar valor bruto">
+                    <button mat-icon-button type="button" aria-label="Diminuir valor bruto" (click)="detail.grossAmount = (detail.grossAmount || 0) > 0 ? (detail.grossAmount || 0) - 0.01 : 0; onApplicationGrossAmountChanged(detail)"><mat-icon>remove</mat-icon></button>
+                    <button mat-icon-button type="button" aria-label="Aumentar valor bruto" (click)="detail.grossAmount = (detail.grossAmount || 0) + 0.01; onApplicationGrossAmountChanged(detail)"><mat-icon>add</mat-icon></button>
+                  </div>
+                </div>
+                <div class="yield-adjustable-field">
+                  <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Saldo bruto</mat-label>
+                    <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalGrossBalance" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalGrossBalanceChanged(detail)" />
+                  </mat-form-field>
+                  <div class="yield-field-stepper" aria-label="Ajustar saldo bruto">
+                    <button mat-icon-button type="button" aria-label="Diminuir saldo bruto" (click)="detail.totalGrossBalance = (detail.totalGrossBalance || 0) > 0 ? (detail.totalGrossBalance || 0) - 0.01 : 0; onApplicationTotalGrossBalanceChanged(detail)"><mat-icon>remove</mat-icon></button>
+                    <button mat-icon-button type="button" aria-label="Aumentar saldo bruto" (click)="detail.totalGrossBalance = (detail.totalGrossBalance || 0) + 0.01; onApplicationTotalGrossBalanceChanged(detail)"><mat-icon>add</mat-icon></button>
+                  </div>
+                </div>
+                <div class="yield-adjustable-field">
+                  <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Desconto de IOF</mat-label>
+                    <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIOF" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIOFChanged(detail)" />
+                  </mat-form-field>
+                  <div class="yield-field-stepper" aria-label="Ajustar desconto de IOF">
+                    <button mat-icon-button type="button" aria-label="Diminuir desconto de IOF" (click)="detail.totalIOF = (detail.totalIOF || 0) > 0 ? (detail.totalIOF || 0) - 0.01 : 0; onApplicationTotalIOFChanged(detail)"><mat-icon>remove</mat-icon></button>
+                    <button mat-icon-button type="button" aria-label="Aumentar desconto de IOF" (click)="detail.totalIOF = (detail.totalIOF || 0) + 0.01; onApplicationTotalIOFChanged(detail)"><mat-icon>add</mat-icon></button>
+                  </div>
+                </div>
               </div>
               <div class="modern-field-column">
-                <mat-form-field appearance="fill" floatLabel="always">
-                  <mat-label>Valor líquido</mat-label>
-                  <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.amount" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationAmountChanged(detail)" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" floatLabel="always">
-                  <mat-label>Saldo líquido</mat-label>
-                  <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalBalance" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalBalanceChanged(detail)" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" floatLabel="always">
-                  <mat-label>Desconto de IR</mat-label>
-                  <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIR" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIRChanged(detail)" />
-                </mat-form-field>
+                <div class="yield-adjustable-field">
+                  <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Valor líquido</mat-label>
+                    <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.amount" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationAmountChanged(detail)" />
+                  </mat-form-field>
+                  <div class="yield-field-stepper" aria-label="Ajustar valor líquido">
+                    <button mat-icon-button type="button" aria-label="Diminuir valor líquido" (click)="detail.amount = (detail.amount || 0) > 0 ? (detail.amount || 0) - 0.01 : 0; onApplicationAmountChanged(detail)"><mat-icon>remove</mat-icon></button>
+                    <button mat-icon-button type="button" aria-label="Aumentar valor líquido" (click)="detail.amount = (detail.amount || 0) + 0.01; onApplicationAmountChanged(detail)"><mat-icon>add</mat-icon></button>
+                  </div>
+                </div>
+                <div class="yield-adjustable-field">
+                  <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Saldo líquido</mat-label>
+                    <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalBalance" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalBalanceChanged(detail)" />
+                  </mat-form-field>
+                  <div class="yield-field-stepper" aria-label="Ajustar saldo líquido">
+                    <button mat-icon-button type="button" aria-label="Diminuir saldo líquido" (click)="detail.totalBalance = (detail.totalBalance || 0) > 0 ? (detail.totalBalance || 0) - 0.01 : 0; onApplicationTotalBalanceChanged(detail)"><mat-icon>remove</mat-icon></button>
+                    <button mat-icon-button type="button" aria-label="Aumentar saldo líquido" (click)="detail.totalBalance = (detail.totalBalance || 0) + 0.01; onApplicationTotalBalanceChanged(detail)"><mat-icon>add</mat-icon></button>
+                  </div>
+                </div>
+                <div class="yield-adjustable-field">
+                  <mat-form-field appearance="fill" floatLabel="always">
+                    <mat-label>Desconto de IR</mat-label>
+                    <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIR" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIRChanged(detail)" />
+                  </mat-form-field>
+                  <div class="yield-field-stepper" aria-label="Ajustar desconto de IR">
+                    <button mat-icon-button type="button" aria-label="Diminuir desconto de IR" (click)="detail.totalIR = (detail.totalIR || 0) > 0 ? (detail.totalIR || 0) - 0.01 : 0; onApplicationTotalIRChanged(detail)"><mat-icon>remove</mat-icon></button>
+                    <button mat-icon-button type="button" aria-label="Aumentar desconto de IR" (click)="detail.totalIR = (detail.totalIR || 0) + 0.01; onApplicationTotalIRChanged(detail)"><mat-icon>add</mat-icon></button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -233,38 +269,68 @@
         </div>
                 <div class="modern-paired-grid" *ngIf="accountPosting.type === 'Y' && !hasMultipleApplications">
           <div class="modern-field-column">
-            <mat-form-field appearance="fill" floatLabel="always">
-              <mat-label>Valor bruto</mat-label>
-              <input #primaryValueInput matInput tabindex="2" inputmode="numeric" currencyMask formControlName="grossAmountFormControl" [(ngModel)]="accountPosting.grossAmount" placeholder="0" autocomplete="off" (ngModelChange)="onValorBrutoChanged($event)" />
-            </mat-form-field>
+            <div class="yield-adjustable-field">
+              <mat-form-field appearance="fill" floatLabel="always">
+                <mat-label>Valor bruto</mat-label>
+                <input #primaryValueInput matInput tabindex="2" inputmode="numeric" currencyMask formControlName="grossAmountFormControl" [(ngModel)]="accountPosting.grossAmount" placeholder="0" autocomplete="off" (ngModelChange)="onValorBrutoChanged($event)" />
+              </mat-form-field>
+              <div class="yield-field-stepper" aria-label="Ajustar valor bruto">
+                <button mat-icon-button type="button" aria-label="Diminuir valor bruto" (click)="accountPosting.grossAmount = (accountPosting.grossAmount || 0) > 0 ? (accountPosting.grossAmount || 0) - 0.01 : 0; onValorBrutoChanged(accountPosting.grossAmount)"><mat-icon>remove</mat-icon></button>
+                <button mat-icon-button type="button" aria-label="Aumentar valor bruto" (click)="accountPosting.grossAmount = (accountPosting.grossAmount || 0) + 0.01; onValorBrutoChanged(accountPosting.grossAmount)"><mat-icon>add</mat-icon></button>
+              </div>
+            </div>
 
-            <mat-form-field appearance="fill" floatLabel="always">
-              <mat-label>Saldo bruto</mat-label>
-              <input matInput inputmode="numeric" currencyMask formControlName="totalGrossBalanceFormControl" [(ngModel)]="saldoBruto" placeholder="0" autocomplete="off" (ngModelChange)="onSaldoBrutoChanged($event)" />
-            </mat-form-field>
+            <div class="yield-adjustable-field">
+              <mat-form-field appearance="fill" floatLabel="always">
+                <mat-label>Saldo bruto</mat-label>
+                <input matInput inputmode="numeric" currencyMask formControlName="totalGrossBalanceFormControl" [(ngModel)]="saldoBruto" placeholder="0" autocomplete="off" (ngModelChange)="onSaldoBrutoChanged($event)" />
+              </mat-form-field>
+              <div class="yield-field-stepper" aria-label="Ajustar saldo bruto">
+                <button mat-icon-button type="button" aria-label="Diminuir saldo bruto" (click)="saldoBruto = (saldoBruto || 0) > 0 ? (saldoBruto || 0) - 0.01 : 0; onSaldoBrutoChanged(saldoBruto)"><mat-icon>remove</mat-icon></button>
+                <button mat-icon-button type="button" aria-label="Aumentar saldo bruto" (click)="saldoBruto = (saldoBruto || 0) + 0.01; onSaldoBrutoChanged(saldoBruto)"><mat-icon>add</mat-icon></button>
+              </div>
+            </div>
 
-            <mat-form-field appearance="fill" floatLabel="always">
-              <mat-label>Desconto de IOF</mat-label>
-              <input matInput inputmode="numeric" currencyMask formControlName="iofTotalFormControl" [(ngModel)]="accountPosting.totalIOF" placeholder="0" autocomplete="off" (ngModelChange)="onTotalIOFChanged($event)" />
-            </mat-form-field>
+            <div class="yield-adjustable-field">
+              <mat-form-field appearance="fill" floatLabel="always">
+                <mat-label>Desconto de IOF</mat-label>
+                <input matInput inputmode="numeric" currencyMask formControlName="iofTotalFormControl" [(ngModel)]="accountPosting.totalIOF" placeholder="0" autocomplete="off" (ngModelChange)="onTotalIOFChanged($event)" />
+              </mat-form-field>
+              <div class="yield-field-stepper" aria-label="Ajustar desconto de IOF">
+                <button mat-icon-button type="button" aria-label="Diminuir desconto de IOF" (click)="accountPosting.totalIOF = (accountPosting.totalIOF || 0) > 0 ? (accountPosting.totalIOF || 0) - 0.01 : 0; onTotalIOFChanged(accountPosting.totalIOF)"><mat-icon>remove</mat-icon></button>
+                <button mat-icon-button type="button" aria-label="Aumentar desconto de IOF" (click)="accountPosting.totalIOF = (accountPosting.totalIOF || 0) + 0.01; onTotalIOFChanged(accountPosting.totalIOF)"><mat-icon>add</mat-icon></button>
+              </div>
+            </div>
           </div>
 
           <div class="modern-field-column">
-            <mat-form-field appearance="fill" floatLabel="always">
-              <mat-label>Valor líquido</mat-label>
-              <input matInput inputmode="numeric" currencyMask formControlName="amountFormControl" [(ngModel)]="accountPosting.amount" placeholder="0" autocomplete="off" (ngModelChange)="onValorChanged($event)" />
-              <mat-error *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
-            </mat-form-field>
+            <div class="yield-adjustable-field">
+              <mat-form-field appearance="fill" floatLabel="always">
+                <mat-label>Valor líquido</mat-label>
+                <input matInput inputmode="numeric" currencyMask formControlName="amountFormControl" [(ngModel)]="accountPosting.amount" placeholder="0" autocomplete="off" (ngModelChange)="onValorChanged($event)" />
+                <mat-error *ngIf="accountPostingFormGroup.get('amountFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error>
+              </mat-form-field>
+              <div class="yield-field-stepper" aria-label="Ajustar valor líquido">
+                <button mat-icon-button type="button" aria-label="Diminuir valor líquido" (click)="accountPosting.amount = (accountPosting.amount || 0) > 0 ? (accountPosting.amount || 0) - 0.01 : 0; onValorChanged(accountPosting.amount)"><mat-icon>remove</mat-icon></button>
+                <button mat-icon-button type="button" aria-label="Aumentar valor líquido" (click)="accountPosting.amount = (accountPosting.amount || 0) + 0.01; onValorChanged(accountPosting.amount)"><mat-icon>add</mat-icon></button>
+              </div>
+            </div>
 
             <mat-form-field appearance="fill" floatLabel="always">
               <mat-label>Saldo líquido</mat-label>
               <input matInput inputmode="numeric" currencyMask formControlName="totalBalanceFormControl" readonly  placeholder="0" autocomplete="off"  />
             </mat-form-field>
 
-            <mat-form-field appearance="fill" floatLabel="always">
-              <mat-label>Desconto de IR</mat-label>
-              <input matInput inputmode="numeric" currencyMask formControlName="irTotalFormControl" [(ngModel)]="accountPosting.totalIR" placeholder="0" autocomplete="off" (ngModelChange)="onTotalIRChanged($event)" />
-            </mat-form-field>
+            <div class="yield-adjustable-field">
+              <mat-form-field appearance="fill" floatLabel="always">
+                <mat-label>Desconto de IR</mat-label>
+                <input matInput inputmode="numeric" currencyMask formControlName="irTotalFormControl" [(ngModel)]="accountPosting.totalIR" placeholder="0" autocomplete="off" (ngModelChange)="onTotalIRChanged($event)" />
+              </mat-form-field>
+              <div class="yield-field-stepper" aria-label="Ajustar desconto de IR">
+                <button mat-icon-button type="button" aria-label="Diminuir desconto de IR" (click)="accountPosting.totalIR = (accountPosting.totalIR || 0) > 0 ? (accountPosting.totalIR || 0) - 0.01 : 0; onTotalIRChanged(accountPosting.totalIR)"><mat-icon>remove</mat-icon></button>
+                <button mat-icon-button type="button" aria-label="Aumentar desconto de IR" (click)="accountPosting.totalIR = (accountPosting.totalIR || 0) + 0.01; onTotalIRChanged(accountPosting.totalIR)"><mat-icon>add</mat-icon></button>
+              </div>
+            </div>
           </div>
         </div>
       </section>

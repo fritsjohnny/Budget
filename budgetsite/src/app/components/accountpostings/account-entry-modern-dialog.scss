@@ -95,6 +95,71 @@
   text-align: center;
 }
 
+.yield-adjustable-field button[mat-icon-button] {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--entry-border);
+  border-radius: 50%;
+  background: var(--entry-surface-strong);
+  color: var(--entry-accent);
+  line-height: 28px;
+}
+
+.yield-adjustable-field {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.yield-adjustable-field mat-form-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+::ng-deep .modern-account-posting-entry-dialog .yield-adjustable-field .mat-form-field-wrapper {
+  padding-bottom: 0.65em;
+}
+
+::ng-deep .modern-account-posting-entry-dialog .yield-adjustable-field .mat-form-field-flex {
+  min-height: 52px;
+  box-sizing: border-box;
+}
+
+.yield-field-stepper {
+  display: flex;
+  flex: 0 0 22px;
+  height: 52px;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1px;
+}
+
+.yield-field-stepper button[mat-icon-button] {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border: 1px solid var(--entry-border);
+  border-radius: 50%;
+  background: var(--entry-surface-strong);
+  color: var(--entry-accent);
+  line-height: 20px;
+}
+
+.yield-field-stepper button[mat-icon-button] mat-icon {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+  line-height: 14px;
+}
+
+.yield-field-stepper button[mat-icon-button]:hover {
+  border-color: var(--entry-accent);
+  background: var(--entry-accent-soft);
+}
+
 .modern-calculation-options {
   display: grid;
   gap: 10px;

@@ -118,14 +118,18 @@
                         <h3>Valor poupado no mês</h3>
                         <p>Diferença em relação ao saldo do mês anterior</p>
                         <div class="metric-dual-values">
-                            <span class="metric-green-text"
+                            <span
+                                [class.metric-green-text]="context.totalsAccountsSummary.forecastSpared >= 0"
+                                [class.metric-red-text]="context.totalsAccountsSummary.forecastSpared < 0"
                                 ><small>Previsto</small
                                 ><b>{{
                                     context.totalsAccountsSummary.forecastSpared
                                         | currency: "BRL" : "symbol" : "1.2-2"
                                 }}</b></span
                             >
-                            <span class="metric-green-text"
+                            <span
+                                [class.metric-green-text]="context.totalsAccountsSummary.availableSpared >= 0"
+                                [class.metric-red-text]="context.totalsAccountsSummary.availableSpared < 0"
                                 ><small>Disponível</small
                                 ><b>{{
                                     context.totalsAccountsSummary

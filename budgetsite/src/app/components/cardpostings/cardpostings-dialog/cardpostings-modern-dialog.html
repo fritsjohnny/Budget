@@ -48,7 +48,14 @@
       <div class="modern-paired-grid modern-card-values-grid">
         <div class="modern-field-column">
           <mat-form-field appearance="fill" floatLabel="always"><mat-label>Valor total</mat-label><input #totalAmountInput matInput inputmode="numeric" currencyMask formControlName="totalAmountFormControl" [(ngModel)]="cardPosting.totalAmount" placeholder="0" (ngModelChange)="calculateAmount()" autocomplete="off"><mat-error *ngIf="cardPostingFormGroup.get('totalAmountFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error></mat-form-field>
-          <mat-form-field appearance="fill" floatLabel="always"><mat-label>Valor da parcela</mat-label><input matInput inputmode="numeric" currencyMask formControlName="amountFormControl" [(ngModel)]="cardPosting.amount" placeholder="0" autocomplete="off"><mat-error *ngIf="cardPostingFormGroup.get('amountFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error></mat-form-field><div class="modern-sign-action"><button mat-mini-fab type="button" class="modern-sign-toggle" matTooltip="Alternar valor positivo ou negativo" aria-label="Alternar valor positivo ou negativo" (click)="setPositiveOrNegative()">+/−</button></div>
+          <div class="modern-card-installment-editor">
+            <mat-form-field appearance="fill" floatLabel="always"><mat-label>Valor da parcela</mat-label><input matInput inputmode="numeric" currencyMask formControlName="amountFormControl" [(ngModel)]="cardPosting.amount" placeholder="0" autocomplete="off"><mat-error *ngIf="cardPostingFormGroup.get('amountFormControl')?.hasError('required')">Campo <strong>obrigatório</strong>.</mat-error></mat-form-field>
+            <div class="modern-card-installment-stepper" *ngIf="cardPosting.editing" aria-label="Ajustar valor da parcela">
+              <button mat-icon-button type="button" aria-label="Aumentar valor da parcela" (click)="cardPosting.amount = (cardPosting.amount || 0) + 0.01"><mat-icon>add</mat-icon></button>
+              <button mat-icon-button type="button" aria-label="Diminuir valor da parcela" (click)="cardPosting.amount = (cardPosting.amount || 0) > 0 ? (cardPosting.amount || 0) - 0.01 : 0"><mat-icon>remove</mat-icon></button>
+            </div>
+          </div>
+          <div class="modern-sign-action"><button mat-mini-fab type="button" class="modern-sign-toggle" matTooltip="Alternar valor positivo ou negativo" aria-label="Alternar valor positivo ou negativo" (click)="setPositiveOrNegative()">+/−</button></div>
         </div>
         <div class="modern-field-column">
           <mat-form-field appearance="fill" floatLabel="always"><mat-label>Total de parcelas</mat-label><input matInput type="number" inputmode="numeric" formControlName="parcelsFormControl" [(ngModel)]="cardPosting.parcels" min="1" (change)="onParcelsChanged($event)" onfocus="this.select()"></mat-form-field>

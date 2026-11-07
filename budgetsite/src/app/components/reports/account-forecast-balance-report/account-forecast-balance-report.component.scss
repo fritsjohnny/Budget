@@ -10,7 +10,7 @@
     display: grid;
     grid-template-columns: max-content max-content;
     justify-content: start;
-    column-gap: 40px;
+    column-gap: 24px;
     row-gap: 12px;
     margin-bottom: 16px;
     padding: 12px;
@@ -34,6 +34,14 @@
     font-size: 12px;
     opacity: 0.75;
     white-space: nowrap;
+}
+
+.account-forecast-summary strong.balance-positive {
+    color: var(--report-green, #2e9d63) !important;
+}
+
+.account-forecast-summary strong.balance-negative {
+    color: var(--report-negative, #d94f68) !important;
 }
 
 .table-container {
@@ -62,7 +70,8 @@ table {
 }
 
 .mat-column-amount,
-.mat-column-balance {
+.mat-column-balance,
+.mat-column-generalBalance {
     width: 140px;
     text-align: right;
     padding-right: 10px;

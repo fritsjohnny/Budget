@@ -692,16 +692,35 @@
     color: var(--modern-muted);
 }
 
-.pending-content strong {
+.pending-amount-row {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 1px;
+}
+
+.pending-amount-row mat-icon {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 20px;
+}
+
+.pending-amount-row strong {
+    min-width: 0;
     margin-top: 1px;
     font-size: clamp(14px, 2vw, 20px);
 }
 
-.pending-pay {
+.pending-pay,
+.pending-pay strong {
     color: var(--modern-red) !important;
 }
 
-.pending-receive {
+.pending-receive,
+.pending-receive strong {
     color: var(--modern-blue) !important;
 }
 
@@ -1930,7 +1949,19 @@
         font-size: 10px;
     }
 
-    .pending-content strong {
+    .pending-amount-row {
+        gap: 3px;
+    }
+
+    .pending-amount-row mat-icon {
+        flex-basis: 18px;
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+        line-height: 18px;
+    }
+
+    .pending-amount-row strong {
         font-size: 14px;
     }
 

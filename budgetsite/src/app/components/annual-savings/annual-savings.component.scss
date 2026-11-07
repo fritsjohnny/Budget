@@ -12,7 +12,8 @@
     display: grid;
     gap: 8px;
     min-width: 250px;
-    padding: 4px 2px;
+    box-sizing: border-box;
+    padding: 8px 12px;
 }
 
 .annual-modern-reference-options .annual-checkbox-title {
@@ -316,6 +317,8 @@
 
 .annual-balance-summary {
     display: grid;
+    width: 100%;
+    box-sizing: border-box;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin-top: 10px;
@@ -964,6 +967,7 @@
 }
 
 .annual-summary-current,
+.annual-summary-closing,
 .annual-economy-total {
     --annual-card-accent: var(--annual-positive);
     --annual-card-soft: rgba(41, 164, 82, 0.12);
@@ -1075,7 +1079,127 @@
     white-space: nowrap;
 }
 
+.annual-summary-closing {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+.annual-closing-content {
+    min-width: 0;
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+}
+
+.annual-closing-content,
+.annual-closing-period,
+.annual-closing-values,
+.annual-closing-values > div {
+    box-sizing: border-box;
+}
+
+.annual-closing-period {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    align-self: stretch;
+    gap: 10px;
+    padding: 8px 14px;
+}
+
+.annual-closing-period + .annual-closing-period {
+    border-left: 1px solid var(--annual-border);
+}
+
+.annual-closing-previous {
+    --annual-card-accent: var(--annual-primary);
+    --annual-card-soft: var(--annual-primary-soft);
+}
+
+.annual-closing-copy {
+    min-width: 0;
+    flex: 1;
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.annual-closing-period .annual-summary-icon {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    margin: auto 0;
+    background: var(--annual-card-soft) !important;
+    color: var(--annual-card-accent) !important;
+}
+
+.annual-closing-date {
+    display: block;
+    max-width: 100%;
+    color: var(--annual-card-accent);
+    font-size: clamp(15px, 2vw, 22px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.annual-closing-legend {
+    display: block;
+    margin-top: 0;
+    color: var(--annual-muted);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.annual-closing-values {
+    margin-top: 0;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+}
+
+.annual-closing-values > div {
+    min-width: 0;
+}
+
+.annual-closing-values > div + div {
+    padding-top: 0;
+    padding-left: 0;
+    border: none;
+}
+
+.annual-closing-values strong {
+    display: block;
+    max-width: 100%;
+    margin-top: 2px;
+    color: var(--annual-text);
+    font-size: clamp(14px, 1.8vw, 20px);
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.annual-closing-single-value {
+    display: block;
+    max-width: 100%;
+    margin-top: 0;
+    color: var(--annual-text);
+    font-size: clamp(16px, 2vw, 22px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
 :host-context(.dark-theme) .annual-summary-current,
+:host-context(.dark-theme) .annual-summary-closing,
 :host-context(.dark-theme) .annual-economy-total {
     --annual-card-soft: rgba(63, 186, 84, 0.17);
 }
@@ -1190,5 +1314,73 @@
 
     .annual-summary-values strong {
         font-size: 13px;
+    }
+
+    .annual-summary-closing {
+        min-height: 0;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .annual-summary-closing > .annual-summary-icon {
+        flex-basis: 30px;
+        width: 30px;
+        height: 30px;
+    }
+
+    .annual-summary-closing > .annual-summary-icon mat-icon {
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+        line-height: 18px;
+    }
+
+    .annual-closing-content {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .annual-closing-period {
+        gap: 7px;
+        padding: 8px 8px;
+    }
+
+    .annual-closing-period .annual-summary-icon {
+        flex-basis: 44px;
+        width: 44px;
+        height: 44px;
+    }
+
+    .annual-closing-period .annual-summary-icon mat-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+        line-height: 24px;
+    }
+
+    .annual-closing-copy {
+        gap: 6px;
+    }
+
+    .annual-closing-date {
+        font-size: clamp(14px, 4vw, 17px);
+    }
+
+    .annual-closing-values small {
+        font-size: 10px;
+    }
+
+    .annual-closing-values strong {
+        font-size: clamp(13px, 3.6vw, 16px);
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
+
+    .annual-closing-single-value {
+        font-size: clamp(14px, 3.8vw, 17px);
+    }
+
+    .annual-closing-legend {
+        font-size: 9px;
+        line-height: 1.2;
     }
 }

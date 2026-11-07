@@ -2,7 +2,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { AfterViewInit, Component, Input, ViewChild } from '@angular/core';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { finalize } from 'rxjs';
+import { finalize, map, switchMap } from 'rxjs';
 import {
   AccountForecastBalanceReport,
   AccountForecastBalanceReportRow
@@ -11,6 +11,7 @@ import { AccountService } from 'src/app/services/account/account.service';
 
 interface AccountForecastBalanceReportTableRow extends AccountForecastBalanceReportRow {
   index: number;
+  generalBalance: number;
 }
 
 @Component({
@@ -28,7 +29,9 @@ export class AccountForecastBalanceReportComponent implements AfterViewInit {
   showReportProgress = false;
   loadingMessage: string = 'Carregando relatório de saldo previsto...';
   report: AccountForecastBalanceReport | null = null;
-  displayedDataColumns = ['index', 'date', 'description', 'amount', 'balance', 'reference'];
+  currentGeneralBalance = 0;
+  finalGeneralBalance = 0;
+  displayedDataColumns = ['index', 'date', 'description', 'amount', 'balance', 'generalBalance', 'reference'];
   dataSourceReport = new MatTableDataSource<AccountForecastBalanceReportTableRow>([]);
 
   constructor(
@@ -50,18 +53,57 @@ export class AccountForecastBalanceReportComponent implements AfterViewInit {
     const initialDate = this.formatDateForApi(this.initialDate);
     const finalDate = this.formatDateForApi(this.finalDate);
 
+    const today = new Date();
+    const currentReference = `${today.getFullYear()}${`${today.getMonth() + 1}`.padStart(2, '0')}`;
+
     this.accountService
       .getForecastBalanceReport(this.accountId, initialDate, finalDate)
-      .pipe(finalize(() => this.showReportProgress = false))
+      .pipe(
+        switchMap(report => this.accountService
+          .getAccountTotals(this.accountId, currentReference)
+          .pipe(
+            // A resposta de totais fornece o saldo geral consolidado atual.
+            // Mantemos o relatório junto para calcular a projeção registro a registro.
+            map(account => ({ report, currentGeneralBalance: account.grandTotalBalance ?? 0 }))
+          )
+        ),
+        finalize(() => this.showReportProgress = false)
+      )
       .subscribe({
-        next: (report: AccountForecastBalanceReport) => {
+        next: ({ report, currentGeneralBalance }: { report: AccountForecastBalanceReport; currentGeneralBalance: number }) => {
           this.report = report;
+          this.currentGeneralBalance = currentGeneralBalance;
+
+          const chronologicalRows = (report.rows ?? []).slice().sort((first, second) => {
+            const dateDifference = new Date(first.date).getTime() - new Date(second.date).getTime();
+            if (dateDifference !== 0) {
+              return dateDifference;
+            }
+
+            if (first.type !== second.type) {
+              return first.type === 'R' ? -1 : 1;
+            }
+
+            return first.sequence - second.sequence;
+          });
+
+          let generalBalance = currentGeneralBalance;
+          const generalBalances = new Map<AccountForecastBalanceReportRow, number>();
+
+          chronologicalRows.forEach(row => {
+            const amount = row.amount ?? 0;
+            generalBalance += amount;
+            generalBalances.set(row, generalBalance);
+          });
+
+          this.finalGeneralBalance = generalBalance;
 
           const rows: AccountForecastBalanceReportTableRow[] = (report.rows ?? [])
             .map((row, index) => ({
               ...row,
               amount: row.amount ?? 0,
               balance: row.balance ?? 0,
+              generalBalance: generalBalances.get(row) ?? currentGeneralBalance,
               index: index + 1
             }));
 
@@ -76,6 +118,8 @@ export class AccountForecastBalanceReportComponent implements AfterViewInit {
         },
         error: () => {
           this.report = null;
+          this.currentGeneralBalance = 0;
+          this.finalGeneralBalance = 0;
           this.dataSourceReport = new MatTableDataSource<AccountForecastBalanceReportTableRow>([]);
         }
       });
@@ -139,6 +183,8 @@ export class AccountForecastBalanceReportComponent implements AfterViewInit {
         return row.amount;
       case 'balance':
         return row.balance;
+      case 'generalBalance':
+        return row.generalBalance;
       case 'reference':
         return row.reference ?? '';
       default:

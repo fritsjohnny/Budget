@@ -241,15 +241,21 @@
                 <div class="pending-content">
                     <span class="summary-label">Pendentes</span>
                     <small>Pagar</small>
-                    <strong class="pending-pay">{{
-                        context.expensesRemainingTotal
-                            | currency: "BRL" : "symbol" : "1.2-2"
-                    }}</strong>
+                    <div class="pending-amount-row pending-pay">
+                        <mat-icon aria-hidden="true">south_east</mat-icon>
+                        <strong>{{
+                            context.expensesRemainingTotal
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong>
+                    </div>
                     <small>Receber</small>
-                    <strong class="pending-receive">{{
-                        context.incomesRemainingTotal
-                            | currency: "BRL" : "symbol" : "1.2-2"
-                    }}</strong>
+                    <div class="pending-amount-row pending-receive">
+                        <mat-icon aria-hidden="true">north_east</mat-icon>
+                        <strong>{{
+                            context.incomesRemainingTotal
+                                | currency: "BRL" : "symbol" : "1.2-2"
+                        }}</strong>
+                    </div>
                 </div>
             </article>
 

@@ -7,7 +7,8 @@
         <div class="summary-item">
             <span class="summary-label">Saldo atual</span>
             <strong
-                [ngClass]="report.currentBalance < 0 ? 'negative' : 'positive'"
+                [class.balance-negative]="report.currentBalance < 0"
+                [class.balance-positive]="report.currentBalance >= 0"
             >
                 {{ report.currentBalance | currency: "" : "" }}
             </strong>
@@ -15,9 +16,28 @@
         <div class="summary-item">
             <span class="summary-label">Saldo final previsto</span>
             <strong
-                [ngClass]="report.finalBalance < 0 ? 'negative' : 'positive'"
+                [class.balance-negative]="report.finalBalance < 0"
+                [class.balance-positive]="report.finalBalance >= 0"
             >
                 {{ report.finalBalance | currency: "" : "" }}
+            </strong>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Saldo geral atual</span>
+            <strong
+                [class.balance-negative]="currentGeneralBalance < 0"
+                [class.balance-positive]="currentGeneralBalance >= 0"
+            >
+                {{ currentGeneralBalance | currency: "" : "" }}
+            </strong>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Saldo geral final previsto</span>
+            <strong
+                [class.balance-negative]="finalGeneralBalance < 0"
+                [class.balance-positive]="finalGeneralBalance >= 0"
+            >
+                {{ finalGeneralBalance | currency: "" : "" }}
             </strong>
         </div>
     </div>
@@ -125,6 +145,25 @@
                 </th>
                 <td mat-cell *matCellDef="let row">
                     {{ formatReference(row.reference) }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="generalBalance">
+                <th
+                    mat-header-cell
+                    *matHeaderCellDef
+                    mat-sort-header
+                    arrowPosition="before"
+                    sortActionDescription="Ordenar por Saldo geral"
+                >
+                    Saldo geral
+                </th>
+                <td
+                    mat-cell
+                    *matCellDef="let row"
+                    [ngClass]="row.generalBalance < 0 ? 'negative' : 'green'"
+                >
+                    {{ row.generalBalance | currency: "" : "" }}
                 </td>
             </ng-container>
 

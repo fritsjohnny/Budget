@@ -136,6 +136,24 @@
     padding: 0 18px;
     background: var(--report-surface);
 }
+::ng-deep .modern-report-shell .mat-expansion-panel-header:hover,
+::ng-deep .modern-report-shell .mat-expansion-panel-header:focus,
+::ng-deep .modern-report-shell .mat-expansion-panel-header:focus-visible,
+::ng-deep .modern-report-shell .mat-expansion-panel-header.cdk-keyboard-focused,
+::ng-deep .modern-report-shell .mat-expansion-panel-header.cdk-program-focused {
+    background: var(--report-surface) !important;
+}
+
+::ng-deep .modern-report-shell .mat-expansion-panel-header::before {
+    background: transparent !important;
+}
+
+::ng-deep .modern-report-shell .mat-expansion-panel-header:hover::before,
+::ng-deep .modern-report-shell .mat-expansion-panel-header:focus::before,
+::ng-deep .modern-report-shell .mat-expansion-panel-header:focus-visible::before {
+    opacity: 0 !important;
+}
+
 ::ng-deep .modern-report-catalog .mat-expansion-panel-body {
     padding: 0 18px 18px;
 }
@@ -369,6 +387,10 @@
 ::ng-deep .modern-report-shell .account-forecast-summary .negative {
     color: var(--report-negative) !important;
 }
+
+::ng-deep .modern-report-shell .account-forecast-summary .green {
+    color: var(--report-green) !important;
+}
 .modern-report-shell .generate-report-button:disabled {
     opacity: 0.45;
     cursor: default;
@@ -376,6 +398,7 @@
 .modern-report-shell .generate-report-button .mat-icon {
     color: inherit !important;
 }
+
 .modern-report-shell .report-container {
     margin-right: 0;
     margin-left: 0;
@@ -480,7 +503,8 @@
 
 /* Mantém no relatório de saldo previsto as mesmas proporções de colunas do leiaute clássico. */
 ::ng-deep .modern-report-shell .report-container .account-forecast-table {
-    min-width: 100% !important;
+    width: max-content !important;
+    min-width: 0 !important;
 }
 ::ng-deep
     .modern-report-shell
@@ -507,7 +531,15 @@
     .report-container
     .account-forecast-table
     .mat-column-balance {
-    width: 140px;
+    width: 105px;
+}
+::ng-deep
+    .modern-report-shell
+    .report-container
+    .account-forecast-table
+    .mat-column-generalBalance {
+    width: 120px;
+    min-width: 120px;
 }
 
 /* Preserva no novo leiaute as larguras definidas por cada relatório clássico. */

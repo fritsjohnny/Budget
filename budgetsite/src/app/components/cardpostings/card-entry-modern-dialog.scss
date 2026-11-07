@@ -27,3 +27,9 @@ mat-form-field,app-datepickerinput,app-datepickerreference{width:100%!important;
 .recent-category-buttons{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;min-width:0;overflow-x:auto;overflow-y:hidden;padding-bottom:2px}
 .recent-category-suggestions button{flex:0 0 auto;width:auto;min-width:64px;min-height:36px;padding:0 14px;border-radius:999px;border-color:#f4c430;color:#f4c430;font-size:12px;font-weight:600;white-space:nowrap}
 .recent-category-suggestions button.recent-category-selected{background:#f4c430;color:#17232d;box-shadow:0 0 0 2px rgba(244,196,48,.22)}
+.modern-card-installment-editor{display:flex;align-items:flex-start;gap:6px;min-width:0}
+.modern-card-installment-editor .mat-form-field{flex:1 1 auto;min-width:0}
+.modern-card-installment-stepper{display:flex;flex:0 0 30px;height:52px;box-sizing:border-box;flex-direction:column;align-items:center;justify-content:space-between;padding-top:1px}
+.modern-card-installment-stepper button[mat-icon-button]{width:24px;height:24px;min-width:24px;border:1px solid var(--entry-border);border-radius:50%;background:var(--entry-surface-strong);color:var(--entry-accent);line-height:20px}
+.modern-card-installment-stepper button[mat-icon-button] mat-icon{width:14px;height:14px;font-size:14px;line-height:14px}
+.modern-card-installment-stepper button[mat-icon-button]:hover{border-color:var(--entry-accent);background:var(--entry-accent-soft)}

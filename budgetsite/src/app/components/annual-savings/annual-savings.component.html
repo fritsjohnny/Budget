@@ -236,79 +236,44 @@
         *ngIf="!showProgress && report && useModernLayout"
         aria-label="Resumo dos saldos anuais"
     >
-        <article class="annual-summary-card annual-summary-previous">
-            <span class="annual-summary-icon">
-                <mat-icon>history</mat-icon>
-            </span>
-            <div class="annual-summary-content">
-                <span class="annual-summary-label">{{
-                    getPreviousYearEndDateLabel()
-                }}</span>
-                <ng-container *ngIf="!showPreviousYearForecastBalance">
-                    <strong [ngClass]="getValueClass(previousYearRealBalance)">
-                        {{ formatCurrency(previousYearRealBalance) }}
-                    </strong>
-                </ng-container>
-                <div
-                    class="annual-summary-values"
-                    *ngIf="showPreviousYearForecastBalance"
-                >
-                    <div>
-                        <small>Previsto</small>
-                        <strong
-                            [ngClass]="getValueClass(previousYearForecastBalance)"
-                        >
-                            {{ formatCurrency(previousYearForecastBalance) }}
-                        </strong>
-                    </div>
-                    <div>
-                        <small>Real</small>
-                        <strong
-                            [ngClass]="getValueClass(previousYearRealBalance)"
-                        >
+        <article class="annual-summary-card annual-summary-closing">
+            <div class="annual-closing-content">
+                <div class="annual-closing-period annual-closing-previous">
+                    <span class="annual-summary-icon">
+                        <mat-icon>history</mat-icon>
+                    </span>
+                    <div class="annual-closing-copy">
+                        <strong class="annual-closing-date">{{ getPreviousYearEndDateLabel() }}</strong>
+                        <strong class="annual-closing-single-value" [ngClass]="getValueClass(previousYearRealBalance)">
                             {{ formatCurrency(previousYearRealBalance) }}
                         </strong>
+                        <small class="annual-closing-legend">Fechamento antes do ano selecionado</small>
                     </div>
                 </div>
-                <small class="annual-card-legend">Fechamento antes do ano selecionado</small>
-            </div>
-        </article>
 
-        <article class="annual-summary-card annual-summary-current">
-            <span class="annual-summary-icon">
-                <mat-icon>account_balance_wallet</mat-icon>
-            </span>
-            <div class="annual-summary-content">
-                <span class="annual-summary-label">{{
-                    getCurrentYearEndDateLabel()
-                }}</span>
-                <ng-container *ngIf="!showCurrentYearForecastBalance">
-                    <strong [ngClass]="getValueClass(currentYearRealBalance)">
-                        {{ formatCurrency(currentYearRealBalance) }}
-                    </strong>
-                </ng-container>
-                <div
-                    class="annual-summary-values"
-                    *ngIf="showCurrentYearForecastBalance"
-                >
-                    <div>
-                        <small>Previsto</small>
-                        <strong
-                            [ngClass]="getValueClass(currentYearForecastBalance)"
-                        >
-                            {{ formatCurrency(currentYearForecastBalance) }}
-                        </strong>
-                    </div>
-                    <div>
-                        <small>Real</small>
-                        <strong
-                            [ngClass]="getValueClass(currentYearRealBalance)"
-                        >
-                            {{ formatCurrency(currentYearRealBalance) }}
-                        </strong>
+                <div class="annual-closing-period annual-closing-current">
+                    <span class="annual-summary-icon">
+                        <mat-icon>account_balance_wallet</mat-icon>
+                    </span>
+                    <div class="annual-closing-copy">
+                        <strong class="annual-closing-date">{{ getCurrentYearEndDateLabel() }}</strong>
+                        <div class="annual-closing-values annual-closing-stacked-values">
+                            <div>
+                                <small *ngIf="showCurrentYearForecastBalance">Previsto</small>
+                                <strong [ngClass]="getValueClass(currentYearForecastBalance)">
+                                    {{ formatCurrency(currentYearForecastBalance) }}
+                                </strong>
+                            </div>
+                            <div *ngIf="showCurrentYearForecastBalance">
+                                <small>Real</small>
+                                <strong [ngClass]="getValueClass(currentYearRealBalance)">
+                                    {{ formatCurrency(currentYearRealBalance) }}
+                                </strong>
+                            </div>
+                        </div>
+                        <small class="annual-closing-legend">Fechamento ao fim do ano selecionado</small>
                     </div>
                 </div>
-                <small class="annual-card-legend">Fechamento ao fim do ano selecionado</small>
             </div>
         </article>
     </section>

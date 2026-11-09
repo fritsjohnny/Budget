@@ -321,7 +321,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       const account = this.accountPosting.accountsList?.find(
         item => item.id === this.accountPosting.accountId
       );
-      const irPercent = Number(account?.irPercent ?? 22.5);
+      const postingDate = new Date(this.accountPosting.date);
+      const appliedDate = new Date(application.dateApplied);
+      postingDate.setHours(0, 0, 0, 0);
+      appliedDate.setHours(0, 0, 0, 0);
+      const applicationDays = Math.max(0, Math.floor((postingDate.getTime() - appliedDate.getTime()) / 86400000));
+      const irPercent = this.yieldService.irRateFromApplicationDays(applicationDays);
       const ir = account?.isTaxExempt ? 0 : this.round2(irBase * irPercent / 100);
       const newNetBalance = this.round2(Number(detail.totalGrossBalance ?? 0) - iof - ir);
 
@@ -535,6 +540,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         grossBalanceBefore: await this.getApplicationGrossBalanceBefore(application, launchDate),
         netBalanceBefore: await this.getApplicationNetBalanceBefore(application, launchDate),
         iofElapsedDays: await this.getApplicationIofDaysBefore(application, launchDate),
+        referenceDate: launchDate,
       }))
     );
 
@@ -1072,6 +1078,12 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
         const selectedAccount = this.accountPosting.accountsList?.find((a) => a.id === this.accountPosting.accountId);
         const account = selectedAccount ? { ...selectedAccount } : undefined;
+
+        // O tipo pode mudar antes que a lista/conta selecionada esteja disponível.
+        // Aguarda a próxima alteração da conta em vez de desreferenciar undefined.
+        if (!account) {
+          return;
+        }
 
         if (account?.id && !this.accountApplications) {
           try {

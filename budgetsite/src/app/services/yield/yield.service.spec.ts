@@ -85,6 +85,32 @@ describe('YieldService - múltiplas aplicações', () => {
     expect(result.netYield).toBe(0.29);
   });
 
+  it('usa a faixa de IR da data da aplicação e bate com o exemplo do PicPay', async () => {
+    const application = {
+      ...createApplication(3, 30000),
+      dateApplied: new Date('2026-02-04T00:00:00')
+    };
+    const applicationService = {
+      readByAccount: () => of([application])
+    } as unknown as AccountApplicationsService;
+    const picPayService = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationService,
+      {} as AccountYieldRangeService
+    );
+    spyOn(picPayService, 'getCdiDiarioPercent').and.resolveTo(0.05);
+
+    const result = await picPayService.suggestYield1({
+      ...account,
+      yieldPercent: 110,
+      totalBalanceGross: 32242.77,
+      totalBalance: 31738.12
+    }, new Date('2026-08-04T00:00:00'), 86);
+
+    expect(result.irTotal).toBe(448.55);
+  });
+
   it('mantém o cálculo da aplicação recente independente da aplicação antiga', async () => {
     const oldApplication = createApplication(1, 30000);
     const recentApplication = createApplication(2, 16000);
@@ -349,5 +375,12 @@ describe('YieldService - múltiplas aplicações', () => {
     expect(service.iofRateFromApplicationTable(2)).toBe(0.93);
     expect(service.iofRateFromApplicationTable(29)).toBe(0.03);
     expect(service.iofRateFromApplicationTable(30)).toBe(0);
+  });
+
+  it('seleciona as alíquotas regressivas de IR pelo prazo da aplicação', () => {
+    expect(service.irRateFromApplicationDays(180)).toBe(22.5);
+    expect(service.irRateFromApplicationDays(181)).toBe(20);
+    expect(service.irRateFromApplicationDays(361)).toBe(17.5);
+    expect(service.irRateFromApplicationDays(721)).toBe(15);
   });
 });

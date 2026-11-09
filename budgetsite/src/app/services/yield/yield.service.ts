@@ -316,6 +316,14 @@ export class YieldService {
     return this.IOF_TABLE[days - 1] ?? 0;
   }
 
+  irRateFromApplicationDays(daysElapsed: number): number {
+    const days = Math.max(0, Math.trunc(Number(daysElapsed || 0)));
+    if (days <= 180) return 22.5;
+    if (days <= 360) return 20;
+    if (days <= 720) return 17.5;
+    return 15;
+  }
+
   // Helpers de dia útil (sem feriados; se quiser, injete um calendário depois)
   isWeekend(d: Date): boolean {
     const w = d.getDay();
@@ -547,7 +555,17 @@ export class YieldService {
 
       iofC = toCents(fromCents(accumulatedGrossYieldC) * iofWeighted);
       const irBaseC = Math.max(0, accumulatedGrossYieldC - iofC);
-      irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercent) / 100);
+      const irPercentForApplications = activeApplications.reduce((weightedRate, application) => {
+        const principalC = toCents(Number(application.amountApplied) || 0);
+        if (principalC <= 0 || principalTotalC <= 0) return weightedRate;
+
+        const appliedDate = new Date(application.dateApplied);
+        appliedDate.setHours(0, 0, 0, 0);
+        const days = Math.max(0, Math.floor((referenceDate.getTime() - appliedDate.getTime()) / 86400000));
+
+        return weightedRate + (principalC / principalTotalC) * this.irRateFromApplicationDays(days);
+      }, 0);
+      irC = isTaxExempt ? 0 : Math.floor((irBaseC * irPercentForApplications) / 100);
       totalNetC = totalGrossC - iofC - irC;
       netC = totalNetC - baseNetC;
     }
@@ -1003,6 +1021,7 @@ export class YieldService {
       grossBalanceBefore: number;
       netBalanceBefore: number;
       iofElapsedDays: number;
+      referenceDate?: Date;
     }>
   ): Promise<{
     applicationDetails: AccountsPostingApplicationDetail[];
@@ -1047,6 +1066,11 @@ export class YieldService {
       const netBalanceBefore = round2(Math.max(0, Number(item.netBalanceBefore || 0)));
       const principal = round2(Math.max(0, Number(application.amountApplied || 0)));
       const days = Math.max(0, Math.trunc(Number(item.iofElapsedDays || 0)));
+      const applicationDate = new Date(application.dateApplied);
+      applicationDate.setHours(0, 0, 0, 0);
+      const referenceDate = new Date(item.referenceDate ?? application.dateApplied);
+      referenceDate.setHours(0, 0, 0, 0);
+      const maturityDays = Math.max(0, Math.floor((referenceDate.getTime() - applicationDate.getTime()) / 86400000));
 
       const fixedRate = Number(application.fixedRate ?? 0);
       let dailyRate = 0;
@@ -1071,6 +1095,7 @@ export class YieldService {
         accumulatedGrossYield * this.iofRateFromApplicationTable(days)
       );
       const irBase = round2(Math.max(0, accumulatedGrossYield - iof));
+      const irPercent = this.irRateFromApplicationDays(maturityDays);
       const ir = isTaxExempt ? 0 : round2(irBase * irPercent / 100);
       const totalBalance = round2(totalGrossBalance - iof - ir);
       const amount = round2(totalBalance - netBalanceBefore);

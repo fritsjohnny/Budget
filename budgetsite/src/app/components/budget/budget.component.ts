@@ -1965,14 +1965,29 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Atualiza posições e persiste
+    // Atualiza as posições e persiste em uma única operação.
     sorted.forEach((expense, index) => {
       expense.position = index + 1;
-      this.expenseService.update(expense).subscribe(); // grava no backend
     });
 
-    this.expenses = sorted;
-    this.getExpensesTotals();
+    this.expenseService.updatePositions(sorted).subscribe({
+      next: () => {
+        this.expensesNoFilter = sorted;
+        this.expenses = this.justToPay
+          ? sorted.filter((expense) => expense.remaining > 0)
+          : sorted;
+
+        if (this.showUpcomingExpenses) {
+          this.filterUpcomingExpenses();
+        }
+
+        this.getExpensesTotals();
+      },
+      error: (err) => {
+        this.messenger.errorHandler(err);
+        this.refresh(false);
+      },
+    });
   }
 
   ajustarDespesaPorCategoria(expense: any): void {

@@ -231,6 +231,20 @@
                 </div>
             </div>
 
+            <div class="row" *ngIf="selectedReportType === 9">
+                <div class="col">
+                    <mat-form-field appearance="fill" floatLabel="always" style="width: 100%">
+                        <mat-label>Conta</mat-label>
+                        <mat-select [(ngModel)]="accountStatusAccountId" (selectionChange)="accountStatusAccountChanged($event.value)">
+                            <mat-option [value]="0">-- Selecione --</mat-option>
+                            <mat-option *ngFor="let account of accountStatusAccounts" [value]="account.id">
+                                {{ account.name }}<span *ngIf="account.disabled"> (desativada)</span>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
             <div class="row" *ngIf="selectedReportType === 6">
                 <div class="col mb-2">
                     <mat-checkbox
@@ -323,7 +337,7 @@
             <div
                 class="row d-flex"
                 [class.financial-health-date-row]="selectedReportType === 7"
-                *ngIf="selectedReportType !== 4 && selectedReportType !== 6 && selectedReportType !== 8"
+                *ngIf="selectedReportType !== 4 && selectedReportType !== 6 && selectedReportType !== 8 && selectedReportType !== 9"
             >
                 <div class="col mb-2">
                     <div>
@@ -437,6 +451,24 @@
                             [for]="forecastPickerEnd"
                         ></mat-datepicker-toggle>
                         <mat-datepicker #forecastPickerEnd></mat-datepicker>
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="row d-flex account-status-date-row" *ngIf="selectedReportType === 9">
+                <div class="col mb-2">
+                    <mat-form-field appearance="fill" floatLabel="always" style="width: 100%">
+                        <mat-label>Data inicial</mat-label>
+                        <input matInput [matDatepicker]="statusPickerStart" [(ngModel)]="accountStatusInitialDateValue" (dateChange)="accountStatusInitialDateChanged($event.value)" />
+                        <mat-datepicker-toggle matSuffix [for]="statusPickerStart"></mat-datepicker-toggle>
+                        <mat-datepicker #statusPickerStart></mat-datepicker>
+                    </mat-form-field>
+                </div>
+                <div class="col mb-2">
+                    <mat-form-field appearance="fill" floatLabel="always" style="width: 100%">
+                        <mat-label>Data final</mat-label>
+                        <input matInput [matDatepicker]="statusPickerEnd" [(ngModel)]="accountStatusFinalDateValue" (dateChange)="accountStatusFinalDateChanged($event.value)" />
+                        <mat-datepicker-toggle matSuffix [for]="statusPickerEnd"></mat-datepicker-toggle>
+                        <mat-datepicker #statusPickerEnd></mat-datepicker>
                     </mat-form-field>
                 </div>
             </div>
@@ -678,6 +710,7 @@
                 ></app-financial-health-report>
             </div>
             <div class="col" *ngIf="reportType === 8 && showReport"><app-investment-strategy-report [accountId]="investmentAccountId" [initialDate]="investmentInitialDateValue" [finalDate]="investmentFinalDateValue" [reserve]="investmentReserve" [targetConfiguration]="generatedInvestmentTargetConfiguration"></app-investment-strategy-report></div>
+            <div class="col" *ngIf="reportType === 9 && showReport"><app-account-status-report [accountId]="accountStatusAccountId" [initialDate]="accountStatusInitialDateValue" [finalDate]="accountStatusFinalDateValue"></app-account-status-report></div>
         </div>
     </div>
 </div>

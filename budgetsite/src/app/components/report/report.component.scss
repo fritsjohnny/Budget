@@ -35,19 +35,30 @@
     opacity: 0.7;
 }
 
+.account-status-date-row {
+    margin-top: 8px;
+}
+
+.account-status-date-row > .col {
+    margin-bottom: 4px !important;
+}
+
 @media (max-width: 700px) {
     .financial-health-filter-row,
-    .financial-health-date-row {
+    .financial-health-date-row,
+    .account-status-date-row {
         display: grid !important;
         grid-template-columns: minmax(0, 1fr);
         gap: 0;
     }
 
     .financial-health-filter-row > .col,
-    .financial-health-date-row > .col {
+    .financial-health-date-row > .col,
+    .account-status-date-row > .col {
         width: 100%;
         max-width: none;
         flex: none;
+        margin-bottom: 2px !important;
     }
 
     .financial-health-actions-row button {

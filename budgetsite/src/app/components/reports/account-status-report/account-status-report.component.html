@@ -1,0 +1,49 @@
+<section class="account-status" *ngIf="!loading">
+  <header class="status-heading">
+    <div>
+      <span class="eyebrow">Extrato por período</span>
+      <h2>{{ accountName || 'Status de conta' }}</h2>
+      <p>{{ initialDate | date:'dd/MM/yyyy' }} a {{ finalDate | date:'dd/MM/yyyy' }}</p>
+    </div>
+    <span class="posting-count"><mat-icon>receipt_long</mat-icon>{{ postingCount }} lançamentos</span>
+  </header>
+
+  <div class="status-summary">
+    <article><span>Saldo inicial</span><strong [class.negative-balance]="openingBalance < 0">{{ openingBalance | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong></article>
+    <article><span>Entradas</span><strong class="positive">{{ totalEntries | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong></article>
+    <article><span>Saídas</span><strong class="negative">{{ totalExits | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong></article>
+    <article><span>Rendimentos</span><strong class="positive">{{ totalYields | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong></article>
+    <article class="closing-card"><span>Saldo ao final do período</span><strong [class.negative-balance]="closingBalance < 0">{{ closingBalance | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong></article>
+  </div>
+
+  <div class="empty-state" *ngIf="days.length === 0">
+    <mat-icon>event_busy</mat-icon>
+    <strong>Nenhuma movimentação neste período</strong>
+    <span>O saldo inicial e final são iguais.</span>
+  </div>
+
+  <div class="day-list" *ngIf="days.length">
+    <article class="day-card" *ngFor="let day of days; trackBy: trackByDate">
+      <header class="day-heading">
+        <div class="day-title"><div><strong>{{ day.date | date:'dd/MM/yyyy' }}</strong><small>{{ day.date | date:'EEEE':'':'pt-BR' }}</small></div></div>
+        <div class="daily-total"><span>Saldo do dia</span><strong [class.negative-balance]="day.closingBalance < 0">{{ day.closingBalance | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong></div>
+      </header>
+
+      <div class="day-totals">
+        <span>Entradas <b class="positive">{{ day.entries | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</b></span>
+        <span>Saídas <b class="negative">{{ day.exits | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</b></span>
+        <span>Rendimentos <b class="positive">{{ day.yields | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</b></span>
+      </div>
+
+      <div class="posting-list">
+        <div class="posting-row" *ngFor="let posting of day.postings">
+          <span class="posting-icon" [class.yield-icon]="posting.type?.toUpperCase() === 'Y'"><mat-icon>{{ posting.type?.toUpperCase() === 'Y' ? 'savings' : posting.amount < 0 ? 'south_west' : 'north_east' }}</mat-icon></span>
+          <div class="posting-copy"><strong>{{ posting.description || 'Lançamento' }}</strong></div>
+          <div class="posting-values"><strong [class.positive]="posting.amount > 0" [class.negative]="posting.amount < 0">{{ formatSignedAmount(posting.amount) }}</strong><small>Saldo {{ posting.balanceAfter | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</small></div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<div class="loading-state" *ngIf="loading"><mat-spinner diameter="34"></mat-spinner><span>Carregando extrato da conta...</span></div>

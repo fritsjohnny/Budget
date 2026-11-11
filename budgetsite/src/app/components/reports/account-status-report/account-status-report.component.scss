@@ -1,0 +1,91 @@
+:host {
+  --status-surface: #ffffff;
+  --status-surface-soft: #f5f7fb;
+  --status-border: rgba(23, 35, 55, .13);
+  --status-divider: rgba(23, 35, 55, .09);
+  --status-text: #172033;
+  --status-muted: #687286;
+  --status-blue: #4f6fe8;
+  --status-green: #29a452;
+  --status-red: #e74c56;
+  display: block; width: 100%; min-width: 0; color: var(--status-text);
+}
+
+:host-context(.dark-theme) {
+  --status-surface: #111c28;
+  --status-surface-soft: #162330;
+  --status-border: rgba(194, 213, 232, .18);
+  --status-divider: rgba(194, 213, 232, .1);
+  --status-text: #edf3fa;
+  --status-muted: #9eabba;
+  --status-blue: #7392ff;
+  --status-green: #58d77b;
+  --status-red: #ff6c74;
+}
+
+.account-status { display: grid; gap: 18px; padding: 10px 0 24px; }
+.status-heading, .day-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.status-heading { padding: 4px 12px; }
+.status-heading h2 { margin: 4px 0 2px; font-size: 22px; font-weight: 750; letter-spacing: -.03em; }
+.status-heading p { margin: 0; color: var(--status-muted); font-size: 13px; }
+.eyebrow { color: var(--status-blue); font-size: 11px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
+.posting-count { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 999px; color: var(--status-blue); background: color-mix(in srgb, var(--status-blue) 14%, transparent); font-size: 12px; font-weight: 650; white-space: nowrap; }
+.posting-count mat-icon { width: 18px; height: 18px; font-size: 18px; }
+.status-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; padding: 0 12px; }
+.status-summary article { display: flex; min-width: 0; flex-direction: column; gap: 8px; padding: 15px; border: 1px solid var(--status-border); border-radius: 16px; background: var(--status-surface); color: var(--status-text); box-shadow: 0 7px 24px rgba(37, 47, 83, .045); }
+.status-summary article span, .daily-total span { color: var(--status-muted); font-size: 11px; font-weight: 650; }
+.status-summary article strong { overflow: hidden; font-size: 17px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+.status-summary .closing-card { border-color: color-mix(in srgb, var(--status-blue) 38%, var(--status-border)); background: linear-gradient(140deg, color-mix(in srgb, var(--status-blue) 16%, var(--status-surface)), color-mix(in srgb, var(--status-blue) 7%, var(--status-surface))); }
+.positive { color: var(--status-green) !important; }
+.negative, .negative-balance { color: var(--status-red) !important; }
+.day-list { display: grid; gap: 13px; }
+.day-card { overflow: hidden; border: 1px solid var(--status-border); border-radius: 17px; background: var(--status-surface); color: var(--status-text); box-shadow: 0 8px 28px rgba(37, 47, 83, .045); }
+.day-heading { padding: 15px 17px 12px; }
+.day-title { display: flex; align-items: center; gap: 11px; }
+.calendar-day { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; color: var(--status-blue); background: color-mix(in srgb, var(--status-blue) 14%, transparent); font-size: 17px; font-weight: 750; }
+.day-title div, .daily-total, .posting-copy, .posting-values { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.day-title strong { font-size: 14px; text-transform: capitalize; }
+.day-title small, .posting-copy small, .posting-values small { color: var(--status-muted); font-size: 11px; }
+.daily-total { align-items: flex-end; }
+.daily-total strong { font-size: 17px; }
+.day-totals { display: flex; flex-wrap: wrap; gap: 9px 18px; padding: 10px 17px; border-top: 1px solid var(--status-divider); border-bottom: 1px solid var(--status-divider); background: var(--status-surface-soft); }
+.day-totals span { display: flex; align-items: baseline; gap: 6px; color: var(--status-muted); font-size: 11px; }
+.day-totals b { font-size: 12px; font-weight: 700; }
+.posting-list { padding: 0 17px; }
+.posting-row { display: flex; align-items: center; gap: 11px; min-height: 59px; border-bottom: 1px solid var(--status-divider); }
+.posting-row:last-child { border-bottom: 0; }
+.posting-icon { display: grid; flex: 0 0 34px; width: 34px; height: 34px; place-items: center; border: 1px solid var(--status-border); border-radius: 50%; color: var(--status-muted); }
+.posting-icon mat-icon { width: 18px; height: 18px; font-size: 18px; }
+.posting-icon.yield-icon { border-color: color-mix(in srgb, var(--status-green) 30%, transparent); color: var(--status-green); background: color-mix(in srgb, var(--status-green) 10%, transparent); }
+.posting-copy { flex: 1; }
+.posting-copy strong { overflow: hidden; font-size: 12px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.posting-values { align-items: flex-end; flex: 0 0 auto; }
+.posting-values strong { font-size: 12px; font-weight: 700; white-space: nowrap; }
+.empty-state, .loading-state { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 30px 16px; color: var(--status-muted); }
+.empty-state { flex-direction: column; border: 1px dashed var(--status-border); border-radius: 16px; background: var(--status-surface-soft); }
+.empty-state mat-icon { color: var(--status-blue); }
+.empty-state strong { color: var(--status-text); font-size: 14px; }
+.empty-state span, .loading-state span { font-size: 12px; }
+
+@media (max-width: 900px) { .status-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+  .account-status { gap: 13px; padding: 12px 0 24px; }
+  .status-heading { padding: 4px 14px; }
+  .status-summary { padding: 0 14px; }
+  .status-heading h2 { font-size: 19px; }
+  .posting-count { padding: 7px 9px; font-size: 10px; }
+  .status-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .status-summary article { gap: 6px; padding: 12px; border-radius: 13px; }
+  .status-summary article span { font-size: 10px; }
+  .status-summary article strong { font-size: 14px; }
+  .status-summary .closing-card { grid-column: 1 / -1; }
+  .day-heading { padding: 12px; }
+  .day-totals { gap: 7px 12px; padding: 9px 12px; }
+  .day-totals span { gap: 4px; font-size: 10px; }
+  .day-totals b { font-size: 10px; }
+  .posting-list { padding: 0 12px; }
+  .posting-row { gap: 8px; min-height: 56px; }
+  .posting-icon { flex-basis: 31px; width: 31px; height: 31px; }
+  .posting-copy strong, .posting-values strong { font-size: 11px; }
+  .posting-values small { font-size: 10px; }
+}

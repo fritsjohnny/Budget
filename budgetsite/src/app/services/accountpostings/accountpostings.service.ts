@@ -39,6 +39,25 @@ export class AccountPostingsService {
     );
   }
 
+  readByDateRange(accountId: number, initialDate: Date, finalDate: Date): Observable<AccountsPostings[]> {
+    const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    const params = new URLSearchParams({
+      accountId: accountId.toString(),
+      initialDate: formatDate(initialDate),
+      finalDate: formatDate(finalDate)
+    });
+
+    return this.http.get<AccountsPostings[]>(`${ApiUrls.accountspostings}/ByDateRange?${params.toString()}`).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
   getLatestDiRate(accountId: number): Observable<AccountsPostings> {
     return this.http.get<AccountsPostings>(`${ApiUrls.accountspostings}/latest-di-rate/${accountId}`).pipe(
       map(obj => obj),

@@ -119,6 +119,7 @@ import { DragReadyFeedbackDirective } from './directives/drag-ready-feedback.dir
 import { YieldsComponent } from './components/yields/yields.component';
 import { ExpensesByDueDateReportComponent } from './components/reports/expenses-by-due-date-report/expenses-by-due-date-report.component';
 import { AccountForecastBalanceReportComponent } from './components/reports/account-forecast-balance-report/account-forecast-balance-report.component';
+import { AccountStatusReportComponent } from './components/reports/account-status-report/account-status-report.component';
 import { FinancialHealthReportComponent } from './components/reports/financial-health-report/financial-health-report.component';
 import { InvestmentStrategyReportComponent } from './components/reports/investment-strategy-report/investment-strategy-report.component';
 import { GenerateCardReceiptDialog } from './components/accountpostings/generate-cardreceipt-dialog/generate-cardreceipt-dialog';
@@ -211,6 +212,7 @@ registerLocaleData(localePt);
     ExpensesByCardReportComponent,
     ExpensesByDueDateReportComponent,
     AccountForecastBalanceReportComponent,
+    AccountStatusReportComponent,
     FinancialHealthReportComponent,
     InvestmentStrategyReportComponent,
     GenerateCardReceiptDialog,

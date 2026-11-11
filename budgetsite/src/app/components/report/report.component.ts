@@ -34,6 +34,7 @@ export class ReportComponent implements OnInit, AfterViewInit {
     { id: 6, name: 'Saldo Previsto em Conta', description: 'Projete a evolução do saldo de uma conta.', icon: 'account_balance', color: 'green' },
     { id: 7, name: 'Saúde Financeira', description: 'Avalie reserva, compromissos e projeções.', icon: 'monitor_heart', color: 'pink' },
     { id: 8, name: 'Estratégia de Investimentos', description: 'Encontre o excedente seguro e melhores faixas.', icon: 'trending_up', color: 'teal' },
+    { id: 9, name: 'Status de Conta', description: 'Confira lançamentos, rendimentos e saldo por dia.', icon: 'receipt_long', color: 'green' },
   ];
   showReport: boolean = false;
   categories: Categories[] = [];
@@ -59,6 +60,10 @@ export class ReportComponent implements OnInit, AfterViewInit {
   showDisabledForecastAccounts: boolean = false;
   forecastInitialDateValue: Date | null = null;
   forecastFinalDateValue: Date | null = null;
+  accountStatusAccountId = 0;
+  accountStatusInitialDateValue: Date | null = null;
+  accountStatusFinalDateValue: Date | null = null;
+  accountStatusAccounts: Accounts[] = [];
   investmentAccountId = 0;
   investmentInitialDateValue: Date | null = new Date();
   investmentFinalDateValue: Date | null = new Date();
@@ -176,11 +181,13 @@ export class ReportComponent implements OnInit, AfterViewInit {
 
     this.accountService.read().subscribe((accounts) => {
       this.allForecastAccounts = accounts.sort((a, b) => a.name.localeCompare(b.name));
+      this.accountStatusAccounts = accounts.slice().sort((a, b) => a.name.localeCompare(b.name));
 
       this.forecastAccountId = parseInt(
         localStorage.getItem('lastSelectedForecastAccountReport') || '0'
       );
       this.refreshForecastAccounts();
+      this.accountStatusAccountId = Number(localStorage.getItem('report9AccountId') || 0);
       if (this.investmentAccountId && !accounts.some(account => account.id === this.investmentAccountId && account.disabled !== true)) { this.investmentAccountId = 0; localStorage.removeItem('investmentAccountId'); }
       if (this.investmentTargetAccountId && !accounts.some(account => account.id === this.investmentTargetAccountId && account.disabled !== true)) {
         this.investmentTargetAccountId = 0;
@@ -204,6 +211,11 @@ export class ReportComponent implements OnInit, AfterViewInit {
 
     const forecastInitialDateStr = localStorage.getItem('report6InitialDate');
     const forecastFinalDateStr = localStorage.getItem('report6FinalDate');
+
+    const statusInitialDate = localStorage.getItem('report9InitialDate');
+    const statusFinalDate = localStorage.getItem('report9FinalDate');
+    this.accountStatusInitialDateValue = statusInitialDate ? new Date(statusInitialDate) : new Date(today.getFullYear(), today.getMonth(), 1);
+    this.accountStatusFinalDateValue = statusFinalDate ? new Date(statusFinalDate) : new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
     if (forecastInitialDateStr) {
       this.forecastInitialDateValue = new Date(forecastInitialDateStr);
@@ -289,13 +301,17 @@ export class ReportComponent implements OnInit, AfterViewInit {
   }
 
   get reportInvalid(): boolean {
-    return this.forecastReportInvalid || this.financialHealthReportInvalid || (this.selectedReportType === 8 && (
+    return this.forecastReportInvalid || this.accountStatusReportInvalid || this.financialHealthReportInvalid || (this.selectedReportType === 8 && (
       !this.investmentAccountId ||
       !this.investmentInitialDateValue ||
       !this.investmentFinalDateValue ||
       this.investmentInitialDateValue > this.investmentFinalDateValue ||
       (this.investmentTargetAccountId > 0 && (!this.investmentTargetYieldPercent || this.investmentTargetYieldPercent <= 0))
     ));
+  }
+
+  get accountStatusReportInvalid(): boolean {
+    return this.selectedReportType === 9 && (!this.accountStatusAccountId || !this.accountStatusInitialDateValue || !this.accountStatusFinalDateValue || this.accountStatusInitialDateValue > this.accountStatusFinalDateValue);
   }
 
   initialReferenceChanges(reference: string) {
@@ -345,6 +361,14 @@ export class ReportComponent implements OnInit, AfterViewInit {
       this.forecastAccountId.toString()
     );
   }
+
+  accountStatusAccountChanged(value: number): void {
+    this.accountStatusAccountId = Number(value) || 0;
+    localStorage.setItem('report9AccountId', this.accountStatusAccountId.toString());
+  }
+
+  accountStatusInitialDateChanged(date: Date | null): void { this.accountStatusInitialDateValue = date; this.persistDate('report9InitialDate', date); }
+  accountStatusFinalDateChanged(date: Date | null): void { this.accountStatusFinalDateValue = date; this.persistDate('report9FinalDate', date); }
 
   financialHealthReserveTargetChanged(value: number) {
     this.financialHealthReserveTargetMonths = value;
@@ -549,11 +573,17 @@ export class ReportComponent implements OnInit, AfterViewInit {
       this.allCards = cards.sort((a, b) => a.name.localeCompare(b.name));
       this.refreshCards();
       this.allForecastAccounts = accounts.sort((a, b) => a.name.localeCompare(b.name));
+      this.accountStatusAccounts = accounts.slice().sort((a, b) => a.name.localeCompare(b.name));
       this.refreshForecastAccounts();
+      if (this.accountStatusAccountId && !accounts.some(account => account.id === this.accountStatusAccountId)) this.accountStatusAccountId = 0;
 
       if (this.investmentAccountId && !accounts.some(account => account.id === this.investmentAccountId && account.disabled !== true)) {
         this.investmentAccountId = 0;
         localStorage.removeItem('investmentAccountId');
+      }
+      if (this.accountStatusAccountId && !accounts.some(account => account.id === this.accountStatusAccountId)) {
+        this.accountStatusAccountId = 0;
+        localStorage.removeItem('report9AccountId');
       }
 
       if (this.investmentTargetAccountId && !accounts.some(account => account.id === this.investmentTargetAccountId && account.disabled !== true)) {

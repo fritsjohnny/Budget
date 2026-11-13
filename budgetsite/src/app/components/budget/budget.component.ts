@@ -140,10 +140,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     !!row?.movementsExpanded;
   readonly isExpenseDataRow = (_index: number, row: any): boolean =>
     !!row && !row.isExpenseMovementDetail;
-  readonly displayedIncomeMovementColumns = ['incomeMovementsDetail'];
-  readonly isIncomeMovementDetailRow = (_index: number, row: Incomes): boolean =>
-    !!row?.movementsExpanded;
-  readonly isIncomeDataRow = (_index: number, row: Incomes): boolean => !!row;
   displayedIncomesColumns = [
     'description',
     'toReceive',
@@ -1889,38 +1885,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     });
   }
 
-  toggleIncomeMovements(income: Incomes): void {
-    income.movementsExpanded = !income.movementsExpanded;
-    this.incomes = [...this.incomes];
-    if (!income.movementsExpanded || income.movements || !income.id) return;
-
-    income.movementsLoading = true;
-    this.accountPostingsService.readByIncomeId(income.id).subscribe({
-      next: (postings) => {
-        income.movements = [...postings]
-          .sort((a, b) => this.compareDatesDescending(a.date, b.date))
-          .map((posting) => ({
-            date: posting.date,
-            description: posting.description,
-            amount: posting.amount,
-            reference: posting.reference,
-            accountName: posting.account?.name,
-            postingType: posting.type,
-          }));
-        income.movementsLoading = false;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        income.movementsLoading = false;
-        this.cd.detectChanges();
-      },
-    });
-  }
-
-  getIncomeMovementsTotal(movements: Incomes['movements']): number {
-    return (movements ?? []).reduce((total, movement) => total + (Number(movement.amount) || 0), 0);
-  }
-
   getExpenseMovementsByKind(movements: Expenses['movements'], kind: 'cartao' | 'pagamento') {
     return (movements ?? []).filter((movement) => kind === 'pagamento'
       ? movement.kind !== 'cartao'
@@ -2146,9 +2110,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    const clickedExpenseHeader = (event.target as HTMLElement)?.closest('.expense-description-cell');
     if (expense.movementsExpanded) {
       event.stopPropagation();
-      this.toggleExpenseMovements(expense);
+      if (clickedExpenseHeader) this.toggleExpenseMovements(expense);
       return;
     }
 
@@ -2177,12 +2142,6 @@ export class BudgetComponent implements OnInit, AfterViewInit {
   }
 
   handleClickIncome(income: Incomes, event: MouseEvent): void {
-    if (income.movementsExpanded) {
-      event.stopPropagation();
-      this.toggleIncomeMovements(income);
-      return;
-    }
-
     this.editOrDeleteIncome(income, event);
 
     // const now = new Date().getTime();

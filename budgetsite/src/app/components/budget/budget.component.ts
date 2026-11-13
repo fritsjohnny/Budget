@@ -1,4 +1,4 @@
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, of } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import {
   AfterViewInit,
@@ -55,6 +55,8 @@ import { ConfirmDialogComponent, ConfirmDialogData } from 'src/app/shared/confir
 import { CardsInvoiceClosing } from 'src/app/models/cardsinvoiceclosing.model';
 import { CardsInvoiceClosingService } from 'src/app/services/cardsinvoiceclosing/cardsinvoiceclosing.service';
 import { prepareApiDates } from 'src/app/utils/api-date.util';
+import { forkJoin } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-budget',
@@ -133,6 +135,11 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     'remaining',
     'actions',
   ];
+  readonly displayedExpenseMovementColumns = ['movementsDetail'];
+  readonly isExpenseMovementDetailRow = (_index: number, row: Expenses): boolean =>
+    !!row?.movementsExpanded;
+  readonly isExpenseDataRow = (_index: number, row: any): boolean =>
+    !!row && !row.isExpenseMovementDetail;
   displayedIncomesColumns = [
     'description',
     'toReceive',
@@ -389,6 +396,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     if (!this.reference) return;
 
     const requestId = ++this.budgetRefreshRequestId;
+    const reference = this.reference;
 
     if (showLoading) {
       this.loadingMessage = 'Carregando orçamento...';
@@ -401,7 +409,14 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       }
     }
 
-    const reference = this.reference;
+    const finishLoading = () => {
+      if (requestId === this.budgetRefreshRequestId && showLoading) {
+        this.isBudgetLoading = false;
+      }
+      if (requestId === this.budgetRefreshRequestId) {
+        this.savingCardPosting = false;
+      }
+    };
 
     forkJoin({
       cards: this.cardService.read(),
@@ -414,19 +429,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       budgetTotals: this.budget.getBudgetTotals(reference),
       expensesByCategories: this.expenseService.readByCategories(reference, 0)
     })
-      .pipe(
-        finalize(() => {
-          if (
-            requestId === this.budgetRefreshRequestId &&
-            this.reference === reference
-          ) {
-            if (showLoading) {
-              this.isBudgetLoading = false;
-            }
-            this.savingCardPosting = false;
-          }
-        })
-      )
+      .pipe(finalize(finishLoading))
       .subscribe({
         next: ({
           cards,
@@ -517,6 +520,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
           if (showLoading && !this.savingCardPosting) {
             this.isBudgetLoaded = false;
+            this.messenger.message('Não foi possível carregar o orçamento. Tente atualizar novamente.');
           }
         }
       });
@@ -1819,8 +1823,12 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       if (row.expenses == null && row.cardsPostings == null) {
         this.expenseService.readByCategory(row).subscribe({
           next: (expensesByCategories) => {
-            row.expenses = expensesByCategories.expenses;
-            row.cardsPostings = expensesByCategories.cardsPostings;
+            row.expenses = [...(expensesByCategories.expenses ?? [])].sort((a, b) =>
+              this.compareDatesDescending(a.dueDate ?? a.reference, b.dueDate ?? b.reference)
+            );
+            row.cardsPostings = [...(expensesByCategories.cardsPostings ?? [])].sort((a, b) =>
+              this.compareDatesDescending(a.date, b.date)
+            );
 
             row.expanding = false;
           },
@@ -1830,6 +1838,70 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         row.expanding = false;
       }
     }
+  }
+
+  toggleExpenseMovements(expense: Expenses): void {
+    expense.movementsExpanded = !expense.movementsExpanded;
+    this.expenses = [...this.expenses];
+    if (!expense.movementsExpanded || expense.movements || !expense.id) return;
+
+    expense.movementsLoading = true;
+    const cardPostings$ = this.cardPostingsService.readByExpenseId(expense.id).pipe(
+      catchError(() => of([]))
+    );
+    const accountPostings$ = this.accountPostingsService.readByExpenseId(expense.id).pipe(
+      catchError(() => of([]))
+    );
+
+    forkJoin({ cardPostings: cardPostings$, accountPostings: accountPostings$ }).pipe(
+      map(({ cardPostings, accountPostings }) => [
+        ...cardPostings.map((posting) => ({
+          kind: 'cartao' as const,
+          date: posting.date,
+          description: posting.description,
+          amount: posting.amount,
+          reference: posting.reference,
+          cardName: posting.card?.name,
+          cardBackground: posting.card?.background,
+          cardColor: posting.card?.color,
+        })),
+        ...accountPostings.map((posting) => ({
+          kind: posting.type === 'P' ? 'pagamento' as const : 'outro' as const,
+          date: posting.date,
+          description: posting.description,
+          amount: posting.amount,
+          reference: posting.reference,
+          accountName: posting.account?.name,
+          postingType: posting.type,
+        })),
+      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
+    ).subscribe({
+      next: (movements) => {
+        expense.movements = movements;
+        expense.movementsLoading = false;
+        this.cd.detectChanges();
+      },
+      error: () => { expense.movementsLoading = false; this.cd.detectChanges(); },
+    });
+  }
+
+  getExpenseMovementsByKind(movements: Expenses['movements'], kind: 'cartao' | 'pagamento') {
+    return (movements ?? []).filter((movement) => kind === 'pagamento'
+      ? movement.kind !== 'cartao'
+      : movement.kind === 'cartao');
+  }
+
+  getExpenseMovementsTotal(movements: Expenses['movements']): number {
+    return (movements ?? []).reduce((total, movement) => total + (Number(movement.amount) || 0), 0);
+  }
+
+  getExpenseMovementsKindTotal(movements: Expenses['movements'], kind: 'cartao' | 'pagamento'): number {
+    return this.getExpenseMovementsTotal(this.getExpenseMovementsByKind(movements, kind));
+  }
+
+  hasExpenseAndCardMovements(movements: Expenses['movements']): boolean {
+    const items = movements ?? [];
+    return items.some((item) => item.kind !== 'cartao') && items.some((item) => item.kind === 'cartao');
   }
 
   peopleToggleRow(row: CardsPostingsDTO, event: any) {
@@ -1856,10 +1928,16 @@ export class BudgetComponent implements OnInit, AfterViewInit {
           .readByPeopleId(row.peopleId, row.reference, row.cardId)
           .subscribe({
             next: (people) => {
-              row.cardsPostings = people.cardsPostings;
-              row.incomes = people.incomes;
+              row.cardsPostings = [...(people.cardsPostings ?? [])].sort((a, b) =>
+                this.compareDatesDescending(a.date, b.date)
+              );
+              row.incomes = [...(people.incomes ?? [])].sort((a, b) =>
+                this.compareDatesDescending(a.receiptDate ?? a.reference, b.receiptDate ?? b.reference)
+              );
               // row.cardsReceipts = people.cardsReceipts;
-              row.accountsPostings = people.accountsPostings;
+              row.accountsPostings = [...(people.accountsPostings ?? [])].sort((a, b) =>
+                this.compareDatesDescending(a.date, b.date)
+              );
 
               row.expanding = false;
             },
@@ -1869,6 +1947,18 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         row.expanding = false;
       }
     }
+  }
+
+  private compareDatesDescending(first?: Date | string | null, second?: Date | string | null): number {
+    const timestamp = (value?: Date | string | null): number => {
+      if (!value) return Number.NEGATIVE_INFINITY;
+      const parsed = typeof value === 'string' && /^\d{6}$/.test(value)
+        ? new Date(Number(value.slice(0, 4)), Number(value.slice(4, 6)) - 1, 1).getTime()
+        : new Date(value).getTime();
+      return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed;
+    };
+
+    return timestamp(second) - timestamp(first);
   }
 
   dueToday(expense: Expenses) {
@@ -2017,6 +2107,13 @@ export class BudgetComponent implements OnInit, AfterViewInit {
       }
 
       this.toggleExpenseToMerge(expense);
+      return;
+    }
+
+    const clickedExpenseHeader = (event.target as HTMLElement)?.closest('.expense-description-cell');
+    if (expense.movementsExpanded) {
+      event.stopPropagation();
+      if (clickedExpenseHeader) this.toggleExpenseMovements(expense);
       return;
     }
 

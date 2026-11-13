@@ -34,6 +34,7 @@ import { GenerateCardReceiptDialog } from './generate-cardreceipt-dialog/generat
 import { Messenger } from 'src/app/common/messenger';
 import { prepareApiDates } from 'src/app/utils/api-date.util';
 import { GrossBalanceEditDialogComponent } from './gross-balance-edit-dialog.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-accountpostings',
@@ -112,6 +113,9 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   ];
   total: number = 0;
   totalApplications: number = 0;
+  applicationYields = new Map<number, number>();
+  totalApplicationYield = 0;
+  applicationYieldLoading = false;
   grandTotalBalance?: number = 0;
   grandTotalYields?: number = 0;
   totalBalance?: number = 0;
@@ -391,6 +395,8 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
             this.accountApplicationsDataSource = new MatTableDataSource(this.accountApplications);
 
             this.getTotalApplications();
+            this.account = this.accountsList?.find(item => item.id === this.accountId) ?? this.account;
+            void this.calculateApplicationYields();
           },
           error: () => (this.hideProgress = true),
         });
@@ -499,6 +505,70 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         .map((t) => t.amountApplied)
         .reduce((acc, value) => acc + value, 0)
       : 0;
+  }
+
+  private async calculateApplicationYields(): Promise<void> {
+    this.applicationYields = new Map<number, number>();
+    this.totalApplicationYield = 0;
+    const applications = (this.accountApplications ?? []).filter(application => Number(application.amountApplied) > 0);
+    if (!applications.length) {
+      this.applicationYieldLoading = false;
+      return;
+    }
+    if (!this.accountId) return;
+    this.applicationYieldLoading = true;
+    try {
+      const asOf = new Date();
+      asOf.setHours(0, 0, 0, 0);
+      const toLocalDate = (value: Date | string): Date => {
+        if (typeof value === 'string') {
+          const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        }
+        const date = new Date(value);
+        date.setHours(0, 0, 0, 0);
+        return date;
+      };
+      const datedApplications = applications
+        .map((application, index) => ({ application, index, date: toLocalDate(application.dateApplied) }))
+        .filter(item => !Number.isNaN(item.date.getTime()) && item.date <= asOf);
+      if (!datedApplications.length) return;
+
+      const firstApplicationDate = new Date(Math.min(...datedApplications.map(item => item.date.getTime())));
+      const postings = await firstValueFrom(
+        this.accountPostingsService.readByDateRange(this.accountId, firstApplicationDate, asOf)
+      );
+      const yieldPostings = (postings ?? []).filter(posting => {
+        const date = toLocalDate(posting.date);
+        return posting.type?.toUpperCase() === 'Y' && date >= firstApplicationDate && date <= asOf;
+      });
+
+      datedApplications.forEach(({ application, index, date: applicationDate }) => {
+        const applicationId = application.id;
+        if (applicationId == null) return;
+        const accumulated = yieldPostings.reduce((sum, posting) => {
+          const postingDate = toLocalDate(posting.date);
+          if (postingDate < applicationDate) return sum;
+          const applicationYield = (posting.applicationDetails ?? [])
+            .filter(detail => detail.accountApplicationId === applicationId)
+            .reduce((detailSum, detail) => detailSum + Number(detail.amount || 0), 0);
+          return sum + applicationYield;
+        }, 0);
+        this.applicationYields.set(applicationId ?? index, Math.round((accumulated + Number.EPSILON) * 100) / 100);
+      });
+
+      this.totalApplicationYield = Math.round((yieldPostings.reduce((sum, posting) => sum + Number(posting.amount || 0), 0) + Number.EPSILON) * 100) / 100;
+    } catch {
+      this.applicationYields.clear();
+      this.totalApplicationYield = 0;
+    } finally {
+      this.applicationYieldLoading = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  applicationYieldFor(row: AccountsApplications): number {
+    return this.applicationYields.get(row.id ?? this.accountApplications.indexOf(row)) ?? 0;
   }
 
   get applicationsCapacitySummary() {

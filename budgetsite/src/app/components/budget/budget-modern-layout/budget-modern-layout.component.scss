@@ -23,6 +23,174 @@
     display: block;
 }
 
+.expense-movements-panel {
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 10px;
+    color: var(--modern-text);
+    background: var(--modern-surface-soft);
+    border-left: 3px solid var(--modern-red);
+    text-align: left;
+    transition: max-height 225ms ease, padding 225ms ease;
+}
+
+.expense-movements-panel.expense-movements-expanded {
+    max-height: 4000px;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.expense-movements-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.expense-movements-heading .header-title-detail {
+    margin-left: 0;
+    justify-content: flex-start;
+}
+
+::ng-deep tr.expense-movement-detail-row {
+    height: auto !important;
+}
+
+::ng-deep tr.expense-movement-detail-row .mat-cell {
+    height: auto !important;
+    white-space: normal;
+}
+
+.expense-movements-empty {
+    padding: 10px 0;
+    color: var(--modern-muted);
+}
+
+.expense-movements-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.expense-movements-table th,
+.expense-movements-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--modern-divider);
+    text-align: left;
+}
+
+.expense-movements-table th:last-child,
+.expense-movements-table td:last-child {
+    text-align: right;
+}
+
+.expense-movement-amount {
+    color: var(--modern-red);
+    font-weight: 700;
+}
+
+.expense-movement-date {
+    color: #f4c542;
+}
+
+.expense-movement-card {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    font-weight: 700;
+}
+
+.expense-movement-group {
+    padding: 10px 10px 4px;
+    margin-top: 8px;
+    border: 1px solid var(--modern-divider);
+    border-radius: 9px;
+    background: var(--modern-surface);
+}
+
+.expense-movement-group h4 {
+    margin: 0 0 7px;
+    color: var(--modern-muted);
+    font-size: 12px;
+}
+
+.expense-movement-group-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+}
+
+.expense-movement-group-heading h4 {
+    margin: 0;
+}
+
+.expense-movement-count {
+    color: var(--modern-muted);
+    font-size: 11px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.expense-movement-group-heading > .expense-movement-amount {
+    justify-self: end;
+}
+
+.expense-movement-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid var(--modern-divider);
+    font-size: 12px;
+}
+
+.expense-movement-line:first-of-type {
+    border-top: 0;
+}
+
+.expense-movement-copy {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.expense-movement-copy small {
+    color: var(--modern-muted);
+}
+
+.expense-movement-card-line {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    justify-content: initial;
+}
+
+.expense-movement-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.expense-movements-mobile {
+    grid-column: 1 / -1;
+}
+
+.expense-movement-mobile-row {
+    display: grid;
+    gap: 3px;
+    padding: 9px 0;
+    border-top: 1px solid var(--modern-divider);
+}
+
+.expense-movement-mobile-row span {
+    color: var(--modern-muted);
+    font-size: 12px;
+}
+
 ::ng-deep .modern-budget-table th.mat-column-actions,
 ::ng-deep .modern-budget-table td.mat-column-actions,
 ::ng-deep .budget-table th.mat-column-actions,

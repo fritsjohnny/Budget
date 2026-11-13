@@ -97,6 +97,57 @@
 .postings-summary-balance {
     color: var(--posting-green);
 }
+
+.application-metrics {
+    min-width: 0;
+    width: auto;
+    margin: 0 20px 0 auto;
+    flex: 0 0 auto;
+    align-self: center;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.application-yield-metric {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--posting-green);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.application-yield-metric mat-icon,
+.application-yield-mobile mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
+}
+
+.application-yield-metric span {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.application-yield-metric .application-yield-value {
+    flex-direction: row;
+    align-items: center;
+    gap: 3px;
+}
+
+.application-yield-metric small {
+    color: var(--posting-muted);
+    font-size: 9px;
+}
+
+.application-yield-mobile {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--posting-green) !important;
+}
 .postings-summary-balance.value-negative {
     color: var(--posting-red);
 }
@@ -291,6 +342,21 @@ button.summary-item {
     align-items: center;
     gap: 0;
     color: var(--posting-text);
+}
+
+::ng-deep .applications-panel .mat-panel-title {
+    display: flex;
+    align-items: center;
+}
+
+.applications-panel .panel-icon {
+    flex: 0 0 44px;
+    margin-right: 12px;
+}
+
+.applications-panel .panel-heading-copy {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .panel-icon {

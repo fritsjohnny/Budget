@@ -46,6 +46,15 @@ export class CardPostingsService {
       );
   }
 
+  readByExpenseId(expenseId: number): Observable<CardsPostings[]> {
+    return this.http
+      .get<CardsPostings[]>(`${ApiUrls.cardspostings}/ByExpense/${expenseId}`)
+      .pipe(
+        map((obj) => obj),
+        catchError((e) => this.messenger.errorHandler(e))
+      );
+  }
+
   readCardsPostingsByPeople(
     peopleId: number,
     reference?: string

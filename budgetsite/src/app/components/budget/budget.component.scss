@@ -91,8 +91,149 @@ tr.height-detail-row {
     height: 0 !important;
 }
 
+tr.expense-movement-detail-row {
+    height: auto !important;
+}
+
 .td-expanded-detail {
     padding-bottom: 10px;
+}
+
+.expense-movements-cell {
+    padding: 0 !important;
+    border-bottom: 0 !important;
+}
+
+.expense-movements-panel {
+    padding: 10px;
+    background: rgba(88, 113, 148, 0.08);
+    border-left: 3px solid #587194;
+    text-align: left;
+}
+
+.expense-movements-empty {
+    padding: 10px 0;
+    color: #8b96a5;
+}
+
+.expense-movements-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.expense-movements-table th,
+.expense-movements-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(120, 140, 160, 0.2);
+    text-align: left;
+}
+
+.expense-movements-table th:last-child,
+.expense-movements-table td:last-child {
+    text-align: right;
+}
+
+.expense-movement-amount {
+    color: #e74c56;
+    font-weight: 600;
+}
+
+.expense-movement-date {
+    color: #f4c542;
+}
+
+.expense-movement-card {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.expense-movement-group {
+    padding: 10px;
+    margin-top: 8px;
+    border: 1px solid rgba(120, 140, 160, 0.2);
+    border-radius: 9px;
+    background: rgba(12, 24, 37, 0.32);
+}
+
+.expense-movements-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.expense-movements-heading .header-title-detail {
+    margin-left: 0;
+    justify-content: flex-start;
+}
+
+.expense-movement-group h4 {
+    margin: 0 0 7px;
+    color: #8b96a5;
+    font-size: 12px;
+}
+
+.expense-movement-group-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+}
+
+.expense-movement-group-heading h4 {
+    margin: 0;
+}
+
+.expense-movement-count {
+    color: #8b96a5;
+    font-size: 11px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.expense-movement-group-heading > .expense-movement-amount {
+    justify-self: end;
+}
+
+.expense-movement-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid rgba(120, 140, 160, 0.16);
+    font-size: 12px;
+}
+
+.expense-movement-line:first-of-type {
+    border-top: 0;
+}
+
+.expense-movement-copy {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.expense-movement-copy small {
+    color: #8b96a5;
+}
+
+.expense-movement-card-line {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    justify-content: initial;
+}
+
+.expense-movement-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .expanded-detail {

@@ -39,6 +39,13 @@ export class AccountPostingsService {
     );
   }
 
+  readByExpenseId(expenseId: number): Observable<AccountsPostings[]> {
+    return this.http.get<AccountsPostings[]>(`${ApiUrls.accountspostings}/ByExpense/${expenseId}`).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
   readByDateRange(accountId: number, initialDate: Date, finalDate: Date): Observable<AccountsPostings[]> {
     const formatDate = (date: Date) => {
       const year = date.getFullYear();

@@ -311,13 +311,18 @@
             <span class="panel-icon"><mat-icon>trending_up</mat-icon></span>
             <span class="panel-heading-copy">
               <strong>Aplicações</strong>
-              <small>
-                #{{ context.accountApplications?.length || 0 }} ·
-                <span [class.value-negative]="context.totalApplications < 0">
-                  {{ context.totalApplications | currency: 'BRL' : 'symbol' : '1.2-2' }}
+              <small>#{{ context.accountApplications?.length || 0 }} · {{ context.totalApplications | currency: 'BRL' : 'symbol' : '1.2-2' }} aplicado</small>
+            </span>
+            <span class="header-metrics application-metrics" *ngIf="(context.accountApplications?.length || 0) > 0">
+              <b class="application-yield-metric">
+                <span>
+                  <small>Rendimento Total</small>
+                  <span class="application-yield-value">
+                    <mat-icon>trending_up</mat-icon>
+                    {{ context.applicationYieldLoading ? 'Calculando…' : (context.totalApplicationYield | currency: 'BRL' : 'symbol' : '1.2-2') }}
+                  </span>
                 </span>
-                aplicado
-              </small>
+              </b>
             </span>
           </mat-panel-title>
         </mat-expansion-panel-header>
@@ -399,6 +404,7 @@
                 </ng-container>
               </small>
               <small>Aplicado: {{ row.amountApplied | currency: 'BRL' : 'symbol' : '1.2-2' }} · Máximo: {{ context.applicationMaximumLabel(row) }}</small>
+              <small class="application-yield-mobile"><mat-icon>trending_up</mat-icon>Rendeu até hoje: {{ context.applicationYieldFor(row) | currency: 'BRL' : 'symbol' : '1.2-2' }}</small>
             </span>
 
             <span class="mobile-row-values application-mobile-value">

@@ -1,6 +1,8 @@
 import { Categories } from './categories.model';
 import { Cards } from "./cards.model";
 import { People } from './people.model';
+import { CardsPostings } from './cardspostings.model';
+import { AccountsPostings } from './accountspostings.model';
 
 export interface Expenses {
   id?: number;
@@ -40,6 +42,22 @@ export interface Expenses {
   linkedIncomeId?: number;
   dueDay?: number;
   expectedValue?: number;
+  movements?: ExpenseMovement[];
+  movementsLoading?: boolean;
+  movementsExpanded?: boolean;
+}
+
+export interface ExpenseMovement {
+  kind: 'cartao' | 'pagamento' | 'outro';
+  date: Date | string;
+  description: string;
+  amount: number;
+  reference?: string;
+  cardName?: string;
+  cardBackground?: string;
+  cardColor?: string;
+  accountName?: string;
+  postingType?: string;
 }
 
 export interface ExpensesDueDateReportRow {

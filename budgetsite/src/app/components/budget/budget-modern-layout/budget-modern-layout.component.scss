@@ -89,6 +89,15 @@
     font-weight: 700;
 }
 
+.income-movement-amount {
+    color: var(--modern-green);
+    font-weight: 700;
+}
+
+.income-movement-date {
+    color: var(--modern-yellow);
+}
+
 .expense-movement-date {
     color: #f4c542;
 }
@@ -134,6 +143,10 @@
 }
 
 .expense-movement-group-heading > .expense-movement-amount {
+    justify-self: end;
+}
+
+.expense-movement-group-heading > .income-movement-amount {
     justify-self: end;
 }
 

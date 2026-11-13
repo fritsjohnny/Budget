@@ -17,3 +17,19 @@ export interface CardsReceipts {
   accountsList?: Accounts[];
   card?: Cards;
 }
+
+export interface CardReceiptMovement {
+  id: number;
+  reference: string;
+  date: Date | string;
+  cardId: number;
+  cardName?: string;
+  cardBackground?: string;
+  cardColor?: string;
+  peopleId?: number;
+  peopleName?: string;
+  accountId: number;
+  accountName?: string;
+  amount: number;
+  note?: string;
+}

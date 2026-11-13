@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
 import { ApiUrls } from 'src/app/common/api-urls';
 import { Messenger } from 'src/app/common/messenger';
-import { CardsReceipts } from 'src/app/models/cardsreceipts.model';
+import { CardReceiptMovement, CardsReceipts } from 'src/app/models/cardsreceipts.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +15,13 @@ export class CardReceiptsService {
   create(cardReceipt: CardsReceipts): Observable<CardsReceipts> {
 
     return this.http.post<CardsReceipts>(`${ApiUrls.cardsreceipts}`, cardReceipt).pipe(
+      map(obj => obj),
+      catchError(e => this.messenger.errorHandler(e))
+    );
+  }
+
+  readByIncomeId(incomeId: number): Observable<CardReceiptMovement[]> {
+    return this.http.get<CardReceiptMovement[]>(`${ApiUrls.cardsreceipts}/ByIncome/${incomeId}`).pipe(
       map(obj => obj),
       catchError(e => this.messenger.errorHandler(e))
     );

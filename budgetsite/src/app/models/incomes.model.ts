@@ -35,4 +35,16 @@ export interface Incomes {
   preserveFutureValues?: boolean;
   relatedId?: number;
   linkedExpenseId?: number;
+  movements?: IncomeMovement[];
+  movementsLoading?: boolean;
+  movementsExpanded?: boolean;
+}
+
+export interface IncomeMovement {
+  date: Date | string;
+  description: string;
+  amount: number;
+  reference?: string;
+  accountName?: string;
+  postingType?: string;
 }

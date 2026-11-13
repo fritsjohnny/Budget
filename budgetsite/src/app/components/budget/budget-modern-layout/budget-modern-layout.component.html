@@ -1150,6 +1150,7 @@
                     <table
                         mat-table
                         [dataSource]="context.incomes"
+                        multiTemplateDataRows
                         class="modern-data-table income-table budget-desktop-table budget-drag-boundary"
                         cdkDropList
                         [cdkDropListAutoScrollStep]="7"
@@ -1286,6 +1287,9 @@
                                         <mat-icon>price_check</mat-icon
                                         ><span>Receber</span>
                                     </button>
+                                    <button mat-menu-item (click)="context.toggleIncomeMovements(row)">
+                                        <mat-icon>receipt_long</mat-icon><span>{{ row.movementsExpanded ? 'Ocultar movimentações' : 'Movimentações' }}</span>
+                                    </button>
                                     <button
                                         mat-menu-item
                                         (click)="context.incomeClone(row)"
@@ -1313,6 +1317,20 @@
                             <td mat-footer-cell *matFooterCellDef></td>
                         </ng-container>
 
+                        <ng-container matColumnDef="incomeMovementsDetail">
+                            <td mat-cell *matCellDef="let detail" class="expense-movements-cell" [attr.colspan]="context.displayedIncomesColumns.length">
+                                <div class="expense-movements-panel income-movements-panel" (click)="$event.stopPropagation()" [class.expense-movements-expanded]="detail.movementsExpanded">
+                                    <div class="expense-movements-heading"><p class="header-title-detail">Movimentações de {{ detail.description }}</p></div>
+                                    <div *ngIf="detail.movementsLoading" class="expense-movements-empty">Carregando movimentações...</div>
+                                    <div *ngIf="!detail.movementsLoading && !detail.movements?.length" class="expense-movements-empty">Nenhuma movimentação vinculada a esta receita.</div>
+                                    <section *ngIf="!detail.movementsLoading && detail.movements?.length" class="expense-movement-group">
+                                        <div class="expense-movement-group-heading"><h4>Recebimentos</h4><span class="expense-movement-count">{{ detail.movements.length }} registros</span><strong class="income-movement-amount">{{ context.getIncomeMovementsTotal(detail.movements) | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong></div>
+                                        <div *ngFor="let movement of detail.movements" class="expense-movement-line"><div class="expense-movement-copy"><strong>{{ movement.description }}</strong><small><span class="income-movement-date">{{ movement.date | date: 'dd/MM/yyyy' }}</span><span *ngIf="movement.accountName"> · {{ movement.accountName }}</span></small></div><strong class="income-movement-amount">{{ movement.amount | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong></div>
+                                    </section>
+                                </div>
+                            </td>
+                        </ng-container>
+
                         <tr
                             mat-header-row
                             *matHeaderRowDef="context.displayedIncomesColumns"
@@ -1321,7 +1339,8 @@
                             mat-row
                             *matRowDef="
                                 let row;
-                                columns: context.displayedIncomesColumns
+                                columns: context.displayedIncomesColumns;
+                                when: context.isIncomeDataRow
                             "
                             cdkDrag
                             cdkDragLockAxis="y"
@@ -1340,6 +1359,7 @@
                                 context.handleDoubleClickIncome(row, $event)
                             "
                         ></tr>
+                        <tr mat-row *matRowDef="let row; columns: context.displayedIncomeMovementColumns; when: context.isIncomeMovementDetailRow" class="expense-movement-detail-row"></tr>
                         <tr
                             mat-footer-row
                             *matFooterRowDef="context.displayedIncomesColumns"
@@ -1466,6 +1486,9 @@
                                         <mat-icon>price_check</mat-icon
                                         ><span>Receber</span>
                                     </button>
+                                    <button mat-menu-item (click)="context.toggleIncomeMovements(row)">
+                                        <mat-icon>receipt_long</mat-icon><span>{{ row.movementsExpanded ? 'Ocultar movimentações' : 'Movimentações' }}</span>
+                                    </button>
                                     <button
                                         mat-menu-item
                                         (click)="context.incomeClone(row)"
@@ -1489,6 +1512,15 @@
                                         ><span>Adicionar valor</span>
                                     </button>
                                 </mat-menu>
+                            </div>
+                            <div *ngIf="row.movementsExpanded" class="expense-movements-panel income-movements-panel expense-movements-mobile expense-movements-expanded" (click)="$event.stopPropagation()">
+                                <div class="expense-movements-heading"><p class="header-title-detail">Movimentações</p></div>
+                                <div *ngIf="row.movementsLoading" class="expense-movements-empty">Carregando movimentações...</div>
+                                <div *ngIf="!row.movementsLoading && !row.movements?.length" class="expense-movements-empty">Nenhuma movimentação vinculada a esta receita.</div>
+                                <section *ngIf="!row.movementsLoading && row.movements?.length" class="expense-movement-group">
+                                    <div class="expense-movement-group-heading"><h4>Recebimentos</h4><span class="expense-movement-count">{{ row.movements.length }} registros</span><strong class="income-movement-amount">{{ context.getIncomeMovementsTotal(row.movements) | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong></div>
+                                    <div *ngFor="let movement of row.movements" class="expense-movement-line"><div class="expense-movement-copy"><strong>{{ movement.description }}</strong><small><span class="income-movement-date">{{ movement.date | date: 'dd/MM/yyyy' }}</span><span *ngIf="movement.accountName"> · {{ movement.accountName }}</span></small></div><strong class="income-movement-amount">{{ movement.amount | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong></div>
+                                </section>
                             </div>
                         </article>
                     </div>

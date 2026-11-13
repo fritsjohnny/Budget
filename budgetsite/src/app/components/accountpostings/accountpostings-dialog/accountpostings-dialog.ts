@@ -1265,6 +1265,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       } else if (this.accountPosting.type === 'C') {
         this.accountPosting.description = 'Troco';
       } else if (this.accountPosting.type === 'T') {
+        this.restoreCurrentAccountBalances();
         this.refreshTransferAccountsList();
 
         // 2) descrição automática (origem sempre “Transferido para X”)
@@ -1273,6 +1274,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         // 4) valida o form para refletir required/invalid
         this.updateTransferValidators();
       } else {
+        this.restoreCurrentAccountBalances();
         if (
           this.accountPosting.description === 'Rendimento' ||
           this.accountPosting.description === 'Troco'
@@ -1335,13 +1337,33 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   useFullAccountBalance(): void {
     if (!this.isTransferMode()) return;
 
-    const amount = this.round2(Number(this.accountPosting.totalBalance || 0));
-    const grossAmount = this.round2(Number(this.accountPosting.totalGrossBalance ?? amount));
+    const amount = this.round2(Number(this.accountPosting.currentBalanceForYield ?? this.initialCurrentBalanceForYield));
+    const grossAmount = this.round2(Number(
+      this.accountPosting.currentGrossBalanceForYield ?? this.initialCurrentGrossBalanceForYield ?? amount
+    ));
 
     this.accountPosting.amount = amount;
     this.accountPosting.grossAmount = grossAmount;
     this.setControlValue('amountFormControl', amount);
     this.setControlValue('grossAmountFormControl', grossAmount);
+  }
+
+  private restoreCurrentAccountBalances(): void {
+    if (this.accountPosting.editing) return;
+
+    const netBalance = this.round2(Number(
+      this.accountPosting.currentBalanceForYield ?? this.initialCurrentBalanceForYield
+    ));
+    const grossBalance = this.round2(Number(
+      this.accountPosting.currentGrossBalanceForYield ?? this.initialCurrentGrossBalanceForYield ?? netBalance
+    ));
+
+    this.accountPosting.totalBalance = netBalance;
+    this.accountPosting.totalGrossBalance = grossBalance;
+    this.saldoLiquido = netBalance;
+    this.saldoBruto = grossBalance;
+    this.setControlValue('totalBalanceFormControl', netBalance);
+    this.setControlValue('totalGrossBalanceFormControl', grossBalance);
   }
 
   onToAccountChanged(): void {
@@ -1465,12 +1487,36 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   onValorChanged($event: any) {
     if (this.isTransferMode()) {
       const amount = this.round2(Number(this.accountPosting.amount || 0));
-      this.accountPosting.grossAmount = amount;
-      this.setControlValue('grossAmountFormControl', amount);
+      const grossAmount = this.isFullBalanceTransfer()
+        ? this.round2(Number(
+          this.accountPosting.currentGrossBalanceForYield ?? this.initialCurrentGrossBalanceForYield ?? amount
+        ))
+        : amount;
+      this.accountPosting.grossAmount = grossAmount;
+      if (this.isFullBalanceTransfer()) {
+        this.accountPosting.totalBalance = 0;
+        this.accountPosting.totalGrossBalance = 0;
+        this.saldoLiquido = 0;
+        this.saldoBruto = 0;
+        this.setControlValue('totalBalanceFormControl', 0);
+        this.setControlValue('totalGrossBalanceFormControl', 0);
+      }
+      this.setControlValue('grossAmountFormControl', grossAmount);
       return;
     }
 
     this.calculaSaldoLiquido(true);
+  }
+
+  private isFullBalanceTransfer(): boolean {
+    if (!this.isTransferMode()) return false;
+
+    const transferredAmount = this.round2(Number(this.accountPosting.amount ?? 0));
+    const currentNetBalance = this.round2(Number(
+      this.accountPosting.currentBalanceForYield ?? this.initialCurrentBalanceForYield
+    ));
+
+    return transferredAmount >= currentNetBalance;
   }
 
   onInitialEditInteraction(): void {

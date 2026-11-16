@@ -14,12 +14,18 @@
             </strong>
         </div>
         <div class="summary-item">
-            <span class="summary-label">Saldo final previsto</span>
+            <span class="summary-label">Saldo previsto</span>
             <strong
                 [class.balance-negative]="report.finalBalance < 0"
                 [class.balance-positive]="report.finalBalance >= 0"
             >
                 {{ report.finalBalance | currency: "" : "" }}
+            </strong>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Entradas</span>
+            <strong class="balance-positive">
+                {{ totalEntries | currency: "" : "" }}
             </strong>
         </div>
         <div class="summary-item">
@@ -32,12 +38,18 @@
             </strong>
         </div>
         <div class="summary-item">
-            <span class="summary-label">Saldo geral final previsto</span>
+            <span class="summary-label">Saldo geral previsto</span>
             <strong
                 [class.balance-negative]="finalGeneralBalance < 0"
                 [class.balance-positive]="finalGeneralBalance >= 0"
             >
                 {{ finalGeneralBalance | currency: "" : "" }}
+            </strong>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Saídas</span>
+            <strong class="balance-negative">
+                {{ totalExits | currency: "" : "" }}
             </strong>
         </div>
     </div>

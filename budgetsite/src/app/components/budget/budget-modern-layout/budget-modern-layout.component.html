@@ -591,14 +591,20 @@
                                                     : "1.2-2"
                                         }}</span
                                     >
-                                    <span
-                                        class="status-chip"
-                                        [ngClass]="getExpenseStatusClass(row)"
-                                    >
-                                        <mat-icon>{{
-                                            getExpenseStatusIcon(row)
-                                        }}</mat-icon>
-                                        {{ getExpenseStatus(row) }}
+                                    <ng-container *ngIf="row.expectedValue">
+                                        <span class="metadata-provisioned-spent">
+                                            Gasto:
+                                            {{ getProvisionedSpend(row) | currency: "BRL" : "symbol" : "1.2-2" }}
+                                        </span>
+                                        <span class="provisioned-metadata-difference" [ngClass]="getProvisionedDifferenceClass(row)">
+                                            {{ getProvisionedDifferenceLabel(row) }}
+                                            {{ getProvisionedDifferenceAmount(row) | currency: "BRL" : "symbol" : "1.2-2" }}
+                                        </span>
+                                    </ng-container>
+                                </div>
+                                <div class="entry-status-line">
+                                    <span class="status-chip" [ngClass]="getExpenseStatusClass(row)">
+                                        <mat-icon>{{ getExpenseStatusIcon(row) }}</mat-icon>{{ getExpenseStatus(row) }}
                                     </span>
                                 </div>
                             </td>
@@ -801,6 +807,7 @@
                             [class.without-category-row]="
                                 row.cardId == null && row.categoryId == null
                             "
+                            [class.provisioned-expense-row]="getExpenseStatus(row) === 'Provisionado'"
                             (click)="context.handleClickExpense(row, $event)"
                             (dblclick)="
                                 context.handleDoubleClickExpense(row, $event)
@@ -891,6 +898,16 @@
                                                     : "1.2-2"
                                         }}</span
                                     >
+                                    <ng-container *ngIf="row.expectedValue">
+                                        <span class="metadata-provisioned-spent">
+                                            Gasto:
+                                            {{ getProvisionedSpend(row) | currency: "BRL" : "symbol" : "1.2-2" }}
+                                        </span>
+                                        <span class="provisioned-metadata-difference" [ngClass]="getProvisionedDifferenceClass(row)">
+                                            {{ getProvisionedDifferenceLabel(row) }}
+                                            {{ getProvisionedDifferenceAmount(row) | currency: "BRL" : "symbol" : "1.2-2" }}
+                                        </span>
+                                    </ng-container>
                                 </div>
                                 <div class="entry-status-line">
                                     <span class="status-chip" [ngClass]="getExpenseStatusClass(row)">

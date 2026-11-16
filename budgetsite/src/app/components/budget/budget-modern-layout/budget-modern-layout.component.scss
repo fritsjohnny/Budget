@@ -1541,6 +1541,18 @@
     color: var(--modern-red);
 }
 
+.entry-metadata > span:not(.status-chip) {
+    white-space: nowrap;
+    padding: 2px 0px 0px 5px;
+}
+
+.provisioned-metadata-difference {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
 .entry-status-line {
     display: flex;
     justify-content: flex-start;
@@ -1554,6 +1566,19 @@
 
 .metadata-provisioned {
     color: var(--modern-yellow);
+}
+
+.metadata-provisioned-spent {
+    color: var(--modern-blue);
+}
+
+.provisioned-under {
+    color: var(--modern-green);
+}
+
+.provisioned-over {
+    color: var(--modern-red);
+    font-weight: 700;
 }
 
 .metadata-info {
@@ -1574,6 +1599,7 @@
     border-radius: 999px;
     font-size: 10px;
     line-height: 1;
+    white-space: nowrap;
 }
 
 .status-chip .mat-icon {
@@ -2328,6 +2354,10 @@
         font-size: 12px;
     }
 
+    .budget-mobile-row.provisioned-expense-row {
+        grid-template-columns: minmax(0, 46fr) repeat(3, minmax(0, 16.5fr)) 30px;
+    }
+
     .budget-mobile-row:hover {
         background: var(--modern-surface-strong);
     }
@@ -2343,12 +2373,12 @@
     .budget-mobile-description {
         min-width: 0;
         padding: 8px 3px 8px 8px;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .budget-mobile-description .entry-description {
-        overflow: hidden;
-        text-overflow: ellipsis;
+        flex-wrap: wrap;
+        overflow: visible;
     }
 
     .budget-mobile-value {
@@ -2544,18 +2574,27 @@
     }
 
     .entry-metadata {
-        gap: 3px;
+        column-gap: 5px;
+        row-gap: 0;
         margin-top: 0;
-        font-size: 9px;
+        font-size: 10px;
+        line-height: 1.1;
+        overflow: visible;
     }
 
     .entry-status-line {
         margin-top: 0;
+        padding-top: 2px;
     }
 
     .status-chip {
-        height: 17px;
+        height: 16px;
         padding: 0 5px;
+        font-size: 9px;
+    }
+
+    .provisioned-metadata-difference .status-chip {
+        height: 14px;
         font-size: 8px;
     }
 

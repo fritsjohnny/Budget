@@ -79,6 +79,45 @@ export class BudgetModernLayoutComponent implements DoCheck {
       });
   }
 
+  getProvisionedCategory(expense: any): any | undefined {
+    const categoryId = Number(expense?.categoryId ?? 0);
+    const categoryName = this.normalizeCategoryName(expense?.category ?? expense?.description);
+    const categories = this.context?.expensesByCategories ?? [];
+
+    return categories.find((item: any) => {
+      if (categoryId > 0 && Number(item?.id ?? 0) === categoryId) return true;
+
+      return this.normalizeCategoryName(item?.category) === categoryName;
+    });
+  }
+
+  getProvisionedSpend(expense: any): number {
+    return Number(this.getProvisionedCategory(expense)?.amount ?? 0);
+  }
+
+  getProvisionedDifference(expense: any): number {
+    return Number(expense?.expectedValue ?? 0) - this.getProvisionedSpend(expense);
+  }
+
+  getProvisionedDifferenceLabel(expense: any): string {
+    const difference = this.getProvisionedDifference(expense);
+
+    if (difference < 0) return 'Acima:';
+    if (difference === 0) return 'No previsto:';
+
+    return 'Restante:';
+  }
+
+  getProvisionedDifferenceAmount(expense: any): number {
+    return Math.abs(this.getProvisionedDifference(expense));
+  }
+
+  getProvisionedDifferenceClass(expense: any): string {
+    return this.getProvisionedDifference(expense) < 0
+      ? 'provisioned-over'
+      : 'provisioned-under';
+  }
+
   getExpenseStatus(expense: any): string {
     if (Number(expense?.remaining ?? 0) <= 0 && Number(expense?.toPay ?? 0) > 0) return 'Pago';
     if (Number(expense?.expectedValue ?? 0) > 0 && Number(expense?.toPay ?? 0) <= 0) return 'Provisionado';

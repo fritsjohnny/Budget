@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="500" viewBox="0 0 1260 500">
+  <rect width="1260" height="500" rx="28" fill="#f4f6fa"/>
+  <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle" fill="#172033">
+    <image href="budget-icon-option-1.png" x="49" y="20" width="360" height="360"/>
+    <image href="budget-icon-option-2.png" x="450" y="20" width="360" height="360"/>
+    <image href="budget-icon-option-3.png" x="851" y="20" width="360" height="360"/>
+    <text x="229" y="414" font-size="21" font-weight="700">01 · Bloco simples</text>
+    <text x="229" y="443" font-size="15" fill="#687286">Folha grande e linhas azuis</text>
+    <text x="630" y="414" font-size="21" font-weight="700">02 · Bloco pautado</text>
+    <text x="630" y="443" font-size="15" fill="#687286">Faixa rosa, traços bem visíveis</text>
+    <text x="1031" y="414" font-size="21" font-weight="700">03 · Bloco espiral</text>
+    <text x="1031" y="443" font-size="15" fill="#687286">Espiral vermelha e linhas verdes</text>
+  </g>
+</svg>

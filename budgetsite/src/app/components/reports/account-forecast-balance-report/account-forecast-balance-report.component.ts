@@ -31,6 +31,8 @@ export class AccountForecastBalanceReportComponent implements AfterViewInit {
   report: AccountForecastBalanceReport | null = null;
   currentGeneralBalance = 0;
   finalGeneralBalance = 0;
+  totalEntries = 0;
+  totalExits = 0;
   displayedDataColumns = ['index', 'date', 'description', 'amount', 'balance', 'generalBalance', 'reference'];
   dataSourceReport = new MatTableDataSource<AccountForecastBalanceReportTableRow>([]);
 
@@ -73,6 +75,12 @@ export class AccountForecastBalanceReportComponent implements AfterViewInit {
         next: ({ report, currentGeneralBalance }: { report: AccountForecastBalanceReport; currentGeneralBalance: number }) => {
           this.report = report;
           this.currentGeneralBalance = currentGeneralBalance;
+          this.totalEntries = (report.rows ?? [])
+            .filter(row => row.type === 'R')
+            .reduce((total, row) => total + Math.abs(row.amount ?? 0), 0);
+          this.totalExits = (report.rows ?? [])
+            .filter(row => row.type === 'P')
+            .reduce((total, row) => total + Math.abs(row.amount ?? 0), 0);
 
           const chronologicalRows = (report.rows ?? []).slice().sort((first, second) => {
             const dateDifference = new Date(first.date).getTime() - new Date(second.date).getTime();
@@ -120,6 +128,8 @@ export class AccountForecastBalanceReportComponent implements AfterViewInit {
           this.report = null;
           this.currentGeneralBalance = 0;
           this.finalGeneralBalance = 0;
+          this.totalEntries = 0;
+          this.totalExits = 0;
           this.dataSourceReport = new MatTableDataSource<AccountForecastBalanceReportTableRow>([]);
         }
       });

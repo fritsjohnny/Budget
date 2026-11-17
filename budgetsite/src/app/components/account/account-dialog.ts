@@ -38,6 +38,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
     yieldIndexFormControl: new FormControl(''),
     irPercentFormControl: new FormControl(''),
     isTaxExemptFormControl: new FormControl(false),
+    isIOFExemptFormControl: new FormControl(false),
     totalBalanceGrossFormControl: new FormControl(''),
   });
 
@@ -82,6 +83,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
       yieldIndex: (this.accountFormGroup.get('yieldIndexFormControl')?.value ?? '').toString().trim().toUpperCase() || undefined,
       irPercent: parseFloat(this.accountFormGroup.get('irPercentFormControl')?.value?.toString().replace(',', '.') ?? '0'),
       isTaxExempt: this.accountFormGroup.get('isTaxExemptFormControl')?.value,
+      isIOFExempt: this.accountFormGroup.get('isIOFExemptFormControl')?.value,
       totalBalanceGross: this.parseAmount(this.accountFormGroup.get('totalBalanceGrossFormControl')?.value),
       yieldRanges: this.normalizeYieldRanges(),
       editing: this.id != undefined,
@@ -128,6 +130,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
       yieldIndexFormControl: '',
       irPercentFormControl: '',
       isTaxExemptFormControl: false,
+      isIOFExemptFormControl: false,
       totalBalanceGrossFormControl: ''
     });
 
@@ -178,6 +181,7 @@ export class AccountDialog implements OnInit, AfterViewInit {
       this.accountFormGroup.get('yieldIndexFormControl')?.setValue(account.yieldIndex ?? '');
       this.accountFormGroup.get('irPercentFormControl')?.setValue(account.irPercent);
       this.accountFormGroup.get('isTaxExemptFormControl')?.setValue(account.isTaxExempt);
+      this.accountFormGroup.get('isIOFExemptFormControl')?.setValue(account.isIOFExempt ?? false);
       this.accountFormGroup.get('totalBalanceGrossFormControl')?.setValue(account.totalBalanceGross);
 
       this.loadYieldRanges(account.id);

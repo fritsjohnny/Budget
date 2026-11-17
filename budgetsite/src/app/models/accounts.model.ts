@@ -24,6 +24,7 @@ export interface Accounts {
   yieldIndex?: string;
   irPercent?: number;
   isTaxExempt?: boolean;
+  isIOFExempt?: boolean;
   lastYield?: number;
   description?: string;
   hasParens?: boolean;

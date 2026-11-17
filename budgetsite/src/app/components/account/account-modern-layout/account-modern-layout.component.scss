@@ -204,7 +204,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 2px 2px 12px;
+    padding: 2px 2px 0;
 }
 
 .selected-account-copy,
@@ -250,7 +250,7 @@
     overflow: hidden;
     font-size: 17px;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: pre-line;
 }
 
 .selected-account-actions {

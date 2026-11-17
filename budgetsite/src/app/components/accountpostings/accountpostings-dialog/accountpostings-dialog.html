@@ -408,9 +408,9 @@
                         −
                     </button>
                     <input
-                        readonly
                         type="number"
                         inputmode="numeric"
+                        step="1"
                         style="
                             width: 40px !important;
                             border-radius: 4px 4px 0 0;
@@ -419,6 +419,7 @@
                         "
                         min="0"
                         formControlName="iofElapsedDaysFormControl"
+                        (ngModelChange)="onIofElapsedDaysChanged($event)"
                     />
                     <button
                         type="button"

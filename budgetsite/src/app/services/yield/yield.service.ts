@@ -532,7 +532,9 @@ export class YieldService {
       }
 
       principalTotalC += principalC;
-      principalXRateC += principalC * this.iofRateFromApplicationTable(days);
+      if (!account.isIOFExempt) {
+        principalXRateC += principalC * this.iofRateFromApplicationTable(days);
+      }
     }
 
     let iofC = 0;
@@ -553,7 +555,7 @@ export class YieldService {
         : 0;
       const accumulatedGrossYieldC = Math.max(0, totalGrossC - principalTotalC);
 
-      iofC = toCents(fromCents(accumulatedGrossYieldC) * iofWeighted);
+      iofC = account.isIOFExempt ? 0 : toCents(fromCents(accumulatedGrossYieldC) * iofWeighted);
       const irBaseC = Math.max(0, accumulatedGrossYieldC - iofC);
       const irPercentForApplications = activeApplications.reduce((weightedRate, application) => {
         const principalC = toCents(Number(application.amountApplied) || 0);
@@ -656,12 +658,12 @@ export class YieldService {
         const d0 = new Date(app.dateApplied);
         const days = Math.ceil((today.getTime() - d0.getTime()) / 86400000); // dias corridos
 
-        const rate = this.iofRateFromTable(days); // <<--- usa a TABELA
+        const rate = account.isIOFExempt ? 0 : this.iofRateFromTable(days); // <<--- usa a TABELA
         principalTotal += principal;
-        principalXRate += principal * rate;
+        if (!account.isIOFExempt) principalXRate += principal * rate;
       }
 
-      if (principalTotal > 0) {
+      if (principalTotal > 0 && !account.isIOFExempt) {
         iofWeighted = principalXRate / principalTotal;
 
         // opcional (se saldos variam muito por resgates): 
@@ -673,7 +675,7 @@ export class YieldService {
     }
 
     // IOF do dia:
-    const iofAmount = grossYield * iofWeighted;
+    const iofAmount = account.isIOFExempt ? 0 : grossYield * iofWeighted;
 
     // IR sobre (bruto - IOF):
     const irBase = Math.max(0, grossYield - iofAmount);
@@ -978,9 +980,9 @@ export class YieldService {
           continue;
         }
 
-        const rate = this.iofRateFromApplicationTable(daysForIof);
+        const rate = account.isIOFExempt ? 0 : this.iofRateFromApplicationTable(daysForIof);
 
-        if (daysForIof <= 29) {
+        if (!account.isIOFExempt && daysForIof <= 29) {
           principalInWindow += principal;
           principalXRate += round2(principal * rate);
         }
@@ -990,7 +992,7 @@ export class YieldService {
         const avgIofOnWindow = round2(principalXRate / principalInWindow);
         const fractionOnIof = round2(Math.min(1, principalInWindow / (totalGross || 1)));
 
-        iofRateEffective = activeApplications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
+        iofRateEffective = account.isIOFExempt ? 0 : activeApplications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
       }
     }
 
@@ -1091,9 +1093,9 @@ export class YieldService {
       const accumulatedGrossYield = round2(
         Math.max(0, totalGrossBalance - principal)
       );
-      const iof = round2(
-        accumulatedGrossYield * this.iofRateFromApplicationTable(days)
-      );
+      const iof = account.isIOFExempt
+        ? 0
+        : round2(accumulatedGrossYield * this.iofRateFromApplicationTable(days));
       const irBase = round2(Math.max(0, accumulatedGrossYield - iof));
       const irPercent = this.irRateFromApplicationDays(maturityDays);
       const ir = isTaxExempt ? 0 : round2(irBase * irPercent / 100);
@@ -1235,9 +1237,9 @@ export class YieldService {
           d0.setHours(0, 0, 0, 0);
 
           // dias corridos inclusivo (D+1)
-          const rate = this.iofRateFromTable(iofElapsedDays);
+          const rate = account.isIOFExempt ? 0 : this.iofRateFromTable(iofElapsedDays);
 
-          if (iofElapsedDays <= 29) {
+          if (!account.isIOFExempt && iofElapsedDays <= 29) {
             principalInWindow += principal;
             principalXRate += round2(principal * rate);
           }
@@ -1251,7 +1253,7 @@ export class YieldService {
         // fração do saldo que está sujeito a IOF (não pode exceder 100%)
         // usa baseForFraction = saldo bruto “após crédito” do dia
         const fractionOnIof = round2(Math.min(1, principalInWindow / (baseForFraction || 1)));
-        iofRateEff = activeApplications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
+        iofRateEff = account.isIOFExempt ? 0 : activeApplications.length > 1 ? round2(avgIofOnWindow * fractionOnIof) : avgIofOnWindow;
       }
 
       const iofTotal = round2(totalYieldGross * iofRateEff);

@@ -25,7 +25,9 @@
                     <div>
                         <small>Conta selecionada</small>
                         <strong>{{
-                            context.account?.name || "Selecione uma conta"
+                            context.account
+                                ? context.getDescription(context.account)
+                                : "Selecione uma conta"
                         }}</strong>
                     </div>
                 </div>

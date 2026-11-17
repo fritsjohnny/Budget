@@ -314,13 +314,11 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
         0,
         this.round2(Number(detail.totalGrossBalance ?? 0) - Number(application.amountApplied || 0))
       );
-      const iof = this.round2(
-        accumulatedGrossYield * this.yieldService.iofRateFromApplicationTable(Number(detail.iofElapsedDays || 0))
-      );
+      const account = this.accountPosting.accountsList?.find(item => item.id === this.accountPosting.accountId);
+      const iof = account?.isIOFExempt
+        ? 0
+        : this.round2(accumulatedGrossYield * this.yieldService.iofRateFromApplicationTable(Number(detail.iofElapsedDays || 0)));
       const irBase = Math.max(0, this.round2(accumulatedGrossYield - iof));
-      const account = this.accountPosting.accountsList?.find(
-        item => item.id === this.accountPosting.accountId
-      );
       const postingDate = new Date(this.accountPosting.date);
       const appliedDate = new Date(application.dateApplied);
       postingDate.setHours(0, 0, 0, 0);
@@ -1027,6 +1025,14 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     if (recalculate) {
       this.onTypeChange();
     }
+  }
+
+  onIofElapsedDaysChanged(value: unknown): void {
+    const days = this.toNonNegativeInt(value);
+    const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
+    if (String(days) !== String(value ?? '')) control?.setValue(days, { emitEvent: false });
+    this.accountPosting.iofElapsedDays = days;
+    if (!this.noRecalculate) this.onTypeChange();
   }
 
   onAccountChanged(): void {

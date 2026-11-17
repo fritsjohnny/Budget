@@ -358,7 +358,7 @@
           <div class="modern-yield-stepper modern-field-full">
             <span>Dias corridos para cálculo do IOF</span>
             <button type="button" aria-label="Diminuir dias" (click)="changeDays(-1)">−</button>
-            <input readonly type="number" inputmode="numeric" min="0" formControlName="iofElapsedDaysFormControl" />
+            <input type="number" inputmode="numeric" min="0" step="1" formControlName="iofElapsedDaysFormControl" (ngModelChange)="onIofElapsedDaysChanged($event)" />
             <button type="button" aria-label="Aumentar dias" (click)="changeDays(1)">+</button>
           </div>
         </div>

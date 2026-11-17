@@ -4,6 +4,14 @@
     font-size: 13px;
 }
 
+.iof-recalculation-hint {
+    display: block;
+    flex: 1 0 100%;
+    margin-top: 3px;
+    color: #74839a;
+    font-size: 11px;
+}
+
 .radio-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

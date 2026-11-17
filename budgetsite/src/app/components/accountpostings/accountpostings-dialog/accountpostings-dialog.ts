@@ -66,6 +66,9 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   diRateFallbackNotice: string | null = null;
   isApplyingSuggestedYield: boolean = false;
   private suppressInitialEditEvents: boolean = false;
+  private iofRecalculationTimer?: ReturnType<typeof setTimeout>;
+  private pendingIofRecalculation?: Promise<void>;
+  private hasUserEditedIofDays = false;
   private initialCurrentBalanceForYield: number = 0;
   private initialCurrentGrossBalanceForYield: number = 0;
   private dateChangeRequestId: number = 0;
@@ -890,7 +893,8 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.changeDays(diff, false, false);
+    this.hasUserEditedIofDays = false;
+    this.changeDays(diff, false, false, false);
 
     this.accountPosting.date = date;
 
@@ -932,7 +936,17 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  save(): void {
+  async save(): Promise<void> {
+    if (this.iofRecalculationTimer) {
+      clearTimeout(this.iofRecalculationTimer);
+      this.iofRecalculationTimer = undefined;
+      if (this.accountPosting.type === 'Y' && !this.noRecalculate) {
+        await this.runIofRecalculation();
+      }
+    } else if (this.pendingIofRecalculation) {
+      await this.pendingIofRecalculation;
+    }
+
     if (this.isTransferMode()) {
       if (!this.validateTransferMode(true)) return;
     }
@@ -1014,16 +1028,22 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  changeDays(delta: number, recalculate: boolean = true, persist: boolean = true): void {
+  changeDays(
+    delta: number,
+    recalculate: boolean = true,
+    persist: boolean = true,
+    userEdited: boolean = true
+  ): void {
     const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
     const value = Number(control?.value || 0);
     const days = Math.max(0, value + delta);
 
     control?.setValue(days, { emitEvent: persist });
     this.accountPosting.iofElapsedDays = days;
+    if (userEdited) this.hasUserEditedIofDays = true;
 
     if (recalculate) {
-      this.onTypeChange();
+      this.scheduleIofRecalculation();
     }
   }
 
@@ -1032,7 +1052,32 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
     const control = this.accountPostingFormGroup.get('iofElapsedDaysFormControl');
     if (String(days) !== String(value ?? '')) control?.setValue(days, { emitEvent: false });
     this.accountPosting.iofElapsedDays = days;
-    if (!this.noRecalculate) this.onTypeChange();
+    this.hasUserEditedIofDays = true;
+    this.scheduleIofRecalculation();
+  }
+
+  private scheduleIofRecalculation(): void {
+    if (this.iofRecalculationTimer) clearTimeout(this.iofRecalculationTimer);
+
+    this.iofRecalculationTimer = setTimeout(() => {
+      this.iofRecalculationTimer = undefined;
+      if (this.accountPosting.type === 'Y' && !this.noRecalculate) {
+        void this.runIofRecalculation();
+      }
+    }, 700);
+  }
+
+  private async runIofRecalculation(): Promise<void> {
+    if (this.pendingIofRecalculation) await this.pendingIofRecalculation;
+    if (this.accountPosting.type !== 'Y' || this.noRecalculate) return;
+
+    const calculation = this.onTypeChange();
+    this.pendingIofRecalculation = calculation;
+    try {
+      await calculation;
+    } finally {
+      if (this.pendingIofRecalculation === calculation) this.pendingIofRecalculation = undefined;
+    }
   }
 
   onAccountChanged(): void {
@@ -1159,7 +1204,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
             }))
           );
 
-          if (applicationBalances.length === 1) {
+          if (applicationBalances.length === 1 && !this.hasUserEditedIofDays) {
             const iofElapsedDays = applicationBalances[0].iofElapsedDays;
             this.accountPosting.iofElapsedDays = iofElapsedDays;
             this.accountPostingFormGroup.get('iofElapsedDaysFormControl')
@@ -1466,6 +1511,7 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.iofDaysSub) { this.iofDaysSub.unsubscribe(); }
+    if (this.iofRecalculationTimer) clearTimeout(this.iofRecalculationTimer);
   }
 
   onValorBrutoChanged($event: any) {

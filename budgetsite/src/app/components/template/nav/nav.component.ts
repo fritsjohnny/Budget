@@ -82,7 +82,12 @@ export class NavComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.themeService.applyTheme(this.theme);
 
-    this.user = JSON.parse(localStorage.getItem('user')!);
+    const storedUser = localStorage.getItem('user');
+    try {
+      this.user = storedUser ? JSON.parse(storedUser) : { name: '' } as Users;
+    } catch {
+      this.user = { name: '' } as Users;
+    }
     this.updatePageTitle(this.router.url);
   }
 

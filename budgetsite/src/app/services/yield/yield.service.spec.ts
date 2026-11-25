@@ -250,6 +250,132 @@ describe('YieldService - múltiplas aplicações', () => {
     expect(result.totalNet).toBe(10072.85);
   });
 
+  it('Mercado Pago grava somente o IR incremental do rendimento diário', async () => {
+    const applicationsService = {
+      readByAccount: () => of([])
+    } as unknown as AccountApplicationsService;
+    const rangesService = {
+      readByAccount: () => of([])
+    } as unknown as AccountYieldRangeService;
+    const mercadoPagoService = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationsService,
+      rangesService
+    );
+
+    spyOn(mercadoPagoService, 'getCdiDiarioPercentStrict').and.resolveTo(0.052);
+
+    const result = await mercadoPagoService.suggestYield3(
+      {
+        ...account,
+        name: 'Mercado Pago',
+        yieldPercent: 130,
+        irPercent: 22.5,
+        totalBalanceGross: 5020.37,
+        totalBalance: 5018.50
+      },
+      new Date('2026-11-25T00:00:00'),
+      12,
+      0
+    );
+
+    expect(result.grossYield).toBe(3.39);
+    expect(result.irTotal).toBe(0.76);
+    expect(result.netYield).toBe(2.63);
+  });
+
+  it('Mercado Pago aplica 130% do CDI até R$ 5.000 e 100% somente ao excedente', async () => {
+    const applicationsService = {
+      readByAccount: () => of([])
+    } as unknown as AccountApplicationsService;
+    const rangesService = {
+      readByAccount: () => of([
+        { accountId: 1, startAmount: 0, endAmount: 5000, yieldPercent: 130, position: 1 },
+        { accountId: 1, startAmount: 5000, endAmount: null, yieldPercent: 100, position: 2 }
+      ])
+    } as unknown as AccountYieldRangeService;
+    const mercadoPagoService = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationsService,
+      rangesService
+    );
+
+    spyOn(mercadoPagoService, 'getCdiDiarioResult').and.resolveTo({
+      ratePercent: 0.052,
+      rateDate: new Date('2026-11-24T00:00:00'),
+      fallback: false
+    });
+
+    const result = await mercadoPagoService.suggestYield3(
+      {
+        ...account,
+        id: 1,
+        name: 'Mercado Pago',
+        yieldPercent: 130,
+        totalBalanceGross: 5020.37,
+        totalBalance: 5020.37
+      },
+      new Date('2026-11-25T00:00:00'),
+      155,
+      0
+    );
+
+    // 5,000 * 0.052% * 130% + 20.37 * 0.052% * 100%
+    expect(result.grossYield).toBe(3.39);
+  });
+
+  it('Mercado Pago escolhe a taxa CDI em relação à data do lançamento', () => {
+    const service = createService();
+    const targetDate = service.resolveCdiTargetDate(
+      { ...account, cdiRateLagDays: 1 },
+      new Date(2026, 10, 25, 12)
+    );
+
+    expect(targetDate.getFullYear()).toBe(2026);
+    expect(targetDate.getMonth()).toBe(10);
+    expect(targetDate.getDate()).toBe(24);
+  });
+
+  it('Mercado Pago sem faixas aplica 130% do CDI ao saldo inteiro de R$ 5.015,93', async () => {
+    const applicationsService = {
+      readByAccount: () => of([])
+    } as unknown as AccountApplicationsService;
+    const rangesService = {
+      readByAccount: () => of([])
+    } as unknown as AccountYieldRangeService;
+    const mercadoPagoService = new YieldService(
+      {} as HttpClient,
+      { errorHandler: () => undefined } as unknown as Messenger,
+      applicationsService,
+      rangesService
+    );
+
+    spyOn(mercadoPagoService, 'getCdiDiarioResult').and.resolveTo({
+      ratePercent: 0.052,
+      rateDate: new Date('2026-11-24T00:00:00'),
+      fallback: false
+    });
+
+    const result = await mercadoPagoService.suggestYield3(
+      {
+        ...account,
+        id: 1,
+        name: 'Mercado Pago',
+        yieldPercent: 130,
+        totalBalanceGross: 5015.93,
+        totalBalance: 5015.93
+      },
+      new Date('2026-11-25T00:00:00'),
+      155,
+      0
+    );
+
+    // 5,015.93 * 0.052% * 130% = 3.3908, arredondado para 3.39.
+    expect(result.grossYield).toBe(3.39);
+  });
+
   it('Mercado Pago com aplicação usa o último CDI disponível quando o dia alvo ainda não possui valor', async () => {
     const application = createApplication(1, 10000, 100);
     const applicationsService = {

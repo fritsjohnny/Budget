@@ -426,12 +426,12 @@ export class YieldService {
   }
 
   // Helper: decide a data-alvo da taxa (0 = D0, 1 = D-1 útil, etc.)
-  resolveCdiTargetDate(account: Accounts): Date {
+  resolveCdiTargetDate(account: Accounts, referenceDate: Date = new Date()): Date {
     const lag = Number((account as any).cdiRateLagDays ?? ((account as any).isD0 ? 0 : 1));
     const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
     const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.getDate() + n); x.setHours(0, 0, 0, 0); return x; };
 
-    let target = new Date(); target.setHours(0, 0, 0, 0);
+    let target = new Date(referenceDate); target.setHours(0, 0, 0, 0);
     if (lag > 0) {
       let count = 0;
       while (count < lag) {
@@ -817,13 +817,8 @@ export class YieldService {
       return [];
     }
 
-    try {
-      const ranges = await firstValueFrom(this.accountYieldRangeService.readByAccount(accountId));
-
-      return (ranges ?? []).sort((a, b) => a.position - b.position);
-    } catch {
-      return [];
-    }
+    const ranges = await firstValueFrom(this.accountYieldRangeService.readByAccount(accountId));
+    return (ranges ?? []).sort((a, b) => a.position - b.position);
   }
 
   private calculateGrossYieldByRanges(
@@ -926,6 +921,7 @@ export class YieldService {
       : 0;
 
     let grossYieldDay = 0;
+    let cdiDiarioPercent: number | null = null;
     let diRatePercent: number | undefined;
     let diRateDate: Date | undefined;
     let diRateFallback = false;
@@ -937,9 +933,7 @@ export class YieldService {
     );
 
     if (shouldGenerateGrossYield) {
-      const targetDate = this.resolveCdiTargetDate(account);
-      let cdiDiarioPercent: number | null = null;
-
+      const targetDate = this.resolveCdiTargetDate(account, launchDate);
       try {
         const rate = await this.getCdiDiarioResult(account, targetDate);
         cdiDiarioPercent = rate.ratePercent;
@@ -966,6 +960,7 @@ export class YieldService {
 
     const totalGross = round2(baseGross + grossYieldDay);
     const totalYieldGrossNow = Math.max(0, round2(totalGross - principalTotal));
+    const previousGrossAccumulated = Math.max(0, round2(baseGross - principalTotal));
 
     let iofRateEffective = 0;
 
@@ -998,16 +993,33 @@ export class YieldService {
 
     const iofTotal = round2(totalYieldGrossNow * iofRateEffective);
     const irBase = round2(Math.max(0, totalYieldGrossNow - iofTotal));
-    const irTotal = isTaxExempt ? 0 : trunc2(irBase * (irPercent / 100));
-    const netAccumulatedNow = round2(totalYieldGrossNow - iofTotal - irTotal);
-    const netYieldDay = round2(netAccumulatedNow - previousNetAccumulated);
+    const irAccumulated = isTaxExempt ? 0 : trunc2(irBase * (irPercent / 100));
+    const netAccumulatedNow = round2(totalYieldGrossNow - iofTotal - irAccumulated);
+
+    // Store the tax charged by this posting, not the accumulated tax balance.
+    // With no active applications, the configured base IR rate applies to the
+    // day's gross yield. With applications, tax is progressive over the
+    // accumulated yield, so take the difference from the prior accumulated IR.
+    const previousIofAccumulated = round2(previousGrossAccumulated * iofRateEffective);
+    const previousIrBase = round2(Math.max(0, previousGrossAccumulated - previousIofAccumulated));
+    const previousIrAccumulated = isTaxExempt ? 0 : trunc2(previousIrBase * (irPercent / 100));
+    const irTotal = Math.max(0, round2(irAccumulated - previousIrAccumulated));
+    const iofChargedToday = Math.max(
+      0,
+      round2(iofTotal - round2(previousGrossAccumulated * iofRateEffective))
+    );
+    // With no application records, the balance already includes prior yields.
+    // Charge only this posting's gross yield minus its incremental taxes.
+    const netYieldDay = hasActiveApplications
+      ? round2(netAccumulatedNow - previousNetAccumulated)
+      : round2(grossYieldDay - iofChargedToday - irTotal);
 
     return {
       totalGross,
       totalNet: round2(baseNet + netYieldDay),
       grossYield: grossYieldDay,
       netYield: netYieldDay,
-      iofTotal,
+      iofTotal: iofChargedToday,
       irTotal,
       totalAplicado: principalTotal,
       diRatePercent,

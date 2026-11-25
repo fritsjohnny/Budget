@@ -1,10 +1,12 @@
 <app-modern-reference-page-shell
     [reference]="context.reference"
     refreshLabel="Atualizando orçamento..."
+    [showRefreshButton]="true"
     [refreshDisabled]="context.isBudgetLoading"
     [refreshLoading]="context.isBudgetLoading"
+    [refreshButtonLoading]="context.isSilentBudgetRefreshing"
     [navigationDisabled]="context.isBudgetLoading || context.savingCardPosting"
-    (refreshRequested)="context.refresh()"
+    (refreshRequested)="context.refresh(false)"
 >
     <app-modern-reference-selector
         modernReferenceSelector
@@ -259,16 +261,6 @@
                 </div>
             </article>
 
-            <button
-                mat-fab
-                color="warn"
-                class="summary-refresh"
-                (click)="context.refresh()"
-                matTooltip="Atualizar orçamento"
-                aria-label="Atualizar orçamento"
-            >
-                <mat-icon>autorenew</mat-icon>
-            </button>
         </section>
 
         <mat-accordion class="modern-accordion" [multi]="true">

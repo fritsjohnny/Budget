@@ -74,14 +74,42 @@ export class CardComponent implements OnInit, AfterViewInit {
   }
 
   refreshRequest = 0;
+  silentRefreshRequest = 0;
+  isSilentRefreshing = false;
+  private silentCardListLoaded = false;
+  private silentPostingsLoaded = false;
 
-  refresh() {
+  private finishSilentRefreshPart(part: 'cardList' | 'postings'): void {
+    if (part === 'cardList') this.silentCardListLoaded = true;
+    if (part === 'postings') this.silentPostingsLoaded = true;
+
+    if (this.silentCardListLoaded && this.silentPostingsLoaded) {
+      this.isSilentRefreshing = false;
+    }
+  }
+
+  onSilentPostingsRefreshCompleted(): void {
+    this.finishSilentRefreshPart('postings');
+  }
+
+  refresh(showLoading: boolean = true, notifyPostings = true) {
     if (!this.reference) {
       return;
     }
 
-    this.refreshRequest++;
-    this.hideProgress = false;
+    if (showLoading) {
+      this.refreshRequest++;
+      this.hideProgress = false;
+    } else if (notifyPostings) {
+      this.isSilentRefreshing = true;
+      this.silentCardListLoaded = false;
+      this.silentPostingsLoaded = false;
+      this.silentRefreshRequest++;
+    } else {
+      this.isSilentRefreshing = true;
+      this.silentCardListLoaded = false;
+      this.silentPostingsLoaded = false;
+    }
 
     const requestId = ++this.cardRefreshRequestId;
     const reference = this.reference;
@@ -135,7 +163,8 @@ export class CardComponent implements OnInit, AfterViewInit {
           this.setCard(selectedCard);
         }
 
-        this.hideProgress = true;
+        if (showLoading) this.hideProgress = true;
+        else this.finishSilentRefreshPart('cardList');
       },
       error: (err) => {
         if (
@@ -147,7 +176,8 @@ export class CardComponent implements OnInit, AfterViewInit {
 
         console.error('Erro irrecuperável ao carregar cartões:', err);
         this.cardsVisible = [];
-        this.hideProgress = true;
+        if (showLoading) this.hideProgress = true;
+        else this.finishSilentRefreshPart('cardList');
       },
     });
   }

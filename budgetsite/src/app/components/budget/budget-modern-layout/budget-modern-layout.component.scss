@@ -905,14 +905,6 @@
     color: var(--modern-blue) !important;
 }
 
-.summary-refresh {
-    position: absolute;
-    right: -10px;
-    top: 50%;
-    transform: translate(50%, -50%);
-    z-index: 3;
-}
-
 .modern-accordion {
     display: grid;
     gap: 12px;
@@ -929,6 +921,7 @@
     --modern-panel-accent: var(--modern-green);
     --modern-panel-accent-soft: var(--modern-green-soft);
 }
+
 .panel-expenses {
     --modern-panel-accent: var(--modern-red);
     --modern-panel-accent-soft: var(--modern-red-soft);
@@ -1999,12 +1992,6 @@
         min-height: 120px;
     }
 
-    .summary-refresh {
-        right: 4px;
-        top: 50%;
-        transform: translate(50%, -50%);
-    }
-
     .totals-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -2170,10 +2157,6 @@
 
     .pending-amount-row strong {
         font-size: 14px;
-    }
-
-    .summary-refresh {
-        display: none !important;
     }
 
     ::ng-deep .modern-panel .mat-expansion-panel-header {
@@ -2652,13 +2635,6 @@
 
     .summary-grid {
         padding-right: 0;
-    }
-
-    .summary-refresh {
-        right: 6px;
-        top: auto;
-        bottom: -18px;
-        transform: none;
     }
 
     .header-metrics small {

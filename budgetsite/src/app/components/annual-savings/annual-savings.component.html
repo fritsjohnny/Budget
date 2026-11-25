@@ -1,3 +1,14 @@
+<app-modern-reference-page-shell
+    [reference]="year.toString()"
+    referenceMode="year"
+    [showReferenceSelector]="useModernLayout"
+    [showRefreshButton]="useModernLayout"
+    [refreshButtonLoading]="isSilentRefreshLoading"
+    [refreshLoading]="showProgress"
+    [showBackToTop]="useModernLayout"
+    refreshTooltip="Atualizar economia anual"
+    (refreshRequested)="refresh(false, true)"
+>
 <div
     class="container default-margin-bottom page-loading-container"
     [class.annual-savings-shell]="useModernLayout"
@@ -26,6 +37,7 @@
     </div>
     <app-modern-reference-selector
         *ngIf="useModernLayout"
+        modernReferenceSelector
         [reference]="year.toString()"
         mode="year"
         storageKey="annualSavingsReferenceDate"
@@ -34,10 +46,10 @@
         optionTooltip="Mostrar filtros"
         optionAriaLabel="Mostrar filtros"
         [optionsAsMenu]="true"
-        [showRefreshButton]="true"
+        [showRefreshButton]="false"
         refreshTooltip="Atualizar economia anual"
         refreshAriaLabel="Atualizar economia anual"
-        (refreshClick)="refresh()"
+        (refreshClick)="refresh(false, true)"
         (referenceChange)="modernYearChanged($event)"
     >
         <div class="annual-modern-reference-options">
@@ -689,3 +701,4 @@
         </div>
     </ng-template>
 </div>
+</app-modern-reference-page-shell>

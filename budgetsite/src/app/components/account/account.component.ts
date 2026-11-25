@@ -61,14 +61,42 @@ export class AccountComponent implements OnInit {
   }
 
   refreshRequest = 0;
+  silentRefreshRequest = 0;
+  isSilentRefreshing = false;
+  private silentAccountListLoaded = false;
+  private silentPostingsLoaded = false;
 
-  refresh() {
+  private finishSilentRefreshPart(part: 'accountList' | 'postings'): void {
+    if (part === 'accountList') this.silentAccountListLoaded = true;
+    if (part === 'postings') this.silentPostingsLoaded = true;
+
+    if (this.silentAccountListLoaded && this.silentPostingsLoaded) {
+      this.isSilentRefreshing = false;
+    }
+  }
+
+  onSilentPostingsRefreshCompleted(): void {
+    this.finishSilentRefreshPart('postings');
+  }
+
+  refresh(showLoading: boolean = true, notifyPostings = true) {
     if (!this.reference) {
       return;
     }
 
-    this.refreshRequest++;
-    this.hideProgress = false;
+    if (showLoading) {
+      this.refreshRequest++;
+      this.hideProgress = false;
+    } else if (notifyPostings) {
+      this.isSilentRefreshing = true;
+      this.silentAccountListLoaded = false;
+      this.silentPostingsLoaded = false;
+      this.silentRefreshRequest++;
+    } else {
+      this.isSilentRefreshing = true;
+      this.silentAccountListLoaded = false;
+      this.silentPostingsLoaded = false;
+    }
 
     // Lista completa continua sendo usada no dialog de manutenção
     this.accountService.read().subscribe({
@@ -102,12 +130,14 @@ export class AccountComponent implements OnInit {
           this.setAccount(selectedAccount);
         }
 
-        this.hideProgress = true;
+        if (showLoading) this.hideProgress = true;
+        else this.finishSilentRefreshPart('accountList');
       },
       error: (err) => {
         console.error('Erro irrecuperável:', err);
         this.accountsVisible = [];
-        this.hideProgress = true;
+        if (showLoading) this.hideProgress = true;
+        else this.finishSilentRefreshPart('accountList');
       },
     });
   }

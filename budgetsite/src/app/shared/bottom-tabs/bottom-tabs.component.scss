@@ -5,6 +5,8 @@
   --tabs-active: #4f6fe8;
   --tabs-active-soft: rgba(79, 111, 232, 0.13);
   --tabs-shadow: 0 -8px 28px rgba(28, 39, 60, 0.1);
+  display: block;
+  flex: 0 0 auto;
 }
 
 :host-context(.dark-theme) {
@@ -17,10 +19,8 @@
 }
 
 .tabs-footer.botton-tabs {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  position: relative;
+  width: 100%;
   z-index: 1000;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));

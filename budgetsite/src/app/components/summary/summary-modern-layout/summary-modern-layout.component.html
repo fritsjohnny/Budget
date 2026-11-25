@@ -1,31 +1,17 @@
-<div
-    class="modern-summary-shell page-loading-container"
-    [class.pull-active]="pullDistance > 0 && !isPullRefreshing"
-    [class.pull-refreshing]="isPullRefreshing"
-    [style.--pull-distance]="pullDistance + 'px'"
-    (touchstart)="onPullStart($event)"
-    (touchmove)="onPullMove($event)"
-    (touchend)="onPullEnd()"
-    (touchcancel)="onPullCancel()"
+<app-modern-reference-page-shell
+    [reference]="context.reference"
+    [showRefreshButton]="true"
+    [refreshButtonLoading]="isLoading"
+    refreshTooltip="Atualizar saldos"
+    (refreshRequested)="context.refresh()"
 >
     <app-load-spinner
         [loading]="isLoading"
         [message]="context.loadingMessage"
     ></app-load-spinner>
 
-    <div
-        class="pull-refresh-indicator"
-        [class.pull-refresh-visible]="pullDistance > 0 || isPullRefreshing"
-        [class.pull-refresh-ready]="pullReady"
-        aria-live="polite"
-    >
-        <mat-icon>{{
-            isPullRefreshing ? "autorenew" : "arrow_downward"
-        }}</mat-icon>
-        <span>{{ pullRefreshLabel }}</span>
-    </div>
-
     <app-modern-reference-selector
+        modernReferenceSelector
         [reference]="context.reference"
         storageKey="summaryDate"
         ariaLabel="Referência dos saldos"
@@ -36,19 +22,6 @@
 
 
     <ng-container *ngIf="!isLoading && context.totalsAccountsSummary">
-        <div class="refresh-row">
-            <button
-                mat-fab
-                color="warn"
-                class="summary-refresh"
-                (click)="context.refresh()"
-                matTooltip="Atualizar saldos"
-                aria-label="Atualizar saldos"
-            >
-                <mat-icon>autorenew</mat-icon>
-            </button>
-        </div>
-
         <section class="overview-card" aria-label="Panorama dos saldos">
             <header class="section-heading">
                 <span class="section-icon"
@@ -352,4 +325,4 @@
             </div>
         </section>
     </ng-container>
-</div>
+</app-modern-reference-page-shell>

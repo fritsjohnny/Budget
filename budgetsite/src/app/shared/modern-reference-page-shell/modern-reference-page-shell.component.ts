@@ -26,12 +26,17 @@ const moment = _rollupMoment || _moment;
 export class ModernReferencePageShellComponent
   implements AfterContentInit, AfterViewInit, DoCheck, OnDestroy {
   @Input() reference?: string;
+  @Input() referenceMode: 'month' | 'year' = 'month';
   @Input() refreshLabel = 'Atualizando...';
+  @Input() showRefreshButton = false;
+  @Input() refreshTooltip = 'Atualizar';
+  @Input() refreshButtonLoading = false;
   @Input() refreshEnabled = true;
   @Input() refreshDisabled = false;
   @Input() refreshLoading = false;
   @Input() navigationDisabled = false;
   @Input() showReferenceSelector = true;
+  @Input() showBackToTop = true;
 
   @Output() refreshRequested = new EventEmitter<void>();
 
@@ -49,6 +54,11 @@ export class ModernReferencePageShellComponent
   swipeOffsetX = 0;
   swipeReady = false;
   referenceCollapsed = false;
+  isPageScrolled = false;
+  refreshButtonPressed = false;
+  private activeRefreshButton?: HTMLElement;
+  private scrollContainer?: HTMLElement;
+  private readonly onPageScroll = (event?: Event) => this.updatePageScrollState(event);
 
   private pullStartY?: number;
   private pullTracking = false;
@@ -77,10 +87,18 @@ export class ModernReferencePageShellComponent
   }
 
   ngAfterViewInit(): void {
+    this.setupBackToTopScrollListener();
     this.setupReferenceObserver();
   }
 
   ngDoCheck(): void {
+    if (this.refreshButtonLoading) {
+      this.refreshButtonPressed = false;
+    } else if (this.activeRefreshButton && !this.refreshButtonPressed) {
+      this.activeRefreshButton.classList.remove('modern-reference-compact-refreshing');
+      this.activeRefreshButton = undefined;
+    }
+
     if (!this.isPullRefreshing || this.refreshLoading) return;
 
     const elapsed = Date.now() - this.pullRefreshStartedAt;
@@ -95,30 +113,95 @@ export class ModernReferencePageShellComponent
 
   ngOnDestroy(): void {
     this.referenceObserver?.disconnect();
+    document.removeEventListener('scroll', this.onPageScroll, true);
+    window.removeEventListener('scroll', this.onPageScroll);
 
     if (this.pullRefreshFinishTimer !== undefined) {
       window.clearTimeout(this.pullRefreshFinishTimer);
     }
+
+    this.activeRefreshButton?.classList.remove('modern-reference-compact-refreshing');
   }
 
   get referenceTitle(): string {
-    return this.referenceMoment.format('MMMM YYYY').toLocaleUpperCase('pt-BR');
+    return this.referenceMode === 'year'
+      ? this.referenceMoment.format('YYYY')
+      : this.referenceMoment.format('MMMM YYYY').toLocaleUpperCase('pt-BR');
+  }
+
+  onRefreshButtonClick(event: MouseEvent): void {
+    this.refreshButtonPressed = true;
+    const button = event.currentTarget as HTMLElement | null;
+
+    if (button) {
+      this.activeRefreshButton?.classList.remove('modern-reference-compact-refreshing');
+      this.activeRefreshButton = button;
+      button.classList.add('modern-reference-compact-refreshing');
+    }
+
+    this.refreshRequested.emit();
+  }
+
+  scrollToTop(): void {
+    const scrollContainer = this.scrollContainer ?? this.findScrollableAncestor(this.elementRef.nativeElement);
+
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  private setupBackToTopScrollListener(): void {
+    this.scrollContainer = this.findScrollableAncestor(this.elementRef.nativeElement) ?? undefined;
+    document.addEventListener('scroll', this.onPageScroll, { passive: true, capture: true });
+    window.addEventListener('scroll', this.onPageScroll, { passive: true });
+
+    this.updatePageScrollState();
+  }
+
+  private updatePageScrollState(event?: Event): void {
+    const eventTarget = event?.target;
+    if (eventTarget instanceof HTMLElement && this.isScrollableElement(eventTarget)) {
+      this.scrollContainer = eventTarget;
+    } else if (!this.scrollContainer || !this.isScrollableElement(this.scrollContainer)
+      || !this.elementRef.nativeElement.contains(this.scrollContainer)) {
+      this.scrollContainer = this.findScrollableAncestor(this.elementRef.nativeElement) ?? undefined;
+    }
+
+    const scrollTop = Math.max(
+      this.scrollContainer?.scrollTop ?? 0,
+      window.scrollY,
+      document.documentElement.scrollTop,
+      document.body.scrollTop
+    );
+    const isScrolled = scrollTop > 120;
+
+    if (this.isPageScrolled === isScrolled) return;
+
+    this.isPageScrolled = isScrolled;
+    this.cd.detectChanges();
   }
 
   get previousReferenceLabel(): string {
-    return this.referenceMoment
+    const previous = this.referenceMoment
       .clone()
-      .subtract(1, 'month')
-      .format('MMMM YYYY')
-      .toLocaleUpperCase('pt-BR');
+      .subtract(1, this.referenceMode === 'year' ? 'year' : 'month');
+
+    return this.referenceMode === 'year'
+      ? previous.format('YYYY')
+      : previous.format('MMMM YYYY').toLocaleUpperCase('pt-BR');
   }
 
   get nextReferenceLabel(): string {
-    return this.referenceMoment
+    const next = this.referenceMoment
       .clone()
-      .add(1, 'month')
-      .format('MMMM YYYY')
-      .toLocaleUpperCase('pt-BR');
+      .add(1, this.referenceMode === 'year' ? 'year' : 'month');
+
+    return this.referenceMode === 'year'
+      ? next.format('YYYY')
+      : next.format('MMMM YYYY').toLocaleUpperCase('pt-BR');
   }
 
   get pullRefreshLabel(): string {
@@ -207,6 +290,11 @@ export class ModernReferencePageShellComponent
   }
 
   private get referenceMoment(): Moment {
+    if (this.referenceMode === 'year' && this.reference && /^\d{4}$/.test(this.reference)) {
+      const parsed = moment(this.reference, 'YYYY', true);
+      if (parsed.isValid()) return parsed;
+    }
+
     if (this.reference && /^\d{6}$/.test(this.reference)) {
       const parsed = moment(this.reference, 'YYYYMM', true);
       if (parsed.isValid()) return parsed;
@@ -384,6 +472,11 @@ export class ModernReferencePageShellComponent
     }
 
     return null;
+  }
+
+  private isScrollableElement(element: HTMLElement): boolean {
+    const overflowY = window.getComputedStyle(element).overflowY;
+    return /(auto|scroll|overlay)/.test(overflowY) && element.scrollHeight > element.clientHeight + 1;
   }
 
   private isAtScrollTop(event?: TouchEvent): boolean {

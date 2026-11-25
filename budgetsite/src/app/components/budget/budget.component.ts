@@ -103,6 +103,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
 
   validatingInvoiceClosing = false;
   isBudgetLoading = false;
+  isSilentBudgetRefreshing = false;
   isBudgetLoaded = false;
   savingCardPosting = false;
   loadingMessage: string = 'Carregando...';
@@ -404,6 +405,10 @@ export class BudgetComponent implements OnInit, AfterViewInit {
     const requestId = ++this.budgetRefreshRequestId;
     const reference = this.reference;
 
+    if (!showLoading) {
+      this.isSilentBudgetRefreshing = true;
+    }
+
     if (showLoading) {
       this.loadingMessage = 'Carregando orçamento...';
       this.isBudgetLoading = true;
@@ -420,6 +425,7 @@ export class BudgetComponent implements OnInit, AfterViewInit {
         this.isBudgetLoading = false;
       }
       if (requestId === this.budgetRefreshRequestId) {
+        this.isSilentBudgetRefreshing = false;
         this.savingCardPosting = false;
       }
     };

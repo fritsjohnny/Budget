@@ -74,6 +74,16 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   @Input() accountId?: number;
   @Input() reference?: string;
   @Input() refreshRequest = 0;
+  @Input() silentRefreshRequest = 0;
+  @Output() silentRefreshCompleted = new EventEmitter<void>();
+  private pendingSilentRefreshParts = 0;
+
+  private finishSilentRefreshPart(): void {
+    this.pendingSilentRefreshParts--;
+    if (this.pendingSilentRefreshParts <= 0) {
+      this.silentRefreshCompleted.emit();
+    }
+  }
 
   @Output() accountUpdated = new EventEmitter<Partial<Accounts>>();
 
@@ -186,8 +196,11 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['accountId']?.currentValue || changes['reference']?.currentValue || changes['refreshRequest'])
+    if (changes['silentRefreshRequest'] && !changes['silentRefreshRequest'].firstChange) {
+      this.refresh(true);
+    } else if (changes['accountId']?.currentValue || changes['reference']?.currentValue || changes['refreshRequest']) {
       this.refresh();
+    }
   }
 
   accountPostingsPanelClosed() {
@@ -289,29 +302,36 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     this.cdr.markForCheck();
   }
 
-  getLists() {
-    this.getAccountsList();
+  getLists(onComplete?: () => void) {
+    let pendingRequests = 3;
+    const finishRequest = () => {
+      this.hideProgress = true;
+      pendingRequests--;
+      if (pendingRequests === 0) onComplete?.();
+    };
+
+    this.getAccountsList(finishRequest);
 
     this.incomeService.readComboList(this.reference!).subscribe({
       next: (incomes) => {
         this.incomes = incomes;
 
-        this.hideProgress = true;
+        finishRequest();
       },
-      error: () => (this.hideProgress = true),
+      error: finishRequest,
     });
 
     this.expenseService.readComboList(this.reference!).subscribe({
       next: (expenses) => {
         this.expenses = expenses;
 
-        this.hideProgress = true;
+        finishRequest();
       },
-      error: () => (this.hideProgress = true),
+      error: finishRequest,
     });
   }
 
-  getAccountsList() {
+  getAccountsList(onComplete?: () => void) {
     this.accountService.readNotDisabled().subscribe({
       next: (accounts) => {
         this.accountsList = accounts;
@@ -319,8 +339,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
         this.account = this.accountsList?.find((a) => a.id === this.accountId)!;
 
         this.hideProgress = true;
+        onComplete?.();
       },
-      error: () => (this.hideProgress = true),
+      error: () => {
+        this.hideProgress = true;
+        onComplete?.();
+      },
     });
   }
 
@@ -359,11 +383,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  refresh() {
-    this.getLists();
+  refresh(silent: boolean = false) {
+    if (silent) this.pendingSilentRefreshParts = this.accountId ? 3 : 1;
+    this.getLists(silent ? () => this.finishSilentRefreshPart() : undefined);
 
     if (this.accountId) {
-      this.hideProgress = false;
+      if (!silent) this.hideProgress = false;
 
       this.getPreviousYield();
       this.getTotalPreviousYield();
@@ -379,9 +404,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
             this.dataSource = new MatTableDataSource(this.accountpostings);
 
             this.getTotalAmount();
-            this.getAccountTotals();
+            this.getAccountTotals(silent ? () => this.finishSilentRefreshPart() : undefined);
           },
-          error: () => (this.hideProgress = true),
+          error: () => {
+            this.hideProgress = true;
+            if (silent) this.finishSilentRefreshPart();
+          },
         });
 
       this.accountApplicationsService
@@ -396,9 +424,16 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
             this.getTotalApplications();
             this.account = this.accountsList?.find(item => item.id === this.accountId) ?? this.account;
-            void this.calculateApplicationYields();
+            if (silent) {
+              void this.calculateApplicationYields().finally(() => this.finishSilentRefreshPart());
+            } else {
+              void this.calculateApplicationYields();
+            }
           },
-          error: () => (this.hideProgress = true),
+          error: () => {
+            this.hideProgress = true;
+            if (silent) this.finishSilentRefreshPart();
+          },
         });
     }
   }
@@ -416,7 +451,7 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
     return `${prevYear}${prevMonth}`;
   }
 
-  getAccountTotals() {
+  getAccountTotals(onComplete?: () => void) {
     this.accountService
       .getAccountTotals(this.accountId, this.reference)
       .subscribe({
@@ -471,8 +506,12 @@ export class AccountPostingsComponent implements OnInit, AfterViewInit {
 
           this.hideProgress = true;
           this.focusPendingAccountPosting();
+          onComplete?.();
         },
-        error: () => (this.hideProgress = true),
+        error: () => {
+          this.hideProgress = true;
+          onComplete?.();
+        },
       });
   }
 

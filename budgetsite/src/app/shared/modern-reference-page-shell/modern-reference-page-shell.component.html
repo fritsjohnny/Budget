@@ -55,9 +55,35 @@
             <span class="modern-reference-compact-dot" aria-hidden="true"></span>
             <strong>{{ referenceTitle }}</strong>
         </div>
+        <button
+            *ngIf="referenceCollapsed && showRefreshButton"
+            mat-icon-button
+            type="button"
+            class="modern-reference-compact-refresh"
+            [class.modern-reference-compact-refreshing]="refreshButtonLoading || refreshButtonPressed"
+            [disabled]="refreshButtonLoading"
+            (click)="onRefreshButtonClick($event)"
+            [matTooltip]="refreshTooltip"
+            [attr.aria-label]="refreshTooltip"
+        >
+            <mat-icon>autorenew</mat-icon>
+        </button>
     </div>
 
     <div class="modern-reference-page-body">
         <ng-content></ng-content>
     </div>
+
 </div>
+
+<button
+    *ngIf="showBackToTop && isPageScrolled"
+    mat-fab
+    type="button"
+    class="modern-reference-back-to-top"
+    matTooltip="Voltar ao topo"
+    aria-label="Voltar ao topo"
+    (click)="scrollToTop()"
+>
+    <mat-icon>arrow_upward</mat-icon>
+</button>

@@ -308,8 +308,16 @@ export class AccountPostingsDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   changeApplicationDays(detail: AccountsPostingApplicationDetail, delta: number): void {
+    this.setApplicationDays(detail, Number(detail.iofElapsedDays ?? 0) + delta);
+  }
+
+  onApplicationDaysChanged(detail: AccountsPostingApplicationDetail, value: unknown): void {
+    this.setApplicationDays(detail, this.toNonNegativeInt(value));
+  }
+
+  private setApplicationDays(detail: AccountsPostingApplicationDetail, days: number): void {
     const previousNetBalance = Number(detail.totalBalance ?? 0);
-    detail.iofElapsedDays = Math.max(0, Number(detail.iofElapsedDays ?? 0) + delta);
+    detail.iofElapsedDays = this.toNonNegativeInt(days);
 
     const application = this.accountApplications?.find(item => item.id === detail.accountApplicationId);
     if (application) {

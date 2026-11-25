@@ -1,6 +1,7 @@
-import { Component, DoCheck, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, DoCheck, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { CardPostingsComponent } from '../../cardpostings/cardpostings.component';
 
 @Component({
   selector: 'app-card-modern-layout',
@@ -9,6 +10,7 @@ import { Subscription } from 'rxjs';
 })
 export class CardModernLayoutComponent implements OnInit, DoCheck, OnDestroy {
   @Input() context!: any;
+  @ViewChild(CardPostingsComponent) private postings?: CardPostingsComponent;
 
   private scheduledCardSelectionKey = '';
   private visibleCardSelectionKey = '';
@@ -36,6 +38,11 @@ export class CardModernLayoutComponent implements OnInit, DoCheck, OnDestroy {
 
   onReferenceChange(reference: string): void {
     this.context?.setReference(reference);
+  }
+
+  onRefreshRequested(): void {
+    this.context?.refresh(false, false);
+    this.postings?.refresh(true);
   }
 
   trackById(index: number, item: any): number {

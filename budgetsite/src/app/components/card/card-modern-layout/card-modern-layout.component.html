@@ -1,10 +1,13 @@
 <app-modern-reference-page-shell
     [reference]="context.reference"
     refreshLabel="Atualizando cartões..."
+    [showRefreshButton]="true"
+    refreshTooltip="Atualizar cartões"
     [refreshDisabled]="!context.hideProgress"
     [refreshLoading]="!context.hideProgress"
+    [refreshButtonLoading]="context.isSilentRefreshing"
     [navigationDisabled]="!context.hideProgress || context.validatingInvoiceClosing"
-    (refreshRequested)="context.refresh()"
+    (refreshRequested)="onRefreshRequested()"
 >
     <app-modern-reference-selector
         modernReferenceSelector
@@ -99,7 +102,9 @@
             [cardId]="context.cardId"
             [reference]="context.reference"
             [refreshRequest]="context.refreshRequest"
+            [silentRefreshRequest]="context.silentRefreshRequest"
             [modernLayout]="true"
+            (silentRefreshCompleted)="context.onSilentPostingsRefreshCompleted()"
             (notificationContextChange)="context.setNotificationContext($event)"
             (invoiceClosingRequested)="context.openInvoiceClosing()"
         ></app-cardpostings>

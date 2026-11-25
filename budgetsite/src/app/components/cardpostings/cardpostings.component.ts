@@ -73,6 +73,16 @@ export class CardPostingsComponent implements OnInit {
   @Input() cardId?: number;
   @Input() reference?: string;
   @Input() refreshRequest = 0;
+  @Input() silentRefreshRequest = 0;
+  @Output() silentRefreshCompleted = new EventEmitter<void>();
+  private pendingSilentRefreshParts = 0;
+
+  private finishSilentRefreshPart(): void {
+    this.pendingSilentRefreshParts--;
+    if (this.pendingSilentRefreshParts <= 0) {
+      this.silentRefreshCompleted.emit();
+    }
+  }
 
   @Output() notificationContextChange = new EventEmitter<CardNotificationContext>();
   @Output() invoiceClosingRequested = new EventEmitter<void>();
@@ -205,53 +215,60 @@ export class CardPostingsComponent implements OnInit {
     this.cardSummaryPanelExpanded = storedCardSummaryPanelExpanded !== 'false';
   }
 
-  getLists() {
+  getLists(onComplete?: () => void) {
     const reference = this.reference;
+    let pendingRequests = 4;
+    const finishRequest = () => {
+      this.finishAuxiliaryLoading();
+      pendingRequests--;
+      if (pendingRequests === 0) onComplete?.();
+    };
+
     this.peopleService.read().subscribe({
       next: (people) => {
         this.peopleList = people;
 
-        this.finishAuxiliaryLoading();
+        finishRequest();
       },
-      error: () => this.finishAuxiliaryLoading(),
+      error: finishRequest,
     });
 
     this.categoryService.readWithExpenses(reference!).subscribe({
       next: (categories) => {
         if (this.reference !== reference) {
-          this.finishAuxiliaryLoading();
+          finishRequest();
           return;
         }
         this.categoriesList = categories.sort((a, b) =>
           a.name.localeCompare(b.name)
         );
 
-        this.finishAuxiliaryLoading();
+        finishRequest();
       },
-      error: () => this.finishAuxiliaryLoading(),
+      error: finishRequest,
     });
 
     this.cardService.readAvailable(reference, this.getCurrentLocalDate()).subscribe({
       next: (cards) => {
         if (this.reference !== reference) {
-          this.finishAuxiliaryLoading();
+          finishRequest();
           return;
         }
 
         this.cardsList = cards.sort((a, b) => a.name.localeCompare(b.name));
 
-        this.finishAuxiliaryLoading();
+        finishRequest();
       },
-      error: () => this.finishAuxiliaryLoading(),
+      error: finishRequest,
     });
 
     this.accountService.readNotDisabled().subscribe({
       next: (accounts) => {
         this.accountsList = accounts;
 
-        this.finishAuxiliaryLoading();
+        finishRequest();
       },
-      error: () => this.finishAuxiliaryLoading(),
+      error: finishRequest,
     });
 
   }
@@ -275,7 +292,8 @@ export class CardPostingsComponent implements OnInit {
     this.savingCardPosting = saving;
   }
 
-  refresh() {
+  refresh(silent: boolean = false) {
+    if (silent) this.pendingSilentRefreshParts = 2;
     this.currentInvoiceClosing = undefined;
     if (this.cardId && this.cardId > 0 && this.reference) {
       this.invoiceClosingService.ensure(this.cardId, this.reference).subscribe({
@@ -283,7 +301,7 @@ export class CardPostingsComponent implements OnInit {
       });
     }
 
-    this.getLists();
+    this.getLists(silent ? () => this.finishSilentRefreshPart() : undefined);
 
     if (this.cardId! >= 0 && this.reference) {
 
@@ -291,9 +309,11 @@ export class CardPostingsComponent implements OnInit {
         ? ['index', 'date', 'description', 'amount', 'card', 'actions']
         : ['index', 'date', 'description', 'amount', 'actions'];
 
-      this.hideProgress = false;
+      if (!silent) this.hideProgress = false;
 
-      this.reloadCardPostings();
+      this.reloadCardPostings(silent);
+    } else if (silent) {
+      this.finishSilentRefreshPart();
     }
   }
 
@@ -301,19 +321,20 @@ export class CardPostingsComponent implements OnInit {
   // filtros ativos e recalcula totais/agrupamentos relacionados. Usado após
   // inclusões, clonagens e reordenação por data, já que o backend pode ter
   // recalculado a posição de vários registros além do que foi criado/alterado.
-  private reloadCardPostings(): void {
+  private reloadCardPostings(silent: boolean = false): void {
     const requestId = ++this.cardPostingsReloadRequestId;
 
     if (!(this.cardId! >= 0) || !this.reference) {
       this.cardPostingsReloadInProgress = false;
       this.hideProgress = true;
       this.savingCardPosting = false;
+      if (silent) this.finishSilentRefreshPart();
       return;
     }
 
     this.cardPostingsReloadInProgress = true;
 
-    if (!this.savingCardPosting) {
+    if (!silent && !this.savingCardPosting) {
       this.hideProgress = false;
     }
 
@@ -335,6 +356,7 @@ export class CardPostingsComponent implements OnInit {
         this.cardPostingsReloadInProgress = false;
         this.hideProgress = true;
         this.savingCardPosting = false;
+        if (silent) this.finishSilentRefreshPart();
       })
     ).subscribe({
       next: ({ cardpostings, cardpostingspeople, expensesByCategories }) => {
@@ -455,7 +477,9 @@ export class CardPostingsComponent implements OnInit {
       this.checkCard = false;
     }
 
-    this.refresh();
+    this.refresh(
+      !!changes['silentRefreshRequest'] && !changes['silentRefreshRequest'].firstChange
+    );
   }
 
   getCardsPostingsPeople() {

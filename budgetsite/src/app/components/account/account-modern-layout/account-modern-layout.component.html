@@ -1,10 +1,13 @@
 <app-modern-reference-page-shell
     [reference]="context.reference"
     refreshLabel="Atualizando contas..."
+    [showRefreshButton]="true"
+    refreshTooltip="Atualizar contas"
     [refreshDisabled]="!context.hideProgress"
     [refreshLoading]="!context.hideProgress"
+    [refreshButtonLoading]="context.isSilentRefreshing"
     [navigationDisabled]="!context.hideProgress"
-    (refreshRequested)="context.refresh()"
+    (refreshRequested)="onRefreshRequested()"
 >
     <app-modern-reference-selector
         modernReferenceSelector
@@ -108,8 +111,10 @@
             [accountId]="context.accountId"
             [reference]="context.reference"
             [refreshRequest]="context.refreshRequest"
+            [silentRefreshRequest]="context.silentRefreshRequest"
             [accountsList]="context.accounts"
             [modernLayout]="true"
+            (silentRefreshCompleted)="context.onSilentPostingsRefreshCompleted()"
             (accountUpdated)="context.updateAccountFromChild($event)"
         ></app-accountpostings>
     </div>

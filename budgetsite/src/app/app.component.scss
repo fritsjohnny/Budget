@@ -1,20 +1,26 @@
 :host {
-  display: block;
-  min-height: 100%;
-  min-height: 100dvh;
+  display: flex;
+  height: 100dvh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
   background-color: #f1f4f8;
   color: #172033;
 }
 
 .app-page-container {
   position: relative;
-  min-height: 100dvh;
+  flex: 1 1 auto;
+  min-height: 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .app-page-container-with-tabs {
-  min-height: calc(100dvh - 56px - env(safe-area-inset-bottom));
-  padding-bottom: calc(56px + env(safe-area-inset-bottom));
+  height: auto;
+  min-height: 0;
+  padding-bottom: 0;
+  flex: 1 1 auto;
 }
 
 :host-context(.dark-theme) {

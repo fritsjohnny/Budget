@@ -27,6 +27,7 @@ export class AnnualSavingsComponent implements OnInit {
   pullDistance: number = 0;
   pullReady: boolean = false;
   isPullRefreshing: boolean = false;
+  isSilentRefreshLoading = false;
 
   annualGoal: number = 0;
   annualGoalTarget: number = 0;
@@ -79,7 +80,7 @@ export class AnnualSavingsComponent implements OnInit {
     this.refresh();
   }
 
-  refresh() {
+  refresh(showLoading = true, silent = false) {
     if (!this.year) {
       this.year = new Date().getFullYear();
     }
@@ -87,7 +88,8 @@ export class AnnualSavingsComponent implements OnInit {
     localStorage.setItem('annualSavingsYear', this.year.toString());
     this.loadAnnualGoal();
 
-    this.showProgress = true;
+    this.showProgress = showLoading;
+    this.isSilentRefreshLoading = silent;
 
     forkJoin({
       report: this.annualSavingsService.getByYear(this.year, this.includeCurrentMonth, this.includeNextMonths),
@@ -96,7 +98,8 @@ export class AnnualSavingsComponent implements OnInit {
       currentYearEndReport: this.annualSavingsService.getByYear(this.year, this.includeCurrentMonth, false)
     })
       .pipe(finalize(() => {
-        this.showProgress = false;
+        if (showLoading) this.showProgress = false;
+        this.isSilentRefreshLoading = false;
         this.isPullRefreshing = false;
         this.pullDistance = 0;
       }))

@@ -215,8 +215,8 @@
                         </div>
                         <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                             <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
-                                <mat-label>Desconto de IOF</mat-label>
-                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIOF" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIOFChanged(detail)" />
+                                <mat-label>Desconto de IR</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIR" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIRChanged(detail)" />
                             </mat-form-field>
                         </div>
                     </div>
@@ -224,8 +224,8 @@
                     <div class="row">
                         <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                             <mat-form-field appearance="fill" floatLabel="always" style="width: 100% !important">
-                                <mat-label>Desconto de IR</mat-label>
-                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIR" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIRChanged(detail)" />
+                                <mat-label>Desconto de IOF</mat-label>
+                                <input matInput inputmode="numeric" currencyMask [(ngModel)]="detail.totalIOF" [ngModelOptions]="{ standalone: true }" placeholder="0" autocomplete="off" (ngModelChange)="onApplicationTotalIOFChanged(detail)" />
                             </mat-form-field>
                         </div>
                     </div>

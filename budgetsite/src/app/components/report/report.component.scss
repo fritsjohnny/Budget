@@ -9,7 +9,7 @@
 
 :host {
     display: block;
-    padding-bottom: 56px;
+    padding-bottom: 0;
 }
 
 .report-container {
@@ -103,7 +103,7 @@
     position: relative;
     width: min(100%, 1180px);
     margin: 0 auto;
-    padding: 16px 16px 96px;
+    padding: 16px 16px 64px;
     color: var(--report-text);
     box-sizing: border-box;
     padding: 0;
@@ -133,6 +133,10 @@
 .modern-report-catalog {
     margin-bottom: 14px;
     overflow: hidden;
+}
+
+::ng-deep .modern-report-shell .modern-report-catalog.mat-expansion-panel {
+    border-radius: 18px !important;
 }
 .modern-report-shell > mat-accordion:first-child {
     display: block;
@@ -682,14 +686,13 @@
     .investment-option-copy small { font-size: 9px; }
     .modern-report-shell {
         width: 100%;
-        padding: 0 0 16px;
+        padding: 0;
         overflow-x: hidden;
     }
     .modern-report-shell.container {
         max-width: none;
     }
     .modern-report-catalog {
-        border-radius: 13px;
         margin-bottom: 10px;
     }
     ::ng-deep .modern-report-catalog .mat-expansion-panel-header {

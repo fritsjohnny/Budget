@@ -1,6 +1,7 @@
 <ng-template #reportPageContent>
 <div
-    class="container default-margin-bottom"
+    class="container"
+    [class.default-margin-bottom]="!useModernLayout"
     [class.modern-report-shell]="useModernLayout"
 >
     <mat-accordion *ngIf="useModernLayout" displayMode="default">
@@ -718,6 +719,7 @@
 
 <app-modern-reference-page-shell
     *ngIf="useModernLayout; else classicReportPage"
+    class="modern-report-page-shell"
     [showReferenceSelector]="false"
     refreshLabel="Atualizando relatórios..."
     [refreshDisabled]="refreshingPageData"

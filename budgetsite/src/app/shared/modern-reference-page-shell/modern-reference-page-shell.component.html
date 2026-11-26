@@ -56,7 +56,7 @@
             <strong>{{ referenceTitle }}</strong>
         </div>
         <button
-            *ngIf="referenceCollapsed && showRefreshButton"
+            *ngIf="referenceCollapsed && showRefreshButton && scrollStateReady"
             mat-icon-button
             type="button"
             class="modern-reference-compact-refresh"
@@ -77,7 +77,7 @@
 </div>
 
 <button
-    *ngIf="showBackToTop && isPageScrolled"
+    *ngIf="showBackToTop && scrollStateReady && isPageScrolled"
     mat-fab
     type="button"
     class="modern-reference-back-to-top"

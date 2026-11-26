@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { finalize, forkJoin } from 'rxjs';
 import { AnnualSavingsConsolidated, AnnualSavingsMonth, AnnualSavingsReport } from 'src/app/models/annual-savings.model';
@@ -24,9 +24,6 @@ export class AnnualSavingsComponent implements OnInit {
   includeNextMonths: boolean = false;
   includeCurrentYear: boolean = true;
   includeNextYears: boolean = false;
-  pullDistance: number = 0;
-  pullReady: boolean = false;
-  isPullRefreshing: boolean = false;
   isSilentRefreshLoading = false;
 
   annualGoal: number = 0;
@@ -52,10 +49,6 @@ export class AnnualSavingsComponent implements OnInit {
     return localStorage.getItem('budgetLayout') === 'modern';
   }
 
-  private pullStartY?: number;
-  private pullTracking: boolean = false;
-  private readonly pullRefreshThreshold: number = 58;
-  private readonly maxPullDistance: number = 104;
   private annualSavingsCurrentMonthSimulation: { [reference: string]: number } = {};
   private annualSavingsOriginalMonthTotals: { [reference: string]: number | null } = {};
   private annualSavingsGeneralBalanceBase: number = 0;
@@ -63,8 +56,7 @@ export class AnnualSavingsComponent implements OnInit {
 
   constructor(
     private annualSavingsService: AnnualSavingsService,
-    private dialog: MatDialog,
-    private elementRef: ElementRef<HTMLElement>
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -100,8 +92,6 @@ export class AnnualSavingsComponent implements OnInit {
       .pipe(finalize(() => {
         if (showLoading) this.showProgress = false;
         this.isSilentRefreshLoading = false;
-        this.isPullRefreshing = false;
-        this.pullDistance = 0;
       }))
       .subscribe({
         next: ({ report, consolidated, previousYearEndReport, currentYearEndReport }) => {
@@ -116,71 +106,6 @@ export class AnnualSavingsComponent implements OnInit {
           this.calculateAnnualGoal();
         }
       });
-  }
-
-  get pullRefreshLabel(): string {
-    if (this.isPullRefreshing) return 'Atualizando economia anual...';
-    if (this.pullReady) return 'Solte para atualizar';
-
-    return 'Arraste para atualizar';
-  }
-
-  onPullStart(event: TouchEvent): void {
-    if (!this.useModernLayout || !this.isMobileViewport() || this.showProgress || !this.isAtScrollTop(event)) return;
-    if (event.touches.length !== 1) return;
-
-    const touch = event.touches.item(0);
-
-    if (!touch) return;
-
-    this.pullStartY = touch.clientY;
-    this.pullTracking = true;
-    this.pullDistance = 0;
-    this.pullReady = false;
-  }
-
-  onPullMove(event: TouchEvent): void {
-    if (!this.pullTracking || this.pullStartY === undefined) return;
-
-    const touch = event.touches.item(0);
-
-    if (!touch || !this.isAtScrollTop(event)) {
-      this.cancelPull();
-      return;
-    }
-
-    const delta = touch.clientY - this.pullStartY;
-
-    if (delta <= 0) {
-      this.cancelPull();
-      return;
-    }
-
-    event.preventDefault();
-    this.pullDistance = Math.min(this.maxPullDistance, delta * 0.55);
-    this.pullReady = this.pullDistance >= this.pullRefreshThreshold;
-  }
-
-  onPullEnd(): void {
-    if (!this.pullTracking) return;
-
-    const shouldRefresh = this.pullReady && !this.showProgress;
-    this.pullTracking = false;
-    this.pullStartY = undefined;
-    this.pullReady = false;
-
-    if (!shouldRefresh) {
-      this.pullDistance = 0;
-      return;
-    }
-
-    this.isPullRefreshing = true;
-    this.pullDistance = this.pullRefreshThreshold;
-    this.refresh();
-  }
-
-  onPullCancel(): void {
-    this.cancelPull();
   }
 
   annualGoalChanged() {
@@ -577,6 +502,10 @@ export class AnnualSavingsComponent implements OnInit {
     return value < 0 ? 'negative' : 'positive';
   }
 
+  isLargeCurrencyValue(value: number | null | undefined): boolean {
+    return value !== null && value !== undefined && Math.abs(value) >= 100000;
+  }
+
   trackMonth(index: number, row: AnnualSavingsMonth): string {
     return row.reference;
   }
@@ -594,39 +523,6 @@ export class AnnualSavingsComponent implements OnInit {
       autoFocus: false,
       panelClass: 'annual-goal-dialog-panel'
     });
-  }
-
-  private isMobileViewport(): boolean {
-    return window.matchMedia('(max-width: 600px)').matches;
-  }
-
-  private isAtScrollTop(event?: TouchEvent): boolean {
-    let element: Element | null =
-      event?.target instanceof Element
-        ? event.target
-        : this.elementRef.nativeElement;
-
-    while (element && element !== document.body) {
-      const style = window.getComputedStyle(element);
-      const canScrollVertically =
-        /(auto|scroll|overlay)/.test(style.overflowY) &&
-        element.scrollHeight > element.clientHeight + 1;
-
-      if (canScrollVertically && element.scrollTop > 0) return false;
-
-      element = element.parentElement;
-    }
-
-    return window.scrollY <= 0 &&
-      document.documentElement.scrollTop <= 0 &&
-      document.body.scrollTop <= 0;
-  }
-
-  private cancelPull(): void {
-    this.pullTracking = false;
-    this.pullStartY = undefined;
-    this.pullDistance = 0;
-    this.pullReady = false;
   }
 
   private setAnnualGoalCalculation(field: string) {

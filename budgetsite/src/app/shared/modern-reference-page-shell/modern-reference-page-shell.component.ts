@@ -12,6 +12,8 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
+import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import * as _moment from 'moment';
 import { default as _rollupMoment, Moment } from 'moment';
 import { ModernReferenceSelectorComponent } from '../modern-reference-selector/modern-reference-selector.component';
@@ -55,10 +57,13 @@ export class ModernReferencePageShellComponent
   swipeReady = false;
   referenceCollapsed = false;
   isPageScrolled = false;
+  scrollStateReady = false;
   refreshButtonPressed = false;
   private activeRefreshButton?: HTMLElement;
   private scrollContainer?: HTMLElement;
   private readonly onPageScroll = (event?: Event) => this.updatePageScrollState(event);
+  private navigationSubscription?: Subscription;
+  private scrollStateFrames: number[] = [];
 
   private pullStartY?: number;
   private pullTracking = false;
@@ -79,8 +84,20 @@ export class ModernReferencePageShellComponent
 
   constructor(
     private elementRef: ElementRef<HTMLElement>,
-    private cd: ChangeDetectorRef
-  ) {}
+    private cd: ChangeDetectorRef,
+    private router: Router
+  ) {
+    this.navigationSubscription = this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.scrollStateReady = false;
+        this.isPageScrolled = false;
+        this.referenceCollapsed = false;
+        this.cd.detectChanges();
+      } else if (event instanceof NavigationEnd) {
+        this.scheduleScrollStateUpdate();
+      }
+    });
+  }
 
   ngAfterContentInit(): void {
     moment.locale('pt-BR');
@@ -113,8 +130,12 @@ export class ModernReferencePageShellComponent
 
   ngOnDestroy(): void {
     this.referenceObserver?.disconnect();
+    this.navigationSubscription?.unsubscribe();
     document.removeEventListener('scroll', this.onPageScroll, true);
     window.removeEventListener('scroll', this.onPageScroll);
+
+    this.scrollStateFrames.forEach(frame => cancelAnimationFrame(frame));
+    this.scrollStateFrames = [];
 
     if (this.pullRefreshFinishTimer !== undefined) {
       window.clearTimeout(this.pullRefreshFinishTimer);
@@ -157,11 +178,12 @@ export class ModernReferencePageShellComponent
     this.scrollContainer = this.findScrollableAncestor(this.elementRef.nativeElement) ?? undefined;
     document.addEventListener('scroll', this.onPageScroll, { passive: true, capture: true });
     window.addEventListener('scroll', this.onPageScroll, { passive: true });
-
-    this.updatePageScrollState();
+    this.scheduleScrollStateUpdate();
   }
 
   private updatePageScrollState(event?: Event): void {
+    if (!this.scrollStateReady || !this.elementRef.nativeElement.isConnected) return;
+
     const eventTarget = event?.target;
     if (eventTarget instanceof HTMLElement && this.isScrollableElement(eventTarget)) {
       this.scrollContainer = eventTarget;
@@ -182,6 +204,25 @@ export class ModernReferencePageShellComponent
 
     this.isPageScrolled = isScrolled;
     this.cd.detectChanges();
+  }
+
+  private scheduleScrollStateUpdate(): void {
+    this.scrollStateFrames.forEach(frame => cancelAnimationFrame(frame));
+    this.scrollStateFrames = [];
+
+    const firstFrame = requestAnimationFrame(() => {
+      const secondFrame = requestAnimationFrame(() => {
+        this.scrollStateFrames = [];
+
+        if (!this.elementRef.nativeElement.isConnected) return;
+
+        this.scrollStateReady = true;
+        this.updatePageScrollState();
+        this.cd.detectChanges();
+      });
+      this.scrollStateFrames.push(secondFrame);
+    });
+    this.scrollStateFrames.push(firstFrame);
   }
 
   get previousReferenceLabel(): string {

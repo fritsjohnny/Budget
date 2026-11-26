@@ -9,32 +9,10 @@
     refreshTooltip="Atualizar economia anual"
     (refreshRequested)="refresh(false, true)"
 >
-<div
-    class="container default-margin-bottom page-loading-container"
-    [class.annual-savings-shell]="useModernLayout"
-    [class.annual-pull-active]="pullDistance > 0 && !isPullRefreshing"
-    [class.annual-pull-refreshing]="isPullRefreshing"
-    [style.--annual-pull-distance]="pullDistance + 'px'"
-    (touchstart)="onPullStart($event)"
-    (touchmove)="onPullMove($event)"
-    (touchend)="onPullEnd()"
-    (touchcancel)="onPullCancel()"
->
     <app-load-spinner
         [loading]="showProgress"
         [message]="loadingMessage"
     ></app-load-spinner>
-
-    <div
-        *ngIf="useModernLayout"
-        class="annual-pull-indicator"
-        [class.annual-pull-indicator-visible]="pullDistance > 0 || isPullRefreshing"
-        [class.annual-pull-indicator-ready]="pullReady"
-        aria-live="polite"
-    >
-        <mat-icon>{{ isPullRefreshing ? "autorenew" : "arrow_downward" }}</mat-icon>
-        <span>{{ pullRefreshLabel }}</span>
-    </div>
     <app-modern-reference-selector
         *ngIf="useModernLayout"
         modernReferenceSelector
@@ -61,7 +39,11 @@
             <mat-checkbox [(ngModel)]="includeNextYears" (change)="filtersChanged()">Incluir próximos anos</mat-checkbox>
         </div>
     </app-modern-reference-selector>
-
+<div
+    [class.container]="!useModernLayout"
+    [class.default-margin-bottom]="!useModernLayout"
+    [class.annual-savings-shell]="useModernLayout"
+>
     <mat-accordion *ngIf="!useModernLayout" displayMode="default" [multi]="true" [hideToggle]="false">
         <mat-expansion-panel
             class="mat-panel-annual-savings"
@@ -256,7 +238,7 @@
                     </span>
                     <div class="annual-closing-copy">
                         <strong class="annual-closing-date">{{ getPreviousYearEndDateLabel() }}</strong>
-                        <strong class="annual-closing-single-value" [ngClass]="getValueClass(previousYearRealBalance)">
+                        <strong class="annual-closing-single-value" [class.annual-large-currency]="isLargeCurrencyValue(previousYearRealBalance)" [ngClass]="getValueClass(previousYearRealBalance)">
                             {{ formatCurrency(previousYearRealBalance) }}
                         </strong>
                         <small class="annual-closing-legend">Fechamento antes do ano selecionado</small>
@@ -272,13 +254,13 @@
                         <div class="annual-closing-values annual-closing-stacked-values">
                             <div>
                                 <small *ngIf="showCurrentYearForecastBalance">Previsto</small>
-                                <strong [ngClass]="getValueClass(currentYearForecastBalance)">
+                                <strong [class.annual-large-currency]="isLargeCurrencyValue(currentYearForecastBalance)" [ngClass]="getValueClass(currentYearForecastBalance)">
                                     {{ formatCurrency(currentYearForecastBalance) }}
                                 </strong>
                             </div>
                             <div *ngIf="showCurrentYearForecastBalance">
                                 <small>Real</small>
-                                <strong [ngClass]="getValueClass(currentYearRealBalance)">
+                                <strong [class.annual-large-currency]="isLargeCurrencyValue(currentYearRealBalance)" [ngClass]="getValueClass(currentYearRealBalance)">
                                     {{ formatCurrency(currentYearRealBalance) }}
                                 </strong>
                             </div>
@@ -302,7 +284,7 @@
             </span>
             <div>
                 <span>Total</span>
-                <strong [ngClass]="getValueClass(report.total)">
+                <strong [class.annual-large-currency]="isLargeCurrencyValue(report.total)" [ngClass]="getValueClass(report.total)">
                     {{ formatCurrency(report.total) }}
                 </strong>
                 <small class="annual-card-legend">Soma dos meses incluídos</small>
@@ -315,7 +297,7 @@
             </span>
             <div>
                 <span>Média</span>
-                <strong [ngClass]="getValueClass(report.average)">
+                <strong [class.annual-large-currency]="isLargeCurrencyValue(report.average)" [ngClass]="getValueClass(report.average)">
                     {{ formatCurrency(report.average) }}
                 </strong>
                 <small class="annual-card-legend">Média dos meses com dados</small>
@@ -328,7 +310,7 @@
             </span>
             <div>
                 <span>Saldo geral</span>
-                <strong [ngClass]="getValueClass(report.generalBalance)">
+                <strong [class.annual-large-currency]="isLargeCurrencyValue(report.generalBalance)" [ngClass]="getValueClass(report.generalBalance)">
                     {{ formatCurrency(report.generalBalance) }}
                 </strong>
                 <small class="annual-card-legend">Saldo acumulado ao fim do período</small>
@@ -344,7 +326,7 @@
             </span>
             <div>
                 <span>Saldo geral real</span>
-                <strong [ngClass]="getValueClass(report.realGeneralBalance)">
+                <strong [class.annual-large-currency]="isLargeCurrencyValue(report.realGeneralBalance)" [ngClass]="getValueClass(report.realGeneralBalance)">
                     {{ formatCurrency(report.realGeneralBalance) }}
                 </strong>
                 <small class="annual-card-legend">Saldo acumulado somente com valores realizados</small>

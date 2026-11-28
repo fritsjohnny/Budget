@@ -354,37 +354,16 @@
 
 
                 <div class="row" *ngIf="!hasMultipleApplications">
-                    <!-- DESCONTO DE IOF -->
+                <!-- DESCONTO DE IR -->
                     <div class="col-6" *ngIf="accountPosting.type == 'Y'">
                         <mat-form-field
                             appearance="fill"
                             floatLabel="always"
                             style="width: 100% !important"
                         >
-                            <mat-label>Desconto de IOF</mat-label>
+                        <mat-label>Desconto de IR</mat-label>
                             <input
                                 matInput
-                            inputmode="numeric"
-                            currencyMask
-                            formControlName="iofTotalFormControl"
-                            [(ngModel)]="accountPosting.totalIOF"
-                            placeholder="0"
-                            autocomplete="off"
-                            (ngModelChange)="onTotalIOFChanged($event)"
-                        />
-                    </mat-form-field>
-                </div>
-
-                <!-- DESCONTO DE IR -->
-                <div class="col-6" *ngIf="accountPosting.type == 'Y'">
-                    <mat-form-field
-                        appearance="fill"
-                        floatLabel="always"
-                        style="width: 100% !important"
-                    >
-                        <mat-label>Desconto de IR</mat-label>
-                        <input
-                            matInput
                             inputmode="numeric"
                             currencyMask
                             formControlName="irTotalFormControl"
@@ -392,6 +371,27 @@
                             placeholder="0"
                             autocomplete="off"
                             (ngModelChange)="onTotalIRChanged($event)"
+                        />
+                    </mat-form-field>
+                </div>
+
+                <!-- DESCONTO DE IOF -->
+                <div class="col-6" *ngIf="accountPosting.type == 'Y'">
+                    <mat-form-field
+                        appearance="fill"
+                        floatLabel="always"
+                        style="width: 100% !important"
+                    >
+                        <mat-label>Desconto de IOF</mat-label>
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            currencyMask
+                            formControlName="iofTotalFormControl"
+                            [(ngModel)]="accountPosting.totalIOF"
+                            placeholder="0"
+                            autocomplete="off"
+                            (ngModelChange)="onTotalIOFChanged($event)"
                         />
                     </mat-form-field>
                 </div>

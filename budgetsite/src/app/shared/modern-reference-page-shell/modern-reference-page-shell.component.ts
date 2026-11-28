@@ -7,13 +7,13 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
+  HostListener,
   Input,
+  OnInit,
   OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
 import * as _moment from 'moment';
 import { default as _rollupMoment, Moment } from 'moment';
 import { ModernReferenceSelectorComponent } from '../modern-reference-selector/modern-reference-selector.component';
@@ -26,7 +26,8 @@ const moment = _rollupMoment || _moment;
   styleUrls: ['./modern-reference-page-shell.component.scss'],
 })
 export class ModernReferencePageShellComponent
-  implements AfterContentInit, AfterViewInit, DoCheck, OnDestroy {
+  implements AfterContentInit, AfterViewInit, DoCheck, OnInit, OnDestroy {
+  @Input() pageStateKey = '';
   @Input() reference?: string;
   @Input() referenceMode: 'month' | 'year' = 'month';
   @Input() refreshLabel = 'Atualizando...';
@@ -62,8 +63,7 @@ export class ModernReferencePageShellComponent
   private activeRefreshButton?: HTMLElement;
   private scrollContainer?: HTMLElement;
   private readonly onPageScroll = (event?: Event) => this.updatePageScrollState(event);
-  private navigationSubscription?: Subscription;
-  private scrollStateFrames: number[] = [];
+  private userScrollIntentUntil = 0;
 
   private pullStartY?: number;
   private pullTracking = false;
@@ -84,23 +84,16 @@ export class ModernReferencePageShellComponent
 
   constructor(
     private elementRef: ElementRef<HTMLElement>,
-    private cd: ChangeDetectorRef,
-    private router: Router
-  ) {
-    this.navigationSubscription = this.router.events.subscribe(event => {
-      if (event instanceof NavigationStart) {
-        this.scrollStateReady = false;
-        this.isPageScrolled = false;
-        this.referenceCollapsed = false;
-        this.cd.detectChanges();
-      } else if (event instanceof NavigationEnd) {
-        this.scheduleScrollStateUpdate();
-      }
-    });
-  }
+    private cd: ChangeDetectorRef
+  ) {}
 
   ngAfterContentInit(): void {
     moment.locale('pt-BR');
+  }
+
+  ngOnInit(): void {
+    this.restoreFloatingButtonState();
+    this.scrollStateReady = true;
   }
 
   ngAfterViewInit(): void {
@@ -130,12 +123,8 @@ export class ModernReferencePageShellComponent
 
   ngOnDestroy(): void {
     this.referenceObserver?.disconnect();
-    this.navigationSubscription?.unsubscribe();
     document.removeEventListener('scroll', this.onPageScroll, true);
     window.removeEventListener('scroll', this.onPageScroll);
-
-    this.scrollStateFrames.forEach(frame => cancelAnimationFrame(frame));
-    this.scrollStateFrames = [];
 
     if (this.pullRefreshFinishTimer !== undefined) {
       window.clearTimeout(this.pullRefreshFinishTimer);
@@ -164,6 +153,7 @@ export class ModernReferencePageShellComponent
   }
 
   scrollToTop(): void {
+    this.markUserScrollIntent(3000);
     const scrollContainer = this.scrollContainer ?? this.findScrollableAncestor(this.elementRef.nativeElement);
 
     if (scrollContainer) {
@@ -178,51 +168,90 @@ export class ModernReferencePageShellComponent
     this.scrollContainer = this.findScrollableAncestor(this.elementRef.nativeElement) ?? undefined;
     document.addEventListener('scroll', this.onPageScroll, { passive: true, capture: true });
     window.addEventListener('scroll', this.onPageScroll, { passive: true });
-    this.scheduleScrollStateUpdate();
   }
 
   private updatePageScrollState(event?: Event): void {
     if (!this.scrollStateReady || !this.elementRef.nativeElement.isConnected) return;
+    if (event && !this.hasRecentUserScrollIntent()) return;
 
-    const eventTarget = event?.target;
-    if (eventTarget instanceof HTMLElement && this.isScrollableElement(eventTarget)) {
-      this.scrollContainer = eventTarget;
-    } else if (!this.scrollContainer || !this.isScrollableElement(this.scrollContainer)
-      || !this.elementRef.nativeElement.contains(this.scrollContainer)) {
-      this.scrollContainer = this.findScrollableAncestor(this.elementRef.nativeElement) ?? undefined;
-    }
+    const scrollTop = this.getPageScrollTop(event);
+    if (scrollTop === null) return;
 
-    const scrollTop = Math.max(
-      this.scrollContainer?.scrollTop ?? 0,
-      window.scrollY,
-      document.documentElement.scrollTop,
-      document.body.scrollTop
-    );
     const isScrolled = scrollTop > 120;
 
     if (this.isPageScrolled === isScrolled) return;
 
     this.isPageScrolled = isScrolled;
+    this.persistFloatingButtonState();
     this.cd.detectChanges();
   }
 
-  private scheduleScrollStateUpdate(): void {
-    this.scrollStateFrames.forEach(frame => cancelAnimationFrame(frame));
-    this.scrollStateFrames = [];
+  private getPageScrollTop(event?: Event): number | null {
+    const page = this.elementRef.nativeElement;
+    const target = event?.target;
 
-    const firstFrame = requestAnimationFrame(() => {
-      const secondFrame = requestAnimationFrame(() => {
-        this.scrollStateFrames = [];
+    if (target instanceof HTMLElement && this.isScrollableElement(target)) {
+      const belongsToPage = target === this.scrollContainer || page.contains(target) || target.contains(page);
+      if (!belongsToPage) return null;
 
-        if (!this.elementRef.nativeElement.isConnected) return;
+      this.scrollContainer = target;
+      return target.scrollTop;
+    }
 
-        this.scrollStateReady = true;
-        this.updatePageScrollState();
-        this.cd.detectChanges();
-      });
-      this.scrollStateFrames.push(secondFrame);
-    });
-    this.scrollStateFrames.push(firstFrame);
+    if (target === window || target === document) {
+      return (document.scrollingElement as HTMLElement | null)?.scrollTop ?? window.scrollY;
+    }
+
+    if (event) return null;
+
+    const scrollContainer = this.findScrollableAncestor(page);
+    this.scrollContainer = scrollContainer ?? undefined;
+    return scrollContainer?.scrollTop
+      ?? (document.scrollingElement as HTMLElement | null)?.scrollTop
+      ?? window.scrollY;
+  }
+
+  private storageKey(): string {
+    const pageKey = this.pageStateKey.trim() || 'default';
+    return `budget:floating-buttons:${pageKey}`;
+  }
+
+  private restoreFloatingButtonState(): void {
+    try {
+      const stored = localStorage.getItem(this.storageKey());
+      if (!stored) return;
+
+      const state = JSON.parse(stored) as { backToTop?: boolean; compactRefresh?: boolean };
+      this.isPageScrolled = state.backToTop === true;
+      this.referenceCollapsed = state.compactRefresh === true;
+    } catch {
+      this.isPageScrolled = false;
+      this.referenceCollapsed = false;
+    }
+  }
+
+  private persistFloatingButtonState(): void {
+    try {
+      localStorage.setItem(this.storageKey(), JSON.stringify({
+        backToTop: this.isPageScrolled,
+        compactRefresh: this.referenceCollapsed,
+      }));
+    } catch {
+      // O estado continua funcionando em memória caso o armazenamento esteja indisponível.
+    }
+  }
+
+  private markUserScrollIntent(durationMs = 1000): void {
+    this.userScrollIntentUntil = Math.max(this.userScrollIntentUntil, Date.now() + durationMs);
+  }
+
+  private hasRecentUserScrollIntent(): boolean {
+    return Date.now() <= this.userScrollIntentUntil;
+  }
+
+  @HostListener('wheel')
+  onWheel(): void {
+    this.markUserScrollIntent(1500);
   }
 
   get previousReferenceLabel(): string {
@@ -279,6 +308,7 @@ export class ModernReferencePageShellComponent
     }
 
     if (this.touchAxis === 'vertical') {
+      this.markUserScrollIntent(1200);
       this.resetSwipeFeedback();
       this.movePullGesture(event);
       return;
@@ -298,6 +328,7 @@ export class ModernReferencePageShellComponent
 
   onTouchEnd(): void {
     const horizontalGesture = this.touchAxis === 'horizontal';
+    if (this.touchAxis === 'vertical') this.markUserScrollIntent(2200);
     const direction = this.swipeDirection;
     const shouldChangeReference =
       horizontalGesture &&
@@ -474,6 +505,9 @@ export class ModernReferencePageShellComponent
     this.referenceObserver?.disconnect();
     this.referenceObserver = new IntersectionObserver(
       entries => {
+        if (!this.elementRef.nativeElement.isConnected || !target.isConnected) return;
+        if (!this.hasRecentUserScrollIntent()) return;
+
         const entry = entries[0];
 
         if (!entry) return;
@@ -486,6 +520,7 @@ export class ModernReferencePageShellComponent
         if (this.referenceCollapsed === shouldCollapse) return;
 
         this.referenceCollapsed = shouldCollapse;
+        this.persistFloatingButtonState();
         this.cd.detectChanges();
       },
       {
